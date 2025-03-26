@@ -1,0 +1,30 @@
+{% extends 'baseadmin.html.twig' %}
+
+{% block title %}Modifier la catégorie : {{ categorie.nom }}{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h2 class="mb-4">Modifier la catégorie : {{ categorie.nom }}</h2>
+
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        {{ form_start(form, {'attr': {'class': 'needs-validation'}}) }}
+            <div class="mb-3">
+                {{ form_label(form.nom, 'Nom de la catégorie') }}
+                {{ form_widget(form.nom, {'attr': {'class': 'form-control'}}) }}
+            </div>
+            <div class="mb-3">
+                {{ form_label(form.descCategorieEvent, 'Description') }}
+                {{ form_widget(form.descCategorieEvent, {'attr': {'class': 'form-control'}}) }}
+            </div>
+            <div class="d-flex justify-content-center gap-2 mt-3">
+                {{ form_widget(form.Button, {'attr': {'class': 'btn btn-primary', 'label': 'Enregistrer les modifications'}}) }}
+                <a href="{{ path('categorie_list') }}" class="btn btn-secondary">Retour à la liste</a>
+            </div>
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

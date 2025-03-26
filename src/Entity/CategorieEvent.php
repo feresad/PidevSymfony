@@ -48,16 +48,16 @@ class CategorieEvent
         return $this;
     }
 
-    public function getDescriptioncategorie(): ?string
-    {
-        return $this->descCategorieEvent;
-    }
+    public function getDescCategorieEvent(): ?string
+{
+    return $this->descCategorieEvent;
+}
 
-    public function setDescriptioncategorie(string $descriptioncategorie): static
-    {
-        $this->descCategorieEvent = $descriptioncategorie;
-        return $this;
-    }
+public function setDescCategorieEvent(?string $descCategorieEvent): self
+{
+    $this->descCategorieEvent = $descCategorieEvent;
+    return $this;
+}
 
     /**
      * @return Collection<int, Evenement>

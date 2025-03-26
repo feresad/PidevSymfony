@@ -1,0 +1,431 @@
+.container.mt-4 {
+    padding: 20px;
+    max-width: 100%;
+}
+
+.container.mt-4 h2 {
+    font-weight: 600;
+    color: var(--blue);
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+.needs-validation {
+    background: var(--white);
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 7px 25px rgba(0, 0, 0, 0.08);
+}
+
+.mb-3 {
+    margin-bottom: 20px !important;
+}
+
+.mb-3 label {
+    font-weight: 500;
+    color: var(--black1);
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.mb-3 input,
+.mb-3 select,
+.mb-3 textarea,
+.mb-3 .form-control {
+    width: 100%;
+    padding: 10px 15px;
+    font-size: 1rem;
+    border: 1px solid var(--black2);
+    border-radius: 10px;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+.mb-3 input:focus,
+.mb-3 select:focus,
+.mb-3 textarea:focus,
+.mb-3 .form-control:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 5px rgba(42, 33, 133, 0.3);
+}
+
+.btn {
+    padding: 10px 20px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: var(--blue);
+    color: var(--white);
+}
+
+.btn-secondary {
+    background: var(--black2);
+    color: var(--white);
+}
+
+.mt-3 {
+    margin-top: 20px !important;
+}
+
+/* Responsive adjustments for the form */
+@media (max-width: 768px) {
+    .container.mt-4 {
+        padding: 15px;
+    }
+    .needs-validation {
+        padding: 15px;
+    }
+    .btn {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container.mt-4 h2 {
+        font-size: 1.5rem;
+    }
+    .mb-3 label {
+        font-size: 1rem;
+    }
+    .mb-3 input,
+    .mb-3 select,
+    .mb-3 textarea,
+    .mb-3 .form-control {
+        font-size: 0.9rem;
+    }
+}
+
+/* =============== Styling for listEvenementadmin.html.twig ================ */
+.container-main.mt-4 {
+    padding: 20px;
+    max-width: 100%;
+}
+
+.container-main.mt-4 h1 {
+    font-weight: 600;
+    color: var(--blue);
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+.d-flex {
+    display: flex;
+}
+
+.justify-content-between {
+    justify-content: space-between;
+}
+
+.align-items-center {
+    align-items: center;
+}
+
+.mb-4 {
+    margin-bottom: 30px !important;
+}
+
+.alert-success {
+    background: #8de02c;
+    color: var(--white);
+    padding: 10px 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.alert-info {
+    background: #1795ce;
+    color: var(--white);
+    padding: 10px 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.grid-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-gap: 30px;
+}
+
+.grid-col {
+    width: 100%;
+}
+
+.card-main.h-100 {
+    background: var(--white);
+    border-radius: 20px;
+    box-shadow: 0 7px 25px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-main.h-100:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+.card-img-main {
+    height: 200px;
+    object-fit: cover;
+    border-bottom: 1px solid var(--gray);
+}
+
+.card-body {
+    padding: 20px;
+}
+
+.card-title {
+    font-weight: 600;
+    color: var(--blue);
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+}
+
+.card-text {
+    color: var(--black2);
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+}
+
+.card-text i {
+    margin-right: 8px;
+    color: var(--blue);
+}
+
+.btn-group {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-sm {
+    padding: 5px 10px;
+    font-size: 0.9rem;
+    border-radius: 6px;
+}
+
+.btn-outline-primary {
+    border: 1px solid var(--blue);
+    color: var(--blue);
+    background: transparent;
+}
+
+.btn-outline-secondary {
+    border: 1px solid var(--black2);
+    color: var(--black2);
+    background: transparent;
+}
+
+.btn-outline-danger {
+    border: 1px solid #f00;
+    color: #f00;
+}
+
+.btn i {
+    margin-right: 5px;
+}
+
+.btn-main.btn-sm {
+    padding: 5px 10px;
+    font-size: 0.9rem;
+}
+
+.ml-3 {
+    margin-left: 15px !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 991px) {
+    .grid-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .grid-row {
+        grid-template-columns: 1fr;
+    }
+    .d-flex {
+        flex-direction: column;
+        gap: 15px;
+    }
+    .btn-group {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .btn-sm {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .container-main.mt-4 h1 {
+        font-size: 1.5rem;
+    }
+    .card-title {
+        font-size: 1.2rem;
+    }
+    .card-text {
+        font-size: 1rem;
+    }
+    .btn-sm {
+        font-size: 0.8rem;
+    }
+}
+
+/* =============== Styling for DetailsEvenement.html.twig ================ */
+.container.mt-4 {
+    padding: 30px;
+    max-width: 100%;
+    background: linear-gradient(135deg, var(--gray) 0%, var(--white) 100%);
+    border-radius: 20px;
+    margin-top: 40px;
+}
+
+.container.mt-4 h1 {
+    font-weight: 700;
+    color: var(--blue);
+    font-size: clamp(2rem, 5vw, 3rem);
+    margin-bottom: 30px;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    text-shadow: 0 2px 5px rgba(42, 33, 133, 0.2);
+}
+
+.alert.alert-danger {
+    background: linear-gradient(90deg, #f00, #ff4d4d);
+    color: var(--white);
+    padding: 15px 20px;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(255, 0, 0, 0.3);
+    margin-bottom: 25px;
+    font-weight: 500;
+}
+
+.card {
+    background: var(--white);
+    border-radius: 25px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+}
+
+.card-img-top {
+    max-height: 200px;
+    object-fit: cover;
+    border-bottom: 3px solid var(--blue);
+    filter: brightness(90%);
+    transition: filter 0.3s ease;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+}
+
+.card:hover .card-img-top {
+    filter: brightness(100%);
+}
+
+.card-body {
+    padding: 20px;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), var(--white));
+}
+
+.card-title {
+    font-weight: 500;
+    color: var(--blue);
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    text-align: center;
+    background: linear-gradient(to right, var(--blue), #4a3db5);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.list-group.list-group-flush {
+    padding: 0;
+}
+
+.list-group-item {
+    border: none;
+    padding: 8px 0;
+    color: var(--black1);
+    font-size: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: color 0.3s ease;
+}
+
+.list-group-item:hover {
+    color: var(--blue);
+}
+
+.list-group-item strong {
+    color: var(--blue);
+    font-weight: 600;
+    background: linear-gradient(to right, var(--blue), #4a3db5);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.card-text {
+    color: var(--black2);
+    font-size: 1rem;
+    margin-bottom: 15px;
+    font-style: italic;
+}
+
+.mt-3 h5 {
+    font-weight: 700;
+    color: var(--blue);
+    font-size: 1.2rem;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.img-fluid {
+    max-width: 180px;
+    border-radius: 15px;
+    margin: 10px auto;
+    display: block;
+}
+
+.d-flex {
+    display: flex;
+    gap: 10px;
+}
+
+.justify-content-center {
+    justify-content: center;
+}
+
+.mb-4 {
+    margin-bottom: 25px;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.mt-4 {
+    margin-top: 40px;
+}

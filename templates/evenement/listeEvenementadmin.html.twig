@@ -1,0 +1,69 @@
+{% extends 'baseadmin.html.twig' %}
+
+{% block title %}Liste des Événements{% endblock %}
+
+{% block body %}
+    <div class="container-main mt-4 liste">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Liste des Événements</h1>
+            <a href="{{ path('evenement_ajouter') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Nouvel Événement
+            </a>
+        </div>
+
+        {% for message in app.flashes('success') %}
+            <div class="alert-success">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        <div class="grid-row">
+            {% for evenement in evenements %}
+                <div class="grid-col">
+                    <div class="card-main h-100">
+                        <img src="{{ image_base_url ~ evenement.photoEvent }}" class="card-img-main" alt="{{ evenement.nomEvent }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ evenement.nomEvent }}</h5>
+                            <p class="card-text">
+                                <i class="fas fa-calendar"></i> {{ evenement.dateEvent ? evenement.dateEvent|date('d/m/Y H:i') : '' }}
+                            </p>
+                            <p class="card-text">
+                                <i class="fas fa-map-marker-alt"></i> {{ evenement.lieuEvent }}
+                            </p>
+                            <p class="card-text">
+                                <i class="fas fa-layer-group"></i> Catégorie : {{ evenement.categorie ? evenement.categorie.nom : 'Non spécifiée' }}
+                            </p>
+                            <p class="card-text">
+                                <i class="fas fa-users"></i> Places restantes : {{ evenement.maxPlacesEvent }}
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="btn-group">
+                                    <a href="{{ path('evenement_detailles', {id: evenement.id}) }}" class="btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i> Voir
+                                    </a>
+                                    <a href="{{ path('evenement_modifier', {id: evenement.id}) }}" class="btn-sm btn-outline-secondary">
+                                        <i class="fas fa-edit"></i> Modifier
+                                    </a>
+                                </div>
+                                <a href="{{ path('evenement_supprimer', {id: evenement.id}) }}" 
+                                   onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?');" 
+                                   class="btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash"></i> Supprimer
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="col-12">
+                    <div class="alert-info">
+                        Aucun événement n'a été trouvé.
+                        <a href="{{ path('evenement_ajouter') }}" class="btn-main btn-sm ml-3">
+                            <i class="fas fa-plus"></i> Créer un événement
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
