@@ -220,7 +220,7 @@ body {
   grid-gap: 30px;
 }
 
-.cardBox .card {
+.cardBox .cardHome {
   position: relative;
   background: var(--white);
   padding: 30px;
@@ -231,30 +231,30 @@ body {
   box-shadow: 0 7px 25px rgba(0, 0, 0, 0.08);
 }
 
-.cardBox .card .numbers {
+.cardBox .cardHome .numbers {
   position: relative;
   font-weight: 500;
   font-size: 2.5rem;
   color: var(--blue);
 }
 
-.cardBox .card .cardName {
+.cardBox .cardHome .cardName {
   color: var(--black2);
   font-size: 1.1rem;
   margin-top: 5px;
 }
 
-.cardBox .card .iconBx {
+.cardBox .cardHome .iconBx {
   font-size: 3.5rem;
   color: var(--black2);
 }
 
-.cardBox .card:hover {
+.cardBox .cardHome:hover {
   background: var(--blue);
 }
-.cardBox .card:hover .numbers,
-.cardBox .card:hover .cardName,
-.cardBox .card:hover .iconBx {
+.cardBox .cardHome:hover .numbers,
+.cardBox .cardHome:hover .cardName,
+.cardBox .cardHome:hover .iconBx {
   color: var(--white);
 }
 
