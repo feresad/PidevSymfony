@@ -20,13 +20,23 @@ final class EvnementController extends AbstractController
 {
     #[Route('/all',name: 'evenement_list')]
     public function gettAll(EvenementRepository $repo, Request $request):Response{
-        $search = $request->query->get('search');
+        $search = $request->query->get('search', '');
         $sort = $request->query->get('sort', 'nom_asc');
+        $page = $request->query->getInt('page', 1); // Page actuelle, par défaut 1
+        $limit = 6; // Nombre d'événements par page
 
-        $evenements = $repo->findBySearchAndSort($search, $sort);
-        return $this->render('evenement/listeEvenement.html.twig', [
-            "evenements"=>$evenements,
+        // Récupérer les événements paginés
+        $evenements = $repo->findBySearchAndSort($search, $sort, $page, $limit);
+        $totalEvenements = $repo->countBySearch($search); // Méthode à ajouter dans le repository
+        $maxPages = ceil($totalEvenements / $limit);
+
+        return $this->render('evenement/ListeEvenement.html.twig', [
+            'evenements' => $evenements,
             'image_base_url' => $this->getParameter('image_base_url'),
+            'current_page' => $page,
+            'max_pages' => $maxPages,
+            'search' => $search,
+            'sort' => $sort,
         ]);
     }
     #[Route('/add', name: 'evenement_ajouter')]
@@ -113,7 +123,7 @@ final class EvnementController extends AbstractController
             $entityManager->flush();
 
             $this->addFlash('success', 'Événement modifié avec succès !');
-            return $this->redirectToRoute('evenement_list');
+            return $this->redirectToRoute('evenement_list_admin');
         }
 
         return $this->render('evenement/modifierEvenement.html.twig', [
@@ -184,13 +194,23 @@ final class EvnementController extends AbstractController
     }
     #[Route('/admin/all',name: 'evenement_list_admin')]
     public function getAll(EvenementRepository $repo, Request $request):Response{
-        $search = $request->query->get('search');
+        $search = $request->query->get('search', '');
         $sort = $request->query->get('sort', 'nom_asc');
+        $page = $request->query->getInt('page', 1); // Page actuelle, par défaut 1
+        $limit = 5; // Nombre d'événements par page
 
-        $evenements = $repo->findBySearchAndSort($search, $sort);
-        return $this->render('evenement/listeEvenementadmin.html.twig', [
-            "evenements"=>$evenements,
+        // Récupérer les événements paginés
+        $evenements = $repo->findBySearchAndSort($search, $sort, $page, $limit);
+        $totalEvenements = $repo->countBySearch($search); // Méthode à ajouter dans le repository
+        $maxPages = ceil($totalEvenements / $limit);
+
+        return $this->render('evenement/ListeEvenementadmin.html.twig', [
+            'evenements' => $evenements,
             'image_base_url' => $this->getParameter('image_base_url'),
+            'current_page' => $page,
+            'max_pages' => $maxPages,
+            'search' => $search,
+            'sort' => $sort,
         ]);
     }
     #[Route('/admin/show/{id}', name: 'evenement_detailles_admin')]

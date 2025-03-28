@@ -9,18 +9,18 @@
             <div class="d-flex align-items-center">
                 <div class="mr-3">
                     <select name="sort" class="form-control" form="eventFilterForm">
-                        <option value="nom_asc" {{ app.request.query.get('sort') == 'nom_asc' ? 'selected' : '' }}>Nom (A-Z)</option>
-                        <option value="nom_desc" {{ app.request.query.get('sort') == 'nom_desc' ? 'selected' : '' }}>Nom (Z-A)</option>
-                        <option value="date_asc" {{ app.request.query.get('sort') == 'date_asc' ? 'selected' : '' }}>Date (Plus ancienne)</option>
-                        <option value="date_desc" {{ app.request.query.get('sort') == 'date_desc' ? 'selected' : '' }}>Date (Plus récente)</option>
-                        <option value="lieu_asc" {{ app.request.query.get('sort') == 'lieu_asc' ? 'selected' : '' }}>Lieu (A-Z)</option>
-                        <option value="lieu_desc" {{ app.request.query.get('sort') == 'lieu_desc' ? 'selected' : '' }}>Lieu (Z-A)</option>
+                        <option value="nom_asc" {{ sort == 'nom_asc' ? 'selected' : '' }}>Nom (A-Z)</option>
+                        <option value="nom_desc" {{ sort == 'nom_desc' ? 'selected' : '' }}>Nom (Z-A)</option>
+                        <option value="date_asc" {{ sort == 'date_asc' ? 'selected' : '' }}>Date (Plus ancienne)</option>
+                        <option value="date_desc" {{ sort == 'date_desc' ? 'selected' : '' }}>Date (Plus récente)</option>
+                        <option value="lieu_asc" {{ sort == 'lieu_asc' ? 'selected' : '' }}>Lieu (A-Z)</option>
+                        <option value="lieu_desc" {{ sort == 'lieu_desc' ? 'selected' : '' }}>Lieu (Z-A)</option>
                     </select>
                 </div>
                 <div class="mr-3">
-                    <form action="" method="get" class="needs-validation" id="eventFilterForm">
+                    <form action="{{ path('evenement_list_admin') }}" method="get" class="needs-validation" id="eventFilterForm">
                         <div class="input-group">
-                            <input type="text" name="search" class="form-control" placeholder="Rechercher un événement..." value="{{ app.request.query.get('search') }}">
+                            <input type="text" name="search" class="form-control" placeholder="Rechercher un événement..." value="{{ search }}">
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-search"></i>
                             </button>
@@ -88,6 +88,25 @@
                 </div>
             {% endfor %}
         </div>
+
+        <!-- Pagination -->
+        {% if max_pages > 1 %}
+            <nav aria-label="Pagination des événements" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item {{ current_page == 1 ? 'disabled' : '' }}">
+                        <a class="page-link" href="{{ path('evenement_list_admin', { page: current_page - 1, search: search, sort: sort }) }}">Précédent</a>
+                    </li>
+                    {% for i in 1..max_pages %}
+                        <li class="page-item {{ current_page == i ? 'active' : '' }}">
+                            <a class="page-link" href="{{ path('evenement_list_admin', { page: i, search: search, sort: sort }) }}">{{ i }}</a>
+                        </li>
+                    {% endfor %}
+                    <li class="page-item {{ current_page == max_pages ? 'disabled' : '' }}">
+                        <a class="page-link" href="{{ path('evenement_list_admin', { page: current_page + 1, search: search, sort: sort }) }}">Suivant</a>
+                    </li>
+                </ul>
+            </nav>
+        {% endif %}
     </div>
 {% endblock %}
 
@@ -96,8 +115,24 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function() {
+            // Soumission du formulaire de tri
             $('select[name="sort"]').on('change', function() {
                 $('#eventFilterForm').submit();
+            });
+
+            // Gestion de la pagination avec jQuery
+            $('.page-link').on('click', function(e) {
+                e.preventDefault();
+                var url = $(this).attr('href');
+                if (url) {
+                    window.location.href = url; // Redirection classique
+                    // Pour AJAX, décommentez et adaptez :
+                    /*
+                    $.get(url, function(data) {
+                        $('.liste').html($(data).find('.liste').html());
+                    });
+                    */
+                }
             });
         });
     </script>

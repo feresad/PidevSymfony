@@ -512,3 +512,91 @@ select.form-control:focus {
 .alert {
     margin-bottom: 1rem;
 }
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.page-item {
+    margin: 0 5px;
+}
+
+.page-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px;
+    height: 40px;
+    padding: 0;
+    font-size: 1rem;
+    color: var(--blue);
+    background: var(--white);
+    border: 1px solid var(--black2);
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+.page-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px;
+    height: 40px;
+    padding: 0;
+    font-size: 1rem;
+    color: var(--blue);
+    background: var(--white);
+    border: 1px solid var(--black2);
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.page-link:hover {
+    background: var(--blue);
+    color: var(--white);
+    border-color: var(--blue);
+    box-shadow: 0 4px 15px rgba(42, 33, 133, 0.2);
+}
+
+.page-item.active .page-link {
+    background: var(--blue);
+    color: var(--white);
+    border-color: var(--blue);
+    font-weight: 600;
+    cursor: default;
+}
+
+.page-item.disabled .page-link {
+    color: var(--black2);
+    background: var(--gray);
+    border-color: var(--black2);
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.page-link:focus {
+    outline: none;
+    box-shadow: 0 0 5px rgba(42, 33, 133, 0.3);
+}
+
+/* Responsive adjustments for pagination */
+@media (max-width: 768px) {
+    .page-link {
+        min-width: 35px;
+        height: 35px;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-item {
+        margin: 0 3px;
+    }
+    .page-link {
+        min-width: 30px;
+        height: 30px;
+        font-size: 0.8rem;
+    }
+}

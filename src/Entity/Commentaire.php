@@ -18,8 +18,8 @@ class Commentaire
         $this->commentaireVotes = new ArrayCollection();
         $this->commentaireReactions = new ArrayCollection();
         $this->childCommentaires = new ArrayCollection();
-        $this->votes = 0; // Default value to match the table's not null constraint
-        $this->creation_at = new \DateTime(); // Default value to match the table's not null constraint
+        $this->votes = 0;
+        $this->creation_at = new \DateTime();
     }
 
     #[ORM\Id]
