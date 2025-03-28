@@ -18,7 +18,7 @@ final class CategorieEventController extends AbstractController
     #[Route('/all',name: 'categorie_list')]
     public function gettAll(Categorie_eventRepository $repo):Response{
         $CategorieEvent = $repo->findAll();
-        return $this->render('categorie_event/listeCategorieEventadmin.html.twig', [
+        return $this->render('categorie_event/listeCategorieEvent.html.twig', [
             "CategorieEvent"=>$CategorieEvent,
         ]);
     }
@@ -34,7 +34,7 @@ final class CategorieEventController extends AbstractController
             $entityManager->flush();
 
             $this->addFlash('success', 'Catégorie ajoutée avec succès !');
-            return $this->redirectToRoute('categorie_list');
+            return $this->redirectToRoute('categorie_list_admin');
         }
 
         return $this->render('categorie_event/ajouterCategorieEvent.html.twig', [
@@ -78,7 +78,7 @@ final class CategorieEventController extends AbstractController
             return $this->redirectToRoute('categorie_list');
         }
 
-        return $this->render('categorie_event/voirCategorieEventadmin.html.twig', [
+        return $this->render('categorie_event/voirCategorieEvent.html.twig', [
             'categorie' => $categorie,
         ]);
     }
@@ -98,6 +98,27 @@ final class CategorieEventController extends AbstractController
 
         $this->addFlash('success', 'Catégorie supprimée avec succès !');
         return $this->redirectToRoute('categorie_list');
+    }
+    #[Route('/admin/all',name: 'categorie_list_admin')]
+    public function getAll(Categorie_eventRepository $repo):Response{
+        $CategorieEvent = $repo->findAll();
+        return $this->render('categorie_event/listeCategorieEventadmin.html.twig', [
+            "CategorieEvent"=>$CategorieEvent,
+        ]);
+    }
+    #[Route('/admin/show/{id}', name: 'categorie_voir_admin')]
+    public function DetailsAdmin(int $id, Categorie_eventRepository $repo): Response
+    {
+        $categorie = $repo->find($id);
+
+        if (!$categorie) {
+            $this->addFlash('error', 'Catégorie non trouvée.');
+            return $this->redirectToRoute('categorie_list');
+        }
+
+        return $this->render('categorie_event/voirCategorieEventadmin.html.twig', [
+            'categorie' => $categorie,
+        ]);
     }
 }
 

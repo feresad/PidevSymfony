@@ -3,71 +3,52 @@
 {% block title %}Liste des Catégories d'Événements{% endblock %}
 
 {% block body %}
-    <div class="container mt-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>Liste des Catégories d'Événements</h1>
-            <a href="{{ path('categorie_ajouter') }}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Nouvelle Catégorie
-            </a>
-        </div>
-
-        {% for message in app.flashes('success') %}
-            <div class="alert alert-success">
-                {{ message }}
+    <div class="nk-page-content">
+        <div class="container mt-4 nk-category-list">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Liste des Catégories d'Événements</h1>
             </div>
-        {% endfor %}
 
-        <div class="row">
-            {% for categorie in CategorieEvent %}
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ categorie.nom }}</h5>
-                            <p class="card-text">
-                                <i class="fas fa-info-circle"></i> {{ categorie.descCategorieEvent }}
-                            </p>
-                            
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="btn-group">
-                                    <a href="{{ path('categorie_voir', {id: categorie.id}) }}" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-eye"></i> Voir
-                                    </a>
-                                    <a href="{{ path('categorie_modifier', {id: categorie.id}) }}" class="btn btn-sm btn-outline-secondary">
-                                        <i class="fas fa-edit"></i> Modifier
-                                    </a>
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success">
+                    {{ message }}
+                </div>
+            {% endfor %}
+
+            <div class="row">
+                {% for categorie in CategorieEvent %}
+                    <div class="col-md-4 mb-4">
+                        <div class="nk-category-card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ categorie.nom }}</h5>
+                                <p class="card-text">
+                                    <i class="fas fa-info-circle"></i> {{ categorie.descCategorieEvent }}
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="btn-group">
+                                        <a href="{{ path('categorie_voir', {id: categorie.id}) }}" class="nk-btn nk-btn-outline-primary">
+                                            <i class="fas fa-eye"></i> Voir
+                                        </a>
+                                    </div>
                                 </div>
-                                <a href="{{ path('delete_categorie', {id: categorie.id}) }}" 
-                                   onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ?');" 
-                                   class="btn btn-sm btn-outline-danger">
-                                    <i class="fas fa-trash"></i> Supprimer
-                                </a>
                             </div>
                         </div>
                     </div>
-                </div>
-            {% else %}
-                <div class="col-12">
-                    <div class="alert alert-info">
-                        Aucune catégorie n'a été trouvée.
-                        <a href="{{ path('categorie_ajouter') }}" class="btn btn-primary btn-sm ml-3">
-                            <i class="fas fa-plus"></i> Créer une catégorie
-                        </a>
+                {% else %}
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            Aucune catégorie n'a été trouvée.
+                            <a href="{{ path('categorie_ajouter') }}" class="btn btn-primary btn-sm ml-3">
+                                <i class="fas fa-plus"></i> Créer une catégorie
+                            </a>
+                        </div>
                     </div>
-                </div>
-            {% endfor %}
+                {% endfor %}
+            </div>
         </div>
-    </div>
 
-    <style>
-        .card {
-            transition: transform 0.2s;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .card:hover {
-            transform: translateY(-5px);
-        }
-        .btn-group .btn {
-            margin-right: 5px;
-        }
-    </style>
+        <!-- Background de la page d'accueil -->
+        <img class="nk-page-background-top" src="{{ asset('images/bg-top.png') }}" alt="">
+        <img class="nk-page-background-bottom" src="{{ asset('images/bg-bottom.png') }}" alt="">
+    </div>
 {% endblock %}

@@ -19,9 +19,12 @@ use Symfony\Component\Routing\Attribute\Route;
 final class EvnementController extends AbstractController
 {
     #[Route('/all',name: 'evenement_list')]
-    public function gettAll(EvenementRepository $repo):Response{
-        $evenements = $repo->findAll();
-        return $this->render('evenement/listeEvenementadmin.html.twig', [
+    public function gettAll(EvenementRepository $repo, Request $request):Response{
+        $search = $request->query->get('search');
+        $sort = $request->query->get('sort', 'nom_asc');
+
+        $evenements = $repo->findBySearchAndSort($search, $sort);
+        return $this->render('evenement/listeEvenement.html.twig', [
             "evenements"=>$evenements,
             'image_base_url' => $this->getParameter('image_base_url'),
         ]);
@@ -53,7 +56,7 @@ final class EvnementController extends AbstractController
             $entityManager->flush();
     
             $this->addFlash('success', 'Événement ajouté avec succès !');
-            return $this->redirectToRoute('evenement_list');
+            return $this->redirectToRoute('evenement_list_admin');
         }
     
         return $this->render('evenement/ajouterEvenement.html.twig', [
@@ -74,7 +77,7 @@ final class EvnementController extends AbstractController
         $entityManager->flush();
 
         $this->addFlash('success', 'Événement supprimé avec succès !');
-        return $this->redirectToRoute('evenement_list');
+        return $this->redirectToRoute('evenement_list_admin');
 }
 #[Route('/edit/{id}', name: 'evenement_modifier')]
     public function modifier(int $id, Request $request, EvenementRepository $repo, EntityManagerInterface $entityManager): Response
@@ -83,7 +86,7 @@ final class EvnementController extends AbstractController
 
         if (!$evenement) {
             $this->addFlash('error', 'Événement non trouvé.');
-            return $this->redirectToRoute('evenement_list');
+            return $this->redirectToRoute('evenement_list_admin');
         }
 
         $form = $this->createForm(EvenementType::class, $evenement);
@@ -97,7 +100,8 @@ final class EvnementController extends AbstractController
                 $newFilename = uniqid().'.'.$photoFile->guessExtension();
 
                 try {
-                    $photoFile->move('C:/xampp/htdocs/img', $newFilename);
+                    $image_base_url = $this->getParameter('image_base_url');
+                    $photoFile->move($image_base_url, $newFilename);
                     $evenement->setPhotoEvent($newFilename);
                 } catch (FileException $e) {
                     $this->addFlash('error', 'Erreur lors de l\'upload du fichier.');
@@ -115,6 +119,7 @@ final class EvnementController extends AbstractController
         return $this->render('evenement/modifierEvenement.html.twig', [
             'form' => $form->createView(),
             'evenement' => $evenement,
+            'image_base_url' => $this->getParameter('image_base_url'),
         ]);
     }
     #[Route('/show/{id}', name: 'evenement_detailles')]
@@ -127,7 +132,7 @@ final class EvnementController extends AbstractController
             return $this->redirectToRoute('evenement_list');
         }
 
-        return $this->render('evenement/DetailsEvenementAdmin.html.twig', [
+        return $this->render('evenement/DetailsEvenement.html.twig', [
             'evenement' => $evenement,
             'image_base_url' => $this->getParameter('image_base_url'),
         ]);
@@ -167,10 +172,8 @@ final class EvnementController extends AbstractController
         if ($message) {
             $response = $chatGPTService->getResponse($message);
             if ($request->isXmlHttpRequest()) {
-                // Retourner uniquement la réponse texte pour AJAX
                 return new Response($response);
             }
-            // Cas non-AJAX (facultatif)
             return $this->render('evenement/chatbot.html.twig', [
                 'message' => $message,
                 'response' => $response,
@@ -178,6 +181,32 @@ final class EvnementController extends AbstractController
         }
 
         return new Response('Aucun message fourni', 400);
+    }
+    #[Route('/admin/all',name: 'evenement_list_admin')]
+    public function getAll(EvenementRepository $repo, Request $request):Response{
+        $search = $request->query->get('search');
+        $sort = $request->query->get('sort', 'nom_asc');
+
+        $evenements = $repo->findBySearchAndSort($search, $sort);
+        return $this->render('evenement/listeEvenementadmin.html.twig', [
+            "evenements"=>$evenements,
+            'image_base_url' => $this->getParameter('image_base_url'),
+        ]);
+    }
+    #[Route('/admin/show/{id}', name: 'evenement_detailles_admin')]
+    public function DetaillsAdmib(int $id, EvenementRepository $repo): Response
+    {
+        $evenement = $repo->find($id);
+
+        if (!$evenement) {
+            $this->addFlash('error', 'Événement non trouvé.');
+            return $this->redirectToRoute('evenement_list');
+        }
+
+        return $this->render('evenement/DetailsEvenementAdmin.html.twig', [
+            'evenement' => $evenement,
+            'image_base_url' => $this->getParameter('image_base_url'),
+        ]);
     }
 }
 

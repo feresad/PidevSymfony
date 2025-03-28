@@ -429,3 +429,86 @@
 .mt-4 {
     margin-top: 40px;
 }
+/* Ajustements pour le champ de recherche et le dropdown */
+.input-group {
+    display: flex;
+    align-items: center;
+}
+
+.input-group .form-control {
+    border-radius: 10px 0 0 10px;
+    height: 40px; /* Hauteur fixe pour alignement */
+    width: 300px; /* Largeur fixe pour desktop */
+    padding: 8px 12px;
+}
+
+.input-group .btn-primary {
+    border-radius: 0 6px 6px 0;
+    height: 40px; /* Aligné avec l’input */
+    padding: 0 15px;
+    display: flex;
+    align-items: center;
+}
+
+.mr-3 {
+    margin-right: 15px !important; /* Espace entre les éléments */
+}
+
+select.form-control {
+    height: 40px; /* Aligné avec le champ de recherche et le bouton */
+    width: 200px; /* Largeur fixe pour desktop */
+    padding: 8px 12px;
+    font-size: 1rem;
+    border: 1px solid var(--black2);
+    border-radius: 10px;
+    background: var(--white);
+    color: var(--black1);
+}
+
+select.form-control:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 5px rgba(42, 33, 133, 0.3);
+}
+
+/* Responsivité */
+@media (max-width: 768px) {
+    .d-flex {
+        flex-direction: column;
+        gap: 15px;
+    }
+    .input-group .form-control,
+    select.form-control,
+    .btn-primary {
+        width: 100%;
+        border-radius: 10px; /* Coins arrondis complets sur mobile */
+    }
+    .input-group .btn-primary {
+        margin-top: 10px;
+    }
+    select.form-control {
+        margin-top: 10px;
+    }
+    .mr-3 {
+        margin-right: 0 !important;
+    }
+}
+/* Form validation styles */
+.form-control:invalid {
+    border-color: #dc3545;
+}
+
+.invalid-feedback {
+    display: none;
+    color: #dc3545 !important; /* Ajout de !important pour garantir la priorité */
+    font-size: 0.875em;
+    margin-top: 0.25rem;
+    font-weight: bold; /* Facultatif : pour rendre le texte plus visible */
+}
+
+.form-control:invalid ~ .invalid-feedback {
+    display: block;
+}
+
+.alert {
+    margin-bottom: 1rem;
+}
