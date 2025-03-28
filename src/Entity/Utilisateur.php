@@ -5,55 +5,67 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
-use App\Entity\Reports;
+use App\Enum\RoleType;
 
 #[ORM\Entity]
+#[ORM\Table(name: "utilisateur")]
 class Utilisateur
 {
     public function __construct()
     {
+        $this->privilege = 'regular';
+        $this->ban = false;
+        $this->countRep = 0;
+        $this->questions = new ArrayCollection();
+        $this->questionVotes = new ArrayCollection();
     }
 
-
     #[ORM\Id]
-    #[ORM\Column(type: "integer")]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: "integer", name: "id")]
     private int $id;
 
-    #[ORM\Column(type: "string", length: 255)]
+    #[ORM\Column(type: "string", length: 255, name: "nom")]
     private string $nom;
 
-    #[ORM\Column(type: "string", length: 255)]
+    #[ORM\Column(type: "string", length: 255, name: "prenom")]
     private string $prenom;
 
-    #[ORM\Column(type: "string", length: 255)]
+    #[ORM\Column(type: "string", length: 255, name: "email")]
     private string $email;
 
-    #[ORM\Column(type: "string", length: 255)]
+    #[ORM\Column(type: "string", length: 255, name: "nickname")]
     private string $nickname;
 
-    #[ORM\Column(type: "integer")]
+    #[ORM\Column(type: "integer", name: "numero")]
     private int $numero;
 
-    #[ORM\Column(type: "string", length: 255)]
+    #[ORM\Column(type: "string", length: 255, name: "mot_passe")]
     private string $mot_passe;
 
-    #[ORM\Column(type: "string")]
-    private string $role;
+    #[ORM\Column(type: "string", enumType: RoleType::class, name: "role")]
+    private RoleType $role;
 
-    #[ORM\Column(type: "string", length: 50)]
+    #[ORM\Column(type: "string", length: 50, name: "privilege", options: ["default" => "regular"])]
     private string $privilege;
 
-    #[ORM\Column(type: "boolean")]
+    #[ORM\Column(type: "boolean", name: "ban", options: ["default" => 0])]
     private bool $ban;
 
-    #[ORM\Column(type: "datetime")]
-    private \DateTimeInterface $banTime;
+    #[ORM\Column(type: "datetime", name: "banTime", nullable: true)]
+    private ?\DateTimeInterface $banTime = null;
 
-    #[ORM\Column(type: "integer")]
+    #[ORM\Column(type: "integer", name: "countRep", options: ["default" => 0])]
     private int $countRep;
 
-    #[ORM\Column(type: "string", length: 255)]
-    private string $photo;
+    #[ORM\Column(type: "string", length: 255, name: "photo", nullable: true)]
+    private ?string $photo = null;
+
+    #[ORM\OneToMany(mappedBy: "utilisateur_id", targetEntity: Questions::class)]
+    private Collection $questions;
+
+    #[ORM\OneToMany(mappedBy: "user_id", targetEntity: QuestionVotes::class)]
+    private Collection $questionVotes;
 
     public function getId(): int
     {
@@ -121,23 +133,23 @@ class Utilisateur
         return $this;
     }
 
-    public function getMot_passe(): string
+    public function getMotPasse(): string
     {
         return $this->mot_passe;
     }
 
-    public function setMot_passe(string $mot_passe): self
+    public function setMotPasse(string $mot_passe): self
     {
         $this->mot_passe = $mot_passe;
         return $this;
     }
 
-    public function getRole(): string
+    public function getRole(): RoleType
     {
         return $this->role;
     }
 
-    public function setRole(string $role): self
+    public function setRole(RoleType $role): self
     {
         $this->role = $role;
         return $this;
@@ -154,7 +166,7 @@ class Utilisateur
         return $this;
     }
 
-    public function getBan(): bool
+    public function isBan(): bool
     {
         return $this->ban;
     }
@@ -165,12 +177,12 @@ class Utilisateur
         return $this;
     }
 
-    public function getBanTime(): \DateTimeInterface
+    public function getBanTime(): ?\DateTimeInterface
     {
         return $this->banTime;
     }
 
-    public function setBanTime(\DateTimeInterface $banTime): self
+    public function setBanTime(?\DateTimeInterface $banTime): self
     {
         $this->banTime = $banTime;
         return $this;
@@ -187,14 +199,62 @@ class Utilisateur
         return $this;
     }
 
-    public function getPhoto(): string
+    public function getPhoto(): ?string
     {
         return $this->photo;
     }
 
-    public function setPhoto(string $photo): self
+    public function setPhoto(?string $photo): self
     {
         $this->photo = $photo;
+        return $this;
+    }
+
+    public function getQuestions(): Collection
+    {
+        return $this->questions;
+    }
+
+    public function addQuestion(Questions $question): self
+    {
+        if (!$this->questions->contains($question)) {
+            $this->questions[] = $question;
+            $question->setUtilisateurId($this);
+        }
+        return $this;
+    }
+
+    public function removeQuestion(Questions $question): self
+    {
+        if ($this->questions->removeElement($question)) {
+            if ($question->getUtilisateurId() === $this) {
+                $question->setUtilisateurId(null);
+            }
+        }
+        return $this;
+    }
+
+    public function getQuestionVotes(): Collection
+    {
+        return $this->questionVotes;
+    }
+
+    public function addQuestionVote(QuestionVotes $questionVote): self
+    {
+        if (!$this->questionVotes->contains($questionVote)) {
+            $this->questionVotes[] = $questionVote;
+            $questionVote->setUserId($this);
+        }
+        return $this;
+    }
+
+    public function removeQuestionVote(QuestionVotes $questionVote): self
+    {
+        if ($this->questionVotes->removeElement($questionVote)) {
+            if ($questionVote->getUserId() === $this) {
+                $questionVote->setUserId(null);
+            }
+        }
         return $this;
     }
 }

@@ -1,0 +1,270 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}GoodGames | Main Game Discussions{% endblock %}
+
+{% block body %}
+    <!-- START: Breadcrumbs -->
+    <div class="nk-gap-1"></div>
+    <div class="container">
+        <ul class="nk-breadcrumbs">
+            <li><a href="{{ path('app_home') }}">Home</a></li>
+            <li><span class="fa fa-angle-right"></span></li>
+            <li><a href="{{ path('forum_index') }}">Forum</a></li>
+            <li><span class="fa fa-angle-right"></span></li>
+            <li><span>Main Game Discussions</span></li>
+        </ul>
+    </div>
+    <div class="nk-gap-1"></div>
+    <!-- END: Breadcrumbs -->
+
+    <!-- START: Forum Section -->
+    <div class="container nk-forum-container">
+        <!-- START: New Topic Button -->
+        <div class="row mb-4">
+            <div class="col-md-12 text-end">
+                <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-white" data-bs-toggle="modal" data-bs-target="#newTopicModal">
+                    New Topic
+                </button>
+            </div>
+        </div>
+        <!-- END: New Topic Button -->
+
+        <!-- START: Forums List -->
+        <div class="nk-forum">
+            {% for topic in topics %}
+                <div class="nk-forum-item {{ topic.locked ? 'nk-forum-locked' : '' }}">
+                    <div class="nk-forum-title">
+                        <h3><a href="{{ path('forum_single_topic', { id: topic.id }) }}">{{ topic.title }}</a></h3>
+                        <div class="nk-forum-title-sub">
+                            Started by <a href="#">{{ topic.startedBy }}</a> on {{ topic.startedOn }}
+                        </div>
+                        {% if topic.content is defined and topic.content %}
+                            <div class="nk-forum-content mt-2">
+                                <p>
+                                    {{ topic.content|slice(0, 150) }}
+                                    {% if topic.content|length > 150 %}...{% endif %}
+                                </p>
+                            </div>
+                        {% endif %}
+                        {% if topic.image is defined and topic.image %}
+                            <div class="nk-forum-title-image mt-2">
+                                <img src="http://localhost/img/games/{{ topic.image }}" alt="Topic Image" style="max-width: 100px;">
+                            </div>
+                        {% endif %}
+                        {% if topic.video is defined and topic.video %}
+                            <div class="nk-forum-title-video mt-2">
+                                <video width="320" height="240" controls>
+                                    <source src="http://localhost/img/games/{{ topic.video }}" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                        {% endif %}
+                        <!-- Add Update and Delete Buttons -->
+                        <div class="nk-forum-actions mt-2">
+                            <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-main-1" data-bs-toggle="modal" data-bs-target="#updateTopicModal-{{ topic.id }}">
+                                Update
+                            </button>
+                            <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-danger" data-bs-toggle="modal" data-bs-target="#deleteTopicModal-{{ topic.id }}">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                    <div class="nk-forum-count">
+                        {{ topic.postCount }} posts
+                    </div>
+                    <div class="nk-forum-activity">
+                        {% if topic.gameImage is defined and topic.gameImage %}
+                            <div class="nk-forum-game-image mb-2">
+                                <img src="http://localhost/img/games/{{ topic.gameImage }}" alt="Game Image" class="game-image">
+                            </div>
+                        {% else %}
+                            <div class="nk-forum-game-image mb-2">
+                                <img src="{{ asset('assets/images/default-game.jpg') }}" alt="Default Game Image" class="game-image">
+                            </div>
+                        {% endif %}
+                        <div class="nk-forum-activity-title" title="{{ topic.lastActivityUser }}">
+                            Last by <a href="#">{{ topic.lastActivityUser }}</a>
+                        </div>
+                        <div class="nk-forum-activity-date">
+                            {{ topic.lastActivityDate }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Update Topic Modal -->
+                <div class="modal fade" id="updateTopicModal-{{ topic.id }}" tabindex="-1" aria-labelledby="updateTopicModalLabel-{{ topic.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="updateTopicModalLabel-{{ topic.id }}">Update Topic</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                {{ form_start(topic.updateForm) }}
+                                    <div class="mb-3">
+                                        {{ form_label(topic.updateForm.title, null, {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(topic.updateForm.title, {'attr': {'class': 'form-control'}}) }}
+                                        {{ form_errors(topic.updateForm.title) }}
+                                    </div>
+                                    <div class="mb-3">
+                                        {{ form_label(topic.updateForm.content, null, {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(topic.updateForm.content, {'attr': {'class': 'form-control'}}) }}
+                                        {{ form_errors(topic.updateForm.content) }}
+                                    </div>
+                                    <div class="mb-3">
+                                        {{ form_label(topic.updateForm.media_type, null, {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(topic.updateForm.media_type, {'attr': {'class': 'form-control'}}) }}
+                                        {{ form_errors(topic.updateForm.media_type) }}
+                                    </div>
+                                    <div class="mb-3">
+                                        {{ form_label(topic.updateForm.media_file, null, {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(topic.updateForm.media_file, {'attr': {'class': 'form-control-file'}}) }}
+                                        {{ form_errors(topic.updateForm.media_file) }}
+                                    </div>
+                                    <div class="mb-3">
+                                        {{ form_label(topic.updateForm.game_id, null, {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(topic.updateForm.game_id, {'attr': {'class': 'form-control'}}) }}
+                                        {{ form_errors(topic.updateForm.game_id) }}
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Emotes</label>
+                                        <div class="emotes-options">
+                                            <button type="button" class="btn btn-emote" onclick="addEmote('😊', 'update_topic_form_{{ topic.id }}_content')">😊</button>
+                                            <button type="button" class="btn btn-emote" onclick="addEmote('😂', 'update_topic_form_{{ topic.id }}_content')">😂</button>
+                                            <button type="button" class="btn btn-emote" onclick="addEmote('❤️', 'update_topic_form_{{ topic.id }}_content')">❤️</button>
+                                            <button type="button" class="btn btn-emote" onclick="addEmote('👍', 'update_topic_form_{{ topic.id }}_content')">👍</button>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        {{ form_widget(topic.updateForm.submit, {'attr': {'class': 'btn btn-primary'}}) }}
+                                    </div>
+                                {{ form_end(topic.updateForm) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Delete Confirmation Modal -->
+                <div class="modal fade" id="deleteTopicModal-{{ topic.id }}" tabindex="-1" aria-labelledby="deleteTopicModalLabel-{{ topic.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="deleteTopicModalLabel-{{ topic.id }}">Delete Topic</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                Are you sure you want to delete the topic "<strong>{{ topic.title }}</strong>"? This action cannot be undone.
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <a href="{{ path('forum_delete_topic', { id: topic.id }) }}" class="btn btn-danger">Delete</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <!-- END: Forums List -->
+
+        <div class="nk-gap-2"></div>
+
+        <!-- START: Pagination -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="nk-pagination nk-pagination-left">
+                    <a href="#" class="nk-pagination-prev">
+                        <span class="ion-ios-arrow-back"></span>
+                    </a>
+                    <nav>
+                        <a class="nk-pagination-current" href="#">1</a>
+                        <a href="#">2</a>
+                        <a href="#">3</a>
+                        <a href="#">4</a>
+                        <span>...</span>
+                        <a href="#">14</a>
+                    </nav>
+                    <a href="#" class="nk-pagination-next">
+                        <span class="ion-ios-arrow-forward"></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <!-- END: Pagination -->
+
+        <!-- START: New Topic Modal -->
+        <div class="modal fade" id="newTopicModal" tabindex="-1" aria-labelledby="newTopicModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="newTopicModalLabel">Create New Topic</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        {{ form_start(newTopicForm) }}
+                            <div class="mb-3">
+                                {{ form_label(newTopicForm.title, null, {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(newTopicForm.title, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_errors(newTopicForm.title) }}
+                            </div>
+                            <div class="mb-3">
+                                {{ form_label(newTopicForm.content, null, {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(newTopicForm.content, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_errors(newTopicForm.content) }}
+                            </div>
+                            <div class="mb-3">
+                                {{ form_label(newTopicForm.media_type, null, {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(newTopicForm.media_type, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_errors(newTopicForm.media_type) }}
+                            </div>
+                            <div class="mb-3">
+                                {{ form_label(newTopicForm.media_file, null, {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(newTopicForm.media_file, {'attr': {'class': 'form-control-file'}}) }}
+                                {{ form_errors(newTopicForm.media_file) }}
+                            </div>
+                            <div class="mb-3">
+                                {{ form_label(newTopicForm.game_id, null, {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(newTopicForm.game_id, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_errors(newTopicForm.game_id) }}
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Emotes</label>
+                                <div class="emotes-options">
+                                    <button type="button" class="btn btn-emote" onclick="addEmote('😊', 'topic_form_content')">😊</button>
+                                    <button type="button" class="btn btn-emote" onclick="addEmote('😂', 'topic_form_content')">😂</button>
+                                    <button type="button" class="btn btn-emote" onclick="addEmote('❤️', 'topic_form_content')">❤️</button>
+                                    <button type="button" class="btn btn-emote" onclick="addEmote('👍', 'topic_form_content')">👍</button>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                {{ form_widget(newTopicForm.submit, {'attr': {'class': 'btn btn-primary'}}) }}
+                            </div>
+                        {{ form_end(newTopicForm) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- END: New Topic Modal -->
+    </div>
+    <!-- END: Forum Section -->
+
+    <div class="nk-gap-2"></div>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <!-- Link to the new topics.css file -->
+    <link rel="stylesheet" href="{{ asset('css/topics.css') }}">
+{% endblock %}
+
+{% block js %}
+    <script>
+        function addEmote(emote, fieldId) {
+            const contentField = document.querySelector('#' + fieldId);
+            if (contentField) {
+                contentField.value += emote;
+            }
+        }
+    </script>
+{% endblock %}
