@@ -1,0 +1,30 @@
+<li style="margin-left: {{ level * 20 }}px;">
+    <div class="nk-forum-topic-author">
+        <a href="#">
+            <img src="{{ comment.utilisateurId.photo ? '/uploads/' ~ comment.utilisateurId.photo : asset('assets/images/avatar-1.jpg') }}" alt="{{ comment.utilisateurId.nickname }}">
+        </a>
+        <div class="nk-forum-topic-author-name" title="{{ comment.utilisateurId.nickname }}">
+            <a href="#">{{ comment.utilisateurId.nickname }}</a>
+        </div>
+        <div class="nk-forum-topic-author-role">Participant</div>
+        <div class="nk-forum-topic-author-since">
+            Member since {{ comment.utilisateurId.createdAt|date('F d, Y') }}
+        </div>
+    </div>
+    <div class="nk-forum-topic-content">
+        <p>{{ comment.contenu }}</p>
+    </div>
+    <div class="nk-forum-topic-footer">
+        <span class="nk-forum-topic-date">{{ comment.creationAt|date('F d, Y') }}</span>
+        <span class="nk-forum-action-btn">
+            <a href="#forum-reply" class="nk-anchor"><span class="fa fa-reply"></span> Reply</a>
+        </span>
+        <span class="nk-forum-action-btn">
+            <a href="#"><span class="fa fa-flag"></span> Spam</a>
+        </span>
+    </div>
+    <!-- Display Child Comments -->
+    {% for child in comment.childCommentaires %}
+        {% include 'forum/_comment.html.twig' with {'comment': child, 'level': level + 1} %}
+    {% endfor %}
+</li>
