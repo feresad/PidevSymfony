@@ -306,3 +306,92 @@
         filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
     }
 }
+
+/* Trending Posts Section - Gaming Oriented Styling */
+.nk-forum-trending {
+    background: linear-gradient(135deg, #1a1a1a 0%, #232930 100%); /* Gradient for depth */
+    border: 2px solid #0585e6; /* Vibrant blue border */
+    border-radius: 8px; /* Slightly larger radius for a modern look */
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 0 15px rgba(5, 133, 230, 0.3); /* Subtle blue glow */
+    position: relative;
+    overflow: hidden;
+}
+
+.nk-forum-trending::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(5, 133, 230, 0.1) 0%, transparent 70%);
+    opacity: 0.5;
+    pointer-events: none; /* Prevents interaction */
+    animation: pulse 10s infinite ease-in-out; /* Subtle pulsing effect */
+}
+
+.nk-forum-trending-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    color: #fff; /* White for high contrast */
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px; /* Techy spacing */
+    text-shadow: 0 0 5px rgba(5, 133, 230, 0.7); /* Glowing text effect */
+}
+
+.nk-forum-trending-icon {
+    width: 24px; /* Slightly larger for emphasis */
+    height: 24px;
+    margin-right: 10px;
+    filter: drop-shadow(0 0 3px rgba(255, 69, 0, 0.5)); /* Reddit orange glow */
+}
+
+.nk-forum-trending-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nk-forum-trending-list li {
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    background-color: rgba(41, 49, 57, 0.8); /* Semi-transparent dark overlay */
+    border-radius: 4px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.nk-forum-trending-list li:hover {
+    background-color: rgba(5, 133, 230, 0.2); /* Blue tint on hover */
+    transform: translateX(5px); /* Slight shift for interactivity */
+}
+
+.nk-forum-trending-link {
+    color: #d1d5db; /* Light gray for readability */
+    text-decoration: none; /* No underline */
+    font-size: 0.95rem;
+    font-family: 'Courier New', Courier, monospace; /* Techy font */
+    transition: color 0.3s ease;
+}
+
+.nk-forum-trending-link:hover {
+    color: #ff4500; /* Reddit orange on hover */
+    text-decoration: none; /* Explicitly no underline on hover */
+}
+
+/* Pulse Animation for Background */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}

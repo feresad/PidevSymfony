@@ -30,6 +30,23 @@
             </div>
         </div>
 
+        <!-- Trending Posts Section -->
+        <div class="nk-forum-trending mb-3">
+            <div class="nk-forum-trending-header">
+                <img src="{{ asset('images/reddit-icon.png') }}" alt="Reddit" class="nk-forum-trending-icon">
+                <span>Trending on r/gaming</span>
+            </div>
+            <ul class="nk-forum-trending-list">
+                {% for post in trendingPosts %}
+                    <li>
+                        <a href="{{ post.url }}" target="_blank" class="nk-forum-trending-link">
+                            - {{ post.title|length > 60 ? post.title|slice(0, 60) ~ '...' : post.title }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
         <div class="nk-forum">
             {% for topic in topics %}
                 <div class="nk-forum-item {{ topic.locked ? 'nk-forum-locked' : '' }}" 
@@ -307,7 +324,6 @@
         }
 
         $(document).ready(function() {
-            // Topic Search Filter
             $('#topicSearch').on('input', function() {
                 const searchTerm = $(this).val().toLowerCase().trim();
                 $('.nk-forum-item').each(function() {
@@ -328,7 +344,6 @@
                 });
             });
 
-            // Handle Voting via AJAX
             $(document).on('click', '.vote-btn', function(e) {
                 e.preventDefault();
                 const $btn = $(this);
@@ -386,13 +401,10 @@
                 });
             });
 
-            // Handle Share Link Clicks (simplified for brevity)
             $(document).on('click', '.share-btn', function(e) {
                 e.preventDefault();
-                // Add share logic if needed
             });
 
-            // Profanity Check Before Form Submission
             $(document).on('submit', '.profanity-check-form', function(e) {
                 e.preventDefault();
                 const $form = $(this);
@@ -400,7 +412,6 @@
                 const content = $form.find('textarea[name*="[content]"]').val() || '';
                 const combinedContent = title + ' ' + content;
 
-                // Disable the submit button to prevent multiple submissions
                 const $submitButton = $form.find('button[type="submit"]');
                 $submitButton.prop('disabled', true);
 
@@ -425,10 +436,9 @@
                                     content: 'nk-gaming-swal-content'
                                 }
                             }).then(() => {
-                                $submitButton.prop('disabled', false); // Re-enable the button after closing
+                                $submitButton.prop('disabled', false);
                             });
                         } else {
-                            // Submit the form programmatically without re-triggering the event
                             $form.off('submit');
                             $form[0].submit();
                         }
@@ -449,7 +459,7 @@
                                 content: 'nk-gaming-swal-content'
                             }
                         }).then(() => {
-                            $submitButton.prop('disabled', false); // Re-enable the button
+                            $submitButton.prop('disabled', false);
                         });
                     }
                 });
@@ -458,7 +468,6 @@
     </script>
 
     <style>
-        /* Custom SweetAlert2 Gaming Theme */
         .nk-gaming-swal {
             border: 2px solid #0585e6;
             box-shadow: 0 0 20px rgba(5, 133, 230, 0.5);

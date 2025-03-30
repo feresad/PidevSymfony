@@ -9,6 +9,7 @@ use App\Form\TopicFormType;
 use App\Form\CommentFormType;
 use App\Repository\QuestionsRepository;
 use App\Repository\UtilisateurRepository;
+use App\Service\RedditService; // Add this
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,7 +17,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpClient\HttpClient;
 
 class ForumController extends AbstractController
 {
@@ -38,7 +38,8 @@ class ForumController extends AbstractController
         Request $request,
         QuestionsRepository $questionsRepository,
         UtilisateurRepository $utilisateurRepository,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        RedditService $redditService
     ): Response {
         $question = new Questions();
 
@@ -48,6 +49,7 @@ class ForumController extends AbstractController
             return $this->render('forum/topics.html.twig', [
                 'topics' => [],
                 'newTopicForm' => null,
+                'trendingPosts' => [],
             ]);
         }
 
@@ -57,7 +59,6 @@ class ForumController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            
             try {
                 $mediaFile = $form->get('media_file')->getData();
                 $mediaType = $form->get('media_type')->getData();
@@ -68,13 +69,6 @@ class ForumController extends AbstractController
                 ]);
 
                 if ($mediaFile) {
-                    $this->logger->info('Media file detected for upload.', [
-                        'original_name' => $mediaFile->getClientOriginalName(),
-                        'size' => $mediaFile->getSize(),
-                        'mime_type' => $mediaFile->getMimeType(),
-                        'selected_media_type' => $mediaType ? $mediaType->value : 'none',
-                    ]);
-
                     $mimeType = $mediaFile->getMimeType();
                     $isImage = in_array($mimeType, ['image/jpeg', 'image/png', 'image/gif']);
                     $isVideo = in_array($mimeType, ['video/mp4', 'video/mpeg', 'video/webm', 'video/quicktime', 'video/x-msvideo']);
@@ -101,26 +95,14 @@ class ForumController extends AbstractController
                         $this->logger->info('Created uploads directory.', ['directory' => $uploadsDirectory]);
                     }
 
-                    try {
-                        $mediaFile->move($uploadsDirectory, $mediaFilename);
-                        $this->logger->info('Media file uploaded successfully.', [
-                            'filename' => $mediaFilename,
-                            'path' => $uploadsDirectory . '\\' . $mediaFilename,
-                        ]);
-                        $question->setMediaPath($mediaFilename);
-                        $question->setMediaType($mediaType);
-                    } catch (\Exception $e) {
-                        $this->logger->error('Failed to move media file.', [
-                            'error' => $e->getMessage(),
-                            'filename' => $mediaFilename,
-                            'path' => $uploadsDirectory,
-                        ]);
-                        throw new \Exception('Failed to upload media file: ' . $e->getMessage());
-                    }
-                } else {
-                    $this->logger->warning('No media file uploaded.', [
-                        'selected_media_type' => $mediaType ? $mediaType->value : 'none',
+                    $mediaFile->move($uploadsDirectory, $mediaFilename);
+                    $this->logger->info('Media file uploaded successfully.', [
+                        'filename' => $mediaFilename,
+                        'path' => $uploadsDirectory . '\\' . $mediaFilename,
                     ]);
+                    $question->setMediaPath($mediaFilename);
+                    $question->setMediaType($mediaType);
+                } else {
                     $question->setMediaPath(null);
                 }
 
@@ -206,9 +188,12 @@ class ForumController extends AbstractController
             ];
         }, $questions);
 
+        $trendingPosts = $redditService->fetchTopGamingPosts(5);
+
         return $this->render('forum/topics.html.twig', [
             'topics' => $topics,
             'newTopicForm' => $form->createView(),
+            'trendingPosts' => $trendingPosts,
         ]);
     }
 
@@ -330,13 +315,6 @@ class ForumController extends AbstractController
                     $mediaType = $updateForm->get('media_type')->getData();
 
                     if ($mediaFile) {
-                        $this->logger->info('Media file detected for update.', [
-                            'original_name' => $mediaFile->getClientOriginalName(),
-                            'size' => $mediaFile->getSize(),
-                            'mime_type' => $mediaFile->getMimeType(),
-                            'selected_media_type' => $mediaType ? $mediaType->value : 'none',
-                        ]);
-
                         $mimeType = $mediaFile->getMimeType();
                         $isImage = in_array($mimeType, ['image/jpeg', 'image/png', 'image/gif']);
                         $isVideo = in_array($mimeType, ['video/mp4', 'video/mpeg', 'video/webm', 'video/quicktime', 'video/x-msvideo']);
@@ -366,22 +344,13 @@ class ForumController extends AbstractController
                         $mediaFilename = uniqid() . '.' . $mediaFile->guessExtension();
                         $uploadsDirectory = $this->getParameter('uploads_directory');
 
-                        try {
-                            $mediaFile->move($uploadsDirectory, $mediaFilename);
-                            $this->logger->info('Media file updated successfully.', [
-                                'filename' => $mediaFilename,
-                                'path' => $uploadsDirectory . '\\' . $mediaFilename,
-                            ]);
-                            $question->setMediaPath($mediaFilename);
-                            $question->setMediaType($mediaType);
-                        } catch (\Exception $e) {
-                            $this->logger->error('Failed to move media file during update.', [
-                                'error' => $e->getMessage(),
-                                'filename' => $mediaFilename,
-                                'path' => $uploadsDirectory,
-                            ]);
-                            throw new \Exception('Failed to update media file: ' . $e->getMessage());
-                        }
+                        $mediaFile->move($uploadsDirectory, $mediaFilename);
+                        $this->logger->info('Media file updated successfully.', [
+                            'filename' => $mediaFilename,
+                            'path' => $uploadsDirectory . '\\' . $mediaFilename,
+                        ]);
+                        $question->setMediaPath($mediaFilename);
+                        $question->setMediaType($mediaType);
                     } elseif ($mediaType === null || $mediaType->value === null) {
                         if ($question->getMediaPath()) {
                             $oldMediaPath = $this->getParameter('uploads_directory') . '\\' . $question->getMediaPath();
@@ -535,15 +504,11 @@ class ForumController extends AbstractController
             return new JsonResponse(['success' => false, 'message' => 'Topic not found.'], 404);
         }
 
-        // Generate the absolute URL for the topic
         $topicUrl = $this->generateUrl('forum_single_topic', ['id' => $id], \Symfony\Component\Routing\Generator\UrlGeneratorInterface::ABSOLUTE_URL);
-
-        // Determine the image URL
         $imageUrl = $question->getMediaType() && $question->getMediaType()->value === 'image' && $question->getMediaPath()
             ? $this->generateUrl('app_home', [], \Symfony\Component\Routing\Generator\UrlGeneratorInterface::ABSOLUTE_URL) . 'img/games/' . $question->getMediaPath()
             : $this->generateUrl('app_home', [], \Symfony\Component\Routing\Generator\UrlGeneratorInterface::ABSOLUTE_URL) . 'assets/images/default-game.jpg';
 
-        // Prepare share data
         $shareData = [
             'success' => true,
             'url' => $topicUrl,
