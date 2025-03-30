@@ -13,8 +13,10 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpClient\HttpClient;
 
 class ForumController extends AbstractController
 {
@@ -40,7 +42,6 @@ class ForumController extends AbstractController
     ): Response {
         $question = new Questions();
 
-        // Fetch the first user from the database (for demo purposes; in a real app, use the logged-in user)
         $utilisateur = $utilisateurRepository->findOneBy([], ['id' => 'ASC']);
         if (!$utilisateur) {
             $this->addFlash('error', 'No users found in the database. Please add a user.');
@@ -50,13 +51,13 @@ class ForumController extends AbstractController
             ]);
         }
 
-        // Set the first user as the author for new questions
         $question->setUtilisateurId($utilisateur);
 
         $form = $this->createForm(TopicFormType::class, $question);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            
             try {
                 $mediaFile = $form->get('media_file')->getData();
                 $mediaType = $form->get('media_type')->getData();
@@ -66,7 +67,6 @@ class ForumController extends AbstractController
                     'media_type' => $mediaType ? $mediaType->value : 'none',
                 ]);
 
-                // Handle file upload
                 if ($mediaFile) {
                     $this->logger->info('Media file detected for upload.', [
                         'original_name' => $mediaFile->getClientOriginalName(),
@@ -75,7 +75,6 @@ class ForumController extends AbstractController
                         'selected_media_type' => $mediaType ? $mediaType->value : 'none',
                     ]);
 
-                    // Validate that the media type matches the file
                     $mimeType = $mediaFile->getMimeType();
                     $isImage = in_array($mimeType, ['image/jpeg', 'image/png', 'image/gif']);
                     $isVideo = in_array($mimeType, ['video/mp4', 'video/mpeg', 'video/webm', 'video/quicktime', 'video/x-msvideo']);
@@ -97,13 +96,11 @@ class ForumController extends AbstractController
                     $mediaFilename = uniqid() . '.' . $mediaFile->guessExtension();
                     $uploadsDirectory = $this->getParameter('uploads_directory');
 
-                    // Ensure the directory exists
                     if (!is_dir($uploadsDirectory)) {
                         mkdir($uploadsDirectory, 0777, true);
                         $this->logger->info('Created uploads directory.', ['directory' => $uploadsDirectory]);
                     }
 
-                    // Move the file to the target directory
                     try {
                         $mediaFile->move($uploadsDirectory, $mediaFilename);
                         $this->logger->info('Media file uploaded successfully.', [
@@ -111,7 +108,7 @@ class ForumController extends AbstractController
                             'path' => $uploadsDirectory . '\\' . $mediaFilename,
                         ]);
                         $question->setMediaPath($mediaFilename);
-                        $question->setMediaType($mediaType); // Explicitly set the media type
+                        $question->setMediaType($mediaType);
                     } catch (\Exception $e) {
                         $this->logger->error('Failed to move media file.', [
                             'error' => $e->getMessage(),
@@ -127,11 +124,9 @@ class ForumController extends AbstractController
                     $question->setMediaPath(null);
                 }
 
-                // Set default values
                 $question->setVotes(0);
                 $question->setCreatedAt(new \DateTime());
 
-                // Save the question to the database
                 $entityManager->persist($question);
                 $entityManager->flush();
 
@@ -157,33 +152,27 @@ class ForumController extends AbstractController
             $this->addFlash('error', 'Form validation failed. Please check your inputs.');
         }
 
-        // Fetch all questions from the database
         $questions = $questionsRepository->findAll();
 
-        // Map questions to the format expected by the template
         $topics = array_map(function (Questions $question) {
             $user = $question->getUtilisateurId();
             $game = $question->getGameId();
 
-            // Create an update form for each question
             $updateForm = $this->createForm(TopicFormType::class, $question, [
                 'action' => $this->generateUrl('forum_update_topic', ['id' => $question->getQuestionId()]),
             ]);
 
-            // Debug game image
             $gameName = $game ? $game->getGameName() : 'No game';
             $gameImagePath = $game ? $game->getImagePath() : 'No image path';
             $gameFilePath = $game && $game->getImagePath() ? 'C:\\xampp\\htdocs\\img\\games\\' . $game->getImagePath() : 'No file path';
             $gameFileExists = $game && $game->getImagePath() ? file_exists($gameFilePath) : false;
             $gameFileReadable = $gameFileExists ? (is_readable($gameFilePath) ? 'Yes' : 'No') : 'N/A';
 
-            // Debug topic media
             $topicMediaPath = $question->getMediaPath() ? $question->getMediaPath() : 'No topic media';
             $topicFilePath = $topicMediaPath !== 'No topic media' ? 'C:\\xampp\\htdocs\\img\\games\\' . $topicMediaPath : 'No file path';
             $topicFileExists = $topicMediaPath !== 'No topic media' ? file_exists($topicFilePath) : false;
             $topicFileReadable = $topicFileExists ? (is_readable($topicFilePath) ? 'Yes' : 'No') : 'N/A';
 
-            // Log debug message to PHP error log
             $this->logger->debug('Topic data prepared for rendering.', [
                 'question_id' => $question->getQuestionId(),
                 'game' => $gameName,
@@ -201,13 +190,14 @@ class ForumController extends AbstractController
                 'id' => $question->getQuestionId(),
                 'title' => $question->getTitle(),
                 'content' => $question->getContent(),
+                'votes' => $question->getVotes(),
                 'image' => $question->getMediaType() && $question->getMediaType()->value === 'image' && $question->getMediaPath() ? $question->getMediaPath() : null,
                 'video' => $question->getMediaType() && $question->getMediaType()->value === 'video' && $question->getMediaPath() ? $question->getMediaPath() : null,
                 'icon' => 'ion-chatboxes',
                 'locked' => false,
                 'startedBy' => $user ? $user->getNickname() : 'Unknown',
                 'startedOn' => $question->getCreatedAt()->format('F j, Y'),
-                'postCount' => 1,
+                'postCount' => $question->getCommentaires()->count(),
                 'lastActivityUser' => $user ? $user->getNickname() : 'Unknown',
                 'lastActivityAvatar' => $user && $user->getPhoto() ? $user->getPhoto() : 'avatar-1.jpg',
                 'lastActivityDate' => $question->getCreatedAt()->format('F j, Y'),
@@ -233,7 +223,6 @@ class ForumController extends AbstractController
             return $this->redirectToRoute('forum_topics');
         }
 
-        // Fetch only top-level comments (comments with no parent)
         $allComments = $question->getCommentaires()->toArray();
         $topLevelComments = array_filter($allComments, function (Commentaire $comment) {
             return $comment->getParentCommentaireId() === null;
@@ -255,9 +244,9 @@ class ForumController extends AbstractController
             'createdAt' => $question->getCreatedAt(),
             'utilisateurId' => $question->getUtilisateurId(),
             'gameImage' => $game && $game->getImagePath() ? $game->getImagePath() : null,
+            'votes' => $question->getVotes(),
         ];
 
-        // Recursive function to map comments and their children
         $mapComment = function (Commentaire $comment) use (&$mapComment) {
             $childCommentaires = $comment->getChildCommentaires()->toArray();
             return [
@@ -269,6 +258,7 @@ class ForumController extends AbstractController
                 'updateForm' => $this->createForm(CommentFormType::class, $comment, [
                     'action' => $this->generateUrl('comment_update', ['id' => $comment->getCommentaireId()]),
                 ])->createView(),
+                'votes' => $comment->getVotes(),
             ];
         };
 
@@ -292,7 +282,6 @@ class ForumController extends AbstractController
         }
 
         try {
-            // Delete the associated media file if it exists
             if ($question->getMediaPath()) {
                 $mediaPath = $this->getParameter('uploads_directory') . '\\' . $question->getMediaPath();
                 if (file_exists($mediaPath)) {
@@ -366,7 +355,6 @@ class ForumController extends AbstractController
                             throw new \Exception('Selected media type is "video," but the uploaded file is not a video.');
                         }
 
-                        // Delete the old media file if it exists
                         if ($question->getMediaPath()) {
                             $oldMediaPath = $this->getParameter('uploads_directory') . '\\' . $question->getMediaPath();
                             if (file_exists($oldMediaPath)) {
@@ -385,7 +373,7 @@ class ForumController extends AbstractController
                                 'path' => $uploadsDirectory . '\\' . $mediaFilename,
                             ]);
                             $question->setMediaPath($mediaFilename);
-                            $question->setMediaType($mediaType); // Explicitly set the media type
+                            $question->setMediaType($mediaType);
                         } catch (\Exception $e) {
                             $this->logger->error('Failed to move media file during update.', [
                                 'error' => $e->getMessage(),
@@ -395,7 +383,6 @@ class ForumController extends AbstractController
                             throw new \Exception('Failed to update media file: ' . $e->getMessage());
                         }
                     } elseif ($mediaType === null || $mediaType->value === null) {
-                        // If media_type is set to "None", remove the existing media file
                         if ($question->getMediaPath()) {
                             $oldMediaPath = $this->getParameter('uploads_directory') . '\\' . $question->getMediaPath();
                             if (file_exists($oldMediaPath)) {
@@ -404,7 +391,7 @@ class ForumController extends AbstractController
                             }
                         }
                         $question->setMediaPath(null);
-                        $question->setMediaType(null); // Ensure media type is null
+                        $question->setMediaType(null);
                     }
 
                     $entityManager->flush();
@@ -426,5 +413,145 @@ class ForumController extends AbstractController
         }
 
         return $this->redirectToRoute('forum_topics');
+    }
+
+    #[Route('/vote', name: 'vote_action', methods: ['POST'])]
+    public function voteAction(Request $request, EntityManagerInterface $entityManager, QuestionsRepository $questionsRepository): Response
+    {
+        $id = $request->request->get('id');
+        $type = $request->request->get('type');
+        $voteType = $request->request->get('vote_type');
+
+        if ($type === 'question') {
+            $entity = $questionsRepository->find($id);
+            if (!$entity) {
+                $this->addFlash('error', 'Question not found.');
+                return $this->redirectToRoute('forum_topics');
+            }
+
+            $currentVotes = $entity->getVotes() ?? 0;
+            if ($voteType === 'UP') {
+                $entity->setVotes($currentVotes + 1);
+            } elseif ($voteType === 'DOWN') {
+                $entity->setVotes($currentVotes - 1);
+            }
+
+            $entityManager->persist($entity);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Vote recorded successfully!');
+            return $this->redirectToRoute('forum_single_topic', ['id' => $id]);
+        } elseif ($type === 'comment') {
+            $entity = $entityManager->getRepository(Commentaire::class)->find($id);
+            if (!$entity) {
+                $this->addFlash('error', 'Comment not found.');
+                return $this->redirectToRoute('forum_topics');
+            }
+
+            $currentVotes = $entity->getVotes() ?? 0;
+            if ($voteType === 'UP') {
+                $entity->setVotes($currentVotes + 1);
+            } elseif ($voteType === 'DOWN') {
+                $entity->setVotes($currentVotes - 1);
+            }
+
+            $entityManager->persist($entity);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Vote recorded successfully!');
+            return $this->redirectToRoute('forum_single_topic', ['id' => $entity->getQuestionId()->getQuestionId()]);
+        }
+
+        $this->addFlash('error', 'Invalid vote type.');
+        return $this->redirectToRoute('forum_topics');
+    }
+
+    #[Route('/ajax/vote', name: 'ajax_vote_action', methods: ['POST'])]
+    public function ajaxVoteAction(Request $request, EntityManagerInterface $entityManager, QuestionsRepository $questionsRepository): JsonResponse
+    {
+        $id = $request->request->get('id');
+        $type = $request->request->get('type');
+        $voteType = $request->request->get('vote_type');
+
+        if ($type === 'question') {
+            $entity = $questionsRepository->find($id);
+            if (!$entity) {
+                return new JsonResponse(['success' => false, 'message' => 'Question not found.'], 404);
+            }
+
+            $currentVotes = $entity->getVotes() ?? 0;
+            if ($voteType === 'UP') {
+                $entity->setVotes($currentVotes + 1);
+            } elseif ($voteType === 'DOWN') {
+                $entity->setVotes($currentVotes - 1);
+            } else {
+                return new JsonResponse(['success' => false, 'message' => 'Invalid vote type.'], 400);
+            }
+
+            $entityManager->persist($entity);
+            $entityManager->flush();
+
+            return new JsonResponse([
+                'success' => true,
+                'votes' => $entity->getVotes(),
+            ]);
+        } elseif ($type === 'comment') {
+            $entity = $entityManager->getRepository(Commentaire::class)->find($id);
+            if (!$entity) {
+                return new JsonResponse(['success' => false, 'message' => 'Comment not found.'], 404);
+            }
+
+            $currentVotes = $entity->getVotes() ?? 0;
+            if ($voteType === 'UP') {
+                $entity->setVotes($currentVotes + 1);
+            } elseif ($voteType === 'DOWN') {
+                $entity->setVotes($currentVotes - 1);
+            } else {
+                return new JsonResponse(['success' => false, 'message' => 'Invalid vote type.'], 400);
+            }
+
+            $entityManager->persist($entity);
+            $entityManager->flush();
+
+            return new JsonResponse([
+                'success' => true,
+                'votes' => $entity->getVotes(),
+            ]);
+        }
+
+        return new JsonResponse(['success' => false, 'message' => 'Invalid type.'], 400);
+    }
+
+    #[Route('/api/share/topic', name: 'api_share_topic', methods: ['GET'])]
+    public function shareTopic(Request $request, QuestionsRepository $questionsRepository): JsonResponse
+    {
+        $id = $request->query->get('id');
+        if (!$id) {
+            return new JsonResponse(['success' => false, 'message' => 'Topic ID is required.'], 400);
+        }
+
+        $question = $questionsRepository->find($id);
+        if (!$question) {
+            return new JsonResponse(['success' => false, 'message' => 'Topic not found.'], 404);
+        }
+
+        // Generate the absolute URL for the topic
+        $topicUrl = $this->generateUrl('forum_single_topic', ['id' => $id], \Symfony\Component\Routing\Generator\UrlGeneratorInterface::ABSOLUTE_URL);
+
+        // Determine the image URL
+        $imageUrl = $question->getMediaType() && $question->getMediaType()->value === 'image' && $question->getMediaPath()
+            ? $this->generateUrl('app_home', [], \Symfony\Component\Routing\Generator\UrlGeneratorInterface::ABSOLUTE_URL) . 'img/games/' . $question->getMediaPath()
+            : $this->generateUrl('app_home', [], \Symfony\Component\Routing\Generator\UrlGeneratorInterface::ABSOLUTE_URL) . 'assets/images/default-game.jpg';
+
+        // Prepare share data
+        $shareData = [
+            'success' => true,
+            'url' => $topicUrl,
+            'title' => $question->getTitle(),
+            'description' => substr(strip_tags($question->getContent()), 0, 200) . (strlen($question->getContent()) > 200 ? '...' : ''),
+            'image' => $imageUrl,
+        ];
+
+        return new JsonResponse($shareData);
     }
 }

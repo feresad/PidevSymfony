@@ -22,7 +22,6 @@
     <div class="container">
         <div class="nk-gap-2"></div>
 
-        <!-- Display Flash Messages -->
         {% for label, messages in app.flashes %}
             {% for message in messages %}
                 <div class="alert alert-{{ label }}">
@@ -31,9 +30,7 @@
             {% endfor %}
         {% endfor %}
 
-        <!-- START: Forums List -->
         <ul class="nk-forum nk-forum-topic" id="forum-topic-list">
-            <!-- Display the Question -->
             <li data-id="{{ question.id }}" class="question-card">
                 <div class="nk-forum-topic-author">
                     <a href="#">
@@ -70,6 +67,15 @@
                     <div class="nk-forum-topic-footer-left">
                         <span class="nk-forum-topic-date">{{ question.createdAt|date('F d, Y') }}</span>
                     </div>
+                    <div class="nk-forum-vote-section">
+                        <button class="vote-btn upvote-btn voting-button upvote" data-id="{{ question.id }}" data-type="question" data-vote-type="UP" data-fallback="↑">
+                            <img src="{{ asset('images/upvote-emoji.png') }}" alt="Upvote" class="vote-icon">
+                        </button>
+                        <span class="vote-count">{{ question.votes|default(0) }}</span>
+                        <button class="vote-btn downvote-btn voting-button downvote" data-id="{{ question.id }}" data-type="question" data-vote-type="DOWN" data-fallback="↓">
+                            <img src="{{ asset('images/downvote-emoji.png') }}" alt="Downvote" class="vote-icon">
+                        </button>
+                    </div>
                     <div class="nk-forum-topic-footer-right">
                         {% if question.gameImage %}
                             <div class="nk-forum-game-image">
@@ -88,11 +94,9 @@
                         </span>
                     </div>
                 </div>
-                <!-- Reply Form Container -->
                 <div class="reply-form-container" style="display: none;"></div>
             </li>
 
-            <!-- Display Comments (with nesting) -->
             {% macro render_comments(comments, level = 0, is_reply = false) %}
                 {% for comment in comments %}
                     <li data-id="{{ comment.id }}" class="comment-card {{ is_reply ? 'reply-card' : '' }}" style="margin-left: {{ level * 20 }}px;">
@@ -113,7 +117,15 @@
                         </div>
                         <div class="nk-forum-topic-footer">
                             <span class="nk-forum-topic-date">{{ comment.createdAt|date('F d, Y') }}</span>
-                            <!-- Add Show/Hide Replies Button -->
+                            <div class="nk-forum-vote-section">
+                                <button class="vote-btn upvote-btn voting-button upvote" data-id="{{ comment.id }}" data-type="comment" data-vote-type="UP" data-fallback="↑">
+                                    <img src="{{ asset('images/upvote-emoji.png') }}" alt="Upvote" class="vote-icon">
+                                </button>
+                                <span class="vote-count">{{ comment.votes|default(0) }}</span>
+                                <button class="vote-btn downvote-btn voting-button downvote" data-id="{{ comment.id }}" data-type="comment" data-vote-type="DOWN" data-fallback="↓">
+                                    <img src="{{ asset('images/downvote-emoji.png') }}" alt="Downvote" class="vote-icon">
+                                </button>
+                            </div>
                             {% if comment.childCommentaires is defined and comment.childCommentaires is not empty %}
                                 <span class="nk-forum-action-btn toggle-replies-btn" data-id="{{ comment.id }}">
                                     <a href="#" class="nk-anchor">
@@ -139,12 +151,9 @@
                                 <a href="#"><span class="fa fa-flag"></span> Spam</a>
                             </span>
                         </div>
-                        <!-- Reply Form Container -->
                         <div class="reply-form-container" style="display: none;"></div>
-                        <!-- Update Form Container -->
                         <div class="update-form-container" style="display: none;"></div>
                     </li>
-                    <!-- Render Child Comments in Separate Cards -->
                     {% if comment.childCommentaires is defined and comment.childCommentaires is not empty %}
                         <ul class="child-comments" data-parent-id="{{ comment.id }}" style="display: block;">
                             {{ _self.render_comments(comment.childCommentaires, level + 1, true) }}
@@ -155,11 +164,9 @@
 
             {{ _self.render_comments(comments) }}
         </ul>
-        <!-- END: Forums List -->
 
         <div class="nk-gap-2"></div>
 
-        <!-- START: Pagination -->
         <div class="nk-pagination nk-pagination-left">
             <a href="#" class="nk-pagination-prev">
                 <span class="ion-ios-arrow-back"></span>
@@ -176,7 +183,6 @@
                 <span class="ion-ios-arrow-forward"></span>
             </a>
         </div>
-        <!-- END: Pagination -->
 
         <div class="nk-gap-2"></div>
     </div>
@@ -184,14 +190,12 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    <!-- Link to the new single_topic.css file -->
     <link rel="stylesheet" href="{{ asset('css/single_topic.css') }}">
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
 
-    {# Save the rendered form fields to variables #}
     {% set contenu_field = form_widget(comment_form.contenu, {'attr': {'class': 'nk-summernote form-control'}}) %}
     {% set form_rest = form_rest(comment_form) %}
 
@@ -219,7 +223,7 @@
                 e.preventDefault();
                 const $btn = $(this);
                 const parentId = $btn.data('id');
-                const type = $btn.data('type'); // 'question' or 'comment'
+                const type = $btn.data('type');
                 const $card = $btn.closest('li');
                 const $replyContainer = $card.find('.reply-form-container').first();
 
@@ -233,7 +237,7 @@
 
                 let replyFormHtml = `
                     <div class="nk-gap-1"></div>
-                    <form action="{{ path('comment_create', {'id': question.id}) }}" method="POST">
+                    <form action="{{ path('comment_create', {'id': question.id}) }}" method="POST" class="profanity-check-form">
                         <div class="mb-3">
                             {{ contenu_field|raw }}
                             {{ form_rest|raw }}
@@ -261,10 +265,6 @@
                 });
 
                 $summernote.summernote('code', '');
-
-                $replyContainer.find('form').on('submit', function() {
-                    $summernote.summernote('triggerEvent', 'change');
-                });
             });
 
             // Handle Cancel Reply
@@ -291,7 +291,7 @@
 
                 let updateFormHtml = `
                     <div class="nk-gap-1"></div>
-                    <form action="{{ path('comment_update', {'id': 'COMMENT_ID'}) }}" method="POST">
+                    <form action="{{ path('comment_update', {'id': 'COMMENT_ID'}) }}" method="POST" class="profanity-check-form">
                         <div class="mb-3">
                             {{ contenu_field|raw }}
                             {{ form_rest|raw }}
@@ -319,16 +319,155 @@
                 });
 
                 $summernote.summernote('code', currentContent);
-
-                $updateContainer.find('form').on('submit', function() {
-                    $summernote.summernote('triggerEvent', 'change');
-                });
             });
 
             // Handle Cancel Update
             $(document).on('click', '.cancel-update', function() {
                 $(this).closest('.update-form-container').hide();
             });
+
+            // Handle Voting via AJAX
+            $(document).on('click', '.vote-btn', function(e) {
+                e.preventDefault();
+                const $btn = $(this);
+                const id = $btn.data('id');
+                const type = $btn.data('type');
+                const voteType = $btn.data('vote-type');
+                const $voteSection = $btn.closest('.nk-forum-vote-section');
+                const $voteCount = $voteSection.find('.vote-count');
+
+                $.ajax({
+                    url: '{{ path('ajax_vote_action') }}',
+                    method: 'POST',
+                    data: {
+                        id: id,
+                        type: type,
+                        vote_type: voteType
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $voteCount.text(response.votes);
+                            $btn.addClass('voted');
+                        } else {
+                            Swal.fire({
+                                title: 'Voting Error',
+                                text: response.message,
+                                icon: 'error',
+                                background: '#1c2526',
+                                color: '#d1d5db',
+                                confirmButtonColor: '#ff6f61',
+                                confirmButtonText: 'OK',
+                                customClass: {
+                                    popup: 'nk-gaming-swal',
+                                    title: 'nk-gaming-swal-title',
+                                    content: 'nk-gaming-swal-content'
+                                }
+                            });
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({
+                            title: 'Voting Error',
+                            text: 'An error occurred while voting. Please try again.',
+                            icon: 'error',
+                            background: '#1c2526',
+                            color: '#d1d5db',
+                            confirmButtonColor: '#ff6f61',
+                            confirmButtonText: 'OK',
+                            customClass: {
+                                popup: 'nk-gaming-swal',
+                                title: 'nk-gaming-swal-title',
+                                content: 'nk-gaming-swal-content'
+                            }
+                        });
+                    }
+                });
+            });
+
+            // Profanity Check Before Form Submission
+            $(document).on('submit', '.profanity-check-form', function(e) {
+                e.preventDefault(); // Prevent default submission
+                const $form = $(this);
+                const content = $form.find('.nk-summernote').summernote('code');
+
+                // Disable the submit button to prevent multiple submissions
+                const $submitButton = $form.find('button[type="submit"]');
+                $submitButton.prop('disabled', true);
+
+                $.ajax({
+                    url: '{{ path('api_check_profanity') }}',
+                    method: 'POST',
+                    data: { content: content },
+                    success: function(response) {
+                        if (response.isProfane) {
+                            const profanityList = response.details ? response.details.map(m => m['text']).join(', ') : '';
+                            Swal.fire({
+                                title: 'Inappropriate Content Detected',
+                                html: 'Your comment contains inappropriate language. Please revise it.<br><strong>Detected:</strong> ' + (profanityList || 'N/A'),
+                                icon: 'warning',
+                                background: '#1c2526',
+                                color: '#d1d5db',
+                                confirmButtonColor: '#ff6f61',
+                                confirmButtonText: 'Revise',
+                                customClass: {
+                                    popup: 'nk-gaming-swal',
+                                    title: 'nk-gaming-swal-title',
+                                    content: 'nk-gaming-swal-content'
+                                }
+                            }).then(() => {
+                                $submitButton.prop('disabled', false); // Re-enable the button after closing
+                            });
+                        } else {
+                            // Temporarily remove the event handler to avoid recursion
+                            $form.off('submit');
+                            // Submit the form natively
+                            $form[0].submit();
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Profanity check failed:', status, error);
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Error checking profanity. Please try again.',
+                            icon: 'error',
+                            background: '#1c2526',
+                            color: '#d1d5db',
+                            confirmButtonColor: '#ff6f61',
+                            confirmButtonText: 'OK',
+                            customClass: {
+                                popup: 'nk-gaming-swal',
+                                title: 'nk-gaming-swal-title',
+                                content: 'nk-gaming-swal-content'
+                            }
+                        }).then(() => {
+                            $submitButton.prop('disabled', false); // Re-enable the button
+                        });
+                    }
+                });
+            });
         });
     </script>
+
+    <style>
+        /* Custom SweetAlert2 Gaming Theme */
+        .nk-gaming-swal {
+            border: 2px solid #0585e6;
+            box-shadow: 0 0 20px rgba(5, 133, 230, 0.5);
+            font-family: 'Montserrat', sans-serif;
+        }
+        .nk-gaming-swal-title {
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .nk-gaming-swal-content {
+            color: #d1d5db;
+        }
+        .swal2-confirm {
+            transition: transform 0.2s ease;
+        }
+        .swal2-confirm:hover {
+            transform: scale(1.05);
+        }
+    </style>
 {% endblock %}

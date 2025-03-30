@@ -1,22 +1,13 @@
 # config/services.yaml
 
-# This file is the entry point to configure your own services.
-# Files in the packages/ subdirectory configure your dependencies.
-
-# Put parameters here that don't need to change on each machine where the app is deployed
-# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
-parameters:
-    #uploads_directory: 'C:\xampp\htdocs\uploads'
-    uploads_directory: 'C:\xampp\htdocs\img\games'
-
+# Default configuration for services in *this* file
 services:
-    # default configuration for services in *this* file
+    # Default configuration applies to all services defined below
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
 
-    # makes classes in src/ available to be used as services
-    # this creates a service per class whose id is the fully-qualified class name
+    # Makes classes in src/ available to be used as services
     App\:
         resource: '../src/'
         exclude:
@@ -24,5 +15,16 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
+    # Explicitly define the CommentController service with its arguments
+    App\Controller\CommentController:
+        arguments:
+            $logger: '@Psr\Log\LoggerInterface'
+            $httpClient: '@Symfony\Contracts\HttpClient\HttpClientInterface'
+            $sightengineApiUser: '%env(SIGHTENGINE_API_USER)%'
+            $sightengineApiSecret: '%env(SIGHTENGINE_API_SECRET)%'
+
+# Parameters should be defined after services if they’re only used there, but here it’s fine as is
+parameters:
+    uploads_directory: 'C:\xampp\htdocs\img\games'
+    sightengine_api_user: '%env(SIGHTENGINE_API_USER)%'
+    sightengine_api_secret: '%env(SIGHTENGINE_API_SECRET)%'

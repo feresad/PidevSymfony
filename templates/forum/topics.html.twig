@@ -3,7 +3,6 @@
 {% block title %}GoodGames | Main Game Discussions{% endblock %}
 
 {% block body %}
-    <!-- START: Breadcrumbs -->
     <div class="nk-gap-1"></div>
     <div class="container">
         <ul class="nk-breadcrumbs">
@@ -15,24 +14,38 @@
         </ul>
     </div>
     <div class="nk-gap-1"></div>
-    <!-- END: Breadcrumbs -->
 
-    <!-- START: Forum Section -->
     <div class="container nk-forum-container">
-        <!-- START: New Topic Button -->
-        <div class="row mb-4">
-            <div class="col-md-12 text-end">
+        <div class="row mb-4 align-items-center">
+            <div class="col-md-8">
+                <!-- Search Bar -->
+                <div class="nk-forum-search">
+                    <input type="text" id="topicSearch" class="form-control" placeholder="Search topics by game, author, title, or content...">
+                </div>
+            </div>
+            <div class="col-md-4 text-end">
                 <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-white" data-bs-toggle="modal" data-bs-target="#newTopicModal">
                     New Topic
                 </button>
             </div>
         </div>
-        <!-- END: New Topic Button -->
 
-        <!-- START: Forums List -->
         <div class="nk-forum">
             {% for topic in topics %}
-                <div class="nk-forum-item {{ topic.locked ? 'nk-forum-locked' : '' }}">
+                <div class="nk-forum-item {{ topic.locked ? 'nk-forum-locked' : '' }}" 
+                     data-game="{{ topic.gameImage ? topic.gameImage|replace({'img/games/': ''}) : 'No game' }}" 
+                     data-author="{{ topic.startedBy }}" 
+                     data-title="{{ topic.title|lower }}" 
+                     data-content="{{ topic.content ? topic.content|lower : '' }}">
+                    <div class="nk-forum-vote-section">
+                        <button class="vote-btn upvote-btn voting-button upvote" data-id="{{ topic.id }}" data-type="question" data-vote-type="UP" data-fallback="↑">
+                            <img src="{{ asset('images/upvote-emoji.png') }}" alt="Upvote" class="vote-icon">
+                        </button>
+                        <span class="vote-count">{{ topic.votes|default(0) }}</span>
+                        <button class="vote-btn downvote-btn voting-button downvote" data-id="{{ topic.id }}" data-type="question" data-vote-type="DOWN" data-fallback="↓">
+                            <img src="{{ asset('images/downvote-emoji.png') }}" alt="Downvote" class="vote-icon">
+                        </button>
+                    </div>
                     <div class="nk-forum-title">
                         <h3><a href="{{ path('forum_single_topic', { id: topic.id }) }}">{{ topic.title }}</a></h3>
                         <div class="nk-forum-title-sub">
@@ -59,7 +72,6 @@
                                 </video>
                             </div>
                         {% endif %}
-                        <!-- Add Update and Delete Buttons -->
                         <div class="nk-forum-actions mt-2">
                             <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-main-1" data-bs-toggle="modal" data-bs-target="#updateTopicModal-{{ topic.id }}">
                                 Update
@@ -67,6 +79,9 @@
                             <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-danger" data-bs-toggle="modal" data-bs-target="#deleteTopicModal-{{ topic.id }}">
                                 Delete
                             </button>
+                            <span class="share-btn" data-id="{{ topic.id }}" data-bs-toggle="modal" data-bs-target="#shareModal-{{ topic.id }}">
+                                <img src="{{ asset('images/share_icon.png') }}" alt="Share" class="share-icon">
+                            </span>
                         </div>
                     </div>
                     <div class="nk-forum-count">
@@ -91,6 +106,35 @@
                     </div>
                 </div>
 
+                <!-- Share Modal -->
+                <div class="modal fade" id="shareModal-{{ topic.id }}" tabindex="-1" aria-labelledby="shareModalLabel-{{ topic.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="shareModalLabel-{{ topic.id }}">Share Topic</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Share this topic on your favorite platform:</p>
+                                <div class="share-options">
+                                    <a href="#" class="share-link facebook-share" data-id="{{ topic.id }}" target="_blank">
+                                        <i class="fab fa-facebook-f"></i> Facebook
+                                    </a>
+                                    <a href="#" class="share-link reddit-share" data-id="{{ topic.id }}" target="_blank">
+                                        <i class="fab fa-reddit-alien"></i> Reddit
+                                    </a>
+                                    <a href="#" class="share-link twitter-share" data-id="{{ topic.id }}" target="_blank">
+                                        <i class="fab fa-twitter"></i> Twitter
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Update Topic Modal -->
                 <div class="modal fade" id="updateTopicModal-{{ topic.id }}" tabindex="-1" aria-labelledby="updateTopicModalLabel-{{ topic.id }}" aria-hidden="true">
                     <div class="modal-dialog">
@@ -100,7 +144,7 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                {{ form_start(topic.updateForm) }}
+                                {{ form_start(topic.updateForm, {'attr': {'class': 'profanity-check-form'}}) }}
                                     <div class="mb-3">
                                         {{ form_label(topic.updateForm.title, null, {'label_attr': {'class': 'form-label'}}) }}
                                         {{ form_widget(topic.updateForm.title, {'attr': {'class': 'form-control'}}) }}
@@ -165,11 +209,9 @@
                 </div>
             {% endfor %}
         </div>
-        <!-- END: Forums List -->
 
         <div class="nk-gap-2"></div>
 
-        <!-- START: Pagination -->
         <div class="row">
             <div class="col-md-12">
                 <div class="nk-pagination nk-pagination-left">
@@ -190,9 +232,7 @@
                 </div>
             </div>
         </div>
-        <!-- END: Pagination -->
 
-        <!-- START: New Topic Modal -->
         <div class="modal fade" id="newTopicModal" tabindex="-1" aria-labelledby="newTopicModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -201,7 +241,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        {{ form_start(newTopicForm) }}
+                        {{ form_start(newTopicForm, {'attr': {'class': 'profanity-check-form'}}) }}
                             <div class="mb-3">
                                 {{ form_label(newTopicForm.title, null, {'label_attr': {'class': 'form-label'}}) }}
                                 {{ form_widget(newTopicForm.title, {'attr': {'class': 'form-control'}}) }}
@@ -245,20 +285,19 @@
                 </div>
             </div>
         </div>
-        <!-- END: New Topic Modal -->
     </div>
-    <!-- END: Forum Section -->
 
     <div class="nk-gap-2"></div>
 {% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
-    <!-- Link to the new topics.css file -->
     <link rel="stylesheet" href="{{ asset('css/topics.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 {% endblock %}
 
-{% block js %}
+{% block javascripts %}
+    {{ parent() }}
     <script>
         function addEmote(emote, fieldId) {
             const contentField = document.querySelector('#' + fieldId);
@@ -266,5 +305,178 @@
                 contentField.value += emote;
             }
         }
+
+        $(document).ready(function() {
+            // Topic Search Filter
+            $('#topicSearch').on('input', function() {
+                const searchTerm = $(this).val().toLowerCase().trim();
+                $('.nk-forum-item').each(function() {
+                    const $topic = $(this);
+                    const game = $topic.data('game').toLowerCase();
+                    const author = $topic.data('author').toLowerCase();
+                    const title = $topic.data('title').toLowerCase();
+                    const content = $topic.data('content').toLowerCase();
+
+                    const matches = (
+                        game.includes(searchTerm) ||
+                        author.includes(searchTerm) ||
+                        title.includes(searchTerm) ||
+                        content.includes(searchTerm)
+                    );
+
+                    $topic.toggle(matches);
+                });
+            });
+
+            // Handle Voting via AJAX
+            $(document).on('click', '.vote-btn', function(e) {
+                e.preventDefault();
+                const $btn = $(this);
+                const id = $btn.data('id');
+                const type = $btn.data('type');
+                const voteType = $btn.data('vote-type');
+                const $voteSection = $btn.closest('.nk-forum-vote-section');
+                const $voteCount = $voteSection.find('.vote-count');
+
+                $.ajax({
+                    url: '{{ path('ajax_vote_action') }}',
+                    method: 'POST',
+                    data: {
+                        id: id,
+                        type: type,
+                        vote_type: voteType
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $voteCount.text(response.votes);
+                            $btn.addClass('voted');
+                        } else {
+                            Swal.fire({
+                                title: 'Voting Error',
+                                text: response.message,
+                                icon: 'error',
+                                background: '#1c2526',
+                                color: '#d1d5db',
+                                confirmButtonColor: '#ff6f61',
+                                confirmButtonText: 'OK',
+                                customClass: {
+                                    popup: 'nk-gaming-swal',
+                                    title: 'nk-gaming-swal-title',
+                                    content: 'nk-gaming-swal-content'
+                                }
+                            });
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({
+                            title: 'Voting Error',
+                            text: 'An error occurred while voting. Please try again.',
+                            icon: 'error',
+                            background: '#1c2526',
+                            color: '#d1d5db',
+                            confirmButtonColor: '#ff6f61',
+                            confirmButtonText: 'OK',
+                            customClass: {
+                                popup: 'nk-gaming-swal',
+                                title: 'nk-gaming-swal-title',
+                                content: 'nk-gaming-swal-content'
+                            }
+                        });
+                    }
+                });
+            });
+
+            // Handle Share Link Clicks (simplified for brevity)
+            $(document).on('click', '.share-btn', function(e) {
+                e.preventDefault();
+                // Add share logic if needed
+            });
+
+            // Profanity Check Before Form Submission
+            $(document).on('submit', '.profanity-check-form', function(e) {
+                e.preventDefault();
+                const $form = $(this);
+                const title = $form.find('input[name*="[title]"]').val() || '';
+                const content = $form.find('textarea[name*="[content]"]').val() || '';
+                const combinedContent = title + ' ' + content;
+
+                // Disable the submit button to prevent multiple submissions
+                const $submitButton = $form.find('button[type="submit"]');
+                $submitButton.prop('disabled', true);
+
+                $.ajax({
+                    url: '{{ path('api_check_profanity') }}',
+                    method: 'POST',
+                    data: { content: combinedContent },
+                    success: function(response) {
+                        if (response.isProfane) {
+                            const profanityList = response.details ? response.details.map(m => m['text']).join(', ') : '';
+                            Swal.fire({
+                                title: 'Inappropriate Content Detected',
+                                html: 'Your topic contains inappropriate language. Please revise it.<br><strong>Detected:</strong> ' + (profanityList || 'N/A'),
+                                icon: 'warning',
+                                background: '#1c2526',
+                                color: '#d1d5db',
+                                confirmButtonColor: '#ff6f61',
+                                confirmButtonText: 'Revise',
+                                customClass: {
+                                    popup: 'nk-gaming-swal',
+                                    title: 'nk-gaming-swal-title',
+                                    content: 'nk-gaming-swal-content'
+                                }
+                            }).then(() => {
+                                $submitButton.prop('disabled', false); // Re-enable the button after closing
+                            });
+                        } else {
+                            // Submit the form programmatically without re-triggering the event
+                            $form.off('submit');
+                            $form[0].submit();
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Profanity check error:', error);
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Error checking profanity. Please try again.',
+                            icon: 'error',
+                            background: '#1c2526',
+                            color: '#d1d5db',
+                            confirmButtonColor: '#ff6f61',
+                            confirmButtonText: 'OK',
+                            customClass: {
+                                popup: 'nk-gaming-swal',
+                                title: 'nk-gaming-swal-title',
+                                content: 'nk-gaming-swal-content'
+                            }
+                        }).then(() => {
+                            $submitButton.prop('disabled', false); // Re-enable the button
+                        });
+                    }
+                });
+            });
+        });
     </script>
+
+    <style>
+        /* Custom SweetAlert2 Gaming Theme */
+        .nk-gaming-swal {
+            border: 2px solid #0585e6;
+            box-shadow: 0 0 20px rgba(5, 133, 230, 0.5);
+            font-family: 'Montserrat', sans-serif;
+        }
+        .nk-gaming-swal-title {
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .nk-gaming-swal-content {
+            color: #d1d5db;
+        }
+        .swal2-confirm {
+            transition: transform 0.2s ease;
+        }
+        .swal2-confirm:hover {
+            transform: scale(1.05);
+        }
+    </style>
 {% endblock %}
