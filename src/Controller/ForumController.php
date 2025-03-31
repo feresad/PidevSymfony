@@ -5,11 +5,13 @@ namespace App\Controller;
 use App\Entity\Questions;
 use App\Entity\Utilisateur;
 use App\Entity\Commentaire;
+use App\Entity\QuestionReactions;
+use App\Entity\CommentaireReactions;
 use App\Form\TopicFormType;
 use App\Form\CommentFormType;
 use App\Repository\QuestionsRepository;
 use App\Repository\UtilisateurRepository;
-use App\Service\RedditService; // Add this
+use App\Service\RedditService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -136,7 +138,7 @@ class ForumController extends AbstractController
 
         $questions = $questionsRepository->findAll();
 
-        $topics = array_map(function (Questions $question) {
+        $topics = array_map(function (Questions $question) use ($entityManager) {
             $user = $question->getUtilisateurId();
             $game = $question->getGameId();
 
@@ -155,6 +157,15 @@ class ForumController extends AbstractController
             $topicFileExists = $topicMediaPath !== 'No topic media' ? file_exists($topicFilePath) : false;
             $topicFileReadable = $topicFileExists ? (is_readable($topicFilePath) ? 'Yes' : 'No') : 'N/A';
 
+            // Fetch reaction counts for the topic
+            $reactionRepository = $entityManager->getRepository(QuestionReactions::class);
+            $reactions = $reactionRepository->findBy(['question_id' => $question->getQuestionId()]);
+            $reactionCounts = [];
+            foreach ($reactions as $reaction) {
+                $emoji = $reaction->getEmoji();
+                $reactionCounts[$emoji] = ($reactionCounts[$emoji] ?? 0) + 1;
+            }
+
             $this->logger->debug('Topic data prepared for rendering.', [
                 'question_id' => $question->getQuestionId(),
                 'game' => $gameName,
@@ -166,6 +177,7 @@ class ForumController extends AbstractController
                 'topic_file_path' => $topicFilePath,
                 'topic_file_exists' => $topicFileExists ? 'Yes' : 'No',
                 'topic_file_readable' => $topicFileReadable,
+                'reaction_counts' => $reactionCounts,
             ]);
 
             return [
@@ -185,6 +197,7 @@ class ForumController extends AbstractController
                 'lastActivityDate' => $question->getCreatedAt()->format('F j, Y'),
                 'gameImage' => $game && $game->getImagePath() ? $game->getImagePath() : null,
                 'updateForm' => $updateForm->createView(),
+                'reactionCounts' => $reactionCounts,
             ];
         }, $questions);
 
@@ -200,7 +213,8 @@ class ForumController extends AbstractController
     #[Route('/forum/topic/{id}', name: 'forum_single_topic', methods: ['GET', 'POST'])]
     public function singleTopic(
         int $id,
-        QuestionsRepository $questionsRepository
+        QuestionsRepository $questionsRepository,
+        EntityManagerInterface $entityManager
     ): Response {
         $question = $questionsRepository->find($id);
         if (!$question) {
@@ -220,6 +234,15 @@ class ForumController extends AbstractController
 
         $game = $question->getGameId();
 
+        // Fetch reaction counts for the question
+        $reactionRepository = $entityManager->getRepository(QuestionReactions::class);
+        $reactions = $reactionRepository->findBy(['question_id' => $question->getQuestionId()]);
+        $reactionCounts = [];
+        foreach ($reactions as $reaction) {
+            $emoji = $reaction->getEmoji();
+            $reactionCounts[$emoji] = ($reactionCounts[$emoji] ?? 0) + 1;
+        }
+
         $questionData = [
             'id' => $question->getQuestionId(),
             'title' => $question->getTitle(),
@@ -230,10 +253,21 @@ class ForumController extends AbstractController
             'utilisateurId' => $question->getUtilisateurId(),
             'gameImage' => $game && $game->getImagePath() ? $game->getImagePath() : null,
             'votes' => $question->getVotes(),
+            'reactionCounts' => $reactionCounts,
         ];
 
-        $mapComment = function (Commentaire $comment) use (&$mapComment) {
+        $mapComment = function (Commentaire $comment) use (&$mapComment, $entityManager) {
             $childCommentaires = $comment->getChildCommentaires()->toArray();
+
+            // Fetch reaction counts for the comment
+            $reactionRepository = $entityManager->getRepository(CommentaireReactions::class);
+            $reactions = $reactionRepository->findBy(['commentaire_id' => $comment->getCommentaireId()]);
+            $reactionCounts = [];
+            foreach ($reactions as $reaction) {
+                $emoji = $reaction->getEmoji();
+                $reactionCounts[$emoji] = ($reactionCounts[$emoji] ?? 0) + 1;
+            }
+
             return [
                 'id' => $comment->getCommentaireId(),
                 'content' => $comment->getContenu(),
@@ -244,6 +278,7 @@ class ForumController extends AbstractController
                     'action' => $this->generateUrl('comment_update', ['id' => $comment->getCommentaireId()]),
                 ])->createView(),
                 'votes' => $comment->getVotes(),
+                'reactionCounts' => $reactionCounts,
             ];
         };
 

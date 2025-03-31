@@ -6,6 +6,8 @@ use App\Entity\Commentaire;
 use App\Entity\Questions;
 use App\Entity\QuestionVotes;
 use App\Entity\CommentaireVotes;
+use App\Entity\QuestionReactions;
+use App\Entity\CommentaireReactions;
 use App\Enum\VoteType;
 use App\Form\CommentFormType;
 use App\Repository\QuestionsRepository;
@@ -138,7 +140,7 @@ class CommentController extends AbstractController
             $response = $this->httpClient->request('GET', 'https://api.sightengine.com/1.0/text/check.json', [
                 'query' => [
                     'text' => $content,
-                    'lang' => 'en', // Adjust language as needed
+                    'lang' => 'en',
                     'mode' => 'standard',
                     'api_user' => $this->sightengineApiUser,
                     'api_secret' => $this->sightengineApiSecret,
@@ -158,7 +160,6 @@ class CommentController extends AbstractController
             return new JsonResponse(['success' => false, 'message' => 'Error checking profanity'], 500);
         }
     }
-    
 
     #[Route('/forum/comment/{id}/delete', name: 'comment_delete', methods: ['POST'])]
     public function delete(
@@ -244,8 +245,8 @@ class CommentController extends AbstractController
         UtilisateurRepository $utilisateurRepository
     ): RedirectResponse {
         $id = $request->request->get('id');
-        $type = $request->request->get('type'); // 'question' or 'comment'
-        $voteType = $request->request->get('vote_type'); // 'UP' or 'DOWN'
+        $type = $request->request->get('type');
+        $voteType = $request->request->get('vote_type');
 
         if (!$this->isCsrfTokenValid('vote_action', $request->request->get('_token'))) {
             $this->addFlash('error', 'Invalid CSRF token.');
@@ -277,7 +278,6 @@ class CommentController extends AbstractController
                 return $this->redirectToRoute('forum_topics');
             }
 
-            // Check if the user has already voted
             $voteRepository = $entityManager->getRepository($voteEntityClass);
             $existingVote = $voteRepository->findOneBy([
                 $voteEntityProperty => $id,
@@ -289,7 +289,6 @@ class CommentController extends AbstractController
             if ($existingVote) {
                 $currentVoteType = $existingVote->getVoteType();
                 if ($currentVoteType->value === $voteType) {
-                    // User is removing their vote
                     $entityManager->remove($existingVote);
                     if ($voteType === 'UP') {
                         $entity->setVotes($entity->getVotes() - 1);
@@ -297,16 +296,14 @@ class CommentController extends AbstractController
                         $entity->setVotes($entity->getVotes() + 1);
                     }
                 } else {
-                    // User is changing their vote
                     if ($voteType === 'UP') {
-                        $entity->setVotes($entity->getVotes() + 2); // Down to Up: +1 - (-1) = +2
+                        $entity->setVotes($entity->getVotes() + 2);
                     } else {
-                        $entity->setVotes($entity->getVotes() - 2); // Up to Down: -1 - (+1) = -2
+                        $entity->setVotes($entity->getVotes() - 2);
                     }
                     $existingVote->setVoteType($voteTypeEnum);
                 }
             } else {
-                // New vote
                 $vote = new $voteEntityClass();
                 $vote->setUserId($utilisateur);
                 $vote->setVoteType($voteTypeEnum);
@@ -348,11 +345,135 @@ class CommentController extends AbstractController
         }
 
         if ($type === 'question') {
-            return $this->redirectToRoute('forum_topics');
+            return $this->redirectToRoute('forum_single_topic', ['id' => $id]);
         } else {
             $comment = $entityManager->getRepository(Commentaire::class)->find($id);
             $questionId = $comment->getQuestionId()->getQuestionId();
             return $this->redirectToRoute('forum_single_topic', ['id' => $questionId]);
+        }
+    }
+
+    #[Route('/react', name: 'react_action', methods: ['POST'])]
+    public function reactAction(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        UtilisateurRepository $utilisateurRepository
+    ): JsonResponse {
+        $id = $request->request->get('id');
+        $type = $request->request->get('type');
+        $emoji = $request->request->get('emoji');
+        $action = $request->request->get('action', 'react'); // Default to 'react' if not specified
+
+        if (!$id || !$type) {
+            return new JsonResponse(['success' => false, 'message' => 'Missing required parameters'], 400);
+        }
+
+        $utilisateur = $this->getUser() ?? $utilisateurRepository->findOneBy([], ['id' => 'ASC']);
+        if (!$utilisateur && $action !== 'fetch') {
+            return new JsonResponse(['success' => false, 'message' => 'User not found'], 401);
+        }
+
+        try {
+            if ($type === 'question') {
+                $entity = $entityManager->getRepository(Questions::class)->find($id);
+                $reactionEntityClass = QuestionReactions::class;
+                $reactionEntityProperty = 'question_id';
+            } else {
+                $entity = $entityManager->getRepository(Commentaire::class)->find($id);
+                $reactionEntityClass = CommentaireReactions::class;
+                $reactionEntityProperty = 'commentaire_id';
+            }
+
+            if (!$entity) {
+                return new JsonResponse(['success' => false, 'message' => ucfirst($type) . ' not found'], 404);
+            }
+
+            $reactionRepository = $entityManager->getRepository($reactionEntityClass);
+            $reactions = $reactionRepository->findBy([$reactionEntityProperty => $id]);
+            $reactionCounts = [];
+            foreach ($reactions as $r) {
+                $reactionCounts[$r->getEmoji()] = ($reactionCounts[$r->getEmoji()] ?? 0) + 1;
+            }
+
+            if ($action === 'fetch') {
+                return new JsonResponse([
+                    'success' => true,
+                    'reactionCounts' => $reactionCounts,
+                ]);
+            }
+
+            if (!$emoji) {
+                return new JsonResponse(['success' => false, 'message' => 'Emoji is required for reaction'], 400);
+            }
+
+            $entityManager->beginTransaction();
+
+            $existingReaction = $reactionRepository->findOneBy([
+                $reactionEntityProperty => $id,
+                'user_id' => $utilisateur->getId(),
+            ]);
+
+            if ($existingReaction) {
+                if ($existingReaction->getEmoji() === $emoji) {
+                    $entityManager->remove($existingReaction);
+                    $this->logger->info(ucfirst($type) . ' reaction removed', [
+                        'id' => $id,
+                        'type' => $type,
+                        'emoji' => $emoji,
+                        'user_id' => $utilisateur->getId(),
+                    ]);
+                } else {
+                    $oldEmoji = $existingReaction->getEmoji();
+                    $existingReaction->setEmoji($emoji);
+                    $entityManager->persist($existingReaction);
+                    $this->logger->info(ucfirst($type) . ' reaction updated', [
+                        'id' => $id,
+                        'type' => $type,
+                        'old_emoji' => $oldEmoji,
+                        'new_emoji' => $emoji,
+                        'user_id' => $utilisateur->getId(),
+                    ]);
+                }
+            } else {
+                $reaction = new $reactionEntityClass();
+                $reaction->setUserId($utilisateur);
+                $reaction->setEmoji($emoji);
+                if ($type === 'question') {
+                    $reaction->setQuestionId($entity);
+                } else {
+                    $reaction->setCommentaireId($entity);
+                }
+                $entityManager->persist($reaction);
+                $this->logger->info(ucfirst($type) . ' reaction added', [
+                    'id' => $id,
+                    'type' => $type,
+                    'emoji' => $emoji,
+                    'user_id' => $utilisateur->getId(),
+                ]);
+            }
+
+            $entityManager->flush();
+            $entityManager->commit();
+
+            $reactions = $reactionRepository->findBy([$reactionEntityProperty => $id]);
+            $reactionCounts = [];
+            foreach ($reactions as $r) {
+                $reactionCounts[$r->getEmoji()] = ($reactionCounts[$r->getEmoji()] ?? 0) + 1;
+            }
+
+            return new JsonResponse([
+                'success' => true,
+                'reactionCounts' => $reactionCounts,
+            ]);
+        } catch (\Exception $e) {
+            $entityManager->rollback();
+            $this->logger->error('Error processing reaction', [
+                'error' => $e->getMessage(),
+                'id' => $id,
+                'type' => $type,
+                'emoji' => $emoji,
+            ]);
+            return new JsonResponse(['success' => false, 'message' => 'Error processing reaction'], 500);
         }
     }
 }
