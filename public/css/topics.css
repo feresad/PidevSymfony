@@ -17,7 +17,7 @@
     align-items: flex-start;
     background-color: #232930;
     border: 1px solid #293139;
-    border-radius: 4px;
+    border-radius: 20px;
     margin-bottom: 10px;
     padding: 10px;
     transition: background-color 0.3s ease;
@@ -94,18 +94,6 @@
     display: flex;
     align-items: center; /* Vertically center the buttons and icon */
     gap: 10px; /* Space between buttons */
-    margin-top: 10px;
-}
-
-.nk-forum-actions .nk-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center; /* Center the content (text) */
-    font-size: 0.9rem;
-    padding: 8px 15px;
-    transition: background-color 0.3s ease;
-    min-width: 80px; /* Ensure all buttons have the same width */
-    height: 36px; /* Ensure all buttons have the same height */
 }
 
 /* Update Button Styling */
@@ -123,15 +111,15 @@
 
 /* Delete Button Styling (Topic Card) */
 .nk-btn.nk-btn-rounded.nk-btn-color-danger {
-    background-color: #dd163b; /* Red from your theme */
+    background-color: #fe0369; /* Red from your theme */
     color: #fff;
-    border: 1px solid #dd163b;
+    border: 1px solid #fe0369;
     text-transform: uppercase;
 }
 
 .nk-btn.nk-btn-rounded.nk-btn-color-danger:hover {
-    background-color: #b3122f; /* Darker red for hover */
-    border-color: #b3122f;
+    background-color: #b40148; /* Darker red for hover */
+    border-color: #b40148;
 }
 
 /* Share Button (Icon) */
@@ -221,6 +209,8 @@
 .nk-forum-search {
     position: relative;
     margin-bottom: 20px;
+    border: 1px solid #0585e6; /* Vibrant blue border */
+
 }
 
 .nk-forum-search .form-control {
@@ -288,13 +278,13 @@
 
 /* Modal Delete Button Styling */
 .modal-footer .btn-danger {
-    background-color: #dd163b; /* Match the topic card delete button */
-    border-color: #dd163b;
+    background-color: #fe0369; /* Match the topic card delete button */
+    border-color: #fe0369;
 }
 
 .modal-footer .btn-danger:hover {
-    background-color: #b3122f; /* Darker red for hover */
-    border-color: #b3122f;
+    background-color: #b40148; /* Darker red for hover */
+    border-color: #b40148;
 }
 
 /* Glow Animation for Voted Buttons */

@@ -23,6 +23,7 @@
                 </div>
             </div>
             <div class="col-md-4 text-end">
+                <a href="{{ path('forum_trivia') }}" class="nk-btn nk-btn-rounded nk-btn-color-main-2 me-2">Play Trivia</a>
                 <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-white" data-bs-toggle="modal" data-bs-target="#newTopicModal">
                     New Topic
                 </button>
@@ -47,7 +48,7 @@
 
         <div class="nk-forum">
             {% for topic in topics %}
-                <div class="nk-forum-item {{ topic.locked ? 'nk-forum-locked' : '' }}" 
+                <div class="nk-forum-item {{ topic.locked ? 'nk-forum-locked' : '' }} sentiment-{{ topic.sentiment }}" 
                      data-game="{{ topic.gameImage ? topic.gameImage|replace({'img/games/': ''}) : 'No game' }}" 
                      data-author="{{ topic.startedBy }}" 
                      data-title="{{ topic.title|lower }}" 
@@ -65,6 +66,7 @@
                         <h3><a href="{{ path('forum_single_topic', { id: topic.id }) }}">{{ topic.title }}</a></h3>
                         <div class="nk-forum-title-sub">
                             Started by <a href="#">{{ topic.startedBy }}</a> on {{ topic.startedOn }}
+                            <span class="sentiment-badge sentiment-{{ topic.sentiment }}">{{ topic.sentiment|capitalize }}</span>
                         </div>
                         {% if topic.content is defined and topic.content %}
                             <div class="nk-forum-content mt-2">
@@ -75,26 +77,26 @@
                             </div>
                         {% endif %}
                         {% if topic.image is defined and topic.image %}
-                            <div class="nk-forum-title-image mt-2">
-                                <img src="http://localhost/img/games/{{ topic.image }}" alt="Topic Image" style="max-width: 100px;">
+                            <div class="nk-forum-title-image mt-8">
+                                <img src="http://localhost/img/games/{{ topic.image }}" alt="Topic Image" style="max-width: 200px;">
                             </div>
                         {% endif %}
                         {% if topic.video is defined and topic.video %}
-                            <div class="nk-forum-title-video mt-2">
-                                <video width="320" height="240" controls>
+                            <div class="nk-forum-title-video mt-8">
+                                <video width="400" height="300" controls>
                                     <source src="http://localhost/img/games/{{ topic.video }}" type="video/mp4">
                                     Your browser does not support the video tag.
                                 </video>
                             </div>
                         {% endif %}
-                        <div class="nk-forum-reactions mt-2">
+                        <div class="nk-forum-reactions mt-8">
                             <div class="reaction-display" data-id="{{ topic.id }}" data-type="question">
                                 {% for emoji, count in topic.reactionCounts|default([]) %}
                                     <span class="reaction-item" data-emoji="{{ emoji }}">{{ emoji }} {{ count }}</span>
                                 {% endfor %}
                             </div>
                         </div>
-                        <div class="nk-forum-actions mt-2">
+                        <div class="nk-forum-actions mt-8">
                             <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-main-1" data-bs-toggle="modal" data-bs-target="#updateTopicModal-{{ topic.id }}">
                                 Update
                             </button>
@@ -132,7 +134,7 @@
                     </div>
                 </div>
 
-                <!-- Modals unchanged -->
+                <!-- Share Modal -->
                 <div class="modal fade" id="shareModal-{{ topic.id }}" tabindex="-1" aria-labelledby="shareModalLabel-{{ topic.id }}" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
@@ -161,6 +163,7 @@
                     </div>
                 </div>
 
+                <!-- Update Topic Modal -->
                 <div class="modal fade" id="updateTopicModal-{{ topic.id }}" tabindex="-1" aria-labelledby="updateTopicModalLabel-{{ topic.id }}" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
@@ -214,6 +217,7 @@
                     </div>
                 </div>
 
+                <!-- Delete Topic Modal -->
                 <div class="modal fade" id="deleteTopicModal-{{ topic.id }}" tabindex="-1" aria-labelledby="deleteTopicModalLabel-{{ topic.id }}" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
@@ -257,6 +261,7 @@
             </div>
         </div>
 
+        <!-- New Topic Modal -->
         <div class="modal fade" id="newTopicModal" tabindex="-1" aria-labelledby="newTopicModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -318,6 +323,52 @@
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('css/topics.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        .nk-gaming-swal { border: 2px solid #0585e6; box-shadow: 0 0 20px rgba(5, 133, 230, 0.5); font-family: 'Montserrat', sans-serif; }
+        .nk-gaming-swal-title { color: #fff; text-transform: uppercase; letter-spacing: 1px; }
+        .nk-gaming-swal-content { color: #d1d5db; }
+        .swal2-confirm { transition: transform 0.2s ease; }
+        .swal2-confirm:hover { transform: scale(1.05); }
+        .nk-forum-reactions { display: flex; align-items: center; gap: 10px; }
+        .reaction-display { display: flex; gap: 5px; }
+        .reaction-item { background-color: #293139; padding: 4px 8px; border-radius: 3px; font-size: 1.5rem; line-height: 1; }
+        .reaction-wrapper { position: relative; display: inline-flex; align-items: center; }
+        .reaction-icon { width: 30px; height: 30px; cursor: pointer; transition: transform 0.3s ease; }
+        .reaction-icon:hover { transform: scale(1.1); }
+        .emoji-picker-container {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: #232930;
+            border: 1px solid #293139;
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 1000;
+            max-width: 200px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .emoji-section { margin-bottom: 10px; }
+        .emoji-section h4 { color: #d1d5db; font-size: 1rem; margin-bottom: 5px; }
+        .emoji-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+        .emoji-option { cursor: pointer; font-size: 1.2rem; padding: 4px; text-align: center; }
+        .emoji-option:hover { background-color: #0585e6; border-radius: 3px; }
+        .nk-forum-actions { display: flex; align-items: center; gap: 10px; }
+        .sentiment-badge {
+            margin-left: 10px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .sentiment-positive { background-color: #28a745; color: #fff; }
+        .sentiment-negative { background-color: #dc3545; color: #fff; }
+        .sentiment-neutral { background-color: #6c757d; color: #fff; }
+        .nk-forum-item.sentiment-positive { border-left: 4px solid #28a745; }
+        .nk-forum-item.sentiment-negative { border-left: 4px solid #dc3545; }
+        .nk-forum-item.sentiment-neutral { border-left: 4px solid #6c757d; }
+    </style>
 {% endblock %}
 
 {% block javascripts %}
@@ -331,7 +382,11 @@
         }
 
         $(document).ready(function() {
-            let emojiList = []; // Store emojis globally to avoid repeated fetches
+            let sentimentMap = {
+                positive: [],
+                negative: [],
+                neutral: []
+            };
 
             // Debounce function to limit frequent calls
             function debounce(func, wait) {
@@ -342,17 +397,65 @@
                 };
             }
 
-            // Fetch emojis once on page load
+            // Fetch emojis and categorize by sentiment
             function loadEmojis() {
                 return $.ajax({
                     url: 'https://emoji-api.com/emojis?access_key=22b221fd734cfd73f62238bc32fa072f636bc63b',
                     method: 'GET',
                     cache: true
                 }).then(emojis => {
-                    emojiList = emojis.slice(0, 20); // Limit to 20 emojis
+                    // Categorize based on group or name
+                    const positiveGroups = ['smileys-emotion', 'people-body', 'activities', 'food-drink'];
+                    const neutralGroups = ['travel-places', 'objects', 'animals-nature'];
+
+                    emojis.forEach(emoji => {
+                        const group = emoji.group;
+                        const name = emoji.slug.toLowerCase();
+
+                        // Positive: Smiling, happy, celebratory emojis
+                        if (positiveGroups.includes(group) || name.includes('smile') || name.includes('happy') || name.includes('love') || name.includes('laugh') || name.includes('party') || name.includes('cool')) {
+                            if (sentimentMap.positive.length < 20) sentimentMap.positive.push(emoji.character);
+                        }
+                        // Negative: Sad, angry, frustrated emojis
+                        else if (group === 'smileys-emotion' && (name.includes('sad') || name.includes('cry') || name.includes('angry') || name.includes('mad') || name.includes('frown') || name.includes('disappoint') || name.includes('frustrated') || name.includes('broken') || name.includes('rage') || name.includes('pout'))) {
+                            if (sentimentMap.negative.length < 20) sentimentMap.negative.push(emoji.character);
+                        }
+                        // Neutral: Thinking, neutral, or ambiguous emojis
+                        else if (neutralGroups.includes(group) || name.includes('think') || name.includes('shrug') || name.includes('face') || name.includes('neutral') || name.includes('roll')) {
+                            if (sentimentMap.neutral.length < 20) sentimentMap.neutral.push(emoji.character);
+                        }
+                    });
+
+                    // Debug output to verify categorization
+                    console.log('Positive Emojis:', sentimentMap.positive);
+                    console.log('Negative Emojis:', sentimentMap.negative);
+                    console.log('Neutral Emojis:', sentimentMap.neutral);
+
+                    // Ensure minimum variety
+                    if (sentimentMap.positive.length < 10) sentimentMap.positive = ['👍', '😊', '😂', '❤️', '🎉', '😍', '👏', '🌟', '😎', '💪'];
+                    if (sentimentMap.negative.length < 10) sentimentMap.negative = ['👎', '😢', '😡', '💔', '😤', '😞', '🤬', '😣', '💢', '😠'];
+                    if (sentimentMap.neutral.length < 10) sentimentMap.neutral = ['🤔', '😐', '🙂', '👀', '🤷', '😶', '🤝', '🙄', '😴', '🤓'];
+
+                    // Sync with backend
+                    $.ajax({
+                        url: '{{ path('api_update_sentiment_map') }}',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ sentimentMap: sentimentMap }),
+                        success: function(response) {
+                            if (!response.success) console.error('Failed to sync sentiment map:', response.message);
+                        },
+                        error: function() {
+                            console.error('Failed to sync sentiment map with backend');
+                        }
+                    });
                 }).catch(() => {
                     console.error('Failed to load emojis');
-                    emojiList = ['😊', '😂', '❤️', '👍', '😢']; // Fallback emojis
+                    sentimentMap = {
+                        positive: ['👍', '😊', '😂', '❤️', '🎉', '😍', '👏', '🌟', '😎', '💪'],
+                        negative: ['👎', '😢', '😡', '💔', '😤', '😞', '🤬', '😣', '💢', '😠'],
+                        neutral: ['🤔', '😐', '🙂', '👀', '🤷', '😶', '🤝', '🙄', '😴', '🤓']
+                    };
                 });
             }
 
@@ -396,14 +499,33 @@
                 });
             }
 
-            // Show emoji picker with preloaded emojis
+            // Show emoji picker sorted by sentiment
             const showEmojiPicker = debounce(function($icon, $picker, id, type) {
-                if (emojiList.length === 0) return;
+                if (sentimentMap.positive.length === 0) return;
 
                 let pickerHtml = '<div class="emoji-picker-container">';
-                emojiList.forEach(emoji => {
-                    pickerHtml += `<span class="emoji-option" data-emoji="${emoji.character}" data-id="${id}" data-type="${type}">${emoji.character}</span>`;
+                
+                // Positive section
+                pickerHtml += '<div class="emoji-section"><h4>Positive</h4><div class="emoji-grid">';
+                sentimentMap.positive.forEach(emoji => {
+                    pickerHtml += `<span class="emoji-option" data-emoji="${emoji}" data-id="${id}" data-type="${type}">${emoji}</span>`;
                 });
+                pickerHtml += '</div></div>';
+
+                // Negative section
+                pickerHtml += '<div class="emoji-section"><h4>Negative</h4><div class="emoji-grid">';
+                sentimentMap.negative.forEach(emoji => {
+                    pickerHtml += `<span class="emoji-option" data-emoji="${emoji}" data-id="${id}" data-type="${type}">${emoji}</span>`;
+                });
+                pickerHtml += '</div></div>';
+
+                // Neutral section
+                pickerHtml += '<div class="emoji-section"><h4>Neutral</h4><div class="emoji-grid">';
+                sentimentMap.neutral.forEach(emoji => {
+                    pickerHtml += `<span class="emoji-option" data-emoji="${emoji}" data-id="${id}" data-type="${type}">${emoji}</span>`;
+                });
+                pickerHtml += '</div></div>';
+
                 pickerHtml += '</div>';
                 $picker.html(pickerHtml).fadeIn(100);
             }, 200);
@@ -466,7 +588,7 @@
                 });
             });
 
-            // Search functionality unchanged
+            // Search functionality
             $('#topicSearch').on('input', function() {
                 const searchTerm = $(this).val().toLowerCase().trim();
                 $('.nk-forum-item').each(function() {
@@ -487,7 +609,7 @@
                 });
             });
 
-            // Voting unchanged
+            // Voting
             $(document).on('click', '.vote-btn', function(e) {
                 e.preventDefault();
                 const $btn = $(this);
@@ -512,7 +634,7 @@
                                 icon: 'error',
                                 background: '#1c2526',
                                 color: '#d1d5db',
-                                confirmButtonColor: '#ff6f61'
+                                confirmButtonColor: '#fe0369'
                             });
                         }
                     },
@@ -523,7 +645,7 @@
                             icon: 'error',
                             background: '#1c2526',
                             color: '#d1d5db',
-                            confirmButtonColor: '#ff6f61'
+                            confirmButtonColor: '#fe0369'
                         });
                     }
                 });
@@ -533,7 +655,7 @@
                 e.preventDefault();
             });
 
-            // Profanity check unchanged
+            // Profanity check
             $(document).on('submit', '.profanity-check-form', function(e) {
                 e.preventDefault();
                 const $form = $(this);
@@ -557,7 +679,7 @@
                                 icon: 'warning',
                                 background: '#1c2526',
                                 color: '#d1d5db',
-                                confirmButtonColor: '#ff6f61'
+                                confirmButtonColor: '#fe0369'
                             }).then(() => {
                                 $submitButton.prop('disabled', false);
                             });
@@ -574,7 +696,7 @@
                             icon: 'error',
                             background: '#1c2526',
                             color: '#d1d5db',
-                            confirmButtonColor: '#ff6f61'
+                            confirmButtonColor: '#fe0369'
                         }).then(() => {
                             $submitButton.prop('disabled', false);
                         });
@@ -583,37 +705,4 @@
             });
         });
     </script>
-
-    <style>
-        .nk-gaming-swal { border: 2px solid #0585e6; box-shadow: 0 0 20px rgba(5, 133, 230, 0.5); font-family: 'Montserrat', sans-serif; }
-        .nk-gaming-swal-title { color: #fff; text-transform: uppercase; letter-spacing: 1px; }
-        .nk-gaming-swal-content { color: #d1d5db; }
-        .swal2-confirm { transition: transform 0.2s ease; }
-        .swal2-confirm:hover { transform: scale(1.05); }
-        .nk-forum-reactions { display: flex; align-items: center; gap: 10px; }
-        .reaction-display { display: flex; gap: 5px; }
-        .reaction-item { background-color: #293139; padding: 4px 8px; border-radius: 3px; font-size: 1.5rem;line-height: 1; }
-        .reaction-wrapper { position: relative; display: inline-flex; align-items: center; }
-        .reaction-icon { width: 30px; height: 30px; cursor: pointer; transition: transform 0.3s ease; }
-        .reaction-icon:hover { transform: scale(1.1); }
-        .emoji-picker-container {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            background-color: #232930;
-            border: 1px solid #293139;
-            padding: 10px;
-            border-radius: 5px;
-            z-index: 1000;
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 8px;
-            max-width: 200px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        .emoji-option { cursor: pointer; font-size: 1.2rem; padding: 4px; text-align: center; }
-        .emoji-option:hover { background-color: #0585e6; border-radius: 3px; }
-        .nk-forum-actions { display: flex; align-items: center; gap: 10px; }
-    </style>
 {% endblock %}

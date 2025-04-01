@@ -3,7 +3,6 @@
 {% block title %}Level OP | {{ question.title }}{% endblock %}
 
 {% block body %}
-    <!-- Breadcrumbs unchanged -->
     <div class="nk-gap-1"></div>
     <div class="container">
         <ul class="nk-breadcrumbs">
@@ -87,18 +86,23 @@
                     <div class="nk-forum-topic-footer-right">
                         {% if question.gameImage %}
                             <div class="nk-forum-game-image">
-                                <img src="http://localhost/img/games/{{ question.gameImage }}" alt="Game Image" style="max-width: 50px; margin-right: 10px;">
+                                <img src="http://localhost/img/games/{{ question.gameImage }}" alt="Game Image" style="max-width: 50px; margin-right: 15px;">
                             </div>
                         {% else %}
                             <div class="nk-forum-game-image">
-                                <img src="{{ asset('assets/images/default-game.jpg') }}" alt="Default Game Image" style="max-width: 50px; margin-right: 10px;">
+                                <img src="{{ asset('assets/images/default-game.jpg') }}" alt="Default Game Image" style="max-width: 50px; margin-right: 15px;">
                             </div>
                         {% endif %}
                         <span class="nk-forum-action-btn reply-btn" data-id="{{ question.id }}" data-type="question">
-                            <a href="#" class="nk-anchor"><span class="fa fa-reply"></span> Reply</a>
+                            <a href="#" class="nk-anchor">
+                                <img src="{{ asset('images/comment_icon.png') }}" alt="Reply" class="action-icon">
+                                <span class="reply-label">Repondre</span>
+                            </a>
                         </span>
                         <span class="nk-forum-action-btn">
-                            <a href="#"><span class="fa fa-flag"></span> Spam</a>
+                            <a href="#" class="nk-anchor">
+                                <span class="fa fa-flag"></span> Spam
+                            </a>
                         </span>
                     </div>
                 </div>
@@ -107,7 +111,8 @@
 
             {% macro render_comments(comments, level = 0, is_reply = false) %}
                 {% for comment in comments %}
-                    <li data-id="{{ comment.id }}" class="comment-card {{ is_reply ? 'reply-card' : '' }}" style="margin-left: {{ level * 20 }}px;">
+                    {% set is_low_quality = comment.votes|default(0) < -5 %}
+                    <li data-id="{{ comment.id }}" class="comment-card {{ is_reply ? 'reply-card' : '' }} {{ is_low_quality ? 'low-quality-comment' : '' }}" style="margin-left: {{ level * 20 }}px; position: relative;">
                         <div class="nk-forum-topic-author">
                             <a href="#">
                                 <img src="{{ comment.utilisateurId.getPhoto() ? 'http://localhost/img/games/' ~ comment.utilisateurId.getPhoto() : asset('assets/images/avatar-2.jpg') }}" alt="{{ comment.utilisateurId.getNickname() }}">
@@ -122,6 +127,10 @@
                         </div>
                         <div class="nk-forum-topic-content">
                             <p>{{ comment.content|raw }}</p>
+                            {% if is_low_quality %}
+                                <span class="low-quality-label">Low Quality (Votes: {{ comment.votes }})</span>
+                            {% endif %}
+                            <span class="sentiment-badge sentiment-{{ comment.sentiment }}">{{ comment.sentiment|capitalize }}</span>
                         </div>
                         <div class="nk-forum-topic-footer">
                             <div class="nk-forum-topic-footer-left">
@@ -156,21 +165,28 @@
                                     </span>
                                 {% endif %}
                                 <span class="nk-forum-action-btn reply-btn" data-id="{{ comment.id }}" data-type="comment">
-                                    <a href="#" class="nk-anchor"><span class="fa fa-reply"></span> Reply</a>
+                                    <a href="#" class="nk-anchor">
+                                        <img src="{{ asset('images/comment_icon.png') }}" alt="Reply" class="action-icon">
+                                        <span class="reply-label">Repondre</span>
+                                    </a>
                                 </span>
                                 <span class="nk-forum-action-btn update-btn" data-id="{{ comment.id }}">
-                                    <a href="#" class="nk-anchor"><span class="fa fa-edit"></span> Update</a>
+                                    <a href="#" class="nk-anchor">
+                                        <span class="fa fa-edit"></span> Update
+                                    </a>
                                 </span>
                                 <span class="nk-forum-action-btn">
                                     <form action="{{ path('comment_delete', {'id': comment.id}) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this comment?');">
                                         <input type="hidden" name="_token" value="{{ csrf_token('delete_comment_' ~ comment.id) }}">
-                                        <button type="submit" class="nk-anchor" style="background: none; border: none; padding: 0; color: inherit; cursor: pointer;">
+                                        <button type="submit" class="nk-anchor">
                                             <span class="fa fa-trash"></span> Delete
                                         </button>
                                     </form>
                                 </span>
                                 <span class="nk-forum-action-btn">
-                                    <a href="#"><span class="fa fa-flag"></span> Spam</a>
+                                    <a href="#" class="nk-anchor">
+                                        <span class="fa fa-flag"></span> Spam
+                                    </a>
                                 </span>
                             </div>
                         </div>
@@ -189,7 +205,6 @@
         </ul>
 
         <div class="nk-gap-2"></div>
-
         <div class="nk-pagination nk-pagination-left">
             <a href="#" class="nk-pagination-prev">
                 <span class="ion-ios-arrow-back"></span>
@@ -206,7 +221,6 @@
                 <span class="ion-ios-arrow-forward"></span>
             </a>
         </div>
-
         <div class="nk-gap-2"></div>
     </div>
 {% endblock %}
@@ -214,19 +228,76 @@
 {% block stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('css/single_topic.css') }}">
+    <style>
+        .nk-forum-reactions { display: flex; align-items: center; gap: 10px; }
+        .reaction-display { display: flex; gap: 5px; }
+        .reaction-item { background-color: #293139; padding: 4px 8px; border-radius: 3px; font-size: 1.5rem; line-height: 1; }
+        .reaction-wrapper { position: relative; display: inline-flex; align-items: center; }
+        .reaction-icon { width: 24px; height: 24px; cursor: pointer; transition: transform 0.3s ease; }
+        .reaction-icon:hover { transform: scale(1.1); }
+        .emoji-picker-container {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            background-color: #232930;
+            border: 1px solid #293139;
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 2000;
+            width: 250px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .emoji-section { margin-bottom: 10px; }
+        .emoji-section h4 { color: #d1d5db; font-size: 1rem; margin-bottom: 5px; }
+        .emoji-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+        .emoji-option { cursor: pointer; font-size: 1.2rem; padding: 4px; text-align: center; }
+        .emoji-option:hover { background-color: #0585e6; border-radius: 3px; }
+        .nk-forum-topic-footer { display: flex; justify-content: space-between; align-items: center; position: relative; padding-bottom: 15px; }
+        .nk-forum-topic-footer-left { display: flex; align-items: center; gap: 15px; }
+        .comment-card .nk-forum-vote-section { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 5px; }
+        .question-card .nk-forum-vote-section { display: flex; align-items: center; gap: 5px; }
+        .comment-card .nk-forum-topic-footer-right { position: absolute; right: 0; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 15px; }
+        .question-card .nk-forum-topic-footer-right { display: flex; align-items: center; gap: 15px; }
+        .action-icon { width: 14px; height: 14px; vertical-align: middle; margin-right: 5px; }
+        .reply-label { color: #fe0369; font-size: 0.9rem; vertical-align: middle; }
+        .nk-forum-action-btn a { display: inline-flex; align-items: center; color: #d1d5db; font-size: 0.9rem; text-decoration: none; transition: color 0.3s ease; }
+        .nk-forum-action-btn a:hover { color: #0585e6; }
+        .nk-forum-action-btn .fa { font-size: 14px; margin-right: 5px; }
+        .nk-forum-action-btn button.nk-anchor { display: inline-flex; align-items: center; color: #d1d5db; font-size: 0.9rem; text-decoration: none; transition: color 0.3s ease; background: none; border: none; padding: 0; cursor: pointer; }
+        .nk-forum-action-btn button.nk-anchor:hover { color: #0585e6; }
+        .vote-icon { width: 20px; height: 20px; }
+        .low-quality-comment { background-color: #2e1c1c; }
+        .low-quality-label { color: #ff6f61; font-size: 0.8rem; font-style: italic; margin-top: 5px; display: block; }
+        .sentiment-badge {
+            margin-top: 5px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            display: inline-block;
+        }
+        .sentiment-positive { background-color: #28a745; color: #fff; }
+        .sentiment-negative { background-color: #dc3545; color: #fff; }
+        .sentiment-neutral { background-color: #6c757d; color: #fff; }
+    </style>
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
-
     {% set contenu_field = form_widget(comment_form.contenu, {'attr': {'class': 'nk-summernote form-control'}}) %}
     {% set form_rest = form_rest(comment_form) %}
 
     <script>
         $(document).ready(function() {
-            let emojiList = []; // Store emojis globally to avoid repeated fetches
+            let sentimentMap = {
+                positive: [],
+                negative: [],
+                neutral: []
+            };
 
-            // Debounce function to limit frequent calls
+            // Debounce function
             function debounce(func, wait) {
                 let timeout;
                 return function(...args) {
@@ -235,26 +306,67 @@
                 };
             }
 
-            // Fetch emojis once on page load
+            // Fetch emojis and categorize by sentiment
             function loadEmojis() {
                 return $.ajax({
                     url: 'https://emoji-api.com/emojis?access_key=22b221fd734cfd73f62238bc32fa072f636bc63b',
                     method: 'GET',
                     cache: true
                 }).then(emojis => {
-                    emojiList = emojis.slice(0, 20); // Limit to 20 emojis
+                    const positiveGroups = ['smileys-emotion', 'people-body', 'activities', 'food-drink'];
+                    const neutralGroups = ['travel-places', 'objects', 'animals-nature'];
+
+                    emojis.forEach(emoji => {
+                        const group = emoji.group;
+                        const name = emoji.slug.toLowerCase();
+
+                        if (positiveGroups.includes(group) || name.includes('smile') || name.includes('happy') || name.includes('love') || name.includes('laugh') || name.includes('party') || name.includes('cool')) {
+                            if (sentimentMap.positive.length < 20) sentimentMap.positive.push(emoji.character);
+                        }
+                        else if (group === 'smileys-emotion' && (name.includes('sad') || name.includes('cry') || name.includes('angry') || name.includes('mad') || name.includes('frown') || name.includes('disappoint') || name.includes('frustrated') || name.includes('broken') || name.includes('rage') || name.includes('pout'))) {
+                            if (sentimentMap.negative.length < 20) sentimentMap.negative.push(emoji.character);
+                        }
+                        else if (neutralGroups.includes(group) || name.includes('think') || name.includes('shrug') || name.includes('face') || name.includes('neutral') || name.includes('roll')) {
+                            if (sentimentMap.neutral.length < 20) sentimentMap.neutral.push(emoji.character);
+                        }
+                    });
+
+                    console.log('Positive Emojis:', sentimentMap.positive);
+                    console.log('Negative Emojis:', sentimentMap.negative);
+                    console.log('Neutral Emojis:', sentimentMap.neutral);
+
+                    if (sentimentMap.positive.length < 10) sentimentMap.positive = ['👍', '😊', '😂', '❤️', '🎉', '😍', '👏', '🌟', '😎', '💪'];
+                    if (sentimentMap.negative.length < 10) sentimentMap.negative = ['👎', '😢', '😡', '💔', '😤', '😞', '🤬', '😣', '💢', '😠'];
+                    if (sentimentMap.neutral.length < 10) sentimentMap.neutral = ['🤔', '😐', '🙂', '👀', '🤷', '😶', '🤝', '🙄', '😴', '🤓'];
+
+                    $.ajax({
+                        url: '{{ path('api_update_sentiment_map') }}',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ sentimentMap: sentimentMap }),
+                        success: function(response) {
+                            if (!response.success) console.error('Failed to sync sentiment map:', response.message);
+                        },
+                        error: function() {
+                            console.error('Failed to sync sentiment map with backend');
+                        }
+                    });
                 }).catch(() => {
                     console.error('Failed to load emojis');
-                    emojiList = ['😊', '😂', '❤️', '👍', '😢']; // Fallback emojis
+                    sentimentMap = {
+                        positive: ['👍', '😊', '😂', '❤️', '🎉', '😍', '👏', '🌟', '😎', '💪'],
+                        negative: ['👎', '😢', '😡', '💔', '😤', '😞', '🤬', '😣', '💢', '😠'],
+                        neutral: ['🤔', '😐', '🙂', '👀', '🤷', '😶', '🤝', '🙄', '😴', '🤓']
+                    };
                 });
             }
 
-            // Fetch and display reactions
+            // Fetch reactions
             function fetchReactions(id, type, $display) {
                 $.ajax({
                     url: '{{ path('react_action') }}',
                     method: 'POST',
-                    data: { id: id, type: type, action: 'fetch' }, // Add action parameter to fetch only
+                    data: { id: id, type: type, action: 'fetch' },
                     success: function(response) {
                         if (response.success) {
                             updateReactionDisplay($display, response.reactionCounts || {});
@@ -268,7 +380,7 @@
                 });
             }
 
-            // Update reaction display dynamically
+            // Update reaction display
             function updateReactionDisplay($display, reactionCounts) {
                 let reactionHtml = '';
                 for (const [emoji, count] of Object.entries(reactionCounts)) {
@@ -277,32 +389,47 @@
                 $display.html(reactionHtml);
             }
 
-            // Initialize reactions on page load
+            // Initialize reactions
             function initializeReactions() {
                 $('.reaction-display').each(function() {
                     const $display = $(this);
                     const id = $display.data('id');
                     const type = $display.data('type');
-                    // Only fetch if the display is empty (Twig didn't populate it)
                     if ($display.children().length === 0) {
                         fetchReactions(id, type, $display);
                     }
                 });
             }
 
-            // Show emoji picker with preloaded emojis
+            // Show emoji picker sorted by sentiment
             const showEmojiPicker = debounce(function($icon, $picker, id, type) {
-                if (emojiList.length === 0) return;
+                if (sentimentMap.positive.length === 0) return;
 
                 let pickerHtml = '<div class="emoji-picker-container">';
-                emojiList.forEach(emoji => {
-                    pickerHtml += `<span class="emoji-option" data-emoji="${emoji.character}" data-id="${id}" data-type="${type}">${emoji.character}</span>`;
+                
+                pickerHtml += '<div class="emoji-section"><h4>Positive</h4><div class="emoji-grid">';
+                sentimentMap.positive.forEach(emoji => {
+                    pickerHtml += `<span class="emoji-option" data-emoji="${emoji}" data-id="${id}" data-type="${type}">${emoji}</span>`;
                 });
+                pickerHtml += '</div></div>';
+
+                pickerHtml += '<div class="emoji-section"><h4>Negative</h4><div class="emoji-grid">';
+                sentimentMap.negative.forEach(emoji => {
+                    pickerHtml += `<span class="emoji-option" data-emoji="${emoji}" data-id="${id}" data-type="${type}">${emoji}</span>`;
+                });
+                pickerHtml += '</div></div>';
+
+                pickerHtml += '<div class="emoji-section"><h4>Neutral</h4><div class="emoji-grid">';
+                sentimentMap.neutral.forEach(emoji => {
+                    pickerHtml += `<span class="emoji-option" data-emoji="${emoji}" data-id="${id}" data-type="${type}">${emoji}</span>`;
+                });
+                pickerHtml += '</div></div>';
+
                 pickerHtml += '</div>';
                 $picker.html(pickerHtml).fadeIn(100);
             }, 200);
 
-            // Load emojis and initialize reactions
+            // Load emojis and initialize
             loadEmojis().then(() => {
                 initializeReactions();
 
@@ -360,7 +487,7 @@
                 });
             });
 
-            // Remaining JavaScript (reply, update, voting, etc.) remains unchanged
+            // Toggle replies
             $(document).on('click', '.toggle-replies-btn', function(e) {
                 e.preventDefault();
                 const $btn = $(this);
@@ -377,6 +504,7 @@
                 });
             });
 
+            // Reply button
             $(document).on('click', '.reply-btn', function(e) {
                 e.preventDefault();
                 const $btn = $(this);
@@ -425,6 +553,7 @@
                 $(this).closest('.reply-form-container').hide();
             });
 
+            // Update button
             $(document).on('click', '.update-btn', function(e) {
                 e.preventDefault();
                 const $btn = $(this);
@@ -475,6 +604,7 @@
                 $(this).closest('.update-form-container').hide();
             });
 
+            // Voting handler
             $(document).on('click', '.vote-btn', function(e) {
                 e.preventDefault();
                 const $btn = $(this);
@@ -499,7 +629,7 @@
                                 icon: 'error',
                                 background: '#1c2526',
                                 color: '#d1d5db',
-                                confirmButtonColor: '#ff6f61'
+                                confirmButtonColor: '#fe0369'
                             });
                         }
                     },
@@ -510,12 +640,13 @@
                             icon: 'error',
                             background: '#1c2526',
                             color: '#d1d5db',
-                            confirmButtonColor: '#ff6f61'
+                            confirmButtonColor: '#fe0369'
                         });
                     }
                 });
             });
 
+            // Profanity check
             $(document).on('submit', '.profanity-check-form', function(e) {
                 e.preventDefault();
                 const $form = $(this);
@@ -536,7 +667,7 @@
                                 icon: 'warning',
                                 background: '#1c2526',
                                 color: '#d1d5db',
-                                confirmButtonColor: '#ff6f61'
+                                confirmButtonColor: '#fe0369'
                             }).then(() => {
                                 $submitButton.prop('disabled', false);
                             });
@@ -552,7 +683,7 @@
                             icon: 'error',
                             background: '#1c2526',
                             color: '#d1d5db',
-                            confirmButtonColor: '#ff6f61'
+                            confirmButtonColor: '#fe0369'
                         }).then(() => {
                             $submitButton.prop('disabled', false);
                         });
@@ -561,34 +692,4 @@
             });
         });
     </script>
-
-    <style>
-        .nk-forum-reactions { display: flex; align-items: center; gap: 10px; }
-        .reaction-display { display: flex; gap: 5px; }
-        .reaction-item { background-color: #293139; padding: 4px 8px; border-radius: 3px; font-size: 1.5rem;line-height: 1; }
-        .reaction-wrapper { position: relative; display: inline-flex; align-items: center; }
-        .reaction-icon { width: 24px; height: 24px; cursor: pointer; transition: transform 0.3s ease; }
-        .reaction-icon:hover { transform: scale(1.1); }
-        .emoji-picker-container {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            background-color: #232930;
-            border: 1px solid #293139;
-            padding: 10px;
-            border-radius: 5px;
-            z-index: 1000;
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 8px;
-            max-width: 200px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        .emoji-option { cursor: pointer; font-size: 1.2rem; padding: 4px; text-align: center; }
-        .emoji-option:hover { background-color: #0585e6; border-radius: 3px; }
-        .nk-forum-topic-footer { display: flex; justify-content: space-between; align-items: center; }
-        .nk-forum-topic-footer-left { display: flex; align-items: center; gap: 15px; }
-        .nk-forum-topic-footer-right { display: flex; align-items: center; gap: 10px; }
-    </style>
 {% endblock %}

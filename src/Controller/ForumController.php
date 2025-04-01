@@ -11,6 +11,7 @@ use App\Form\TopicFormType;
 use App\Form\CommentFormType;
 use App\Repository\QuestionsRepository;
 use App\Repository\UtilisateurRepository;
+use App\Repository\CommentaireRepository;
 use App\Service\RedditService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -44,7 +45,6 @@ class ForumController extends AbstractController
         RedditService $redditService
     ): Response {
         $question = new Questions();
-
         $utilisateur = $utilisateurRepository->findOneBy([], ['id' => 'ASC']);
         if (!$utilisateur) {
             $this->addFlash('error', 'No users found in the database. Please add a user.');
@@ -56,7 +56,6 @@ class ForumController extends AbstractController
         }
 
         $question->setUtilisateurId($utilisateur);
-
         $form = $this->createForm(TopicFormType::class, $question);
         $form->handleRequest($request);
 
@@ -76,16 +75,12 @@ class ForumController extends AbstractController
                     $isVideo = in_array($mimeType, ['video/mp4', 'video/mpeg', 'video/webm', 'video/quicktime', 'video/x-msvideo']);
 
                     if ($mediaType && $mediaType->value === 'image' && !$isImage) {
-                        $this->logger->error('Media type mismatch: Selected image, but file is not an image.', [
-                            'mime_type' => $mimeType,
-                        ]);
+                        $this->logger->error('Media type mismatch: Selected image, but file is not an image.', ['mime_type' => $mimeType]);
                         throw new \Exception('Selected media type is "image," but the uploaded file is not an image.');
                     }
 
                     if ($mediaType && $mediaType->value === 'video' && !$isVideo) {
-                        $this->logger->error('Media type mismatch: Selected video, but file is not a video.', [
-                            'mime_type' => $mimeType,
-                        ]);
+                        $this->logger->error('Media type mismatch: Selected video, but file is not a video.', ['mime_type' => $mimeType]);
                         throw new \Exception('Selected media type is "video," but the uploaded file is not a video.');
                     }
 
@@ -114,12 +109,6 @@ class ForumController extends AbstractController
                 $entityManager->persist($question);
                 $entityManager->flush();
 
-                $this->logger->info('Topic saved to database.', [
-                    'question_id' => $question->getQuestionId(),
-                    'media_path' => $question->getMediaPath(),
-                    'media_type' => $question->getMediaType() ? $question->getMediaType()->value : 'none',
-                ]);
-
                 $this->addFlash('success', 'Topic created successfully!');
                 return $this->redirectToRoute('forum_topics');
             } catch (\Exception $e) {
@@ -129,16 +118,39 @@ class ForumController extends AbstractController
                 ]);
                 $this->addFlash('error', 'An error occurred while creating the topic: ' . $e->getMessage());
             }
-        } elseif ($form->isSubmitted() && !$form->isValid()) {
-            $this->logger->warning('Form submission failed validation.', [
-                'errors' => $form->getErrors(true, true)->__toString(),
-            ]);
-            $this->addFlash('error', 'Form validation failed. Please check your inputs.');
         }
 
-        $questions = $questionsRepository->findAll();
+        // Fetch sentiment map from session
+        $sentimentMap = $request->getSession()->get('sentiment_map', [
+            'positive' => ['👍', '😊', '😂', '❤️', '🎉', '😍', '👏', '🌟', '😎', '💪'],
+            'negative' => ['👎', '😢', '😡', '💔', '😤', '😞', '🤬', '😣', '💢', '😠'],
+            'neutral' => ['🤔', '😐', '🙂', '👀', '🤷', '😶', '🤝', '🙄', '😴', '🤓']
+        ]);
 
-        $topics = array_map(function (Questions $question) use ($entityManager) {
+        // Define vote threshold for sorting
+        $threshold = -5;
+
+        // Fetch high-quality questions (votes >= threshold)
+        $highQualityQuestions = $questionsRepository->createQueryBuilder('q')
+            ->where('q.votes >= :threshold')
+            ->setParameter('threshold', $threshold)
+            ->orderBy('q.votes', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        // Fetch low-quality questions (votes < threshold)
+        $lowQualityQuestions = $questionsRepository->createQueryBuilder('q')
+            ->where('q.votes < :threshold')
+            ->setParameter('threshold', $threshold)
+            ->orderBy('q.votes', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        // Combine the two lists: high-quality first, then low-quality
+        $questions = array_merge($highQualityQuestions, $lowQualityQuestions);
+
+        // Map questions to topic data with sentiment analysis
+        $topics = array_map(function (Questions $question) use ($entityManager, $sentimentMap) {
             $user = $question->getUtilisateurId();
             $game = $question->getGameId();
 
@@ -146,18 +158,6 @@ class ForumController extends AbstractController
                 'action' => $this->generateUrl('forum_update_topic', ['id' => $question->getQuestionId()]),
             ]);
 
-            $gameName = $game ? $game->getGameName() : 'No game';
-            $gameImagePath = $game ? $game->getImagePath() : 'No image path';
-            $gameFilePath = $game && $game->getImagePath() ? 'C:\\xampp\\htdocs\\img\\games\\' . $game->getImagePath() : 'No file path';
-            $gameFileExists = $game && $game->getImagePath() ? file_exists($gameFilePath) : false;
-            $gameFileReadable = $gameFileExists ? (is_readable($gameFilePath) ? 'Yes' : 'No') : 'N/A';
-
-            $topicMediaPath = $question->getMediaPath() ? $question->getMediaPath() : 'No topic media';
-            $topicFilePath = $topicMediaPath !== 'No topic media' ? 'C:\\xampp\\htdocs\\img\\games\\' . $topicMediaPath : 'No file path';
-            $topicFileExists = $topicMediaPath !== 'No topic media' ? file_exists($topicFilePath) : false;
-            $topicFileReadable = $topicFileExists ? (is_readable($topicFilePath) ? 'Yes' : 'No') : 'N/A';
-
-            // Fetch reaction counts for the topic
             $reactionRepository = $entityManager->getRepository(QuestionReactions::class);
             $reactions = $reactionRepository->findBy(['question_id' => $question->getQuestionId()]);
             $reactionCounts = [];
@@ -166,19 +166,29 @@ class ForumController extends AbstractController
                 $reactionCounts[$emoji] = ($reactionCounts[$emoji] ?? 0) + 1;
             }
 
-            $this->logger->debug('Topic data prepared for rendering.', [
-                'question_id' => $question->getQuestionId(),
-                'game' => $gameName,
-                'game_image_path' => $gameImagePath,
-                'game_file_path' => $gameFilePath,
-                'game_file_exists' => $gameFileExists ? 'Yes' : 'No',
-                'game_file_readable' => $gameFileReadable,
-                'topic_media_path' => $topicMediaPath,
-                'topic_file_path' => $topicFilePath,
-                'topic_file_exists' => $topicFileExists ? 'Yes' : 'No',
-                'topic_file_readable' => $topicFileReadable,
-                'reaction_counts' => $reactionCounts,
-            ]);
+            // Calculate sentiment based on reactions
+            $positiveCount = 0;
+            $negativeCount = 0;
+            $neutralCount = 0;
+
+            foreach ($reactionCounts as $emoji => $count) {
+                if (in_array($emoji, $sentimentMap['positive'])) {
+                    $positiveCount += $count;
+                } elseif (in_array($emoji, $sentimentMap['negative'])) {
+                    $negativeCount += $count;
+                } elseif (in_array($emoji, $sentimentMap['neutral'])) {
+                    $neutralCount += $count;
+                }
+            }
+
+            $sentiment = 'neutral';
+            if ($positiveCount > $negativeCount && $positiveCount > $neutralCount) {
+                $sentiment = 'positive';
+            } elseif ($negativeCount > $positiveCount && $negativeCount > $neutralCount) {
+                $sentiment = 'negative';
+            } elseif ($neutralCount > $positiveCount && $neutralCount > $neutralCount) {
+                $sentiment = 'neutral';
+            }
 
             return [
                 'id' => $question->getQuestionId(),
@@ -198,6 +208,7 @@ class ForumController extends AbstractController
                 'gameImage' => $game && $game->getImagePath() ? $game->getImagePath() : null,
                 'updateForm' => $updateForm->createView(),
                 'reactionCounts' => $reactionCounts,
+                'sentiment' => $sentiment, // Add sentiment to the topic data
             ];
         }, $questions);
 
@@ -213,7 +224,9 @@ class ForumController extends AbstractController
     #[Route('/forum/topic/{id}', name: 'forum_single_topic', methods: ['GET', 'POST'])]
     public function singleTopic(
         int $id,
+        Request $request,
         QuestionsRepository $questionsRepository,
+        CommentaireRepository $commentaireRepository,
         EntityManagerInterface $entityManager
     ): Response {
         $question = $questionsRepository->find($id);
@@ -222,10 +235,28 @@ class ForumController extends AbstractController
             return $this->redirectToRoute('forum_topics');
         }
 
-        $allComments = $question->getCommentaires()->toArray();
-        $topLevelComments = array_filter($allComments, function (Commentaire $comment) {
-            return $comment->getParentCommentaireId() === null;
-        });
+        $threshold = -5;
+        $highQualityComments = $commentaireRepository->createQueryBuilder('c')
+            ->where('c.question_id = :questionId')
+            ->andWhere('c.parent_commentaire_id IS NULL')
+            ->andWhere('c.votes >= :threshold')
+            ->setParameter('questionId', $question->getQuestionId())
+            ->setParameter('threshold', $threshold)
+            ->orderBy('c.votes', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        $lowQualityComments = $commentaireRepository->createQueryBuilder('c')
+            ->where('c.question_id = :questionId')
+            ->andWhere('c.parent_commentaire_id IS NULL')
+            ->andWhere('c.votes < :threshold')
+            ->setParameter('questionId', $question->getQuestionId())
+            ->setParameter('threshold', $threshold)
+            ->orderBy('c.votes', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        $topLevelComments = array_merge($highQualityComments, $lowQualityComments);
 
         $comment = new Commentaire();
         $commentForm = $this->createForm(CommentFormType::class, $comment, [
@@ -233,8 +264,6 @@ class ForumController extends AbstractController
         ]);
 
         $game = $question->getGameId();
-
-        // Fetch reaction counts for the question
         $reactionRepository = $entityManager->getRepository(QuestionReactions::class);
         $reactions = $reactionRepository->findBy(['question_id' => $question->getQuestionId()]);
         $reactionCounts = [];
@@ -256,16 +285,49 @@ class ForumController extends AbstractController
             'reactionCounts' => $reactionCounts,
         ];
 
-        $mapComment = function (Commentaire $comment) use (&$mapComment, $entityManager) {
-            $childCommentaires = $comment->getChildCommentaires()->toArray();
+        $sentimentMap = $request->getSession()->get('sentiment_map', [
+            'positive' => ['👍', '😊', '😂', '❤️', '🎉', '😍', '👏', '🌟', '😎', '💪'],
+            'negative' => ['👎', '😢', '😡', '💔', '😤', '😞', '🤬', '😣', '💢', '😠'],
+            'neutral' => ['🤔', '😐', '🙂', '👀', '🤷', '😶', '🤝', '🙄', '😴', '🤓']
+        ]);
 
-            // Fetch reaction counts for the comment
+        $mapComment = function (Commentaire $comment) use (&$mapComment, $entityManager, $commentaireRepository, $sentimentMap) {
+            $childCommentaires = $commentaireRepository->createQueryBuilder('c')
+                ->where('c.parent_commentaire_id = :parentId')
+                ->setParameter('parentId', $comment->getCommentaireId())
+                ->orderBy('c.votes', 'DESC')
+                ->getQuery()
+                ->getResult();
+
             $reactionRepository = $entityManager->getRepository(CommentaireReactions::class);
             $reactions = $reactionRepository->findBy(['commentaire_id' => $comment->getCommentaireId()]);
             $reactionCounts = [];
             foreach ($reactions as $reaction) {
                 $emoji = $reaction->getEmoji();
                 $reactionCounts[$emoji] = ($reactionCounts[$emoji] ?? 0) + 1;
+            }
+
+            $positiveCount = 0;
+            $negativeCount = 0;
+            $neutralCount = 0;
+
+            foreach ($reactionCounts as $emoji => $count) {
+                if (in_array($emoji, $sentimentMap['positive'])) {
+                    $positiveCount += $count;
+                } elseif (in_array($emoji, $sentimentMap['negative'])) {
+                    $negativeCount += $count;
+                } elseif (in_array($emoji, $sentimentMap['neutral'])) {
+                    $neutralCount += $count;
+                }
+            }
+
+            $sentiment = 'neutral';
+            if ($positiveCount > $negativeCount && $positiveCount > $neutralCount) {
+                $sentiment = 'positive';
+            } elseif ($negativeCount > $positiveCount && $negativeCount > $neutralCount) {
+                $sentiment = 'negative';
+            } elseif ($neutralCount > $positiveCount && $neutralCount > $neutralCount) {
+                $sentiment = 'neutral';
             }
 
             return [
@@ -279,6 +341,7 @@ class ForumController extends AbstractController
                 ])->createView(),
                 'votes' => $comment->getVotes(),
                 'reactionCounts' => $reactionCounts,
+                'sentiment' => $sentiment,
             ];
         };
 
@@ -291,11 +354,37 @@ class ForumController extends AbstractController
         ]);
     }
 
+    #[Route('/api/get-sentiment-map', name: 'api_get_sentiment_map', methods: ['GET'])]
+    public function getSentimentMap(Request $request): JsonResponse
+    {
+        $sentimentMap = $request->getSession()->get('sentiment_map', [
+            'positive' => ['👍', '😊', '😂', '❤️', '🎉', '😍', '👏', '🌟', '😎', '💪'],
+            'negative' => ['👎', '😢', '😡', '💔', '😤', '😞', '🤬', '😣', '💢', '😠'],
+            'neutral' => ['🤔', '😐', '🙂', '👀', '🤷', '😶', '🤝', '🙄', '😴', '🤓']
+        ]);
+
+        return new JsonResponse(['success' => true, 'sentimentMap' => $sentimentMap]);
+    }
+
+    #[Route('/api/update-sentiment-map', name: 'api_update_sentiment_map', methods: ['POST'])]
+    public function updateSentimentMap(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $sentimentMap = $data['sentimentMap'] ?? [];
+
+        if (!isset($sentimentMap['positive']) || !isset($sentimentMap['negative']) || !isset($sentimentMap['neutral'])) {
+            return new JsonResponse(['success' => false, 'message' => 'Invalid sentiment map format'], 400);
+        }
+
+        $request->getSession()->set('sentiment_map', $sentimentMap);
+
+        return new JsonResponse(['success' => true, 'message' => 'Sentiment map updated']);
+    }
+
     #[Route('/forum/topic/delete/{id}', name: 'forum_delete_topic', methods: ['GET'])]
     public function deleteTopic(int $id, QuestionsRepository $questionsRepository, EntityManagerInterface $entityManager): Response
     {
         $question = $questionsRepository->find($id);
-
         if (!$question) {
             $this->addFlash('error', 'Topic not found.');
             return $this->redirectToRoute('forum_topics');
@@ -312,13 +401,9 @@ class ForumController extends AbstractController
 
             $entityManager->remove($question);
             $entityManager->flush();
-
             $this->addFlash('success', 'Topic deleted successfully!');
         } catch (\Exception $e) {
-            $this->logger->error('Error deleting topic.', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
+            $this->logger->error('Error deleting topic.', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             $this->addFlash('error', 'An error occurred while deleting the topic: ' . $e->getMessage());
         }
 
@@ -329,7 +414,6 @@ class ForumController extends AbstractController
     public function updateTopic(int $id, Request $request, QuestionsRepository $questionsRepository, EntityManagerInterface $entityManager): Response
     {
         $question = $questionsRepository->find($id);
-
         if (!$question) {
             $this->addFlash('error', 'Topic not found.');
             return $this->redirectToRoute('forum_topics');
@@ -338,81 +422,57 @@ class ForumController extends AbstractController
         $updateForm = $this->createForm(TopicFormType::class, $question);
         $updateForm->handleRequest($request);
 
-        if ($updateForm->isSubmitted()) {
-            $this->logger->info('Update form submitted for topic.', [
-                'topic_id' => $id,
-                'form_data' => $request->request->all(),
-            ]);
+        if ($updateForm->isSubmitted() && $updateForm->isValid()) {
+            try {
+                $mediaFile = $updateForm->get('media_file')->getData();
+                $mediaType = $updateForm->get('media_type')->getData();
 
-            if ($updateForm->isValid()) {
-                try {
-                    $mediaFile = $updateForm->get('media_file')->getData();
-                    $mediaType = $updateForm->get('media_type')->getData();
+                if ($mediaFile) {
+                    $mimeType = $mediaFile->getMimeType();
+                    $isImage = in_array($mimeType, ['image/jpeg', 'image/png', 'image/gif']);
+                    $isVideo = in_array($mimeType, ['video/mp4', 'video/mpeg', 'video/webm', 'video/quicktime', 'video/x-msvideo']);
 
-                    if ($mediaFile) {
-                        $mimeType = $mediaFile->getMimeType();
-                        $isImage = in_array($mimeType, ['image/jpeg', 'image/png', 'image/gif']);
-                        $isVideo = in_array($mimeType, ['video/mp4', 'video/mpeg', 'video/webm', 'video/quicktime', 'video/x-msvideo']);
-
-                        if ($mediaType && $mediaType->value === 'image' && !$isImage) {
-                            $this->logger->error('Media type mismatch: Selected image, but file is not an image.', [
-                                'mime_type' => $mimeType,
-                            ]);
-                            throw new \Exception('Selected media type is "image," but the uploaded file is not an image.');
-                        }
-
-                        if ($mediaType && $mediaType->value === 'video' && !$isVideo) {
-                            $this->logger->error('Media type mismatch: Selected video, but file is not a video.', [
-                                'mime_type' => $mimeType,
-                            ]);
-                            throw new \Exception('Selected media type is "video," but the uploaded file is not a video.');
-                        }
-
-                        if ($question->getMediaPath()) {
-                            $oldMediaPath = $this->getParameter('uploads_directory') . '\\' . $question->getMediaPath();
-                            if (file_exists($oldMediaPath)) {
-                                unlink($oldMediaPath);
-                                $this->logger->info('Deleted old media file.', ['path' => $oldMediaPath]);
-                            }
-                        }
-
-                        $mediaFilename = uniqid() . '.' . $mediaFile->guessExtension();
-                        $uploadsDirectory = $this->getParameter('uploads_directory');
-
-                        $mediaFile->move($uploadsDirectory, $mediaFilename);
-                        $this->logger->info('Media file updated successfully.', [
-                            'filename' => $mediaFilename,
-                            'path' => $uploadsDirectory . '\\' . $mediaFilename,
-                        ]);
-                        $question->setMediaPath($mediaFilename);
-                        $question->setMediaType($mediaType);
-                    } elseif ($mediaType === null || $mediaType->value === null) {
-                        if ($question->getMediaPath()) {
-                            $oldMediaPath = $this->getParameter('uploads_directory') . '\\' . $question->getMediaPath();
-                            if (file_exists($oldMediaPath)) {
-                                unlink($oldMediaPath);
-                                $this->logger->info('Deleted old media file due to media_type set to None.', ['path' => $oldMediaPath]);
-                            }
-                        }
-                        $question->setMediaPath(null);
-                        $question->setMediaType(null);
+                    if ($mediaType && $mediaType->value === 'image' && !$isImage) {
+                        $this->logger->error('Media type mismatch: Selected image, but file is not an image.', ['mime_type' => $mimeType]);
+                        throw new \Exception('Selected media type is "image," but the uploaded file is not an image.');
                     }
 
-                    $entityManager->flush();
-                    $this->addFlash('success', 'Topic updated successfully!');
-                } catch (\Exception $e) {
-                    $this->logger->error('Error updating topic.', [
-                        'error' => $e->getMessage(),
-                        'trace' => $e->getTraceAsString(),
-                    ]);
-                    $this->addFlash('error', 'An error occurred while updating the topic: ' . $e->getMessage());
+                    if ($mediaType && $mediaType->value === 'video' && !$isVideo) {
+                        $this->logger->error('Media type mismatch: Selected video, but file is not a video.', ['mime_type' => $mimeType]);
+                        throw new \Exception('Selected media type is "video," but the uploaded file is not a video.');
+                    }
+
+                    if ($question->getMediaPath()) {
+                        $oldMediaPath = $this->getParameter('uploads_directory') . '\\' . $question->getMediaPath();
+                        if (file_exists($oldMediaPath)) {
+                            unlink($oldMediaPath);
+                            $this->logger->info('Deleted old media file.', ['path' => $oldMediaPath]);
+                        }
+                    }
+
+                    $mediaFilename = uniqid() . '.' . $mediaFile->guessExtension();
+                    $uploadsDirectory = $this->getParameter('uploads_directory');
+
+                    $mediaFile->move($uploadsDirectory, $mediaFilename);
+                    $question->setMediaPath($mediaFilename);
+                    $question->setMediaType($mediaType);
+                } elseif ($mediaType === null || $mediaType->value === null) {
+                    if ($question->getMediaPath()) {
+                        $oldMediaPath = $this->getParameter('uploads_directory') . '\\' . $question->getMediaPath();
+                        if (file_exists($oldMediaPath)) {
+                            unlink($oldMediaPath);
+                            $this->logger->info('Deleted old media file due to media_type set to None.', ['path' => $oldMediaPath]);
+                        }
+                    }
+                    $question->setMediaPath(null);
+                    $question->setMediaType(null);
                 }
-            } else {
-                $this->logger->warning('Update form submission failed validation.', [
-                    'topic_id' => $id,
-                    'errors' => $updateForm->getErrors(true, true)->__toString(),
-                ]);
-                $this->addFlash('error', 'Form validation failed. Please check your inputs.');
+
+                $entityManager->flush();
+                $this->addFlash('success', 'Topic updated successfully!');
+            } catch (\Exception $e) {
+                $this->logger->error('Error updating topic.', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+                $this->addFlash('error', 'An error occurred while updating the topic: ' . $e->getMessage());
             }
         }
 

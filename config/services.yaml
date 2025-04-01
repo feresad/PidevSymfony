@@ -6,8 +6,10 @@ parameters:
     sightengine_api_secret: '%env(SIGHTENGINE_API_SECRET)%'
 
 services:
+    App\Controller\ForumController:
     App\Service\RedditService:
         arguments:
+            $session: '@session'
             $params: '%kernel.parameters%'
             $logger: '@monolog.logger'
     
