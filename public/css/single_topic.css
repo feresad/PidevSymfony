@@ -2,119 +2,185 @@
 
 /* Style for the toggle replies button */
 .toggle-replies-btn a {
-    color: #007bff; /* Blue color to match a typical theme */
+    color: #007bff;
     transition: color 0.3s ease;
-    text-decoration: none; /* Remove underline */
+    text-decoration: none;
 }
 .toggle-replies-btn a:hover {
-    color: #0056b3; /* Darker blue on hover */
-    text-decoration: none; /* Ensure no underline on hover */
+    color: #0056b3;
+    text-decoration: none;
 }
 
 /* Style for parent comment cards */
 .comment-card:not(.reply-card) {
-    background-color: #1c2526; /* Darker background for parent comments */
-    padding: 20px; /* Increased padding for better spacing */
-    margin-bottom: 15px; /* More space between parent comments */
-    border-radius: 8px; /* Rounded corners for a modern look */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* Subtle shadow for depth */
+    background-color: #1c2526;
+    padding: 20px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .comment-card:not(.reply-card):hover {
-    transform: translateY(-2px); /* Slight lift on hover */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); /* Enhanced shadow on hover */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
 }
 
 /* Style for reply cards */
 .reply-card {
-    background-color: #2a2f38; /* Slightly lighter background for replies */
-    border-left: 4px solid #0585e6; /* Teal border to indicate a reply */
-    padding: 15px; /* Slightly less padding than parent comments */
-    margin-top: 8px; /* Small margin to separate from parent */
-    margin-bottom: 8px; /* Space between replies */
-    border-radius: 6px; /* Slightly smaller border radius */
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); /* Lighter shadow for replies */
-    position: relative; /* For pseudo-element positioning */
+    background-color: #2a2f38;
+    border-left: 4px solid #0585e6;
+    padding: 15px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    position: relative;
     transition: background-color 0.3s ease;
 }
 .reply-card:hover {
-    background-color: #323a45; /* Slightly lighter on hover for feedback */
+    background-color: #323a45;
 }
 
 /* Add a reply indicator (pseudo-element) */
 .reply-card::before {
-    content: "\f3e5"; /* FontAwesome reply icon */
+    content: "\f3e5";
     font-family: "Font Awesome 5 Free";
     font-weight: 900;
     position: absolute;
-    left: -20px; /* Position it to the left of the reply card */
+    left: -20px;
     top: 15px;
-    color: #0585e6; /* Match the border color */
+    color: #0585e6;
     font-size: 14px;
     opacity: 0.7;
 }
 
 /* Improve readability of reply content */
 .reply-card .nk-forum-topic-content p {
-    font-size: 0.95rem; /* Slightly smaller font size for replies */
-    line-height: 1.6; /* Better line spacing */
-    color: #d1d5db; /* Lighter text color for contrast */
-    margin-bottom: 10px; /* Space below the content */
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #d1d5db;
+    margin-bottom: 10px;
 }
 
 /* Style the author section in replies */
 .reply-card .nk-forum-topic-author {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Subtle separator */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     padding-bottom: 10px;
     margin-bottom: 10px;
 }
 .reply-card .nk-forum-topic-author-name a {
-    color: #0585e6; /* Teal color for the username to match the reply theme */
-    font-size: 0.9rem; /* Slightly smaller font */
+    color: #0585e6;
+    font-size: 0.9rem;
 }
 .reply-card .nk-forum-topic-author-role,
 .reply-card .nk-forum-topic-author-since {
-    font-size: 0.8rem; /* Smaller font for secondary info */
-    color: #a0a5aa; /* Muted color for less emphasis */
+    font-size: 0.8rem;
+    color: #a0a5aa;
 }
 
 /* Style the footer in replies */
 .reply-card .nk-forum-topic-footer {
-    font-size: 0.85rem; /* Smaller font for footer elements */
-    color: #a0a5aa; /* Muted color for footer text */
+    font-size: 0.85rem;
+    color: #a0a5aa;
 }
 .reply-card .nk-forum-action-btn a {
-    color: #0585e6; /* Teal color for action buttons */
+    color: #0585e6;
     transition: color 0.3s ease;
-    text-decoration: none; /* Remove underline */
+    text-decoration: none;
 }
 .reply-card .nk-forum-action-btn a:hover {
-    color: #0585e6; /* Darker teal on hover */
-    text-decoration: none; /* Ensure no underline on hover */
+    color: #0585e6;
+    text-decoration: none;
 }
 
 /* Ensure nested replies have consistent styling */
 .reply-card .reply-card {
-    background-color: #333c47; /* Even lighter background for deeper nesting */
-    border-left-color: #ff6f61; /* Coral border for deeper replies */
+    background-color: #333c47;
+    border-left-color: #ff6f61;
 }
 .reply-card .reply-card::before {
-    color: #ff6f61; /* Match the border color for deeper replies */
+    color: #ff6f61;
 }
 .reply-card .reply-card .nk-forum-topic-author-name a,
 .reply-card .reply-card .nk-forum-action-btn a {
-    color: #ff6f61; /* Coral color for deeper reply usernames and actions */
-    text-decoration: none; /* Remove underline */
+    color: #ff6f61;
+    text-decoration: none;
 }
 .reply-card .reply-card .nk-forum-action-btn a:hover {
-    color: #e65b50; /* Darker coral on hover */
-    text-decoration: none; /* Ensure no underline on hover */
+    color: #e65b50;
+    text-decoration: none;
 }
 
 /* Remove underline from all action buttons */
 .nk-forum-action-btn a {
-    text-decoration: none; /* Remove underline from all action buttons */
+    text-decoration: none;
 }
 .nk-forum-action-btn a:hover {
-    text-decoration: none; /* Ensure no underline on hover */
+    text-decoration: none;
+}
+
+/* Vote Section Styling */
+.nk-forum-vote-section {
+    display: flex;
+    align-items: center;
+    margin-left: 10px;
+    min-height: 30px; /* Ensure the section has enough height */
+}
+
+.nk-forum-vote-section .vote-btn {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background: none;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    line-height: 1;
+    min-width: 30px;
+    min-height: 30px;
+}
+
+.nk-forum-vote-section .vote-icon {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+}
+
+.nk-forum-vote-section .upvote-btn,
+.nk-forum-vote-section .upvote {
+    /* No color needed since we're using an image */
+}
+
+.nk-forum-vote-section .downvote-btn,
+.nk-forum-vote-section .downvote {
+    /* No color needed since we're using an image */
+}
+
+.nk-forum-vote-section .vote-btn:hover,
+.nk-forum-vote-section .upvote:hover,
+.nk-forum-vote-section .downvote:hover {
+    transform: scale(1.2);
+}
+
+.nk-forum-vote-section .vote-btn.voted {
+    animation: glow 1s infinite alternate;
+}
+
+.nk-forum-vote-section .vote-count {
+    font-size: 0.9rem;
+    color: #d1d5db;
+    margin: 0 5px;
+    min-width: 20px;
+    text-align: center;
+}
+
+/* Glow Animation for Voted Buttons */
+@keyframes glow {
+    from {
+        filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+    }
+    to {
+        filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
+    }
 }

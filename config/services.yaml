@@ -1,24 +1,23 @@
 # config/services.yaml
-
-# This file is the entry point to configure your own services.
-# Files in the packages/ subdirectory configure your dependencies.
-
-# Put parameters here that don't need to change on each machine where the app is deployed
-# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
-     image_base_url: 'http://localhost/img/'
-     git_url: 'https://feresad.github.io/event-qr-code/'
-     #uploads_directory: 'C:\xampp\htdocs\uploads'
-     uploads_directory: 'C:\xampp\htdocs\img\games'
-
+    #uploads_directory: 'C:\xampp\htdocs\uploads'
+    uploads_directory: 'C:\xampp\htdocs\img\games'
+    image_base_url: 'http://localhost/img/'
+    git_url: 'https://feresad.github.io/event-qr-code/'
+    sightengine_api_user: '%env(SIGHTENGINE_API_USER)%'
+    sightengine_api_secret: '%env(SIGHTENGINE_API_SECRET)%'
 services:
-    # default configuration for services in *this* file
+    App\Controller\ForumController:
+    App\Service\RedditService:
+        arguments:
+            $session: '@session'
+            $params: '%kernel.parameters%'
+            $logger: '@monolog.logger'
+    
     _defaults:
-        autowire: true      # Automatically injects dependencies in your services.
-        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        autowire: true
+        autoconfigure: true
 
-    # makes classes in src/ available to be used as services
-    # this creates a service per class whose id is the fully-qualified class name
     App\:
         resource: '../src/'
         exclude:
@@ -28,5 +27,9 @@ services:
     App\Service\ChatGPTService:
         arguments:
             $apiKey: '%env(OPENAI_API_KEY)%'
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
+    App\Controller\CommentController:
+        arguments:
+            $logger: '@Psr\Log\LoggerInterface'
+            $httpClient: '@Symfony\Contracts\HttpClient\HttpClientInterface'
+            $sightengineApiUser: '%env(SIGHTENGINE_API_USER)%'
+            $sightengineApiSecret: '%env(SIGHTENGINE_API_SECRET)%'
