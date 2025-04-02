@@ -1,6 +1,6 @@
 /* =========== Google Fonts ============ */
 @import url("https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap");
-@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
 
 /* =============== Globals ============== */
 * {
@@ -78,9 +78,11 @@ body {
   color: var(--accent-clr);
 }
 
-#sidebar a, #sidebar .dropdown-btn, #sidebar .logo {
-  border-radius: .5em;
-  padding: .85em;
+#sidebar a,
+#sidebar .dropdown-btn,
+#sidebar .logo {
+  border-radius: 0.5em;
+  padding: 0.85em;
   text-decoration: none;
   color: var(--white);
   display: flex;
@@ -103,16 +105,19 @@ body {
   font-size: 24px; /* Match the size of the previous SVGs */
 }
 
-#sidebar a span, #sidebar .dropdown-btn span {
+#sidebar a span,
+#sidebar .dropdown-btn span {
   flex-grow: 1;
 }
 
-#sidebar a:hover, #sidebar .dropdown-btn:hover {
+#sidebar a:hover,
+#sidebar .dropdown-btn:hover {
   background-color: var(--white);
   color: var(--blue);
 }
 
-#sidebar a:hover ion-icon, #sidebar .dropdown-btn:hover ion-icon {
+#sidebar a:hover ion-icon,
+#sidebar .dropdown-btn:hover ion-icon {
   color: var(--blue);
 }
 
@@ -153,7 +158,7 @@ body {
   margin-left: auto;
   padding: 1em;
   border: none;
-  border-radius: .5em;
+  border-radius: 0.5em;
   background: none;
   cursor: pointer;
   position: relative;
@@ -560,14 +565,17 @@ body {
   #sidebar ul li {
     height: 100%;
   }
-  #sidebar ul a, #sidebar ul .dropdown-btn {
+  #sidebar ul a,
+  #sidebar ul .dropdown-btn {
     width: 60px;
     height: 60px;
     padding: 0;
     border-radius: 0;
     justify-content: center;
   }
-  #sidebar ul li span, #sidebar ul li:first-child, #sidebar .dropdown-btn .dropdown-icon {
+  #sidebar ul li span,
+  #sidebar ul li:first-child,
+  #sidebar .dropdown-btn .dropdown-icon {
     display: none;
   }
   #sidebar .sub-menu.show {

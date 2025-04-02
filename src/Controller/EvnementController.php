@@ -6,7 +6,6 @@ use App\Entity\Evenement;
 use App\Form\EvenementType;
 
 use App\Repository\EvenementRepository;
-use App\Service\ChatGPTService;
 use Doctrine\ORM\EntityManagerInterface;
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
@@ -22,12 +21,10 @@ final class EvnementController extends AbstractController
     public function gettAll(EvenementRepository $repo, Request $request):Response{
         $search = $request->query->get('search', '');
         $sort = $request->query->get('sort', 'nom_asc');
-        $page = $request->query->getInt('page', 1); // Page actuelle, par défaut 1
-        $limit = 6; // Nombre d'événements par page
-
-        // Récupérer les événements paginés
+        $page = $request->query->getInt('page', 1);
+        $limit = 6;
         $evenements = $repo->findBySearchAndSort($search, $sort, $page, $limit);
-        $totalEvenements = $repo->countBySearch($search); // Méthode à ajouter dans le repository
+        $totalEvenements = $repo->countBySearch($search);
         $maxPages = ceil($totalEvenements / $limit);
 
         return $this->render('evenement/ListeEvenement.html.twig', [
@@ -173,24 +170,6 @@ final class EvnementController extends AbstractController
             Response::HTTP_OK,
             ['Content-Type' => 'image/png']
         );
-    }
-    #[Route('/chatbot', name: 'chatbot', methods: ['POST'])]
-    public function index(Request $request, ChatGPTService $chatGPTService): Response
-    {
-        $message = $request->request->get('message');
-
-        if ($message) {
-            $response = $chatGPTService->getResponse($message);
-            if ($request->isXmlHttpRequest()) {
-                return new Response($response);
-            }
-            return $this->render('evenement/chatbot.html.twig', [
-                'message' => $message,
-                'response' => $response,
-            ]);
-        }
-
-        return new Response('Aucun message fourni', 400);
     }
     #[Route('/admin/all',name: 'evenement_list_admin')]
     public function getAll(EvenementRepository $repo, Request $request):Response{
