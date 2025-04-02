@@ -255,9 +255,11 @@
         .emoji-option:hover { background-color: #0585e6; border-radius: 3px; }
         .nk-forum-topic-footer { display: flex; justify-content: space-between; align-items: center; position: relative; padding-bottom: 15px; }
         .nk-forum-topic-footer-left { display: flex; align-items: center; gap: 15px; }
-        .comment-card .nk-forum-vote-section { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 5px; }
+        /* Adjusted vertical alignment for voting section */
+        .comment-card .nk-forum-vote-section { display: flex; align-items: center; gap: 5px; margin-top: 0; position: static; transform: none; }
         .question-card .nk-forum-vote-section { display: flex; align-items: center; gap: 5px; }
-        .comment-card .nk-forum-topic-footer-right { position: absolute; right: 0; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 15px; }
+        /* Adjusted vertical alignment for footer-right */
+        .comment-card .nk-forum-topic-footer-right { display: flex; align-items: center; gap: 15px; position: static; transform: none; }
         .question-card .nk-forum-topic-footer-right { display: flex; align-items: center; gap: 15px; }
         .action-icon { width: 14px; height: 14px; vertical-align: middle; margin-right: 5px; }
         .reply-label { color: #fe0369; font-size: 0.9rem; vertical-align: middle; }

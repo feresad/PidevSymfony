@@ -368,9 +368,17 @@
         .nk-forum-item.sentiment-positive { border-left: 4px solid #28a745; }
         .nk-forum-item.sentiment-negative { border-left: 4px solid #dc3545; }
         .nk-forum-item.sentiment-neutral { border-left: 4px solid #6c757d; }
+    
+    .nk-btn-color-main-2 {
+        background-color: #0585e6 !important;
+        color: #fff !important;
+    }
+    .nk-btn-color-main-2:hover {
+        background-color: #0471c6 !important; /* Slightly darker shade for hover effect */
+    }
+
     </style>
 {% endblock %}
-
 {% block javascripts %}
     {{ parent() }}
     <script>
@@ -404,7 +412,6 @@
                     method: 'GET',
                     cache: true
                 }).then(emojis => {
-                    // Categorize based on group or name
                     const positiveGroups = ['smileys-emotion', 'people-body', 'activities', 'food-drink'];
                     const neutralGroups = ['travel-places', 'objects', 'animals-nature'];
 
@@ -412,31 +419,25 @@
                         const group = emoji.group;
                         const name = emoji.slug.toLowerCase();
 
-                        // Positive: Smiling, happy, celebratory emojis
                         if (positiveGroups.includes(group) || name.includes('smile') || name.includes('happy') || name.includes('love') || name.includes('laugh') || name.includes('party') || name.includes('cool')) {
                             if (sentimentMap.positive.length < 20) sentimentMap.positive.push(emoji.character);
                         }
-                        // Negative: Sad, angry, frustrated emojis
                         else if (group === 'smileys-emotion' && (name.includes('sad') || name.includes('cry') || name.includes('angry') || name.includes('mad') || name.includes('frown') || name.includes('disappoint') || name.includes('frustrated') || name.includes('broken') || name.includes('rage') || name.includes('pout'))) {
                             if (sentimentMap.negative.length < 20) sentimentMap.negative.push(emoji.character);
                         }
-                        // Neutral: Thinking, neutral, or ambiguous emojis
                         else if (neutralGroups.includes(group) || name.includes('think') || name.includes('shrug') || name.includes('face') || name.includes('neutral') || name.includes('roll')) {
                             if (sentimentMap.neutral.length < 20) sentimentMap.neutral.push(emoji.character);
                         }
                     });
 
-                    // Debug output to verify categorization
                     console.log('Positive Emojis:', sentimentMap.positive);
                     console.log('Negative Emojis:', sentimentMap.negative);
                     console.log('Neutral Emojis:', sentimentMap.neutral);
 
-                    // Ensure minimum variety
                     if (sentimentMap.positive.length < 10) sentimentMap.positive = ['👍', '😊', '😂', '❤️', '🎉', '😍', '👏', '🌟', '😎', '💪'];
                     if (sentimentMap.negative.length < 10) sentimentMap.negative = ['👎', '😢', '😡', '💔', '😤', '😞', '🤬', '😣', '💢', '😠'];
                     if (sentimentMap.neutral.length < 10) sentimentMap.neutral = ['🤔', '😐', '🙂', '👀', '🤷', '😶', '🤝', '🙄', '😴', '🤓'];
 
-                    // Sync with backend
                     $.ajax({
                         url: '{{ path('api_update_sentiment_map') }}',
                         method: 'POST',
@@ -505,21 +506,18 @@
 
                 let pickerHtml = '<div class="emoji-picker-container">';
                 
-                // Positive section
                 pickerHtml += '<div class="emoji-section"><h4>Positive</h4><div class="emoji-grid">';
                 sentimentMap.positive.forEach(emoji => {
                     pickerHtml += `<span class="emoji-option" data-emoji="${emoji}" data-id="${id}" data-type="${type}">${emoji}</span>`;
                 });
                 pickerHtml += '</div></div>';
 
-                // Negative section
                 pickerHtml += '<div class="emoji-section"><h4>Negative</h4><div class="emoji-grid">';
                 sentimentMap.negative.forEach(emoji => {
                     pickerHtml += `<span class="emoji-option" data-emoji="${emoji}" data-id="${id}" data-type="${type}">${emoji}</span>`;
                 });
                 pickerHtml += '</div></div>';
 
-                // Neutral section
                 pickerHtml += '<div class="emoji-section"><h4>Neutral</h4><div class="emoji-grid">';
                 sentimentMap.neutral.forEach(emoji => {
                     pickerHtml += `<span class="emoji-option" data-emoji="${emoji}" data-id="${id}" data-type="${type}">${emoji}</span>`;
@@ -567,7 +565,9 @@
                                 Swal.fire({
                                     title: 'Error',
                                     text: response.message,
-                                    icon: 'error',
+                                    imageUrl: '{{ asset('images/one-piece-luffy.gif') }}', // Custom GIF for error
+                                    imageWidth: 100,
+                                    imageHeight: 100,
                                     background: '#1c2526',
                                     color: '#d1d5db',
                                     confirmButtonColor: '#ff6f61'
@@ -578,7 +578,9 @@
                             Swal.fire({
                                 title: 'Error',
                                 text: 'Failed to save reaction',
-                                icon: 'error',
+                                imageUrl: '{{ asset('images/one-piece-luffy.gif') }}', // Custom GIF for error
+                                imageWidth: 100,
+                                imageHeight: 100,
                                 background: '#1c2526',
                                 color: '#d1d5db',
                                 confirmButtonColor: '#ff6f61'
@@ -631,7 +633,9 @@
                             Swal.fire({
                                 title: 'Voting Error',
                                 text: response.message,
-                                icon: 'error',
+                                imageUrl: '{{ asset('images/one-piece-luffy.gif') }}', // Custom GIF for voting error
+                                imageWidth: 100,
+                                imageHeight: 100,
                                 background: '#1c2526',
                                 color: '#d1d5db',
                                 confirmButtonColor: '#fe0369'
@@ -642,7 +646,9 @@
                         Swal.fire({
                             title: 'Voting Error',
                             text: 'An error occurred while voting. Please try again.',
-                            icon: 'error',
+                            imageUrl: '{{ asset('images/one-piece-luffy.gif') }}', // Custom GIF for voting error
+                            imageWidth: 100,
+                            imageHeight: 100,
                             background: '#1c2526',
                             color: '#d1d5db',
                             confirmButtonColor: '#fe0369'
@@ -651,8 +657,71 @@
                 });
             });
 
-            $(document).on('click', '.share-btn', function(e) {
+            // Share functionality with title and content formatting
+            $(document).on('click', '.share-link', function(e) {
                 e.preventDefault();
+                const $link = $(this);
+                const topicId = $link.data('id');
+                const platform = $link.hasClass('facebook-share') ? 'facebook' :
+                                 $link.hasClass('twitter-share') ? 'twitter' :
+                                 $link.hasClass('reddit-share') ? 'reddit' : null;
+
+                if (!platform) return;
+
+                $.ajax({
+                    url: '{{ path('api_share_topic') }}',
+                    method: 'GET',
+                    data: { id: topicId },
+                    success: function(response) {
+                        if (response.success) {
+                            const shareUrl = encodeURIComponent(response.url);
+                            const title = response.title || '';
+                            const content = response.content || '';
+                            const shareText = encodeURIComponent(`${title}: \n${content}`);
+                            let platformUrl;
+
+                            switch (platform) {
+                                case 'facebook':
+                                    platformUrl = `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}"e=${shareText}`;
+                                    break;
+                                case 'twitter':
+                                    platformUrl = `https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareText}`;
+                                    break;
+                                case 'reddit':
+                                    platformUrl = `https://www.reddit.com/submit?url=${shareUrl}&title=${shareText}`;
+                                    break;
+                            }
+
+                            if (platformUrl) {
+                                window.open(platformUrl, '_blank', 'width=600,height=400');
+                            }
+                        } else {
+                            Swal.fire({
+                                title: 'Error',
+                                text: response.message || 'Failed to fetch share data.',
+                                imageUrl: '{{ asset('images/one-piece-luffy.gif') }}', // Custom GIF for share error
+                                imageWidth: 100,
+                                imageHeight: 100,
+                                background: '#1c2526',
+                                color: '#d1d5db',
+                                confirmButtonColor: '#ff6f61'
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error fetching share data:', status, error);
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'An error occurred while preparing to share.',
+                            imageUrl: '{{ asset('images/one-piece-luffy.gif') }}', // Custom GIF for share error
+                            imageWidth: 100,
+                            imageHeight: 100,
+                            background: '#1c2526',
+                            color: '#d1d5db',
+                            confirmButtonColor: '#ff6f61'
+                        });
+                    }
+                });
             });
 
             // Profanity check
@@ -676,7 +745,9 @@
                             Swal.fire({
                                 title: 'Inappropriate Content Detected',
                                 html: 'Your topic contains inappropriate language. Please revise it.<br><strong>Detected:</strong> ' + (profanityList || 'N/A'),
-                                icon: 'warning',
+                                imageUrl: '{{ asset('images/one-piece-luffy.gif') }}', // Custom GIF instead of warning icon
+                                imageWidth: 100, // Adjust width as needed
+                                imageHeight: 100, // Adjust height as needed
                                 background: '#1c2526',
                                 color: '#d1d5db',
                                 confirmButtonColor: '#fe0369'
@@ -693,7 +764,9 @@
                         Swal.fire({
                             title: 'Error',
                             text: 'Error checking profanity. Please try again.',
-                            icon: 'error',
+                            imageUrl: '{{ asset('images/one-piece-luffy.gif') }}', // Custom GIF for error
+                            imageWidth: 100,
+                            imageHeight: 100,
                             background: '#1c2526',
                             color: '#d1d5db',
                             confirmButtonColor: '#fe0369'

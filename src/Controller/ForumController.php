@@ -120,17 +120,14 @@ class ForumController extends AbstractController
             }
         }
 
-        // Fetch sentiment map from session
         $sentimentMap = $request->getSession()->get('sentiment_map', [
             'positive' => ['👍', '😊', '😂', '❤️', '🎉', '😍', '👏', '🌟', '😎', '💪'],
             'negative' => ['👎', '😢', '😡', '💔', '😤', '😞', '🤬', '😣', '💢', '😠'],
             'neutral' => ['🤔', '😐', '🙂', '👀', '🤷', '😶', '🤝', '🙄', '😴', '🤓']
         ]);
 
-        // Define vote threshold for sorting
         $threshold = -5;
 
-        // Fetch high-quality questions (votes >= threshold)
         $highQualityQuestions = $questionsRepository->createQueryBuilder('q')
             ->where('q.votes >= :threshold')
             ->setParameter('threshold', $threshold)
@@ -138,7 +135,6 @@ class ForumController extends AbstractController
             ->getQuery()
             ->getResult();
 
-        // Fetch low-quality questions (votes < threshold)
         $lowQualityQuestions = $questionsRepository->createQueryBuilder('q')
             ->where('q.votes < :threshold')
             ->setParameter('threshold', $threshold)
@@ -146,10 +142,8 @@ class ForumController extends AbstractController
             ->getQuery()
             ->getResult();
 
-        // Combine the two lists: high-quality first, then low-quality
         $questions = array_merge($highQualityQuestions, $lowQualityQuestions);
 
-        // Map questions to topic data with sentiment analysis
         $topics = array_map(function (Questions $question) use ($entityManager, $sentimentMap) {
             $user = $question->getUtilisateurId();
             $game = $question->getGameId();
@@ -166,7 +160,6 @@ class ForumController extends AbstractController
                 $reactionCounts[$emoji] = ($reactionCounts[$emoji] ?? 0) + 1;
             }
 
-            // Calculate sentiment based on reactions
             $positiveCount = 0;
             $negativeCount = 0;
             $neutralCount = 0;
@@ -186,8 +179,6 @@ class ForumController extends AbstractController
                 $sentiment = 'positive';
             } elseif ($negativeCount > $positiveCount && $negativeCount > $neutralCount) {
                 $sentiment = 'negative';
-            } elseif ($neutralCount > $positiveCount && $neutralCount > $neutralCount) {
-                $sentiment = 'neutral';
             }
 
             return [
@@ -208,7 +199,7 @@ class ForumController extends AbstractController
                 'gameImage' => $game && $game->getImagePath() ? $game->getImagePath() : null,
                 'updateForm' => $updateForm->createView(),
                 'reactionCounts' => $reactionCounts,
-                'sentiment' => $sentiment, // Add sentiment to the topic data
+                'sentiment' => $sentiment,
             ];
         }, $questions);
 
@@ -326,8 +317,6 @@ class ForumController extends AbstractController
                 $sentiment = 'positive';
             } elseif ($negativeCount > $positiveCount && $negativeCount > $neutralCount) {
                 $sentiment = 'negative';
-            } elseif ($neutralCount > $positiveCount && $neutralCount > $neutralCount) {
-                $sentiment = 'neutral';
             }
 
             return [
@@ -607,8 +596,8 @@ class ForumController extends AbstractController
         $shareData = [
             'success' => true,
             'url' => $topicUrl,
-            'title' => $question->getTitle(),
-            'description' => substr(strip_tags($question->getContent()), 0, 200) . (strlen($question->getContent()) > 200 ? '...' : ''),
+            'title' => $question->getTitle() ?? '',
+            'content' => strip_tags($question->getContent() ?? ''), // Full content, no truncation
             'image' => $imageUrl,
         ];
 
