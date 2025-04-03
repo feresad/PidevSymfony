@@ -27,7 +27,7 @@
                 </button>
             </li>
             <li class="active">
-                <a href="">
+                <a href="{{ path('app_home_admin') }}">
                     <ion-icon name="home-outline"></ion-icon>
                     <span>Dashboard</span>
                 </a>
@@ -46,6 +46,13 @@
                         <li><a href="{{ path('categorie_list_admin') }}">Liste Categories</a></li>
                     </div>
                 </ul>
+            </li>
+            <!-- Add the Gaming Dashboard link here -->
+            <li>
+                <a href="{{ path('admin_games_dashboard') }}">
+                        <ion-icon name="game-controller-outline"></ion-icon>
+                    <span>Gaming Dashboard</span>
+                </a>
             </li>
             <li>
                 <a href="">

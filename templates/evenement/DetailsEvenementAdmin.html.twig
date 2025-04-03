@@ -45,6 +45,9 @@
                class="btn btn-outline-danger">
                 <i class="fas fa-trash"></i> Supprimer
             </a>
+            <a href="{{ path('evenement_export_pdf', {id: evenement.id}) }}" class="btn btn-outline-success">
+                <i class="fas fa-file-pdf"></i> Exporter en  la liste des Utilisateurs
+            </a>
             <a href="{{ path('evenement_list_admin') }}" class="btn btn-outline-primary">
                 <i class="fas fa-arrow-left"></i> Retour à la liste
             </a>

@@ -1,48 +1,56 @@
 <?php
 
 namespace App\Entity;
-
+use App\Repository\ClientEvenementRepository;
 use Doctrine\ORM\Mapping as ORM;
-use App\Entity\Evenement;
-use App\Repository\Client_evenementRepository;
 
-#[ORM\Entity(repositoryClass: Client_evenementRepository::class)]
+#[ORM\Entity(repositoryClass: ClientEvenementRepository::class)]
+#[ORM\Table(name: 'client_evenement')]
 class ClientEvenement
 {
     #[ORM\Id]
-    #[ORM\ManyToOne(targetEntity: Client::class, inversedBy: "client_evenements")]
-    #[ORM\JoinColumn(name: 'client_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
-    private ?Client $client_id = null;
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'clientEvenements')]
+    #[ORM\JoinColumn(name: 'client_id', referencedColumnName: 'id', nullable: false, columnDefinition: 'INT(11) NOT NULL', onDelete: 'CASCADE')]
+    private ?Utilisateur $client = null;
 
     #[ORM\Id]
-    #[ORM\ManyToOne(targetEntity: Evenement::class, inversedBy: "client_evenements")]
-    #[ORM\JoinColumn(name: 'evenement_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
-    private ?Evenement $evenement_id = null;
+    #[ORM\ManyToOne(targetEntity: Evenement::class, inversedBy: 'clientEvenements')]
+    #[ORM\JoinColumn(name: 'evenement_id', referencedColumnName: 'id', nullable: false, columnDefinition: 'INT(11) NOT NULL', onDelete: 'CASCADE')]
+    private ?Evenement $evenement = null;
 
-    public function __construct()
+    /**
+     * @return Utilisateur|null
+     */
+    public function getClient(): ?Utilisateur
     {
-        // Initialization if needed
+        return $this->client;
     }
 
-    public function getClient_id(): ?Client
+    /**
+     * @param Utilisateur|null $client
+     * @return $this
+     */
+    public function setClient(?Utilisateur $client): self
     {
-        return $this->client_id;
-    }
-
-    public function setClient_id(?Client $client_id): self
-    {
-        $this->client_id = $client_id;
+        $this->client = $client;
         return $this;
     }
 
-    public function getEvenement_id(): ?Evenement
+    /**
+     * @return Evenement|null
+     */
+    public function getEvenement(): ?Evenement
     {
-        return $this->evenement_id;
+        return $this->evenement;
     }
 
-    public function setEvenement_id(?Evenement $evenement_id): self
+    /**
+     * @param Evenement|null $evenement
+     * @return $this
+     */
+    public function setEvenement(?Evenement $evenement): self
     {
-        $this->evenement_id = $evenement_id;
+        $this->evenement = $evenement;
         return $this;
     }
 }
