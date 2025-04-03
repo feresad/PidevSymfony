@@ -1,0 +1,123 @@
+{% extends 'baseadmin.html.twig' %}
+
+{% block title %}Gaming Dashboard{% endblock %}
+
+{% block body %}
+    <!-- Display Flash Messages -->
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="flash-{{ label }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <!-- ======================= Cards ================== -->
+    <div class="cardBox">
+        <div class="card">
+            <div>
+                <div class="numbers">{{ games|length }}</div>
+                <div class="cardName">Total Games</div>
+            </div>
+            <div class="iconBx">
+                <ion-icon name="game-controller-outline"></ion-icon>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================ Games List ================= -->
+    <div class="details">
+        <div class="recentOrders">
+            <div class="cardHeader">
+                <h2>Games</h2>
+                <a href="{{ path('admin_games_new') }}" class="btn">Add New Game</a>
+            </div>
+
+            <div class="gameCards">
+                {% if games is empty %}
+                    <p>No games found.</p>
+                {% else %}
+                    {% for game in games %}
+                        <div class="gameCard">
+                            {% if game.getImagePath() %}
+                                <img src="http://localhost/img/games/{{ game.getImagePath() }}" alt="{{ game.getGameName() }}" class="gameImage">
+                            {% else %}
+                                <img src="{{ asset('images/default-game.jpg') }}" alt="Default Image" class="gameImage">
+                            {% endif %}
+                            <div class="gameInfo">
+                                <h3>{{ game.getGameName() }}</h3>
+                                <p><strong>Type:</strong> {{ game.getGameType().value }}</p>
+                                <p><strong>Questions:</strong> {{ game.getQuestions()|length }}</p>
+                            </div>
+                            <div class="gameActions">
+                                <a href="{{ path('admin_games_edit', {'id': game.getGameId()}) }}" class="btn">Edit</a>
+                                <form method="post" action="{{ path('admin_games_delete', {'id': game.getGameId()}) }}" onsubmit="return confirm('Are you sure you want to delete this game?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ game.getGameId()) }}">
+                                    <button type="submit" class="btn danger">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom CSS for game cards -->
+    <style>
+        .gameCards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 20px;
+        }
+        .gameCard {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 7px 25px rgba(0, 0, 0, 0.08);
+            padding: 15px;
+            width: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .gameImage {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+        .gameInfo {
+            padding: 10px 0;
+            text-align: center;
+        }
+        .gameActions {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            padding: 5px 15px;
+            text-decoration: none;
+            color: #fff;
+            background: #03a9f4;
+            border-radius: 5px;
+        }
+        .btn.danger {
+            background: #f44336;
+        }
+        .flash-success {
+            color: green;
+            padding: 10px;
+            margin: 10px 0;
+            background: #e0f7e0;
+            border-radius: 5px;
+        }
+        .flash-error {
+            color: red;
+            padding: 10px;
+            margin: 10px 0;
+            background: #ffe0e0;
+            border-radius: 5px;
+        }
+    </style>
+{% endblock %}
