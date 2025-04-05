@@ -24,7 +24,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class CommentController extends AbstractController
 {
-    private $logger;
+   private $logger;
     private $httpClient;
     private $sightengineApiUser;
     private $sightengineApiSecret;
@@ -41,15 +41,6 @@ class CommentController extends AbstractController
         $this->sightengineApiSecret = $sightengineApiSecret;
     }
 
-    #[Route('/debug/env', name: 'debug_env', methods: ['GET'])]
-    public function debugEnv(): JsonResponse
-    {
-        return new JsonResponse([
-            'sightengine_api_user' => $this->sightengineApiUser,
-            'sightengine_api_secret' => $this->sightengineApiSecret,
-        ]);
-    }
-
     #[Route('/forum/topic/{id}/comment', name: 'comment_create', methods: ['POST'])]
     public function create(
         int $id,
@@ -60,16 +51,20 @@ class CommentController extends AbstractController
     ): Response {
         $question = $questionsRepository->find($id);
         if (!$question) {
-            $this->logger->error('Topic not found', ['topic_id' => $id]);
             $this->addFlash('error', 'Topic not found.');
             return $this->redirectToRoute('forum_topics');
         }
 
-        $utilisateur = $this->getUser() ?? $utilisateurRepository->findOneBy([], ['id' => 'ASC']);
+        $userId = $request->request->get('user_id') ?? $request->headers->get('X-User-Id');
+        if (!$userId) {
+            $this->addFlash('error', 'You must be logged in to comment.');
+            return $this->redirectToRoute('forum_single_topic', ['id' => $id]);
+        }
+
+        $utilisateur = $utilisateurRepository->find($userId);
         if (!$utilisateur) {
-            $this->logger->error('No user found');
-            $this->addFlash('error', 'No users found.');
-            return $this->redirectToRoute('forum_topics');
+            $this->addFlash('error', 'User not found.');
+            return $this->redirectToRoute('forum_single_topic', ['id' => $id]);
         }
 
         $comment = new Commentaire();
@@ -88,7 +83,6 @@ class CommentController extends AbstractController
                 if ($parentComment) {
                     $comment->setParentCommentaireId($parentComment);
                 } else {
-                    $this->logger->error('Parent comment not found', ['parent_comment_id' => $parentId]);
                     $this->addFlash('error', 'Parent comment not found.');
                     return $this->redirectToRoute('forum_single_topic', ['id' => $id]);
                 }
@@ -102,32 +96,16 @@ class CommentController extends AbstractController
                 $entityManager->flush();
                 $entityManager->commit();
 
-                $this->logger->info('Comment added', [
-                    'comment_id' => $comment->getCommentaireId(),
-                    'user_id' => $utilisateur->getId(),
-                ]);
-
                 $this->addFlash('success', 'Comment added successfully!');
             } catch (\Exception $e) {
                 $entityManager->rollback();
                 $this->logger->error('Error adding comment', ['error' => $e->getMessage()]);
                 $this->addFlash('error', 'Error adding comment: ' . $e->getMessage());
             }
-        } else {
-            $errors = $form->getErrors(true, true);
-            $errorMessages = [];
-            foreach ($errors as $error) {
-                $errorMessages[] = $error->getMessage();
-            }
-            if (!empty($errorMessages)) {
-                $this->logger->warning('Comment form validation failed', ['errors' => $errorMessages]);
-                $this->addFlash('error', implode(' ', $errorMessages));
-            }
         }
 
         return $this->redirectToRoute('forum_single_topic', ['id' => $id]);
     }
-
     #[Route('/api/check-profanity', name: 'api_check_profanity', methods: ['POST'])]
     public function checkProfanity(Request $request): JsonResponse
     {

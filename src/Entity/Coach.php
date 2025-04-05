@@ -2,61 +2,43 @@
 
 namespace App\Entity;
 
+use App\Repository\CoachRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Collections\ArrayCollection;
 
-use App\Entity\Utilisateur;
-
-#[ORM\Entity]
-class Coach
+#[ORM\Entity(repositoryClass: CoachRepository::class)]
+class Coach extends Utilisateur
 {
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $avalableSessionDates = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $nombreSessionReseve = null;
+
     public function __construct()
     {
+        $this->setRole("COACH");
     }
 
-
-    #[ORM\Id]
-        #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: "coachs")]
-    #[ORM\JoinColumn(name: 'id', referencedColumnName: 'id', onDelete: 'CASCADE')]
-    private Utilisateur $id;
-
-    #[ORM\Column(type: "datetime")]
-    private \DateTimeInterface $avalable_session_dates;
-
-    #[ORM\Column(type: "integer")]
-    private int $nombre_session_reseve;
-
-    public function getId(): Utilisateur
+    public function getAvalableSessionDates(): ?\DateTimeInterface
     {
-        return $this->id;
+        return $this->avalableSessionDates;
     }
 
-    public function setId(Utilisateur $id): self
+    public function setAvalableSessionDates(?\DateTimeInterface $avalableSessionDates): self
     {
-        $this->id = $id;
+        $this->avalableSessionDates = $avalableSessionDates;
         return $this;
     }
 
-    public function getAvalable_session_dates(): \DateTimeInterface
+    public function getNombreSessionReseve(): ?int
     {
-        return $this->avalable_session_dates;
+        return $this->nombreSessionReseve;
     }
 
-    public function setAvalable_session_dates(\DateTimeInterface $avalable_session_dates): self
+    public function setNombreSessionReseve(?int $nombreSessionReseve): self
     {
-        $this->avalable_session_dates = $avalable_session_dates;
-        return $this;
-    }
-
-    public function getNombre_session_reseve(): int
-    {
-        return $this->nombre_session_reseve;
-    }
-
-    public function setNombre_session_reseve(int $nombre_session_reseve): self
-    {
-        $this->nombre_session_reseve = $nombre_session_reseve;
+        $this->nombreSessionReseve = $nombreSessionReseve;
         return $this;
     }
 }
