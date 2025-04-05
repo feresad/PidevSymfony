@@ -3,22 +3,13 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Collections\ArrayCollection;
-
-use App\Entity\Utilisateur;
 
 #[ORM\Entity]
-class Admin
+class Admin extends Utilisateur
 {
     public function __construct()
     {
+        parent::__construct();
+        $this->setRole(Role::ADMIN);
     }
-
-
-    #[ORM\Id]
-        #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: "admins")]
-    #[ORM\JoinColumn(name: 'id', referencedColumnName: 'id', onDelete: 'CASCADE')]
-    private Utilisateur $id;
-
 }

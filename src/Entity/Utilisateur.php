@@ -3,26 +3,16 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Collections\ArrayCollection;
-use App\Enum\RoleType;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity]
 #[ORM\Table(name: "utilisateur")]
-class Utilisateur
+class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 {
-    public function __construct()
-    {
-        $this->privilege = 'regular';
-        $this->ban = false;
-        $this->countRep = 0;
-        $this->questions = new ArrayCollection();
-        $this->questionVotes = new ArrayCollection();
-    }
-
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: "integer", name: "id")]
+    #[ORM\Column(type: "integer")]
     private int $id;
 
     #[ORM\Column(type: "string", length: 255, name: "nom")]
@@ -31,10 +21,10 @@ class Utilisateur
     #[ORM\Column(type: "string", length: 255, name: "prenom")]
     private string $prenom;
 
-    #[ORM\Column(type: "string", length: 255, name: "email")]
+    #[ORM\Column(type: "string", length: 255, unique: true)]
     private string $email;
 
-    #[ORM\Column(type: "string", length: 255, name: "nickname")]
+    #[ORM\Column(type: "string", length: 255, unique: true)]
     private string $nickname;
 
     #[ORM\Column(type: "integer", name: "numero")]
@@ -43,46 +33,53 @@ class Utilisateur
     #[ORM\Column(type: "string", length: 255, name: "mot_passe")]
     private string $mot_passe;
 
-    #[ORM\Column(type: "string", enumType: RoleType::class, name: "role")]
-    private RoleType $role;
+    #[ORM\Column(type: "string", enumType: Role::class)]
+    private Role $role;
 
-    #[ORM\Column(type: "string", length: 50, name: "privilege", options: ["default" => "regular"])]
-    private string $privilege;
+    public function setRole(string|Role $role): self
+    {
+        if (is_string($role)) {
+            $this->role = Role::from($role);
+        } else {
+            $this->role = $role;
+        }
+        return $this;
+    }
 
-    #[ORM\Column(type: "boolean", name: "ban", options: ["default" => 0])]
-    private bool $ban;
+    public function getRole(): Role
+    {
+        return $this->role;
+    }
 
-    #[ORM\Column(type: "datetime", name: "banTime", nullable: true)]
+    public function getRoles(): array
+    {
+        return ["ROLE_" . $this->role->value];
+    }
+
+    #[ORM\Column(type: "string", length: 50, options: ["default" => "regular"])]
+    private string $privilege = "regular";
+
+    #[ORM\Column(type: "boolean", options: ["default" => false])]
+    private bool $ban = false;
+
+    #[ORM\Column(name: "banTime", type: "datetime", nullable: true)]
     private ?\DateTimeInterface $banTime = null;
 
-    #[ORM\Column(type: "integer", name: "countRep", options: ["default" => 0])]
-    private int $countRep;
+    #[ORM\Column(name: "countRep", type: "integer", options: ["default" => 0])]
+    private int $countRep = 0;
 
-    #[ORM\Column(type: "string", length: 255, name: "photo", nullable: true)]
+    #[ORM\Column(type: "string", length: 255, nullable: true)]
     private ?string $photo = null;
-
-    #[ORM\OneToMany(mappedBy: "utilisateur_id", targetEntity: Questions::class)]
-    private Collection $questions;
-
-    #[ORM\OneToMany(mappedBy: "user_id", targetEntity: QuestionVotes::class)]
-    private Collection $questionVotes;
 
     public function getId(): int
     {
         return $this->id;
     }
 
-    public function setId(int $id): self
-    {
-        $this->id = $id;
-        return $this;
-    }
-
     public function getNom(): string
     {
         return $this->nom;
     }
-
     public function setNom(string $nom): self
     {
         $this->nom = $nom;
@@ -93,7 +90,6 @@ class Utilisateur
     {
         return $this->prenom;
     }
-
     public function setPrenom(string $prenom): self
     {
         $this->prenom = $prenom;
@@ -104,7 +100,6 @@ class Utilisateur
     {
         return $this->email;
     }
-
     public function setEmail(string $email): self
     {
         $this->email = $email;
@@ -115,7 +110,6 @@ class Utilisateur
     {
         return $this->nickname;
     }
-
     public function setNickname(string $nickname): self
     {
         $this->nickname = $nickname;
@@ -126,40 +120,32 @@ class Utilisateur
     {
         return $this->numero;
     }
-
     public function setNumero(int $numero): self
     {
         $this->numero = $numero;
         return $this;
     }
 
-    public function getMotPasse(): string
+    public function getPassword(): string
     {
         return $this->mot_passe;
     }
 
-    public function setMotPasse(string $mot_passe): self
+    public function setMotPasse(string $motPasse): self
     {
-        $this->mot_passe = $mot_passe;
+        $this->mot_passe = $motPasse;
         return $this;
     }
 
-    public function getRole(): RoleType
+    public function verifyPassword(string $plainPassword): bool
     {
-        return $this->role;
-    }
-
-    public function setRole(RoleType $role): self
-    {
-        $this->role = $role;
-        return $this;
+        return password_verify($plainPassword, $this->mot_passe);
     }
 
     public function getPrivilege(): string
     {
         return $this->privilege;
     }
-
     public function setPrivilege(string $privilege): self
     {
         $this->privilege = $privilege;
@@ -170,7 +156,6 @@ class Utilisateur
     {
         return $this->ban;
     }
-
     public function setBan(bool $ban): self
     {
         $this->ban = $ban;
@@ -181,7 +166,6 @@ class Utilisateur
     {
         return $this->banTime;
     }
-
     public function setBanTime(?\DateTimeInterface $banTime): self
     {
         $this->banTime = $banTime;
@@ -192,7 +176,6 @@ class Utilisateur
     {
         return $this->countRep;
     }
-
     public function setCountRep(int $countRep): self
     {
         $this->countRep = $countRep;
@@ -203,58 +186,70 @@ class Utilisateur
     {
         return $this->photo;
     }
-
     public function setPhoto(?string $photo): self
     {
         $this->photo = $photo;
         return $this;
     }
 
-    public function getQuestions(): Collection
+    // Implémentation UserInterface pour Symfony Security
+    public function getUserIdentifier(): string
     {
-        return $this->questions;
+        return $this->email;
     }
 
-    public function addQuestion(Questions $question): self
+    public function eraseCredentials(): void
     {
-        if (!$this->questions->contains($question)) {
-            $this->questions[] = $question;
-            $question->setUtilisateurId($this);
-        }
+        // If you store any temporary, sensitive data on the user, clear it here
+    }
+
+    public function getUsername(): string
+    {
+        return $this->nickname;
+    }
+
+    public function setUsername(string $username): self
+    {
+        $this->nickname = $username;
         return $this;
     }
 
-    public function removeQuestion(Questions $question): self
+    public function __construct()
     {
-        if ($this->questions->removeElement($question)) {
-            if ($question->getUtilisateurId() === $this) {
-                $question->setUtilisateurId(null);
-            }
-        }
-        return $this;
+        $this->role = Role::CLIENT;
+        $this->privilege = "regular";
+        $this->ban = false;
+        $this->countRep = 0;
     }
 
-    public function getQuestionVotes(): Collection
+    // Static method to handle localStorage data
+    public static function createFromLocalStorage(): ?self
     {
-        return $this->questionVotes;
+        $userId = '<script>document.write(localStorage.getItem("userId"))</script>';
+        $userEmail = '<script>document.write(localStorage.getItem("userEmail"))</script>';
+        $userRole = '<script>document.write(localStorage.getItem("userRole"))</script>';
+
+        if (!$userId || !$userEmail || !$userRole) {
+            return null;
+        }
+
+        $user = new self();
+        $user->id = (int)$userId;
+        $user->email = $userEmail;
+        $user->setRole($userRole);
+
+        return $user;
     }
 
-    public function addQuestionVote(QuestionVotes $questionVote): self
+    public static function getUserIdFromLocalStorage(): ?int
     {
-        if (!$this->questionVotes->contains($questionVote)) {
-            $this->questionVotes[] = $questionVote;
-            $questionVote->setUserId($this);
-        }
-        return $this;
+        $userId = '<script>document.write(localStorage.getItem("userId"))</script>';
+        return $userId ? (int)$userId : null;
     }
 
-    public function removeQuestionVote(QuestionVotes $questionVote): self
+    public static function getUserEmailFromLocalStorage(): ?string
     {
-        if ($this->questionVotes->removeElement($questionVote)) {
-            if ($questionVote->getUserId() === $this) {
-                $questionVote->setUserId(null);
-            }
-        }
-        return $this;
+        $userEmail = '<script>document.write(localStorage.getItem("userEmail"))</script>';
+        return $userEmail ?: null;
     }
 }
