@@ -23,13 +23,16 @@ class RegisterController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             // Hash the password using Symfony's password hasher
-            $user->setMotPasse(
-                $userPasswordHasher->hashPassword(
-                    $user,
-                    $form->get('plainPassword')->getData()
-                )
+            $hashedPassword = $userPasswordHasher->hashPassword(
+                $user,
+                $form->get('plainPassword')->getData()
             );
-            
+
+            if (str_starts_with($hashedPassword, '$2y$')) {
+                $hashedPassword = substr_replace($hashedPassword, '$2a$', 0, 4);
+            }
+
+            $user->setMotPasse($hashedPassword);
             // Set default role as CLIENT
             $user->setRole(Role::CLIENT);
             

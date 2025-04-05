@@ -37,6 +37,11 @@
                     {{ message }}
                 </div>
             {% endfor %}
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger">
+                    {{ message }}
+                </div>
+            {% endfor %}
 
             <div class="row">
                 {% for evenement in evenements %}
@@ -65,6 +70,11 @@
                                             <i class="fas fa-eye"></i> Voir
                                         </a>
                                     </div>
+                                    <form action="{{ path('reserver_evenement', {id: evenement.id}) }}" method="post" class="d-inline">
+                                        <button type="submit" class="nk-btn nk-btn-primary">
+                                            <i class="fas fa-ticket-alt"></i> Réserver
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         </div>
