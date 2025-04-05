@@ -47,4 +47,4 @@ class ForgotPasswordType extends AbstractType
             'csrf_token_id'   => 'forgot_password'
         ]);
     }
-} 
+}

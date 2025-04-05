@@ -39,8 +39,13 @@ security:
     - { path: ^/register, roles: PUBLIC_ACCESS }
     - { path: ^/login, roles: PUBLIC_ACCESS }
     - { path: ^/mot-passe-oublie, roles: PUBLIC_ACCESS }
+    - { path: ^/verifier-code, roles: PUBLIC_ACCESS }
+    - { path: ^/check-otp, roles: PUBLIC_ACCESS }
+    - { path: ^/reset-password, roles: PUBLIC_ACCESS } # Optional, if you use it
     - { path: ^/admin, roles: ROLE_ADMIN }
     - { path: ^/coach, roles: ROLE_COACH }
     - { path: ^/home, roles: [ROLE_CLIENT, ROLE_ADMIN, ROLE_COACH] }
     - { path: ^/$, roles: PUBLIC_ACCESS }
     - { path: ^/, roles: [ROLE_CLIENT, ROLE_COACH, ROLE_ADMIN] }
+    - { path: ^/reset-password, roles: PUBLIC_ACCESS }
+
