@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Vérification du code{% endblock %}
+
+{% block body %}
+<div class="verify-code-container">
+    <h1>Vérification du Code</h1>
+    <p>Un code de vérification a été envoyé à votre adresse email. Veuillez l’entrer ci-dessous.</p>
+
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    <form method="post" action="{{ path('app_check_otp') }}">
+        <input type="text" name="otp" placeholder="Code OTP" required class="form-control mb-3" />
+        <button type="submit" class="btn btn-primary">Vérifier</button>
+    </form>
+</div>
+{% endblock %}
