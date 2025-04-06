@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Controller;
+use App\Entity\Utilisateur;
 
 use App\Entity\Commentaire;
 use App\Entity\Questions;
@@ -41,15 +42,6 @@ class CommentController extends AbstractController
         $this->sightengineApiSecret = $sightengineApiSecret;
     }
 
-    #[Route('/debug/env', name: 'debug_env', methods: ['GET'])]
-    public function debugEnv(): JsonResponse
-    {
-        return new JsonResponse([
-            'sightengine_api_user' => $this->sightengineApiUser,
-            'sightengine_api_secret' => $this->sightengineApiSecret,
-        ]);
-    }
-
     #[Route('/forum/topic/{id}/comment', name: 'comment_create', methods: ['POST'])]
     public function create(
         int $id,
@@ -60,16 +52,15 @@ class CommentController extends AbstractController
     ): Response {
         $question = $questionsRepository->find($id);
         if (!$question) {
-            $this->logger->error('Topic not found', ['topic_id' => $id]);
             $this->addFlash('error', 'Topic not found.');
             return $this->redirectToRoute('forum_topics');
         }
 
-        $utilisateur = $this->getUser() ?? $utilisateurRepository->findOneBy([], ['id' => 'ASC']);
+        /** @var Utilisateur|null $utilisateur */
+        $utilisateur = $this->getUser();
         if (!$utilisateur) {
-            $this->logger->error('No user found');
-            $this->addFlash('error', 'No users found.');
-            return $this->redirectToRoute('forum_topics');
+            $this->addFlash('error', 'You must be logged in to comment.');
+            return $this->redirectToRoute('app_login_page');
         }
 
         $comment = new Commentaire();
@@ -87,8 +78,12 @@ class CommentController extends AbstractController
                 $parentComment = $entityManager->getRepository(Commentaire::class)->find($parentId);
                 if ($parentComment) {
                     $comment->setParentCommentaireId($parentComment);
+                    // Tag the original commenter in the content
+                    $originalCommenter = $parentComment->getUtilisateurId()->getNickname();
+                    $currentContent = $comment->getContenu();
+                    $taggedContent = "@{$originalCommenter} {$currentContent}";
+                    $comment->setContenu($taggedContent);
                 } else {
-                    $this->logger->error('Parent comment not found', ['parent_comment_id' => $parentId]);
                     $this->addFlash('error', 'Parent comment not found.');
                     return $this->redirectToRoute('forum_single_topic', ['id' => $id]);
                 }
@@ -102,26 +97,11 @@ class CommentController extends AbstractController
                 $entityManager->flush();
                 $entityManager->commit();
 
-                $this->logger->info('Comment added', [
-                    'comment_id' => $comment->getCommentaireId(),
-                    'user_id' => $utilisateur->getId(),
-                ]);
-
                 $this->addFlash('success', 'Comment added successfully!');
             } catch (\Exception $e) {
                 $entityManager->rollback();
                 $this->logger->error('Error adding comment', ['error' => $e->getMessage()]);
                 $this->addFlash('error', 'Error adding comment: ' . $e->getMessage());
-            }
-        } else {
-            $errors = $form->getErrors(true, true);
-            $errorMessages = [];
-            foreach ($errors as $error) {
-                $errorMessages[] = $error->getMessage();
-            }
-            if (!empty($errorMessages)) {
-                $this->logger->warning('Comment form validation failed', ['errors' => $errorMessages]);
-                $this->addFlash('error', implode(' ', $errorMessages));
             }
         }
 
@@ -173,6 +153,13 @@ class CommentController extends AbstractController
             return $this->redirectToRoute('forum_topics');
         }
 
+        /** @var Utilisateur|null $utilisateur */
+        $utilisateur = $this->getUser();
+        if (!$utilisateur || $comment->getUtilisateurId()->getId() !== $utilisateur->getId()) {
+            $this->addFlash('error', 'You are not authorized to delete this comment.');
+            return $this->redirectToRoute('forum_single_topic', ['id' => $comment->getQuestionId()->getQuestionId()]);
+        }
+
         $questionId = $comment->getQuestionId()->getQuestionId();
 
         if (!$this->isCsrfTokenValid('delete_comment_' . $id, $request->request->get('_token'))) {
@@ -205,6 +192,13 @@ class CommentController extends AbstractController
         if (!$comment) {
             $this->addFlash('error', 'Comment not found.');
             return $this->redirectToRoute('forum_topics');
+        }
+
+        /** @var Utilisateur|null $utilisateur */
+        $utilisateur = $this->getUser();
+        if (!$utilisateur || $comment->getUtilisateurId()->getId() !== $utilisateur->getId()) {
+            $this->addFlash('error', 'You are not authorized to update this comment.');
+            return $this->redirectToRoute('forum_single_topic', ['id' => $comment->getQuestionId()->getQuestionId()]);
         }
 
         $questionId = $comment->getQuestionId()->getQuestionId();
@@ -248,14 +242,15 @@ class CommentController extends AbstractController
         $type = $request->request->get('type');
         $voteType = $request->request->get('vote_type');
 
-        if (!$this->isCsrfTokenValid('vote_action', $request->request->get('_token'))) {
-            $this->addFlash('error', 'Invalid CSRF token.');
-            return $this->redirectToRoute('forum_topics');
+        /** @var Utilisateur|null $utilisateur */
+        $utilisateur = $this->getUser();
+        if (!$utilisateur) {
+            $this->addFlash('error', 'You must be logged in to vote.');
+            return $this->redirectToRoute('app_login_page');
         }
 
-        $utilisateur = $this->getUser() ?? $utilisateurRepository->findOneBy([], ['id' => 'ASC']);
-        if (!$utilisateur) {
-            $this->addFlash('error', 'User not found.');
+        if (!$this->isCsrfTokenValid('vote_action', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid CSRF token.');
             return $this->redirectToRoute('forum_topics');
         }
 
@@ -362,15 +357,16 @@ class CommentController extends AbstractController
         $id = $request->request->get('id');
         $type = $request->request->get('type');
         $emoji = $request->request->get('emoji');
-        $action = $request->request->get('action', 'react'); // Default to 'react' if not specified
+        $action = $request->request->get('action', 'react');
 
         if (!$id || !$type) {
             return new JsonResponse(['success' => false, 'message' => 'Missing required parameters'], 400);
         }
 
-        $utilisateur = $this->getUser() ?? $utilisateurRepository->findOneBy([], ['id' => 'ASC']);
+        /** @var Utilisateur|null $utilisateur */
+        $utilisateur = $this->getUser();
         if (!$utilisateur && $action !== 'fetch') {
-            return new JsonResponse(['success' => false, 'message' => 'User not found'], 401);
+            return new JsonResponse(['success' => false, 'message' => 'You must be logged in to react'], 401);
         }
 
         try {
