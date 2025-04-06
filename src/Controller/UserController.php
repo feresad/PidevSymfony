@@ -87,7 +87,7 @@ class UserController extends AbstractController
 
         // Check if user has ROLE_ADMIN using the security interface
         if (in_array('ROLE_ADMIN', $user->getRoles())) {
-            return $this->render('home/index.html.twig');
+            return $this->render('home/indexadmin.html.twig');
         }
 
         return $this->render('home/index.html.twig', [
