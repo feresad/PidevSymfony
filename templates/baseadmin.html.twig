@@ -114,6 +114,20 @@ localStorage.clear(); // clear localStorage
 window.location.href = '/logout'; // redirect to Symfony logout route
 });
     </script>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            const main = document.querySelector(".main");
+            sidebar.classList.toggle("close");
+            main.classList.toggle("close");
+        }
+
+        function toggleSubMenu(button) {
+            const subMenu = button.nextElementSibling;
+            subMenu.classList.toggle("show");
+            button.classList.toggle("rotate");
+        }
+    </script>
         <script src="{{ asset('js/main.js') }}"></script>
         <!-- ====== ionicons ======= -->
         <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
