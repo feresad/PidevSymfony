@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier la session{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <h1>Modifier la session</h1>
+
+        {{ form_start(form) }}
+            {{ form_widget(form) }}
+            <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+            <a href="{{ path('session_list') }}" class="btn btn-secondary">Retour à la liste</a>
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

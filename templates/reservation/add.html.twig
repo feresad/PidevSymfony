@@ -1,0 +1,62 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Réserver une session{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h2 class="card-title text-center text-primary mb-4">Réserver une session</h2>
+                    
+                    <div class="session-details mb-4">
+                     {% if session.imageName %}
+                        <img src="{{ image_base_url ~  session.imageName }}" 
+                             class="card-img-top" 
+                             alt="{{ session.game }}" 
+                             style="height: 200px; object-fit: cover;">
+                    {% endif %}
+                        <h3 class="h5 text-primary">{{ session.game }}</h3>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-success fs-6">{{ session.prix }} DT</span>
+                            <span class="text-muted">{{ session.dureeSession }}</span>
+                        </div>
+                    </div>
+
+                    {% for message in app.flashes('error') %}
+                        <div class="alert alert-danger">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+
+                    {% for message in app.flashes('success') %}
+                        <div class="alert alert-success">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+
+                    <form method="post">
+                        <div class="mb-4">
+                            <label for="date_reservation" class="form-label">Date de réservation</label>
+                            <input type="date" 
+                                   class="form-control" 
+                                   id="date_reservation" 
+                                   name="date_reservation" 
+                                   min="{{ 'now'|date('Y-m-d') }}" 
+                        
+                                   required>
+                            <div class="form-text">Choisissez une date pour votre session</div>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Confirmer la réservation</button>
+                            <a href="{{ path('session_client_list') }}" class="btn btn-outline-secondary">Retour aux sessions</a>
+                            
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

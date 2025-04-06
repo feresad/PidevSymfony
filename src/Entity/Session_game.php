@@ -3,114 +3,53 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Collections\ArrayCollection;
+use App\Repository\Session_gameRepository;
 
-
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: Session_gameRepository::class)]
 class Session_game
 {
-    public function __construct()
-    {
-    }
-
-
     #[ORM\Id]
-    #[ORM\Column(type: "integer")]
-    private int $id;
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private ?int $id = null;
 
-    #[ORM\Column(type: "integer")]
-    private int $coach_id;
-
-    #[ORM\Column(type: "string", length: 255)]
-    private string $game;
-
-    #[ORM\Column(type: "string", length: 50)]
-    private string $duree_session;
-
-    #[ORM\Column(type: "date")]
-    private \DateTimeInterface $date_creation;
-
-    #[ORM\Column(type: "float")]
+    #[ORM\Column(type: 'float')]
     private float $prix;
 
-    #[ORM\Column(type: "string", length: 255)]
-    private string $image_name;
+    #[ORM\Column(type: 'datetime')]
+    private \DateTimeInterface $dateCreation;
 
-    public function getId(): int
-    {
-        return $this->id;
-    }
+    #[ORM\Column(type: 'string', length: 50)]
+    private string $dureeSession;
 
-    public function setId(int $id): self
-    {
-        $this->id = $id;
-        return $this;
-    }
+    #[ORM\Column(type: 'string', length: 255)]
+    private string $game;
 
-    public function getCoach_id(): int
-    {
-        return $this->coach_id;
-    }
+    #[ORM\Column(type: 'integer', nullable: false)] // Non nullable
+    private int $coachId = 1; // Valeur statique par défaut
 
-    public function setCoach_id(int $coach_id): self
-    {
-        $this->coach_id = $coach_id;
-        return $this;
-    }
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $imageName = null;
 
-    public function getGame(): string
-    {
-        return $this->game;
-    }
+    public function getId(): ?int { return $this->id; }
 
-    public function setGame(string $game): self
-    {
-        $this->game = $game;
-        return $this;
-    }
+    public function getPrix(): float { return $this->prix; }
+    public function setPrix(float $prix): self { $this->prix = $prix; return $this; }
 
-    public function getDuree_session(): string
-    {
-        return $this->duree_session;
-    }
+    public function getDateCreation(): \DateTimeInterface { return $this->dateCreation; }
+    public function setDateCreation(\DateTimeInterface $dateCreation): self { $this->dateCreation = $dateCreation; return $this; }
 
-    public function setDuree_session(string $duree_session): self
-    {
-        $this->duree_session = $duree_session;
-        return $this;
-    }
+    public function getDureeSession(): string { return $this->dureeSession; }
+    public function setDureeSession(string $dureeSession): self { $this->dureeSession = $dureeSession; return $this; }
 
-    public function getDate_creation(): \DateTimeInterface
-    {
-        return $this->date_creation;
-    }
+    public function getGame(): string { return $this->game; }
+    public function setGame(string $game): self { $this->game = $game; return $this; }
 
-    public function setDate_creation(\DateTimeInterface $date_creation): self
-    {
-        $this->date_creation = $date_creation;
-        return $this;
-    }
+    public function getCoachId(): int { return $this->coachId; }
+    public function setCoachId(int $coachId): self { $this->coachId = $coachId; return $this; }
 
-    public function getPrix(): string
-    {
-        return $this->prix;
-    }
+    public function getImageName(): ?string { return $this->imageName; }
+    public function setImageName(?string $imageName): self { $this->imageName = $imageName; return $this; }
 
-    public function setPrix(string $prix): self
-    {
-        $this->prix = $prix;
-        return $this;
-    }
-
-    public function getImage_name(): string
-    {
-        return $this->image_name;
-    }
-
-    public function setImage_name(string $image_name): self
-    {
-        $this->image_name = $image_name;
-        return $this;
-    }
+    
 }

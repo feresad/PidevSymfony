@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes réservations{% endblock %}
+
+{% block body %}
+    <h1>Mes réservations</h1>
+    <ul class="list-group">
+        {% for reservation in reservations %}
+            <li class="list-group-item">
+                {{ reservation.session.game }} - Réservé le {{ reservation.dateReservation|date('d/m/Y') }}
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}
