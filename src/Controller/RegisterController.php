@@ -35,7 +35,7 @@ class RegisterController extends AbstractController
             $user->setMotPasse($hashedPassword);
             // Set default role as CLIENT
             $user->setRole(Role::CLIENT);
-            
+
             try {
                 // Save the user
                 $entityManager->persist($user);
@@ -53,4 +53,4 @@ class RegisterController extends AbstractController
             'registrationForm' => $form->createView(),
         ]);
     }
-} 
+}
