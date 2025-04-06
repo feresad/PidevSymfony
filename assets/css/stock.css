@@ -1,0 +1,39 @@
+/* Import the base produit.css styles */
+@import 'produit.css';
+
+/* Stock-specific styles */
+.stock-image {
+    max-width: 80px;
+    border: 1px solid #0236a5;
+    border-radius: 4px;
+}
+
+.stock-image-large {
+    max-width: 300px;
+    border: 2px solid #0236a5;
+    border-radius: 6px;
+}
+
+/* Additional stock-specific customizations */
+.stock-details {
+    background-color: #091221;
+    border-color: #0236a5;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.stock-quantity {
+    font-weight: bold;
+    color: #0585c6;
+}
+
+.stock-price {
+    font-weight: bold;
+    color: #fc0369;
+}
+
+/* Keep consistent hover effects */
+.table tbody tr:hover .stock-image {
+    transform: scale(1.05);
+    transition: transform 0.2s ease;
+}

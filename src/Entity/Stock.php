@@ -3,9 +3,6 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Collections\ArrayCollection;
-
 
 #[ORM\Entity]
 class Stock
@@ -14,16 +11,18 @@ class Stock
     {
     }
 
-
     #[ORM\Id]
+    #[ORM\GeneratedValue]
     #[ORM\Column(type: "integer")]
     private int $id;
 
-    #[ORM\Column(type: "integer")]
-    private int $produit_id;
+    #[ORM\ManyToOne(targetEntity: Produit::class, inversedBy: "stocks")]
+    #[ORM\JoinColumn(name: "produit_id", referencedColumnName: "id", nullable: true)]
+    private ?Produit $produit = null;
 
-    #[ORM\Column(type: "integer")]
-    private int $games_id;
+    #[ORM\ManyToOne(targetEntity: Games::class)]
+    #[ORM\JoinColumn(name: "games_id", referencedColumnName: "game_id", nullable: true)]
+    private ?Games $games = null;
 
     #[ORM\Column(type: "integer")]
     private int $quantity;
@@ -32,38 +31,44 @@ class Stock
     private int $prix_produit;
 
     #[ORM\Column(type: "string", length: 255)]
+    #[Assert\Image(
+        minWidth: 205,
+        maxWidth: 205,
+        minHeight: 250,
+        maxHeight: 250,
+        allowLandscape: false,
+        allowPortrait: true,
+        mimeTypes: ["image/jpeg", "image/png", "image/gif"],
+        mimeTypesMessage: "Please upload a valid image (JPEG, PNG, GIF)"
+    )]
     private string $image;
+
+    // Getters and Setters
 
     public function getId(): int
     {
         return $this->id;
     }
 
-    public function setId(int $id): self
+    public function getProduit(): ?Produit
     {
-        $this->id = $id;
+        return $this->produit;
+    }
+
+    public function setProduit(?Produit $produit): self
+    {
+        $this->produit = $produit;
         return $this;
     }
 
-    public function getProduit_id(): int
+    public function getGames(): ?Games
     {
-        return $this->produit_id;
+        return $this->games;
     }
 
-    public function setProduit_id(int $produit_id): self
+    public function setGames(?Games $games): self
     {
-        $this->produit_id = $produit_id;
-        return $this;
-    }
-
-    public function getGames_id(): int
-    {
-        return $this->games_id;
-    }
-
-    public function setGames_id(int $games_id): self
-    {
-        $this->games_id = $games_id;
+        $this->games = $games;
         return $this;
     }
 
@@ -78,12 +83,12 @@ class Stock
         return $this;
     }
 
-    public function getPrix_produit(): int
+    public function getPrixProduit(): int
     {
         return $this->prix_produit;
     }
 
-    public function setPrix_produit(int $prix_produit): self
+    public function setPrixProduit(int $prix_produit): self
     {
         $this->prix_produit = $prix_produit;
         return $this;
@@ -97,6 +102,16 @@ class Stock
     public function setImage(string $image): self
     {
         $this->image = $image;
+        return $this;
+    }
+    public function getImageFile(): ?File
+    {
+        return $this->imageFile;
+    }
+
+    public function setImageFile(?File $imageFile): self
+    {
+        $this->imageFile = $imageFile;
         return $this;
     }
 }

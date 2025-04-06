@@ -5,8 +5,7 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
-
-use App\Entity\Produit;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 class Commande
@@ -15,52 +14,52 @@ class Commande
     {
     }
 
-
     #[ORM\Id]
+    #[ORM\GeneratedValue]
     #[ORM\Column(type: "integer")]
     private int $id;
 
-        #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: "commandes")]
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: "commandes")]
     #[ORM\JoinColumn(name: 'utilisateur_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
-    private Utilisateur $utilisateur_id;
+    #[Assert\NotNull(message: "Veuillez sélectionner un utilisateur")]
+    private ?Utilisateur $utilisateur = null;
 
-        #[ORM\ManyToOne(targetEntity: Produit::class, inversedBy: "commandes")]
+    #[ORM\ManyToOne(targetEntity: Produit::class, inversedBy: "commandes")]
     #[ORM\JoinColumn(name: 'produit_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
-    private Produit $produit_id;
+    #[Assert\NotNull(message: "Veuillez sélectionner un produit")]
+    private ?Produit $produit = null;
 
     #[ORM\Column(type: "string", length: 255)]
+    #[Assert\NotBlank(message: "Le statut ne peut pas être vide")]
+    #[Assert\Choice(choices: ["pending_payment", "terminé", "annulé"], message: "Statut invalide")]
     private string $status;
+
+    // Getters and Setters
 
     public function getId(): int
     {
         return $this->id;
     }
 
-    public function setId(int $id): self
+    public function getUtilisateur(): ?Utilisateur
     {
-        $this->id = $id;
+        return $this->utilisateur;
+    }
+
+    public function setUtilisateur(?Utilisateur $utilisateur): self
+    {
+        $this->utilisateur = $utilisateur;
         return $this;
     }
 
-    public function getUtilisateur_id(): Utilisateur
+    public function getProduit(): ?Produit
     {
-        return $this->utilisateur_id;
+        return $this->produit;
     }
 
-    public function setUtilisateur_id(Utilisateur $utilisateur_id): self
+    public function setProduit(?Produit $produit): self
     {
-        $this->utilisateur_id = $utilisateur_id;
-        return $this;
-    }
-
-    public function getProduit_id(): Produit
-    {
-        return $this->produit_id;
-    }
-
-    public function setProduit_id(Produit $produit_id): self
-    {
-        $this->produit_id = $produit_id;
+        $this->produit = $produit;
         return $this;
     }
 

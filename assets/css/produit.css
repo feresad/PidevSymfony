@@ -1,0 +1,175 @@
+/* Product CRUD Styles */
+
+/* Base container styles */
+.container {
+    background-color: #0236a5;
+    color: white;
+    padding: 2rem;
+}
+
+/* Card styles */
+.card {
+    background-color: #0236a5;
+    border-color: #0585c6;
+    margin-bottom: 2rem;
+}
+
+.card-header {
+    background-color: #0585c6;
+    color: white;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-header h2 {
+    font-size: 28px;
+    text-transform: uppercase;
+    margin: 0;
+    color: white;
+}
+
+/* Table styles */
+.table {
+    color: white;
+    font-size: 18px;
+}
+
+.table thead {
+    background-color: #0585c6;
+}
+
+.table tbody tr {
+    border-color: #0585c6;
+}
+
+.table th {
+    background-color: #0585c6;
+    border-color: #0585c6;
+    color: white;
+    padding: 15px;
+}
+
+.table td {
+    background-color: #0236a5;
+    border-color: #0585c6;
+    color: white;
+    padding: 15px;
+}
+
+/* Form styles */
+.form-control {
+    background-color: #0236a5;
+    color: white;
+    border-color: #0585c6;
+    padding: 12px;
+}
+
+.form-control:focus {
+    background-color: #0236a5;
+    color: white;
+    border-color: #0585c6;
+    box-shadow: none;
+}
+
+.form-label {
+    color: white;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+/* Button styles */
+.btn-primary {
+    background-color: #fc0369;
+    border-color: #fc0369;
+    color: white;
+}
+
+.btn-secondary {
+    background-color: #0585c6;
+    border-color: #0585c6;
+    color: white;
+}
+
+.btn-danger {
+    background-color: #0236a5;
+    border-color: #0236a5;
+    color: white;
+}
+
+.btn-warning {
+    background-color: #fc0369;
+    border-color: #fc0369;
+    color: white;
+}
+
+.btn-info {
+    background-color: #0585c6;
+    border-color: #0585c6;
+    color: white;
+}
+
+/* Image styles */
+.product-image {
+    max-width: 100%;
+    height: auto;
+    border: 2px solid #0585c6;
+    border-radius: 8px;
+}
+
+/* Alert styles */
+.alert-success {
+    background-color: #0585c6;
+    border-color: #0585c6;
+    color: white;
+}
+
+.text-danger {
+    color: #fc0369 !important;
+}
+
+/* Details table specific styles */
+.details-table th {
+    background-color: #0585c6;
+    color: white;
+    width: 200px;
+}
+
+.details-table td {
+    background-color: #0236a5;
+    color: white;
+}
+
+/* Spacing */
+.mb-4 {
+    margin-bottom: 1.5rem;
+}
+
+.mt-4 {
+    margin-top: 1.5rem;
+}
+
+/* Action buttons container */
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .card-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .action-buttons {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+/* Ensure all text is white */
+body, h1, h2, h3, h4, h5, h6, p, span, div, th, td, label {
+    color: white;
+}

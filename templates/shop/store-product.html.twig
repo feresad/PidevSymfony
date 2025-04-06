@@ -1,0 +1,652 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('assets/css/produit.css') }}">
+    <style>
+        html, body {
+            overflow-x: hidden;
+            width: 100%;
+            position: relative;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 15px;
+            overflow-x: hidden;
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0;
+            min-height: 800px;
+            width: 100%;
+        }
+
+        /* Column base styles */
+        .col-lg-5, .col-lg-4, .col-lg-3 {
+            padding: 0 15px;
+            display: flex;
+            flex-direction: column;
+            width: 33.33%; /* Equal width for all columns */
+        }
+
+        /* Product container styles */
+        .product-container {
+            background-color: #1a1e22;
+            padding: 30px;
+            border-radius: 5px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Image Column Styles */
+        .product-images {
+            position: relative;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .main-image {
+            width: 100%;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            overflow: hidden;
+            flex: 0 0 auto;
+            aspect-ratio: 16/9;
+        }
+        
+        .main-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .thumbnails {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            flex: 0 0 auto;
+        }
+        
+        .thumbnail {
+            width: calc(33.33% - 7px);
+            cursor: pointer;
+            border-radius: 3px;
+            overflow: hidden;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            aspect-ratio: 1;
+        }
+        
+        .thumbnail.active {
+            border-color: #ff00ff;
+        }
+
+        .thumbnail:hover {
+            border-color: #ff00ff;
+            transform: scale(1.05);
+        }
+
+        .thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* Middle Column Styles */
+        .product-info {
+            text-align: center;
+            padding: 0;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Updated font sizes for middle column */
+        .product-title {
+            font-size: 20px;  /* Reduced from 22px */
+            color: #ffffff;
+            margin-bottom: 15px;
+            line-height: 1.3;
+        }
+        
+        .rating-container {
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+        
+        .rating-stars {
+            color: #ffd700;
+            margin-right: 10px;
+        }
+        
+        .meta-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding: 5px 0;
+            font-size: 13px;
+        }
+        
+        .price-container {
+            margin: 20px 0;
+            margin-bottom: 15px;  /* Reduced bottom margin */
+        }
+        
+        .price {
+            font-size: 24px;  /* Reduced from 28px */
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+        
+        .stock-status {
+            color: #00ff00;
+            margin-bottom: 15px;
+            font-size: 13px;
+        }
+        
+        .order-button {
+            background-color: #dd163b;
+            color: #ffffff;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+            font-size: 14px;
+        }
+
+        .seller-info {
+            margin-top: 15px;  /* Reduced top margin */
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 13px;
+            margin-bottom: auto;  /* Push remaining space to bottom */
+        }
+        
+        /* Updated Specs Column Styles */
+        .specs-container {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 25px;
+            border-radius: 5px;
+            height: 600px; /* Fixed height */
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .specs-title {
+            color: #ffffff;
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            text-align: center;
+            font-weight: bold;
+            flex: 0 0 auto;
+        }
+        
+        .specs-content {
+            overflow-y: auto;
+            flex: 1;
+            padding-right: 15px;
+            margin-right: -15px; /* Compensate for padding */
+        }
+
+        .specs-content::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .specs-content::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 2px;
+        }
+
+        .specs-content::-webkit-scrollbar-thumb {
+            background: #ff00ff;
+            border-radius: 2px;
+        }
+
+        .specs-content::-webkit-scrollbar-thumb:hover {
+            background: #ff40ff;
+        }
+        
+        .specs-section {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .specs-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .specs-section-title {
+            color: #ff00ff;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            font-size: 18px;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+        
+        .specs-item {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            font-size: 14px;
+        }
+        
+        .specs-label {
+            color: #ffffff;
+            margin-bottom: 5px;
+        }
+        
+        .specs-value {
+            color: #808080;
+        }
+
+        @media (max-width: 992px) {
+            .col-lg-5, .col-lg-4, .col-lg-3 {
+                width: 100%;
+                margin-bottom: 30px;
+            }
+
+            .row {
+                min-height: auto;
+            }
+
+            .specs-container {
+                height: 400px; /* Smaller height on mobile */
+            }
+        }
+
+        .fps-estimate-button {
+            background: #ff00ff;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            padding: 12px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            text-transform: uppercase;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .fps-estimate-button:hover {
+            background: #ff40ff;
+        }
+
+        .nk-product-price {
+            font-size: 2em;
+        }
+
+        .fps-results {
+            display: none;
+            margin-top: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+            padding: 20px;
+        }
+
+        .fps-results.active {
+            display: block;
+        }
+
+        .fps-title {
+            color: #ff00ff;
+            text-transform: uppercase;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 16px;
+            letter-spacing: 1px;
+        }
+
+        .fps-setting {
+            margin-bottom: 12px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+        }
+
+        .fps-setting:last-child {
+            margin-bottom: 0;
+        }
+
+        .fps-setting-label {
+            color: #ffffff;
+            margin-bottom: 5px;
+            font-size: 14px;
+            display: block;
+        }
+
+        .fps-range {
+            color: #00ff00;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            color: #ffffff;
+            margin: 20px 0;
+        }
+
+        .loading-spinner.active {
+            display: block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #ff00ff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <!-- START: Breadcrumbs -->
+    <div class="nk-gap-1"></div>
+    <div class="container">
+        <ul class="nk-breadcrumbs">
+            <li><a href="{{ path('app_home') }}">HOME</a></li>
+            <li><span class="fa fa-angle-right"></span></li>
+            <li><a href="{{ path('app_store') }}">STORE</a></li>
+            <li><span class="fa fa-angle-right"></span></li>
+            <li><span>{{ produit.produit.nomProduit }}</span></li>
+        </ul>
+    </div>
+    <div class="nk-gap-1"></div>
+    <!-- END: Breadcrumbs -->
+
+    <div class="container">
+        <div class="row">
+            <!-- Left Column - Images (40%) -->
+            <div class="col-lg-5">
+                <div class="product-container">
+                    <div class="product-images">
+                        <div class="main-image">
+                            <img src="{{ image_base_url ~ '/' ~ produit.image }}" alt="{{ produit.produit.nomProduit }}" id="mainImage">
+                        </div>
+                        <div class="thumbnails">
+                            <div class="thumbnail active" onclick="updateMainImage(this, '{{ image_base_url ~ '/' ~ produit.image }}')">
+                                <img src="{{ image_base_url ~ '/' ~ produit.image }}" alt="Thumbnail 1">
+                            </div>
+                            <div class="thumbnail" onclick="updateMainImage(this, '{{ image_base_url ~ '/' ~ produit.image }}')">
+                                <img src="{{ image_base_url ~ '/' ~ produit.image }}" alt="Thumbnail 2">
+                            </div>
+                            <div class="thumbnail" onclick="updateMainImage(this, '{{ image_base_url ~ '/' ~ produit.image }}')">
+                                <img src="{{ image_base_url ~ '/' ~ produit.image }}" alt="Thumbnail 3">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Middle Column - Product Info (35%) -->
+            <div class="col-lg-4">
+                <div class="product-container">
+                    <div class="product-info">
+                        <h1 class="product-title">{{ produit.produit.nomProduit }} ({{ produit.produit.platform }}) - {{ produit.produit.region }}</h1>
+                        
+                        <div class="rating-container">
+                            <span class="rating-stars">
+                                {% for i in 1..5 %}
+                                    {% if i <= produit.produit.score %}
+                                        <span style="color: #ffd700;">★</span>
+                                    {% else %}
+                                        <span style="color: #808080;">★</span>
+                                    {% endif %}
+                                {% endfor %}
+                            </span>
+                            <span style="color: #808080;">{{ produit.produit.score }}</span>
+                        </div>
+
+                        <div class="product-meta">
+                            <div class="meta-item">
+                                <span style="color: #808080;">Plateforme:</span>
+                                <span style="color: #ffffff;">{{ produit.produit.platform }}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span style="color: #808080;">Région:</span>
+                                <span style="color: #ffffff;">{{ produit.produit.region }}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span style="color: #808080;">Type:</span>
+                                <span style="color: #ffffff;">{{ produit.produit.type }}</span>
+                            </div>
+                        </div>
+
+                        <div style="color: #808080; font-style: italic; margin: 20px 0; font-size: 14px;">
+                            {{ produit.produit.description }}
+                        </div>
+
+                        <div class="price-container">
+                            <div class="price">{{ produit.prixProduit|number_format(0) }} DNT</div>
+                            <div class="stock-status">En Stock</div>
+                            <button class="order-button">PASSER EN COMMANDE</button>
+                        </div>
+
+                        <div class="seller-info">
+                            <div style="margin-bottom: 10px;">
+                                Offre de <span style="color: #ffffff;">LEVEL</span><span style="color: #dd163b;">OP</span>
+                            </div>
+                            <div>
+                                <span style="color: #00ff00;">96% Avis positifs</span>
+                                <span style="color: #808080;">(105)</span>
+                            </div>
+                        </div>
+
+                        <div style="flex-grow: 1;"></div> <!-- Spacer to push content up -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - System Specs (25%) -->
+            <div class="col-lg-3">
+                <div class="product-container">
+                    <div class="specs-container">
+                        <h2 class="specs-title">SPÉCIFICATIONS SYSTÈME</h2>
+                        
+                        <div class="specs-content">
+                            <div class="specs-section">
+                                <h3 class="specs-section-title">SYSTÈME D'EXPLOITATION</h3>
+                                <div class="specs-item">
+                                    <span class="specs-label">Plateforme:</span>
+                                    <span class="specs-value">WINNT</span>
+                                </div>
+                                <div class="specs-item">
+                                    <span class="specs-label">Version:</span>
+                                    <span class="specs-value">10.0</span>
+                                </div>
+                                <div class="specs-item">
+                                    <span class="specs-label">Architecture:</span>
+                                    <span class="specs-value">AMD64</span>
+                                </div>
+                            </div>
+
+                            <div class="specs-section">
+                                <h3 class="specs-section-title">PROCESSEUR</h3>
+                                <div class="specs-item">
+                                    <span class="specs-label">Processeur:</span>
+                                    <span class="specs-value">11th Gen Intel(R) Core(TM) i3-1115G4 @ 3.00GHz</span>
+                                </div>
+                        </div>
+
+                            <div class="specs-section">
+                                <h3 class="specs-section-title">MÉMOIRE</h3>
+                                <div class="specs-item">
+                                    <span class="specs-label">Mémoire RAM:</span>
+                                    <span class="specs-value">24 GB</span>
+                                </div>
+                            </div>
+
+                            <div class="specs-section">
+                                <h3 class="specs-section-title">CARTE GRAPHIQUE</h3>
+                                <div class="specs-item">
+                                    <span class="specs-label">Carte graphique 1:</span>
+                                    <span class="specs-value">Intel(R) UHD Graphics</span>
+                                </div>
+                                
+                                <button class="fps-estimate-button" onclick="estimateFps()">
+                                    Estimer les FPS
+                                </button>
+
+                                <div class="loading-spinner">
+                                    <div class="spinner"></div>
+                                    <div style="margin-top: 10px;">Estimation en cours...</div>
+                                </div>
+
+                                <div class="fps-results">
+                                    <div class="fps-title">Estimation FPS</div>
+                                    <div class="fps-setting">
+                                        <span class="fps-setting-label">Paramètres bas</span>
+                                        <div class="fps-range" id="fpsLow">--</div>
+                                    </div>
+                                    <div class="fps-setting">
+                                        <span class="fps-setting-label">Paramètres moyens</span>
+                                        <div class="fps-range" id="fpsMedium">--</div>
+                                    </div>
+                                    <div class="fps-setting">
+                                        <span class="fps-setting-label">Paramètres élevés</span>
+                                        <div class="fps-range" id="fpsHigh">--</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        $(document).ready(function() {
+            // Initialize PhotoSwipe for the gallery
+            if (typeof PhotoSwipe !== 'undefined') {
+                $('.nk-popup-gallery').each(function() {
+                    $(this).photoSwipe({
+                        events: {
+                            afterChange: function() {
+                                // Update counter
+                            }
+                        }
+                    });
+                });
+            }
+
+            // Thumbnail click handler
+            $('.nk-gallery-thumbnails img').on('click', function() {
+                $('.nk-gallery-thumbnails img').removeClass('active');
+                $(this).addClass('active');
+                const newSrc = $(this).attr('src');
+                $('.nk-gallery-item-box img').attr('src', newSrc);
+            });
+        });
+
+        function updateMainImage(thumbnail, imageUrl) {
+            document.getElementById('mainImage').src = imageUrl;
+            document.querySelectorAll('.thumbnail').forEach(thumb => {
+                thumb.classList.remove('active');
+            });
+            thumbnail.classList.add('active');
+        }
+
+        function estimateFps() {
+            const loadingSpinner = document.querySelector('.loading-spinner');
+            const fpsResults = document.querySelector('.fps-results');
+            const estimateButton = document.querySelector('.fps-estimate-button');
+            
+            // Show loading spinner
+            loadingSpinner.classList.add('active');
+            estimateButton.disabled = true;
+            fpsResults.classList.remove('active');
+
+            // Get system specs
+            const specs = {
+                cpu: '{{ systemSpecs.cpu.name }}',
+                ram: '{{ systemSpecs.ram.total }}',
+                gpu: '{{ systemSpecs.gpus[0] }}',
+                game_name: '{{ produit.produit.nomProduit }}'
+            };
+
+            // Make API request
+            const url = "{{ path('app_estimate_fps') }}";
+            
+            console.log('Sending request to:', url);
+            console.log('With specs:', specs);
+            
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(specs)
+            })
+            .then(async response => {
+                console.log('Response status:', response.status);
+                const data = await response.text();
+                console.log('Raw response:', data);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}, body: ${data}`);
+                }
+                
+                try {
+                    return JSON.parse(data);
+                } catch (e) {
+                    console.error('Failed to parse JSON:', e);
+                    throw new Error(`Invalid JSON response: ${data}`);
+                }
+            })
+            .then(data => {
+                console.log('Parsed data:', data);
+                if (data.error) {
+                    throw new Error(`API Error: ${data.error}${data.message ? ' - ' + data.message : ''}`);
+                }
+                // Update results
+                document.getElementById('fpsLow').textContent = `${data.low.min}-${data.low.max} FPS`;
+                document.getElementById('fpsMedium').textContent = `${data.medium.min}-${data.medium.max} FPS`;
+                document.getElementById('fpsHigh').textContent = `${data.high.min}-${data.high.max} FPS`;
+                
+                // Show results
+                fpsResults.classList.add('active');
+            })
+            .catch(error => {
+                console.error('FPS Estimation Error:', error);
+                const errorMessage = error.message || 'Unknown error occurred';
+                alert(`Failed to estimate FPS: ${errorMessage}`);
+            })
+            .finally(() => {
+                // Hide loading spinner
+                loadingSpinner.classList.remove('active');
+                estimateButton.disabled = false;
+            });
+        }
+    </script>
+{% endblock %}

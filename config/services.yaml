@@ -2,10 +2,13 @@
 parameters:
     #uploads_directory: 'C:\xampp\htdocs\uploads'
     uploads_directory: 'C:\xampp\htdocs\img\games'
+    dossier_upload: 'C:\xampp\htdocs\img'
     image_base_url: 'http://localhost/img/'
     git_url: 'https://feresad.github.io/event-qr-code/'
     sightengine_api_user: '%env(SIGHTENGINE_API_USER)%'
     sightengine_api_secret: '%env(SIGHTENGINE_API_SECRET)%'
+    dossierUpload: 'C:\xampp\htdocs\img'
+    gemini.api_key: 'AIzaSyCjjlK6kTJXy8Kevcl8xoO0KhvZesakw3g'
 services:
     App\Controller\ForumController:
     App\Service\RedditService:
@@ -24,6 +27,10 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+    
+    App\Controller\StockController:
+        arguments:
+            $dossierUpload: '%dossierUpload%'  # Injection du paramètre
     App\Service\GeminiService:
         arguments:
             $apiKey: '%env(GEMINI_API_KEY)%'
@@ -33,3 +40,15 @@ services:
             $httpClient: '@Symfony\Contracts\HttpClient\HttpClientInterface'
             $sightengineApiUser: '%env(SIGHTENGINE_API_USER)%'
             $sightengineApiSecret: '%env(SIGHTENGINE_API_SECRET)%'
+     # Activer l'injection de paramètres si nécessaire
+    Symfony\Component\HttpKernel\KernelInterface: '@kernel'
+
+    App\Service\HardwareSpecsService:
+        public: true
+
+    App\Service\SystemSpecsService:
+        public: true
+
+    App\Service\GeminiFpsService:
+        arguments:
+            $apiKey: '%gemini.api_key%'

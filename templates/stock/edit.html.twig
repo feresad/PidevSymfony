@@ -1,0 +1,57 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier un Stock{% endblock %}
+
+{% block body %}
+<div class="container mt-5" style="background-color: #091221; color: white;">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card" style="background-color: #091221; border-color: #0236a5;">
+                <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #0236a5; color: white;">
+                    <h2 class="mb-0">Modifier un Stock</h2>
+                    <div class="btn-group">
+                        <a href="{{ path('app_stock_index') }}" class="btn me-2" style="background-color: #0585c6; color: white;">Retour à la liste</a>
+                        <a href="{{ path('app_stock_show', {'id': stock.id}) }}" class="btn" style="background-color: #fc0369; color: white;">Voir détails</a>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    {{ form_start(form) }}
+                        <div class="form-group mb-4">
+                            {{ form_label(form.produit, null, {'label_attr': {'style': 'color: white; font-weight: 600;'}}) }}
+                            {{ form_widget(form.produit, {'attr': {'class': 'form-control', 'style': 'background-color: #091221; color: white; border-color: #0236a5;'}}) }}
+                        </div>
+
+                        <div class="form-group mb-4">
+                            {{ form_label(form.quantity, null, {'label_attr': {'style': 'color: white; font-weight: 600;'}}) }}
+                            {{ form_widget(form.quantity, {'attr': {'class': 'form-control', 'style': 'background-color: #091221; color: white; border-color: #0236a5;'}}) }}
+                        </div>
+
+                        <div class="form-group mb-4">
+                            {{ form_label(form.prixProduit, null, {'label_attr': {'style': 'color: white; font-weight: 600;'}}) }}
+                            {{ form_widget(form.prixProduit, {'attr': {'class': 'form-control', 'style': 'background-color: #091221; color: white; border-color: #0236a5;'}}) }}
+                        </div>
+
+                        {% if form.fichierImage is defined %}
+                        <div class="form-group mb-4">
+                            {{ form_label(form.fichierImage, 'Image', {'label_attr': {'style': 'color: white; font-weight: 600;'}}) }}
+                            {{ form_widget(form.fichierImage, {'attr': {'class': 'form-control', 'style': 'background-color: #091221; color: white; border-color: #0236a5;'}}) }}
+                        </div>
+                        {% endif %}
+
+                        {% if stock.image %}
+                            <div class="mb-4">
+                                <p style="color: white;">Image actuelle :</p>
+                                <img src="{{ image_base_url ~ stock.image }}" alt="Current image" style="max-width: 200px; border: 2px solid #0236a5;">
+                            </div>
+                        {% endif %}
+
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn" style="background-color: #fc0369; color: white;">Enregistrer</button>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
