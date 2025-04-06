@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails de la Commande{% endblock %}
+
+{% block body %}
+<div class="container mt-5" style="background-color: #091221; color: white;">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card" style="background-color: #091221; border-color: #0236a5;">
+                <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #0236a5; color: white;">
+                    <h2 class="mb-0" style="font-size: 28px; text-transform: uppercase;">Détails de la Commande</h2>
+                    <div class="action-buttons">
+                        <a href="{{ path('app_commande_index') }}" class="btn" style="background-color: #0585c6; color: white;">Retour à la liste</a>
+                        <a href="{{ path('app_commande_edit', {'id': commande.id}) }}" class="btn" style="background-color: #fc0369; color: white;">Modifier</a>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <table class="table" style="color: white; font-size: 18px;">
+                        <tbody>
+                            <tr>
+                                <th style="background-color: #0585c6; border-color: #0236a5; color: white; width: 200px;">Client</th>
+                                <td style="background-color: #091221; border-color: #0236a5; color: white;">{{ commande.utilisateur.nickname }}</td>
+                            </tr>
+                            <tr>
+                                <th style="background-color: #0585c6; border-color: #0236a5; color: white;">Produit</th>
+                                <td style="background-color: #091221; border-color: #0236a5; color: white;">{{ commande.produit.nomProduit }}</td>
+                            </tr>
+                            <tr>
+                                <th style="background-color: #0585c6; border-color: #0236a5; color: white;">Statut</th>
+                                <td style="background-color: #091221; border-color: #0236a5; color: white;">{{ commande.status }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <div class="mt-4">
+                        <form method="post" action="{{ path('app_commande_delete', {'id': commande.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette commande?');" style="display: inline-block">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ commande.id) }}">
+                            <button class="btn" style="background-color: #0236a5; color: white;">Supprimer</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

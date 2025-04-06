@@ -1,0 +1,60 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des Produits{% endblock %}
+
+{% block body %}
+<div class="container mt-5" style="background-color: #091221; color: white;">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card" style="background-color: #091221; border-color: #0236a5;">
+                <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #0236a5; color: white;">
+                    <h2>Liste des Produits</h2>
+                    <a href="{{ path('app_produit_new') }}" class="btn" style="background-color: #fc0369; border-color: #fc0369; color: white;">Ajouter un Produit</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" style="color: white;">
+                            <thead style="background-color: #0585c6;">
+                                <tr>
+                                    <th>Nom du Produit</th>
+                                    <th>Score</th>
+                                    <th>Plateforme</th>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                    <th>Region</th>
+                                    <th>Activation Region</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for produit in produits %}
+                                <tr style="border-color: #0236a5;">
+                                    <td>{{ produit.nomProduit }}</td>
+                                    <td>{{ produit.score }}</td>
+                                    <td>{{ produit.platform }}</td>
+                                    <td>{{ produit.type }}</td>
+                                    <td>{{ produit.description }}</td>
+                                    <td>{{ produit.region }}</td>
+                                    <td>{{ produit.activationRegion }}</td>
+                                    <td>
+                                        <a href="{{ path('app_produit_edit', {'id': produit.id}) }}" class="btn btn-warning btn-sm" style="background-color: #fc0369; border-color: #fc0369;">Modifier</a>
+                                        <form method="post" action="{{ path('app_produit_delete', {'id': produit.id}) }}" style="display: inline-block" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce produit?');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ produit.id) }}">
+                                            <button class="btn btn-danger btn-sm" style="background-color: #0236a5; border-color: #0236a5;">Supprimer</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center">Aucun produit trouvé</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

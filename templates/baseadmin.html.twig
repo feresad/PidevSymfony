@@ -55,6 +55,28 @@
                 </a>
             </li>
             <li>
+                <button onclick="toggleSubMenu(this)" class="dropdown-btn">
+                    <ion-icon name="bag-outline"></ion-icon>
+                    <span>Gestion Produits</span>
+                    <ion-icon class="dropdown-icon" name="chevron-down-outline"></ion-icon>
+                </button>
+                <ul class="sub-menu">
+                    <div>
+                        <li class="sub-header">Produits</li>
+                        <li><a href="{{ path('app_produit_new') }}" data-turbo="true">Ajouter un Produit</a></li>
+                        <li><a href="{{ path('app_produit_index') }}" data-turbo="true">Liste Produits</a></li>
+                        
+                        <li class="sub-header">Commandes</li>
+                        <li><a href="{{ path('app_commande_new') }}" data-turbo="true">Nouvelle Commande</a></li>
+                        <li><a href="{{ path('app_commande_index') }}" data-turbo="true">Liste Commandes</a></li>
+                        
+                        <li class="sub-header">Stock</li>
+                        <li><a href="{{ path('app_stock_new') }}" data-turbo="true">Ajouter Stock</a></li>
+                        <li><a href="{{ path('app_stock_index') }}" data-turbo="true">Liste Stock</a></li>
+                    </div>
+                </ul>
+            </li>
+            <li>
                 <a href="">
                     <ion-icon name="chatbubbles-outline"></ion-icon>
                     <span>Messages</span>

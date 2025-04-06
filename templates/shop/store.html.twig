@@ -1,0 +1,332 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Boutique de Jeux{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .game-card {
+        background: #1c1e22;
+        margin-bottom: 30px;
+        height: 100%;
+        max-width: 400px; /* Limit maximum width */
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .game-image {
+        width: 100%;
+        height: 200px; /* Reduced height from 250px */
+        object-fit: cover;
+        object-position: center;
+    }
+    .game-info {
+        padding: 15px; /* Reduced padding from 20px */
+    }
+    .game-title {
+        color: #fff;
+        font-size: 22px; /* Reduced from 28px */
+        margin-bottom: 8px;
+        font-weight: bold;
+    }
+    .game-description {
+        color: #8f8f8f;
+        font-size: 13px; /* Reduced from 14px */
+        margin: 8px 0;
+        line-height: 1.4;
+        max-height: 58px; /* Limit to roughly 3 lines of text */
+        overflow: hidden;
+    }
+    .game-price {
+        font-size: 20px; /* Reduced from 24px */
+        color: #fff;
+        margin: 12px 0;
+        font-weight: bold;
+    }
+    .game-buttons {
+        display: flex;
+        justify-content: center; /* Center the single button */
+    }
+    .btn-details {
+        background: #dd163b;
+        color: #fff;
+        padding: 8px 20px;
+        border: none;
+        font-weight: 500;
+        transition: background 0.3s;
+        text-decoration: none;
+        display: inline-block;
+    }
+    .btn-details:hover {
+        background: #b31230;
+        color: #fff;
+        text-decoration: none;
+    }
+    /* Updated Carousel Styles */
+    .nk-carousel {
+        position: relative;
+        padding: 0 40px;
+    }
+    .best-sellers {
+        background: #232930;
+        padding: 40px 0;
+        margin: 0;
+        overflow: hidden;
+    }
+    .best-sellers-title {
+        text-align: left;
+        margin-bottom: 40px;
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+    .best-sellers-title h2 {
+        color: #fff;
+        font-size: 24px;
+        margin: 0;
+        padding: 0;
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+    .best-sellers-title .text-main-1 {
+        color: #dd163b;
+        margin-right: 10px;
+    }
+    .carousel-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        position: relative;
+    }
+    .carousel-cell {
+        width: calc(33.333% - 20px); /* Show 3 items with proper spacing */
+        margin: 0 10px;
+        min-width: 250px; /* Minimum width to maintain proper sizing */
+    }
+    .game-card-carousel {
+        background: #1c1e22;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 15px;
+        border-radius: 3px;
+        transition: transform 0.3s ease;
+        width: 100%; /* Take full width of cell */
+        height: 100%; /* Take full height of cell */
+    }
+    .game-card-carousel:hover {
+        transform: translateY(-5px);
+    }
+    .game-image-carousel {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+        object-position: center;
+        margin-bottom: 15px;
+        border-radius: 3px;
+    }
+    .game-info-carousel {
+        text-align: center;
+        padding: 5px 0;
+        width: 100%;
+    }
+    .game-title-carousel {
+        color: #fff;
+        font-size: 13px;
+        margin: 0 0 5px;
+        font-weight: 500;
+        text-transform: uppercase;
+        text-align: center;
+        line-height: 1.2;
+    }
+    .game-price-carousel {
+        color: #dd163b;
+        font-size: 16px;
+        font-weight: bold;
+        text-align: center;
+    }
+    /* Carousel Navigation */
+    .flickity-prev-next-button {
+        width: 40px;
+        height: 40px;
+        background: rgba(221, 22, 59, 0.8);
+        border-radius: 50%;
+        border: none;
+        top: 50%;
+        transform: translateY(-50%);
+        position: absolute;
+        z-index: 10;
+    }
+    .flickity-prev-next-button:hover {
+        background: rgba(221, 22, 59, 1);
+    }
+    .flickity-prev-next-button .arrow {
+        fill: white;
+    }
+    .flickity-button:focus {
+        outline: none;
+        box-shadow: none;
+    }
+    .flickity-button:disabled {
+        display: none;
+    }
+    .flickity-prev-next-button.previous {
+        left: 10px;
+    }
+    .flickity-prev-next-button.next {
+        right: 10px;
+    }
+    .nk-carousel {
+        margin: 0;
+        padding: 0 50px;
+    }
+
+    @media (max-width: 991px) {
+        .carousel-cell {
+            width: 50%; /* Show 2 items on medium screens */
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .carousel-cell {
+            width: 100%; /* Show 1 item on mobile */
+        }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+    <!-- START: Breadcrumbs -->
+    <div class="nk-gap-1"></div>
+    <div class="container">
+        <ul class="nk-breadcrumbs">
+            <li><a href="{{ path('app_home') }}">Accueil</a></li>
+            <li><span class="fa fa-angle-right"></span></li>
+            <li><span>Boutique</span></li>
+        </ul>
+    </div>
+    <div class="nk-gap-1"></div>
+    <!-- END: Breadcrumbs -->
+
+    <div class="container">
+        <!-- START: Best Sellers -->
+        <div class="best-sellers">
+            <div class="carousel-container">
+                <div class="best-sellers-title">
+                    <h2><span class="text-main-1">TOP 10</span> BEST SELLERS</h2>
+                </div>
+                
+                <div class="nk-carousel" data-flickity='{ 
+                    "cellAlign": "center", 
+                    "contain": true, 
+                    "wrapAround": true, 
+                    "autoPlay": false, 
+                    "prevNextButtons": true, 
+                    "pageDots": false, 
+                    "freeScroll": false,
+                    "groupCells": 3,
+                    "draggable": true,
+                    "adaptiveHeight": true
+                }'>
+                    {% for product in popular_products %}
+                        <div class="carousel-cell">
+                            <div class="game-card-carousel">
+                                <a href="{{ path('app_store_product', {'id': product.id}) }}">
+                                    <img class="game-image-carousel" src="{{ image_base_url }}/{{ product.image }}" alt="{{ product.nom_produit }}">
+                                </a>
+                                <div class="game-info-carousel">
+                                    <h3 class="game-title-carousel">{{ product.nom_produit }}</h3>
+                                    <div class="game-price-carousel">{{ product.prix_produit|number_format(3, '.', ' ') }} DNT</div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <!-- END: Best Sellers -->
+
+        <!-- START: Featured Games -->
+        <div class="nk-gap-2"></div>
+        <h3 class="nk-decorated-h-2"><span><span class="text-main-1">FEATURED</span> GAMES</span></h3>
+        <div class="nk-gap"></div>
+        <div class="row">
+            {% for product in products %}
+            <div class="col-md-6">
+                <div class="game-card">
+                    <img class="game-image" src="{{ image_base_url }}/{{ product.image }}" alt="{{ product.nom_produit }}">
+                    <div class="game-info">
+                        <h3 class="game-title">{{ product.nom_produit }}</h3>
+                        <div class="game-description">
+                            {{ product.description }}
+                        </div>
+                        <div class="game-price">{{ product.prix_produit|number_format(0) }} DNT</div>
+                        <div class="game-buttons">
+                            <a href="{{ path('app_store_product', {'id': product.id}) }}" class="btn-details">
+                                VOIR LES DÉTAILS
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="col-12">
+                <p class="text-center">Aucun jeu n'est disponible pour le moment.</p>
+            </div>
+            {% endfor %}
+        </div>
+        <!-- END: Featured Games -->
+
+        <!-- START: Most Popular -->
+        <div class="nk-gap-3"></div>
+        <h3 class="nk-decorated-h-2"><span><span class="text-main-1">Les Plus</span> Populaires</span></h3>
+        <div class="nk-gap"></div>
+        <div class="row">
+            {% for product in popular_products %}
+            <div class="col-md-6">
+                <div class="game-card">
+                    <img class="game-image" src="{{ image_base_url }}/{{ product.image }}" alt="{{ product.nom_produit }}">
+                    <div class="game-info">
+                        <h3 class="game-title">{{ product.nom_produit }}</h3>
+                        <div class="game-description">
+                            {{ product.description }}
+                        </div>
+                        <div class="game-price">{{ product.prix_produit|number_format(0) }} DNT</div>
+                        <div class="game-buttons">
+                            <a href="{{ path('app_store_product', {'id': product.id}) }}" class="btn-details">
+                                VOIR LES DÉTAILS
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="col-12">
+                <p class="text-center">Aucun jeu populaire n'est disponible pour le moment.</p>
+            </div>
+            {% endfor %}
+        </div>
+        <!-- END: Most Popular -->
+        
+        <div class="nk-gap-3"></div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+    $(document).ready(function() {
+        var $carousel = $('.nk-carousel').flickity({
+            cellAlign: 'center',
+            contain: true,
+            wrapAround: true,
+            autoPlay: false,
+            prevNextButtons: true,
+            pageDots: false,
+            freeScroll: false,
+            groupCells: 3,
+            draggable: true,
+            adaptiveHeight: true
+        });
+    });
+</script>
+{% endblock %}

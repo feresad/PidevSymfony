@@ -1004,3 +1004,72 @@ header h2 {
       padding: 6px 10px;
   }
 }
+
+/* Custom dark theme styles */
+
+/* Form controls */
+.form-control {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+  border-color: #333333 !important;
+}
+
+.form-control:focus {
+  background-color: #262626 !important;
+  color: #ffffff !important;
+  border-color: #0585c6 !important;
+  box-shadow: none !important;
+}
+
+/* Form labels */
+.form-group label {
+  color: #ffffff !important;
+}
+
+/* Page title styling */
+.cardHeader h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0 0 10px rgba(5, 133, 198, 0.5);
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: #0585c6 !important;
+  border-color: #0585c6 !important;
+  color: #ffffff !important;
+}
+
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active {
+  background-color: #046ba0 !important;
+  border-color: #046ba0 !important;
+  transform: none !important;
+}
+
+/* Footer */
+footer {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border-top: 1px solid #333333;
+}
+
+/* Form validation error messages */
+.form-error {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+.form-control.is-invalid {
+  border-color: #dc3545;
+}
+
+.form-control.is-invalid:focus {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}

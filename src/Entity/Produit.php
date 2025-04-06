@@ -5,17 +5,18 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
-use App\Entity\Commande;
 
 #[ORM\Entity]
 class Produit
 {
     public function __construct()
     {
+        $this->commandes = new ArrayCollection();
+        $this->stocks = new ArrayCollection();
     }
 
-
     #[ORM\Id]
+    #[ORM\GeneratedValue]
     #[ORM\Column(type: "integer")]
     private int $id;
 
@@ -28,35 +29,37 @@ class Produit
     #[ORM\Column(type: "integer")]
     private int $score;
 
-    #[ORM\Column(type: "string", length: 50)]
-    private string $platform;
+    #[ORM\Column(type: "string", length: 50, nullable: true)]
+    private ?string $platform = null;
 
-    #[ORM\Column(type: "string", length: 50)]
-    private string $type;
+    #[ORM\Column(type: "string", length: 50, nullable: true)]
+    private ?string $type = null;
 
-    #[ORM\Column(type: "string", length: 50)]
-    private string $region;
+    #[ORM\Column(type: "string", length: 50, nullable: true)]
+    private ?string $region = null;
 
-    #[ORM\Column(type: "string", length: 50)]
-    private string $activation_region;
+    #[ORM\Column(type: "string", length: 50, nullable: true)]
+    private ?string $activation_region = null;
+
+    #[ORM\OneToMany(targetEntity: Commande::class, mappedBy: "produit")]
+    private Collection $commandes;
+
+    #[ORM\OneToMany(targetEntity: Stock::class, mappedBy: "produit")]
+    private Collection $stocks;
+
+    // Getters and Setters
 
     public function getId(): int
     {
         return $this->id;
     }
 
-    public function setId(int $id): self
-    {
-        $this->id = $id;
-        return $this;
-    }
-
-    public function getNom_produit(): string
+    public function getNomProduit(): string
     {
         return $this->nom_produit;
     }
 
-    public function setNom_produit(string $nom_produit): self
+    public function setNomProduit(string $nom_produit): self
     {
         $this->nom_produit = $nom_produit;
         return $this;
@@ -84,47 +87,63 @@ class Produit
         return $this;
     }
 
-    public function getPlatform(): string
+    public function getPlatform(): ?string
     {
         return $this->platform;
     }
 
-    public function setPlatform(string $platform): self
+    public function setPlatform(?string $platform): self
     {
         $this->platform = $platform;
         return $this;
     }
 
-    public function getType(): string
+    public function getType(): ?string
     {
         return $this->type;
     }
 
-    public function setType(string $type): self
+    public function setType(?string $type): self
     {
         $this->type = $type;
         return $this;
     }
 
-    public function getRegion(): string
+    public function getRegion(): ?string
     {
         return $this->region;
     }
 
-    public function setRegion(string $region): self
+    public function setRegion(?string $region): self
     {
         $this->region = $region;
         return $this;
     }
 
-    public function getActivation_region(): string
+    public function getActivationRegion(): ?string
     {
         return $this->activation_region;
     }
 
-    public function setActivation_region(string $activation_region): self
+    public function setActivationRegion(?string $activation_region): self
     {
         $this->activation_region = $activation_region;
         return $this;
+    }
+
+    /**
+     * @return Collection<int, Commande>
+     */
+    public function getCommandes(): Collection
+    {
+        return $this->commandes;
+    }
+
+    /**
+     * @return Collection<int, Stock>
+     */
+    public function getStocks(): Collection
+    {
+        return $this->stocks;
     }
 }

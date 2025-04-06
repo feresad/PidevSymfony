@@ -1,0 +1,67 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des Stocks{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('assets/css/produit.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="container mt-5" style="background-color: #091221; color: white;">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card" style="background-color: #091221; border-color: #0236a5;">
+                <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #0236a5; color: white;">
+                    <h2 class="mb-0">Liste des Stocks</h2>
+                    <a href="{{ path('app_stock_new') }}" class="btn" style="background-color: #fc0369; border-color: #fc0369; color: white;">Ajouter un Stock</a>
+                </div>
+                <div class="card-body p-4">
+                    <div class="table-responsive">
+                        <table class="table" style="color: white;">
+                            <thead style="background-color: #0585c6;">
+                                <tr>
+                                    <th class="text-center">Produit</th>
+                                    <th class="text-center">Jeu</th>
+                                    <th class="text-center">Quantité</th>
+                                    <th class="text-center">Prix</th>
+                                    <th class="text-center">Image</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for stock in stocks %}
+                                <tr>
+                                    <td class="text-center align-middle">{{ stock.produit.nomProduit }}</td>
+                                    <td class="text-center align-middle">{{ stock.games ? stock.games.gameName : '-' }}</td>
+                                    <td class="text-center align-middle">{{ stock.quantity }}</td>
+                                    <td class="text-center align-middle">{{ stock.prixProduit }} €</td>
+                                    <td class="text-center align-middle">
+                                        {% if stock.image %}
+                                            <img src="{{ image_base_url ~ stock.image }}" alt="Image" style="max-width: 50px;">
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <a href="{{ path('app_stock_edit', {'id': stock.id}) }}" class="btn btn-sm" style="background-color: #fc0369; color: white;">Modifier</a>
+                                            <form method="post" action="{{ path('app_stock_delete', {'id': stock.id}) }}" style="display: inline-block" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce stock?');">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ stock.id) }}">
+                                                <button class="btn btn-sm" style="background-color: #0236a5; color: white;">Supprimer</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center">Aucun stock trouvé</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
