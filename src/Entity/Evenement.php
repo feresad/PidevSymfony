@@ -4,7 +4,9 @@ namespace App\Entity;
 
 use App\Repository\EvenementRepository;
 use Doctrine\DBAL\Types\Types;
+use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: EvenementRepository::class)]
 class Evenement
@@ -15,15 +17,29 @@ class Evenement
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le nom de l'événement ne peut pas être vide.")]
+    #[Assert\Length(
+        max: 255,
+        maxMessage: "Le nom de l'événement ne peut pas dépasser {{ limit }} caractères."
+    )]
     private ?string $nomEvent = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank(message: "Le nombre maximum de places ne peut pas être vide.")]
+    #[Assert\Positive(message: "Le nombre maximum de places doit être un nombre positif.")]
     private ?int $maxPlacesEvent = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
+    #[Assert\NotNull(message: "La date de l'événement est obligatoire.")]
+    #[Assert\GreaterThanOrEqual("tomorrow", message: "L'événement doit être prévu au moins 24 heures à l'avance.")]
     private ?\DateTimeInterface $dateEvent = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le lieu de l'événement ne peut pas être vide.")]
+    #[Assert\Length(
+        max: 255,
+        maxMessage: "Le lieu de l'événement ne peut pas dépasser {{ limit }} caractères."
+    )]
     private ?string $lieuEvent = null;
     
     #[ORM\Column(type: "string", length: 255)]
@@ -31,6 +47,7 @@ class Evenement
 
     #[ORM\ManyToOne(targetEntity: CategorieEvent::class, inversedBy: 'evenements')]
     #[ORM\JoinColumn(name: 'categorie_id', referencedColumnName: 'id')]
+    #[Assert\NotNull(message: "L'événement doit appartenir à une catégorie.")]
     private ?CategorieEvent $categorie = null;
 
     public function getId(): ?int
@@ -107,5 +124,19 @@ class Evenement
         $this->photoEvent = $photo_event;
         return $this;
     }
-
+    /**
+     * Custom validation to ensure the event date is not in the past.
+     */
+    #[Assert\Callback]
+    public function validateDateEvent(ExecutionContextInterface $context): void
+    {
+        if ($this->dateEvent !== null) {
+            $now = new \DateTime();
+            if ($this->dateEvent < $now) {
+                $context->buildViolation('La date de l\'événement ne peut pas être dans le passé.')
+                    ->atPath('dateEvent')
+                    ->addViolation();
+            }
+        }
+    }
 }

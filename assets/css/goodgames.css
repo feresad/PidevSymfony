@@ -107,7 +107,7 @@ body.nk-page-boxed {
 }
 
 a {
-    color: #dd163b;
+    color: #dd165f;
     -webkit-transition: .15s color;
     -o-transition: .15s color;
     transition: .15s color;
@@ -115,7 +115,8 @@ a {
 
 a:focus,
 a:hover {
-    color: #dd163b;
+    color: #dd165f;
+
 }
 
 ::-moz-selection {

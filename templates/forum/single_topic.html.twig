@@ -1,0 +1,697 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Level OP | {{ question.title }}{% endblock %}
+
+{% block body %}
+    <div class="nk-gap-1"></div>
+    <div class="container">
+        <ul class="nk-breadcrumbs">
+            <li><a href="{{ path('app_home') }}">Home</a></li>
+            <li><span class="fa fa-angle-right"></span></li>
+            <li><a href="{{ path('forum_index') }}">Forum</a></li>
+            <li><span class="fa fa-angle-right"></span></li>
+            <li><a href="{{ path('forum_topics') }}">Main Game Discussions</a></li>
+            <li><span class="fa fa-angle-right"></span></li>
+            <li><span>{{ question.title }}</span></li>
+        </ul>
+    </div>
+    <div class="nk-gap-1"></div>
+
+    <div class="container">
+        <div class="nk-gap-2"></div>
+
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label }}">{{ message }}</div>
+            {% endfor %}
+        {% endfor %}
+
+        <ul class="nk-forum nk-forum-topic" id="forum-topic-list">
+            <li data-id="{{ question.id }}" class="question-card">
+                <div class="nk-forum-topic-author">
+                    <a href="#">
+                        <img src="{{ question.utilisateurId.getPhoto() ? 'http://localhost/img/games/' ~ question.utilisateurId.getPhoto() : asset('assets/images/avatar-1.jpg') }}" alt="{{ question.utilisateurId.getNickname() }}">
+                    </a>
+                    <div class="nk-forum-topic-author-name" title="{{ question.utilisateurId.getNickname() }}">
+                        <a href="#">{{ question.utilisateurId.getNickname() }}</a>
+                    </div>
+                    <div class="nk-forum-topic-author-role">{{ question.utilisateurId.getPrivilege() }}</div>
+                    <div class="nk-forum-topic-author-since">
+                        Member since {{ question.utilisateurId.getId() ? question.utilisateurId.getId()|date('F d, Y') : 'Unknown' }}
+                    </div>
+                </div>
+                <div class="nk-forum-topic-content">
+                    <h3>{{ question.title }}</h3>
+                    <p>{{ question.content }}</p>
+                    {% if question.image %}
+                        <div class="nk-forum-topic-attachments">
+                            <h4 class="h5">Attachment</h4>
+                            <img src="http://localhost/img/games/{{ question.image }}" alt="Topic Media" style="max-width: 300px;">
+                        </div>
+                    {% endif %}
+                    {% if question.video %}
+                        <div class="nk-forum-topic-attachments">
+                            <h4 class="h5">Attachment</h4>
+                            <video width="640" height="480" controls>
+                                <source src="http://localhost/img/games/{{ question.video }}" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="nk-forum-topic-footer">
+                    <div class="nk-forum-topic-footer-left">
+                        <span class="nk-forum-topic-date">{{ question.createdAt|date('F d, Y') }}</span>
+                    </div>
+                    <div class="nk-forum-vote-section">
+                        <button class="vote-btn upvote-btn voting-button upvote" data-id="{{ question.id }}" data-type="question" data-vote-type="UP" data-fallback="↑">
+                            <img src="{{ asset('images/uppvote-emoji.png') }}" alt="Upvote" class="vote-icon">
+                        </button>
+                        <span class="vote-count">{{ question.votes|default(0) }}</span>
+                        <button class="vote-btn downvote-btn voting-button downvote" data-id="{{ question.id }}" data-type="question" data-vote-type="DOWN" data-fallback="↓">
+                            <img src="{{ asset('images/doownvote-emoji.png') }}" alt="Downvote" class="vote-icon">
+                        </button>
+                    </div>
+                    <div class="nk-forum-reactions">
+                        <div class="reaction-display" data-id="{{ question.id }}" data-type="question">
+                            {% for emoji, count in question.reactionCounts|default([]) %}
+                                <span class="reaction-item" data-emoji="{{ emoji }}">{{ emoji }} {{ count }}</span>
+                            {% endfor %}
+                        </div>
+                        <div class="reaction-wrapper">
+                            <img src="{{ asset('images/meme_icon.png') }}" alt="React" class="reaction-icon" data-id="{{ question.id }}" data-type="question">
+                            <div class="emoji-picker" style="display: none;"></div>
+                        </div>
+                    </div>
+                    <div class="nk-forum-topic-footer-right">
+                        {% if question.gameImage %}
+                            <div class="nk-forum-game-image">
+                                <img src="http://localhost/img/games/{{ question.gameImage }}" alt="Game Image" style="max-width: 50px; margin-right: 15px;">
+                            </div>
+                        {% else %}
+                            <div class="nk-forum-game-image">
+                                <img src="{{ asset('assets/images/default-game.jpg') }}" alt="Default Game Image" style="max-width: 50px; margin-right: 15px;">
+                            </div>
+                        {% endif %}
+                        <span class="nk-forum-action-btn reply-btn" data-id="{{ question.id }}" data-type="question">
+                            <a href="#" class="nk-anchor">
+                                <img src="{{ asset('images/comment_icon.png') }}" alt="Reply" class="action-icon">
+                                <span class="reply-label">Repondre</span>
+                            </a>
+                        </span>
+                        <span class="nk-forum-action-btn">
+                            <a href="#" class="nk-anchor">
+                                <span class="fa fa-flag"></span> Spam
+                            </a>
+                        </span>
+                    </div>
+                </div>
+                <div class="reply-form-container" style="display: none;"></div>
+            </li>
+
+            {% macro render_comments(comments, level = 0, is_reply = false) %}
+                {% for comment in comments %}
+                    {% set is_low_quality = comment.votes|default(0) < -5 %}
+                    <li data-id="{{ comment.id }}" class="comment-card {{ is_reply ? 'reply-card' : '' }} {{ is_low_quality ? 'low-quality-comment' : '' }}" style="margin-left: {{ level * 20 }}px; position: relative;">
+                        <div class="nk-forum-topic-author">
+                            <a href="#">
+                                <img src="{{ comment.utilisateurId.getPhoto() ? 'http://localhost/img/games/' ~ comment.utilisateurId.getPhoto() : asset('assets/images/avatar-2.jpg') }}" alt="{{ comment.utilisateurId.getNickname() }}">
+                            </a>
+                            <div class="nk-forum-topic-author-name" title="{{ comment.utilisateurId.getNickname() }}">
+                                <a href="#">{{ comment.utilisateurId.getNickname() }}</a>
+                            </div>
+                            <div class="nk-forum-topic-author-role">{{ comment.utilisateurId.getPrivilege() }}</div>
+                            <div class="nk-forum-topic-author-since">
+                                Member since {{ comment.utilisateurId.getId() ? comment.utilisateurId.getId()|date('F d, Y') : 'Unknown' }}
+                            </div>
+                        </div>
+                        <div class="nk-forum-topic-content">
+                            <p>{{ comment.content|raw }}</p>
+                            {% if is_low_quality %}
+                                <span class="low-quality-label">Low Quality (Votes: {{ comment.votes }})</span>
+                            {% endif %}
+                            <span class="sentiment-badge sentiment-{{ comment.sentiment }}">{{ comment.sentiment|capitalize }}</span>
+                        </div>
+                        <div class="nk-forum-topic-footer">
+                            <div class="nk-forum-topic-footer-left">
+                                <span class="nk-forum-topic-date">{{ comment.createdAt|date('F d, Y') }}</span>
+                                <div class="nk-forum-reactions">
+                                    <div class="reaction-display" data-id="{{ comment.id }}" data-type="comment">
+                                        {% for emoji, count in comment.reactionCounts|default([]) %}
+                                            <span class="reaction-item" data-emoji="{{ emoji }}">{{ emoji }} {{ count }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="reaction-wrapper">
+                                        <img src="{{ asset('images/meme_icon.png') }}" alt="React" class="reaction-icon" data-id="{{ comment.id }}" data-type="comment">
+                                        <div class="emoji-picker" style="display: none;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="nk-forum-vote-section">
+                                <button class="vote-btn upvote-btn voting-button upvote" data-id="{{ comment.id }}" data-type="comment" data-vote-type="UP" data-fallback="↑">
+                                    <img src="{{ asset('images/uppvote-emoji.png') }}" alt="Upvote" class="vote-icon">
+                                </button>
+                                <span class="vote-count">{{ comment.votes|default(0) }}</span>
+                                <button class="vote-btn downvote-btn voting-button downvote" data-id="{{ comment.id }}" data-type="comment" data-vote-type="DOWN" data-fallback="↓">
+                                    <img src="{{ asset('images/doownvote-emoji.png') }}" alt="Downvote" class="vote-icon">
+                                </button>
+                            </div>
+                            <div class="nk-forum-topic-footer-right">
+                                {% if comment.childCommentaires is defined and comment.childCommentaires is not empty %}
+                                    <span class="nk-forum-action-btn toggle-replies-btn" data-id="{{ comment.id }}">
+                                        <a href="#" class="nk-anchor">
+                                            <span class="fa fa-eye-slash"></span> Hide Replies ({{ comment.childCommentaires|length }})
+                                        </a>
+                                    </span>
+                                {% endif %}
+                                <span class="nk-forum-action-btn reply-btn" data-id="{{ comment.id }}" data-type="comment">
+                                    <a href="#" class="nk-anchor">
+                                        <img src="{{ asset('images/comment_icon.png') }}" alt="Reply" class="action-icon">
+                                        <span class="reply-label">Repondre</span>
+                                    </a>
+                                </span>
+                                <span class="nk-forum-action-btn update-btn" data-id="{{ comment.id }}">
+                                    <a href="#" class="nk-anchor">
+                                        <span class="fa fa-edit"></span> Update
+                                    </a>
+                                </span>
+                                <span class="nk-forum-action-btn">
+                                    <form action="{{ path('comment_delete', {'id': comment.id}) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this comment?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete_comment_' ~ comment.id) }}">
+                                        <button type="submit" class="nk-anchor">
+                                            <span class="fa fa-trash"></span> Delete
+                                        </button>
+                                    </form>
+                                </span>
+                                <span class="nk-forum-action-btn">
+                                    <a href="#" class="nk-anchor">
+                                        <span class="fa fa-flag"></span> Spam
+                                    </a>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="reply-form-container" style="display: none;"></div>
+                        <div class="update-form-container" style="display: none;"></div>
+                    </li>
+                    {% if comment.childCommentaires is defined and comment.childCommentaires is not empty %}
+                        <ul class="child-comments" data-parent-id="{{ comment.id }}" style="display: block;">
+                            {{ _self.render_comments(comment.childCommentaires, level + 1, true) }}
+                        </ul>
+                    {% endif %}
+                {% endfor %}
+            {% endmacro %}
+
+            {{ _self.render_comments(comments) }}
+        </ul>
+
+        <div class="nk-gap-2"></div>
+        <div class="nk-pagination nk-pagination-left">
+            <a href="#" class="nk-pagination-prev">
+                <span class="ion-ios-arrow-back"></span>
+            </a>
+            <nav>
+                <a class="nk-pagination-current" href="#">1</a>
+                <a href="#">2</a>
+                <a href="#">3</a>
+                <a href="#">4</a>
+                <span>...</span>
+                <a href="#">14</a>
+            </nav>
+            <a href="#" class="nk-pagination-next">
+                <span class="ion-ios-arrow-forward"></span>
+            </a>
+        </div>
+        <div class="nk-gap-2"></div>
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/single_topic.css') }}">
+    <style>
+        .nk-forum-reactions { display: flex; align-items: center; gap: 10px; }
+        .reaction-display { display: flex; gap: 5px; }
+        .reaction-item { background-color: #293139; padding: 4px 8px; border-radius: 3px; font-size: 1.5rem; line-height: 1; }
+        .reaction-wrapper { position: relative; display: inline-flex; align-items: center; }
+        .reaction-icon { width: 24px; height: 24px; cursor: pointer; transition: transform 0.3s ease; }
+        .reaction-icon:hover { transform: scale(1.1); }
+        .emoji-picker-container {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            background-color: #232930;
+            border: 1px solid #293139;
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 2000;
+            width: 250px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .emoji-section { margin-bottom: 10px; }
+        .emoji-section h4 { color: #d1d5db; font-size: 1rem; margin-bottom: 5px; }
+        .emoji-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+        .emoji-option { cursor: pointer; font-size: 1.2rem; padding: 4px; text-align: center; }
+        .emoji-option:hover { background-color: #0585e6; border-radius: 3px; }
+        .nk-forum-topic-footer { display: flex; justify-content: space-between; align-items: center; position: relative; padding-bottom: 15px; }
+        .nk-forum-topic-footer-left { display: flex; align-items: center; gap: 15px; }
+        /* Adjusted vertical alignment for voting section */
+        .comment-card .nk-forum-vote-section { display: flex; align-items: center; gap: 5px; margin-top: 0; position: static; transform: none; }
+        .question-card .nk-forum-vote-section { display: flex; align-items: center; gap: 5px; }
+        /* Adjusted vertical alignment for footer-right */
+        .comment-card .nk-forum-topic-footer-right { display: flex; align-items: center; gap: 15px; position: static; transform: none; }
+        .question-card .nk-forum-topic-footer-right { display: flex; align-items: center; gap: 15px; }
+        .action-icon { width: 14px; height: 14px; vertical-align: middle; margin-right: 5px; }
+        .reply-label { color: #fe0369; font-size: 0.9rem; vertical-align: middle; }
+        .nk-forum-action-btn a { display: inline-flex; align-items: center; color: #d1d5db; font-size: 0.9rem; text-decoration: none; transition: color 0.3s ease; }
+        .nk-forum-action-btn a:hover { color: #0585e6; }
+        .nk-forum-action-btn .fa { font-size: 14px; margin-right: 5px; }
+        .nk-forum-action-btn button.nk-anchor { display: inline-flex; align-items: center; color: #d1d5db; font-size: 0.9rem; text-decoration: none; transition: color 0.3s ease; background: none; border: none; padding: 0; cursor: pointer; }
+        .nk-forum-action-btn button.nk-anchor:hover { color: #0585e6; }
+        .vote-icon { width: 20px; height: 20px; }
+        .low-quality-comment { background-color: #2e1c1c; }
+        .low-quality-label { color: #ff6f61; font-size: 0.8rem; font-style: italic; margin-top: 5px; display: block; }
+        .sentiment-badge {
+            margin-top: 5px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            display: inline-block;
+        }
+        .sentiment-positive { background-color: #28a745; color: #fff; }
+        .sentiment-negative { background-color: #dc3545; color: #fff; }
+        .sentiment-neutral { background-color: #6c757d; color: #fff; }
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {% set contenu_field = form_widget(comment_form.contenu, {'attr': {'class': 'nk-summernote form-control'}}) %}
+    {% set form_rest = form_rest(comment_form) %}
+
+    <script>
+        $(document).ready(function() {
+            let sentimentMap = {
+                positive: [],
+                negative: [],
+                neutral: []
+            };
+
+            // Debounce function
+            function debounce(func, wait) {
+                let timeout;
+                return function(...args) {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => func.apply(this, args), wait);
+                };
+            }
+
+            // Fetch emojis and categorize by sentiment
+            function loadEmojis() {
+                return $.ajax({
+                    url: 'https://emoji-api.com/emojis?access_key=22b221fd734cfd73f62238bc32fa072f636bc63b',
+                    method: 'GET',
+                    cache: true
+                }).then(emojis => {
+                    const positiveGroups = ['smileys-emotion', 'people-body', 'activities', 'food-drink'];
+                    const neutralGroups = ['travel-places', 'objects', 'animals-nature'];
+
+                    emojis.forEach(emoji => {
+                        const group = emoji.group;
+                        const name = emoji.slug.toLowerCase();
+
+                        if (positiveGroups.includes(group) || name.includes('smile') || name.includes('happy') || name.includes('love') || name.includes('laugh') || name.includes('party') || name.includes('cool')) {
+                            if (sentimentMap.positive.length < 20) sentimentMap.positive.push(emoji.character);
+                        }
+                        else if (group === 'smileys-emotion' && (name.includes('sad') || name.includes('cry') || name.includes('angry') || name.includes('mad') || name.includes('frown') || name.includes('disappoint') || name.includes('frustrated') || name.includes('broken') || name.includes('rage') || name.includes('pout'))) {
+                            if (sentimentMap.negative.length < 20) sentimentMap.negative.push(emoji.character);
+                        }
+                        else if (neutralGroups.includes(group) || name.includes('think') || name.includes('shrug') || name.includes('face') || name.includes('neutral') || name.includes('roll')) {
+                            if (sentimentMap.neutral.length < 20) sentimentMap.neutral.push(emoji.character);
+                        }
+                    });
+
+                    console.log('Positive Emojis:', sentimentMap.positive);
+                    console.log('Negative Emojis:', sentimentMap.negative);
+                    console.log('Neutral Emojis:', sentimentMap.neutral);
+
+                    if (sentimentMap.positive.length < 10) sentimentMap.positive = ['👍', '😊', '😂', '❤️', '🎉', '😍', '👏', '🌟', '😎', '💪'];
+                    if (sentimentMap.negative.length < 10) sentimentMap.negative = ['👎', '😢', '😡', '💔', '😤', '😞', '🤬', '😣', '💢', '😠'];
+                    if (sentimentMap.neutral.length < 10) sentimentMap.neutral = ['🤔', '😐', '🙂', '👀', '🤷', '😶', '🤝', '🙄', '😴', '🤓'];
+
+                    $.ajax({
+                        url: '{{ path('api_update_sentiment_map') }}',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ sentimentMap: sentimentMap }),
+                        success: function(response) {
+                            if (!response.success) console.error('Failed to sync sentiment map:', response.message);
+                        },
+                        error: function() {
+                            console.error('Failed to sync sentiment map with backend');
+                        }
+                    });
+                }).catch(() => {
+                    console.error('Failed to load emojis');
+                    sentimentMap = {
+                        positive: ['👍', '😊', '😂', '❤️', '🎉', '😍', '👏', '🌟', '😎', '💪'],
+                        negative: ['👎', '😢', '😡', '💔', '😤', '😞', '🤬', '😣', '💢', '😠'],
+                        neutral: ['🤔', '😐', '🙂', '👀', '🤷', '😶', '🤝', '🙄', '😴', '🤓']
+                    };
+                });
+            }
+
+            // Fetch reactions
+            function fetchReactions(id, type, $display) {
+                $.ajax({
+                    url: '{{ path('react_action') }}',
+                    method: 'POST',
+                    data: { id: id, type: type, action: 'fetch' },
+                    success: function(response) {
+                        if (response.success) {
+                            updateReactionDisplay($display, response.reactionCounts || {});
+                        } else {
+                            console.error('Failed to fetch reactions:', response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('AJAX error fetching reactions:', status, error);
+                    }
+                });
+            }
+
+            // Update reaction display
+            function updateReactionDisplay($display, reactionCounts) {
+                let reactionHtml = '';
+                for (const [emoji, count] of Object.entries(reactionCounts)) {
+                    reactionHtml += `<span class="reaction-item" data-emoji="${emoji}">${emoji} ${count}</span>`;
+                }
+                $display.html(reactionHtml);
+            }
+
+            // Initialize reactions
+            function initializeReactions() {
+                $('.reaction-display').each(function() {
+                    const $display = $(this);
+                    const id = $display.data('id');
+                    const type = $display.data('type');
+                    if ($display.children().length === 0) {
+                        fetchReactions(id, type, $display);
+                    }
+                });
+            }
+
+            // Show emoji picker sorted by sentiment
+            const showEmojiPicker = debounce(function($icon, $picker, id, type) {
+                if (sentimentMap.positive.length === 0) return;
+
+                let pickerHtml = '<div class="emoji-picker-container">';
+                
+                pickerHtml += '<div class="emoji-section"><h4>Positive</h4><div class="emoji-grid">';
+                sentimentMap.positive.forEach(emoji => {
+                    pickerHtml += `<span class="emoji-option" data-emoji="${emoji}" data-id="${id}" data-type="${type}">${emoji}</span>`;
+                });
+                pickerHtml += '</div></div>';
+
+                pickerHtml += '<div class="emoji-section"><h4>Negative</h4><div class="emoji-grid">';
+                sentimentMap.negative.forEach(emoji => {
+                    pickerHtml += `<span class="emoji-option" data-emoji="${emoji}" data-id="${id}" data-type="${type}">${emoji}</span>`;
+                });
+                pickerHtml += '</div></div>';
+
+                pickerHtml += '<div class="emoji-section"><h4>Neutral</h4><div class="emoji-grid">';
+                sentimentMap.neutral.forEach(emoji => {
+                    pickerHtml += `<span class="emoji-option" data-emoji="${emoji}" data-id="${id}" data-type="${type}">${emoji}</span>`;
+                });
+                pickerHtml += '</div></div>';
+
+                pickerHtml += '</div>';
+                $picker.html(pickerHtml).fadeIn(100);
+            }, 200);
+
+            // Load emojis and initialize
+            loadEmojis().then(() => {
+                initializeReactions();
+
+                $(document).on('mouseenter', '.reaction-icon', function() {
+                    const $icon = $(this);
+                    const id = $icon.data('id');
+                    const type = $icon.data('type');
+                    const $picker = $icon.siblings('.emoji-picker');
+                    showEmojiPicker($icon, $picker, id, type);
+                });
+
+                $(document).on('mouseleave', '.reaction-wrapper', function() {
+                    const $picker = $(this).find('.emoji-picker');
+                    $picker.fadeOut(100);
+                });
+
+                $(document).on('click', '.emoji-option', function() {
+                    const $emoji = $(this);
+                    const emoji = $emoji.data('emoji');
+                    const id = $emoji.data('id');
+                    const type = $emoji.data('type');
+                    const $display = $emoji.closest('.nk-forum-reactions').find('.reaction-display');
+                    const $picker = $emoji.closest('.emoji-picker');
+
+                    $.ajax({
+                        url: '{{ path('react_action') }}',
+                        method: 'POST',
+                        data: { id: id, type: type, emoji: emoji, action: 'react' },
+                        success: function(response) {
+                            if (response.success) {
+                                updateReactionDisplay($display, response.reactionCounts);
+                                $picker.fadeOut(100);
+                            } else {
+                                Swal.fire({
+                                    title: 'Error',
+                                    text: response.message,
+                                    icon: 'error',
+                                    background: '#1c2526',
+                                    color: '#d1d5db',
+                                    confirmButtonColor: '#ff6f61'
+                                });
+                            }
+                        },
+                        error: function() {
+                            Swal.fire({
+                                title: 'Error',
+                                text: 'Failed to save reaction',
+                                icon: 'error',
+                                background: '#1c2526',
+                                color: '#d1d5db',
+                                confirmButtonColor: '#ff6f61'
+                            });
+                        }
+                    });
+                });
+            });
+
+            // Toggle replies
+            $(document).on('click', '.toggle-replies-btn', function(e) {
+                e.preventDefault();
+                const $btn = $(this);
+                const commentId = $btn.data('id');
+                const $childComments = $(`.child-comments[data-parent-id="${commentId}"]`);
+                const $btnText = $btn.find('a');
+
+                $childComments.slideToggle(300, function() {
+                    if ($childComments.is(':visible')) {
+                        $btnText.html('<span class="fa fa-eye-slash"></span> Hide Replies (' + $childComments.find('li').length + ')');
+                    } else {
+                        $btnText.html('<span class="fa fa-eye"></span> Show Replies (' + $childComments.find('li').length + ')');
+                    }
+                });
+            });
+
+            // Reply button
+            $(document).on('click', '.reply-btn', function(e) {
+                e.preventDefault();
+                const $btn = $(this);
+                const parentId = $btn.data('id');
+                const type = $btn.data('type');
+                const $card = $btn.closest('li');
+                const $replyContainer = $card.find('.reply-form-container').first();
+
+                $('.reply-form-container').hide();
+                $('.update-form-container').hide();
+
+                if ($replyContainer.is(':visible')) {
+                    $replyContainer.hide();
+                    return;
+                }
+
+                let replyFormHtml = `
+                    <div class="nk-gap-1"></div>
+                    <form action="{{ path('comment_create', {'id': question.id}) }}" method="POST" class="profanity-check-form">
+                        <div class="mb-3">
+                            {{ contenu_field|raw }}
+                            {{ form_rest|raw }}
+                        </div>
+                        <input type="hidden" name="type" value="${type}">
+                        <input type="hidden" name="parent_id" value="${parentId}">
+                        <button type="submit" class="nk-btn nk-btn-rounded nk-btn-color-white">Submit Reply</button>
+                        <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-dark cancel-reply">Cancel</button>
+                    </form>
+                `;
+
+                $replyContainer.html(replyFormHtml).show();
+                $replyContainer.find('.nk-summernote').summernote({
+                    height: 200,
+                    toolbar: [
+                        ['style', ['bold', 'italic', 'underline', 'clear']],
+                        ['font', ['fontsize']],
+                        ['para', ['ul', 'ol', 'paragraph']],
+                        ['misc', ['codeview']]
+                    ],
+                    fontSizes: ['8', '9', '10', '11', '12', '14', '16', '18', '20', '22', '24', '28', '30', '36', '48', '64'],
+                    placeholder: 'Write your reply here...'
+                });
+            });
+
+            $(document).on('click', '.cancel-reply', function() {
+                $(this).closest('.reply-form-container').hide();
+            });
+
+            // Update button
+            $(document).on('click', '.update-btn', function(e) {
+                e.preventDefault();
+                const $btn = $(this);
+                const commentId = $btn.data('id');
+                const $card = $btn.closest('li');
+                const $updateContainer = $card.find('.update-form-container').first();
+                const currentContent = $card.find('.nk-forum-topic-content p').html();
+
+                $('.reply-form-container').hide();
+                $('.update-form-container').hide();
+
+                if ($updateContainer.is(':visible')) {
+                    $updateContainer.hide();
+                    return;
+                }
+
+                let updateFormHtml = `
+                    <div class="nk-gap-1"></div>
+                    <form action="{{ path('comment_update', {'id': 'COMMENT_ID'}) }}" method="POST" class="profanity-check-form">
+                        <div class="mb-3">
+                            {{ contenu_field|raw }}
+                            {{ form_rest|raw }}
+                        </div>
+                        <button type="submit" class="nk-btn nk-btn-rounded nk-btn-color-white">Update Comment</button>
+                        <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-dark cancel-update">Cancel</button>
+                    </form>
+                `;
+
+                const finalFormHtml = updateFormHtml.replace('COMMENT_ID', commentId);
+                $updateContainer.html(finalFormHtml).show();
+
+                const $summernote = $updateContainer.find('.nk-summernote');
+                $summernote.summernote({
+                    height: 200,
+                    toolbar: [
+                        ['style', ['bold', 'italic', 'underline', 'clear']],
+                        ['font', ['fontsize']],
+                        ['para', ['ul', 'ol', 'paragraph']],
+                        ['misc', ['codeview']]
+                    ],
+                    fontSizes: ['8', '9', '10', '11', '12', '14', '16', '18', '20', '22', '24', '28', '30', '36', '48', '64'],
+                    placeholder: 'Update your comment here...'
+                });
+                $summernote.summernote('code', currentContent);
+            });
+
+            $(document).on('click', '.cancel-update', function() {
+                $(this).closest('.update-form-container').hide();
+            });
+
+            // Voting handler
+            $(document).on('click', '.vote-btn', function(e) {
+                e.preventDefault();
+                const $btn = $(this);
+                const id = $btn.data('id');
+                const type = $btn.data('type');
+                const voteType = $btn.data('vote-type');
+                const $voteSection = $btn.closest('.nk-forum-vote-section');
+                const $voteCount = $voteSection.find('.vote-count');
+
+                $.ajax({
+                    url: '{{ path('ajax_vote_action') }}',
+                    method: 'POST',
+                    data: { id: id, type: type, vote_type: voteType },
+                    success: function(response) {
+                        if (response.success) {
+                            $voteCount.text(response.votes);
+                            $btn.addClass('voted');
+                        } else {
+                            Swal.fire({
+                                title: 'Voting Error',
+                                text: response.message,
+                                icon: 'error',
+                                background: '#1c2526',
+                                color: '#d1d5db',
+                                confirmButtonColor: '#fe0369'
+                            });
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({
+                            title: 'Voting Error',
+                            text: 'An error occurred while voting. Please try again.',
+                            icon: 'error',
+                            background: '#1c2526',
+                            color: '#d1d5db',
+                            confirmButtonColor: '#fe0369'
+                        });
+                    }
+                });
+            });
+
+            // Profanity check
+            $(document).on('submit', '.profanity-check-form', function(e) {
+                e.preventDefault();
+                const $form = $(this);
+                const content = $form.find('.nk-summernote').summernote('code');
+                const $submitButton = $form.find('button[type="submit"]');
+                $submitButton.prop('disabled', true);
+
+                $.ajax({
+                    url: '{{ path('api_check_profanity') }}',
+                    method: 'POST',
+                    data: { content: content },
+                    success: function(response) {
+                        if (response.isProfane) {
+                            const profanityList = response.details ? response.details.map(m => m['text']).join(', ') : '';
+                            Swal.fire({
+                                title: 'Inappropriate Content Detected',
+                                html: 'Your comment contains inappropriate language. Please revise it.<br><strong>Detected:</strong> ' + (profanityList || 'N/A'),
+                                icon: 'warning',
+                                background: '#1c2526',
+                                color: '#d1d5db',
+                                confirmButtonColor: '#fe0369'
+                            }).then(() => {
+                                $submitButton.prop('disabled', false);
+                            });
+                        } else {
+                            $form.off('submit');
+                            $form[0].submit();
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Error checking profanity. Please try again.',
+                            icon: 'error',
+                            background: '#1c2526',
+                            color: '#d1d5db',
+                            confirmButtonColor: '#fe0369'
+                        }).then(() => {
+                            $submitButton.prop('disabled', false);
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}

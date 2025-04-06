@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmation de Réservation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background-color: black;
+            border-radius: 30px;
+            text-align: center;
+            padding-bottom: 20px;
+        }
+        .header img {
+            width: 150px;
+        }
+        h1 {
+            color: #4CAF50;
+            text-align: center;
+        }
+        p {
+            color: #555;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .details {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .details p {
+            margin: 5px 0;
+        }
+        .button {
+            display: block;
+            width: 200px;
+            text-align: center;
+            background: #4CAF50;
+            color: #ffffff;
+            padding: 12px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+            margin: 20px auto;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="{{ logo }}" alt="LEVEL UP">
+        </div>
+        <h1>Confirmation de Réservation</h1>
+        <p>Bonjour {{ userName | default('') }},</p>
+        <p>Votre réservation pour l'événement <strong>{{ eventName }}</strong> a été confirmée.</p>
+
+        <div class="details">
+            <p><strong>Date :</strong> {{ eventDate }}</p>
+            <p><strong>Lieu :</strong> {{ eventLieu }}</p>
+            <p><strong>Catégorie :</strong> {{ eventCategory }}</p>
+        </div>
+
+        <p>Merci de votre confiance !</p>
+        <a href="{{ eventUrl }}" class="button">Voir les détails de l'événement</a>
+        <div class="footer">
+            <p>Cordialement,<br>L'équipe LEVEL UP</p>
+        </div>
+    </div>
+</body>
+</html>

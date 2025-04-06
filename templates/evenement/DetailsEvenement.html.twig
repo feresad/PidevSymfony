@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails de l'événement : {{ evenement.nomEvent }}{% endblock %}
+
+{% block body %}
+    <div class="nk-page-content">
+        <div class="container mt-4 nk-event-details">
+            <h1>{{ evenement.nomEvent }}</h1>
+
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger">
+                    {{ message }}
+                </div>
+            {% endfor %}
+
+            <div class="nk-event-detail-card">
+                <div class="nk-event-img">
+                    <img src="{{ image_base_url ~ evenement.photoEvent }}" alt="{{ evenement.nomEvent }}">
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Détails de l'événement</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <strong>Catégorie :</strong> {{ evenement.categorie ? evenement.categorie.nom : 'Non spécifiée' }}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Date :</strong> {{ evenement.dateEvent ? evenement.dateEvent|date('d/m/Y H:i') : 'Non définie' }}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Lieu :</strong> {{ evenement.lieuEvent }}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Places maximum :</strong> {{ evenement.maxPlacesEvent }}
+                        </li>
+                    </ul>
+                    <div class="nk-qr-code">
+                        <h5 class="mt-3">QR Code</h5>
+                        <img src="{{ path('evenement_qrcode', {id: evenement.id}) }}" alt="QR Code de l'événement">
+                        <p>Scannez ce QR Code pour voir les détails de l'événement.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <a href="{{ path('evenement_list') }}" class="nk-btn nk-btn-outline-primary">
+                    <i class="fas fa-arrow-left"></i> Retour à la liste
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Background de la page d'accueil -->
+    <img class="nk-page-background-top" src="{{ asset('images/bg-top.png') }}" alt="">
+    <img class="nk-page-background-bottom" src="{{ asset('images/bg-bottom.png') }}" alt="">
+{% endblock %}

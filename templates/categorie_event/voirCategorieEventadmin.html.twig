@@ -1,0 +1,43 @@
+{% extends 'baseadmin.html.twig' %}
+
+{% block title %}Détails de la catégorie : {{ categorie.nom }}{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h1>{{ categorie.nom }}</h1>
+
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Détails de la catégorie</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <strong>Nom :</strong> {{ categorie.nom }}
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Description :</strong> {{ categorie.descCategorieEvent }}
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <a href="{{ path('categorie_modifier', {id: categorie.id}) }}" class="btn btn-outline-secondary">
+                <i class="fas fa-edit"></i> Modifier
+            </a>
+            <a href="{{ path('delete_categorie', {id: categorie.id}) }}" 
+               onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ?');" 
+               class="btn btn-outline-danger">
+                <i class="fas fa-trash"></i> Supprimer
+            </a>
+            <a href="{{ path('categorie_list_admin') }}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left"></i> Retour à la liste
+            </a>
+        </div>
+    </div>
+{% endblock %}

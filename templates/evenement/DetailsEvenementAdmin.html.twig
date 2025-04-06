@@ -1,0 +1,56 @@
+{% extends 'baseadmin.html.twig' %}
+
+{% block title %}Détails de l'événement : {{ evenement.nomEvent }}{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h1>{{ evenement.nomEvent }}</h1>
+
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        <div class="card">
+            <img src="{{ image_base_url ~ evenement.photoEvent }}" class="card-img-top" alt="{{ evenement.nomEvent }}">
+            <div class="card-body">
+                <h5 class="card-title">Détails de l'événement</h5>
+                <ul class="list-group list-group-flush">
+                    <p class="card-text">
+                        Catégorie : {{ evenement.categorie ? evenement.categorie.nom : 'Non spécifiée' }}
+                    </p>
+                    <li class="list-group-item">
+                        <strong>Date :</strong> {{ evenement.dateEvent ? evenement.dateEvent|date('d/m/Y H:i') : 'Non définie' }}
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Lieu :</strong> {{ evenement.lieuEvent }}
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Places maximum :</strong> {{ evenement.maxPlacesEvent }}
+                    </li>
+                </ul>
+                <h5 class="mt-3">QR Code</h5>
+                <img src="{{ path('evenement_qrcode', {id: evenement.id}) }}" alt="QR Code de l'événement" class="img-fluid">
+                <p>Scannez ce QR Code pour voir les détails de l'événement.</p>
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <a href="{{ path('evenement_modifier', {id: evenement.id}) }}" class="btn btn-outline-secondary">
+                <i class="fas fa-edit"></i> Modifier
+            </a>
+            <a href="{{ path('evenement_supprimer', {id: evenement.id}) }}" 
+               onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?');" 
+               class="btn btn-outline-danger">
+                <i class="fas fa-trash"></i> Supprimer
+            </a>
+            <a href="{{ path('evenement_export_pdf', {id: evenement.id}) }}" class="btn btn-outline-success">
+                <i class="fas fa-file-pdf"></i> Exporter en  la liste des Utilisateurs
+            </a>
+            <a href="{{ path('evenement_list_admin') }}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left"></i> Retour à la liste
+            </a>
+        </div>
+    </div>
+{% endblock %}

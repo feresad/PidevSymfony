@@ -17,10 +17,10 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: "integer")]
     private int $id;
 
-    #[ORM\Column(type: "string", length: 255)]
+    #[ORM\Column(type: "string", length: 255, name: "nom")]
     private string $nom;
 
-    #[ORM\Column(type: "string", length: 255)]
+    #[ORM\Column(type: "string", length: 255, name: "prenom")]
     private string $prenom;
 
     #[ORM\Column(type: "string", length: 255, unique: true)]
@@ -29,10 +29,10 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: "string", length: 255, unique: true)]
     private string $nickname;
 
-    #[ORM\Column(type: "integer")]
+    #[ORM\Column(type: "integer", name: "numero")]
     private int $numero;
 
-    #[ORM\Column(type: "string", length: 255)]
+    #[ORM\Column(type: "string", length: 255, name: "mot_passe")]
     private string $mot_passe;
 
     #[ORM\Column(type: "string", enumType: Role::class)]

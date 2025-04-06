@@ -1,0 +1,146 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des Événements{% endblock %}
+
+{% block body %}
+    <div class="nk-page-content">
+        <div class="container mt-4 nk-event-list">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Liste des Événements</h1>
+                <div class="d-flex align-items-center">
+                    <div class="nk-sort-dropdown">
+                        <select name="sort" class="form-control nk-sort-select" form="eventFilterForm">
+                            <option value="nom_asc" {{ sort == 'nom_asc' ? 'selected' : '' }}>Nom (A-Z)</option>
+                            <option value="nom_desc" {{ sort == 'nom_desc' ? 'selected' : '' }}>Nom (Z-A)</option>
+                            <option value="date_asc" {{ sort == 'date_asc' ? 'selected' : '' }}>Date (Plus ancienne)</option>
+                            <option value="date_desc" {{ sort == 'date_desc' ? 'selected' : '' }}>Date (Plus récente)</option>
+                            <option value="lieu_asc" {{ sort == 'lieu_asc' ? 'selected' : '' }}>Lieu (A-Z)</option>
+                            <option value="lieu_desc" {{ sort == 'lieu_desc' ? 'selected' : '' }}>Lieu (Z-A)</option>
+                        </select>
+                    </div>
+
+                    <div class="nk-search-form mr-3">
+                        <form action="{{ path('evenement_list') }}" method="get" class="nk-form nk-form-style-1" id="eventFilterForm">
+                            <div class="input-group">
+                                <input type="text" name="search" class="form-control" placeholder="Rechercher un événement..." value="{{ search }}">
+                                <button type="submit" class="nk-btn nk-btn-color-main-1">
+                                    <span class="fas fa-search"></span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success">
+                    {{ message }}
+                </div>
+            {% endfor %}
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger">
+                    {{ message }}
+                </div>
+            {% endfor %}
+
+            <div class="row">
+                {% for evenement in evenements %}
+                    <div class="col-md-4 mb-4">
+                        <div class="nk-event-card h-100">
+                            <div class="nk-event-img">
+                                <img src="{{ image_base_url ~ evenement.photoEvent }}" alt="{{ evenement.nomEvent }}">
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">{{ evenement.nomEvent }}</h5>
+                                <p class="card-text">
+                                    <i class="fas fa-calendar"></i> {{ evenement.dateEvent ? evenement.dateEvent|date('d/m/Y H:i') : '' }}
+                                </p>
+                                <p class="card-text">
+                                    <i class="fas fa-map-marker-alt"></i> {{ evenement.lieuEvent }}
+                                </p>
+                                <p class="card-text">
+                                    <i class="fas fa-layer-group"></i> Catégorie : {{ evenement.categorie ? evenement.categorie.nom : 'Non spécifiée' }}
+                                </p>
+                                <p class="card-text">
+                                    <i class="fas fa-users"></i> Places restantes : {{ evenement.maxPlacesEvent }}
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="btn-group">
+                                        <a href="{{ path('evenement_detailles', {id: evenement.id}) }}" class="nk-btn nk-btn-outline-primary">
+                                            <i class="fas fa-eye"></i> Voir
+                                        </a>
+                                    </div>
+                                    <form action="{{ path('reserver_evenement', {id: evenement.id}) }}" method="post" class="d-inline">
+                                        <button type="submit" class="nk-btn nk-btn-primary">
+                                            <i class="fas fa-ticket-alt"></i> Réserver
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            Aucun événement n'a été trouvé.
+                            <a href="{{ path('evenement_ajouter') }}" class="btn btn-primary btn-sm ml-3">
+                                <i class="fas fa-plus"></i> Créer un événement
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if max_pages > 1 %}
+                <nav aria-label="Pagination des événements" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item {{ current_page == 1 ? 'disabled' : '' }}">
+                            <a class="page-link" href="{{ path('evenement_list', { page: current_page - 1, search: search, sort: sort }) }}">Précédent</a>
+                        </li>
+                        {% for i in 1..max_pages %}
+                            <li class="page-item {{ current_page == i ? 'active' : '' }}">
+                                <a class="page-link" href="{{ path('evenement_list', { page: i, search: search, sort: sort }) }}">{{ i }}</a>
+                            </li>
+                        {% endfor %}
+                        <li class="page-item {{ current_page == max_pages ? 'disabled' : '' }}">
+                            <a class="page-link" href="{{ path('evenement_list', { page: current_page + 1, search: search, sort: sort }) }}">Suivant</a>
+                        </li>
+                    </ul>
+                </nav>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Ajout des images de fond -->
+    <img class="nk-page-background-top" src="{{ asset('images/bg-top.png') }}" alt="">
+    <img class="nk-page-background-bottom" src="{{ asset('images/bg-bottom.png') }}" alt="">
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Soumission du formulaire de tri
+            $('.nk-sort-select').on('change', function() {
+                $('#eventFilterForm').submit();
+            });
+
+            // Gestion de la pagination avec jQuery (optionnel : chargement AJAX)
+            $('.page-link').on('click', function(e) {
+                e.preventDefault();
+                var url = $(this).attr('href');
+                if (url) {
+                    window.location.href = url; // Redirection classique
+                    // Pour une version AJAX, décommentez ci-dessous et adaptez :
+                    /*
+                    $.get(url, function(data) {
+                        $('.nk-event-list').html($(data).find('.nk-event-list').html());
+                    });
+                    */
+                }
+            });
+        });
+    </script>
+{% endblock %}

@@ -1,1 +1,1006 @@
 /* PLACE YOU CUSTOM STYLES IN THIS FILE */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap");
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+.chatbot-toggler {
+  position: fixed;
+  bottom: 30px;
+  right: 35px;
+  outline: none;
+  border: none;
+  height: 50px;
+  width: 50px;
+  display: flex;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #724ae8;
+  transition: all 0.2s ease;
+}
+body.show-chatbot .chatbot-toggler {
+  transform: rotate(90deg);
+}
+.chatbot-toggler span {
+  color: #fff;
+  position: absolute;
+}
+.chatbot-toggler span:last-child,
+body.show-chatbot .chatbot-toggler span:first-child {
+  opacity: 0;
+}
+body.show-chatbot .chatbot-toggler span:last-child {
+  opacity: 1;
+}
+.chatbot {
+  position: fixed;
+  right: 35px;
+  bottom: 90px;
+  width: 420px;
+  background: #fff;
+  border-radius: 15px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.5);
+  transform-origin: bottom right;
+  box-shadow: 0 0 128px 0 rgba(0, 0, 0, 0.1),
+    0 32px 64px -48px rgba(0, 0, 0, 0.5);
+  transition: all 0.1s ease;
+}
+body.show-chatbot .chatbot {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
+}
+.chatbot header {
+  padding: 16px 0;
+  position: relative;
+  text-align: center;
+  color: #fff;
+  background: #724ae8;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+.chatbot header span {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  display: none;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+header h2 {
+  font-size: 1.4rem;
+}
+.chatbot .chatbox {
+  overflow-y: auto;
+  height: 510px;
+  padding: 30px 20px 100px;
+}
+.chatbot :where(.chatbox, textarea)::-webkit-scrollbar {
+  width: 6px;
+}
+.chatbot :where(.chatbox, textarea)::-webkit-scrollbar-track {
+  background: #fff;
+  border-radius: 25px;
+}
+.chatbot :where(.chatbox, textarea)::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 25px;
+}
+.chatbox .chat {
+  display: flex;
+  list-style: none;
+}
+.chatbox .outgoing {
+  margin: 20px 0;
+  justify-content: flex-end;
+}
+.chatbox .incoming span {
+  width: 32px;
+  height: 32px;
+  color: #fff;
+  cursor: default;
+  text-align: center;
+  line-height: 32px;
+  align-self: flex-end;
+  background: #724ae8;
+  border-radius: 4px;
+  margin: 0 10px 7px 0;
+}
+.chatbox .chat p {
+  white-space: pre-wrap;
+  padding: 12px 16px;
+  border-radius: 10px 10px 0 10px;
+  max-width: 75%;
+  color: #fff;
+  font-size: 0.95rem;
+  background: #724ae8;
+}
+.chatbox .incoming p {
+  border-radius: 10px 10px 10px 0;
+  color: #000;
+  background: #f2f2f2;
+}
+.chatbox .chat p.error {
+  color: #721c24;
+  background: #f8d7da;
+}
+.chatbot .chat-input {
+  display: flex;
+  gap: 5px;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: #fff;
+  padding: 3px 20px;
+  border-top: 1px solid #ddd;
+}
+.chat-input textarea {
+  height: 55px;
+  width: 100%;
+  border: none;
+  outline: none;
+  resize: none;
+  max-height: 180px;
+  padding: 15px 15px 15px 0;
+  font-size: 0.95rem;
+}
+.chat-input span {
+  align-self: flex-end;
+  color: #724ae8;
+  cursor: pointer;
+  height: 55px;
+  display: flex;
+  align-items: center;
+  visibility: hidden;
+  font-size: 1.35rem;
+}
+.chat-input textarea:valid ~ span {
+  visibility: visible;
+}
+@media (max-width: 490px) {
+  .chatbot-toggler {
+    right: 20px;
+    bottom: 20px;
+  }
+  .chatbot {
+    right: 0;
+    bottom: 0;
+    height: 100%;
+    border-radius: 0;
+    width: 100%;
+  }
+  .chatbot .chatbox {
+    height: 90%;
+    padding: 25px 15px 100px;
+  }
+  .chatbot .chat-input {
+    padding: 5px 15px;
+  }
+  .chatbot header span {
+    display: block;
+  }
+}
+/*---------------------------
+  Liste des Événements
+ ----------------------------*/
+ .nk-event-list {
+  padding: 40px 0;
+}
+
+.nk-event-list h1 {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 2.5rem;
+  color: #fff;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.nk-event-list .nk-btn.nk-btn-primary {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  background-color: #dd163b;
+  border-color: #dd163b;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 4px;
+  -webkit-transition: .15s background-color, .15s border-color;
+  -o-transition: .15s background-color, .15s border-color;
+  transition: .15s background-color, .15s border-color;
+}
+
+.nk-event-list .nk-btn.nk-btn-primary:hover {
+  background-color: #c82f1a;
+  border-color: #b62a18;
+}
+
+.nk-event-list .nk-btn.nk-btn-primary .fas {
+  margin-right: 5px;
+}
+
+/* Alertes */
+.nk-event-list .alert-success {
+  background-color: #38a220;
+  border-color: #297718;
+  color: #fff;
+  padding: 15px 20px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.nk-event-list .alert-info {
+  background-color: #22a2b1;
+  border-color: #1a7b86;
+  color: #fff;
+  padding: 15px 20px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.nk-event-list .alert-info .btn-primary {
+  background-color: #dd163b;
+  border-color: #dd163b;
+  color: #fff;
+  margin-left: 15px;
+  padding: 6px 12px;
+  font-size: .9rem;
+}
+
+.nk-event-list .alert-info .btn-primary:hover {
+  background-color: #c82f1a;
+  border-color: #b62a18;
+}
+
+/* Carte Événement */
+.nk-event-card {
+  background-color: #232930;
+  border: 1px solid #293139;
+  border-radius: 4px;
+  overflow: hidden;
+  -webkit-transition: .15s border-color;
+  -o-transition: .15s border-color;
+  transition: .15s border-color;
+}
+
+.nk-event-card:hover {
+  border-color: #dd163b;
+}
+
+.nk-event-card .nk-event-img {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  -webkit-transition: opacity .15s ease-in-out;
+  -o-transition: opacity .15s ease-in-out;
+  transition: opacity .15s ease-in-out;
+}
+
+.nk-event-card .nk-event-img img {
+  width: 100%;
+  height: auto;
+  -webkit-transition: -webkit-transform .15s ease-in-out;
+  transition: -webkit-transform .15s ease-in-out;
+  -o-transition: transform .15s ease-in-out;
+  transition: transform .15s ease-in-out;
+  transition: transform .15s ease-in-out, -webkit-transform .15s ease-in-out;
+  -webkit-transform: scale(1);
+      -ms-transform: scale(1);
+          transform: scale(1);
+  will-change: transform;
+}
+
+.nk-event-card:hover .nk-event-img img {
+  -webkit-transform: scale(1.05);
+      -ms-transform: scale(1.05);
+          transform: scale(1.05);
+}
+
+.nk-event-card:hover .nk-event-img {
+  opacity: .8;
+}
+
+.nk-event-card .card-body {
+  padding: 20px;
+  color: #fff;
+}
+
+.nk-event-card .card-title {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 1.25rem;
+  color: #fff;
+  margin-bottom: 15px;
+  -o-text-overflow: ellipsis;
+     text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.nk-event-card .card-text {
+  font-family: "Open Sans", sans-serif;
+  font-size: .9rem;
+  color: #7f8b92;
+  margin-bottom: 10px;
+}
+
+.nk-event-card .card-text .fas {
+  margin-right: 8px;
+  color: #dd163b;
+}
+
+/* Boutons d'action */
+.nk-event-card .btn-group .nk-btn {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: .9rem;
+  padding: 6px 12px;
+  border-radius: 4px;
+  -webkit-transition: .15s background-color, .15s color;
+  -o-transition: .15s background-color, .15s color;
+  transition: .15s background-color, .15s color;
+}
+
+.nk-event-card .btn-group .nk-btn-outline-primary {
+  color: #dd163b;
+  border-color: #dd163b;
+  background-color: transparent;
+}
+
+.nk-event-card .btn-group .nk-btn-outline-primary:hover {
+  background-color: #dd163b;
+  color: #fff;
+}
+
+.nk-event-card .btn-group .nk-btn-outline-secondary {
+  color: #7f8b92;
+  border-color: #7f8b92;
+  background-color: transparent;
+}
+
+.nk-event-card .btn-group .nk-btn-outline-secondary:hover {
+  background-color: #7f8b92;
+  color: #fff;
+}
+
+.nk-event-card .nk-btn-outline-danger {
+  color: #e2361f;
+  border-color: #e2361f;
+  background-color: transparent;
+}
+
+.nk-event-card .nk-btn-outline-danger:hover {
+  background-color: #e2361f;
+  color: #fff;
+}
+
+.nk-event-card .nk-btn .fas {
+  margin-right: 5px;
+}
+
+/* Responsivité */
+@media (max-width: 767px) {
+  .nk-event-list h1 {
+      font-size: 2rem;
+  }
+  .nk-event-card .card-title {
+      font-size: 1.1rem;
+  }
+  .nk-event-card .card-text {
+      font-size: .85rem;
+  }
+  .nk-event-card .btn-group .nk-btn,
+  .nk-event-card .nk-btn-outline-danger {
+      font-size: .8rem;
+      padding: 5px 10px;
+  }
+} 
+/*---------------------------
+  Détails de l'événement
+ ----------------------------*/
+ .nk-event-details {
+  padding: 40px 0;
+}
+
+.nk-event-details h1 {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 2.5rem;
+  color: #fff;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+/* Alertes */
+.nk-event-details .alert-danger {
+  background-color: #e2361f;
+  border-color: #c82f1a;
+  color: #fff;
+  padding: 15px 20px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+/* Carte des détails */
+.nk-event-detail-card {
+  background-color: #232930;
+  border: 1px solid #293139;
+  border-radius: 4px;
+  overflow: hidden;
+  -webkit-transition: .15s border-color;
+  -o-transition: .15s border-color;
+  transition: .15s border-color;
+}
+
+.nk-event-detail-card:hover {
+  border-color: #dd163b;
+}
+
+.nk-event-detail-card .nk-event-img {
+  position: relative;
+  display: block;
+  overflow: hidden;
+}
+
+.nk-event-detail-card .nk-event-img img {
+  width: 100%;
+  height: auto;
+  -webkit-transition: -webkit-transform .15s ease-in-out;
+  transition: -webkit-transform .15s ease-in-out;
+  -o-transition: transform .15s ease-in-out;
+  transition: transform .15s ease-in-out;
+  -webkit-transform: scale(1);
+      -ms-transform: scale(1);
+          transform: scale(1);
+}
+
+.nk-event-detail-card:hover .nk-event-img img {
+  -webkit-transform: scale(1.05);
+      -ms-transform: scale(1.05);
+          transform: scale(1.05);
+}
+
+.nk-event-detail-card .card-body {
+  padding: 20px;
+  color: #fff;
+}
+
+.nk-event-detail-card .card-title {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 1.5rem;
+  color: #fff;
+  margin-bottom: 15px;
+}
+
+.nk-event-detail-card .list-group-item {
+  background-color: transparent;
+  border-color: #293139;
+  color: #7f8b92;
+  font-family: "Open Sans", sans-serif;
+  font-size: .9rem;
+  padding: 10px 15px;
+}
+
+.nk-event-detail-card .list-group-item strong {
+  color: #fff;
+  margin-right: 5px;
+}
+
+.nk-event-detail-card .card-text {
+  font-family: "Open Sans", sans-serif;
+  font-size: .9rem;
+  color: #7f8b92;
+  margin-bottom: 10px;
+}
+
+/* QR Code */
+.nk-event-detail-card .nk-qr-code {
+  margin-top: 15px;
+}
+
+.nk-event-detail-card .nk-qr-code img {
+  max-width: 200px;
+  border: 1px solid #293139;
+  border-radius: 4px;
+  padding: 5px;
+  background-color: #fff;
+}
+
+.nk-event-detail-card .nk-qr-code p {
+  font-family: "Open Sans", sans-serif;
+  font-size: .9rem;
+  color: #7f8b92;
+  margin-top: 10px;
+}
+
+/* Bouton Retour */
+.nk-event-details .nk-btn-outline-primary {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: .9rem;
+  padding: 10px 20px;
+  border-radius: 4px;
+  color: #dd163b;
+  border-color: #dd163b;
+  background-color: transparent;
+  -webkit-transition: .15s background-color, .15s color;
+  -o-transition: .15s background-color, .15s color;
+  transition: .15s background-color, .15s color;
+}
+
+.nk-event-details .nk-btn-outline-primary:hover {
+  background-color: #dd163b;
+  color: #fff;
+}
+
+.nk-event-details .nk-btn-outline-primary .fas {
+  margin-right: 5px;
+}
+
+/* Responsivité */
+@media (max-width: 767px) {
+  .nk-event-details h1 {
+      font-size: 2rem;
+  }
+  .nk-event-detail-card .card-title {
+      font-size: 1.25rem;
+  }
+  .nk-event-detail-card .list-group-item,
+  .nk-event-detail-card .card-text {
+      font-size: .85rem;
+  }
+  .nk-event-details .nk-btn-outline-primary {
+      font-size: .8rem;
+      padding: 8px 15px;
+  }
+}
+/*---------------------------
+  Liste des Catégories
+ ----------------------------*/
+ .nk-category-list {
+  padding: 40px 0;
+}
+
+.nk-category-list h1 {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 2.5rem;
+  color: #fff;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.nk-category-list .nk-btn.nk-btn-primary {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  background-color: #dd163b;
+  border-color: #dd163b;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 4px;
+  -webkit-transition: .15s background-color, .15s border-color;
+  -o-transition: .15s background-color, .15s border-color;
+  transition: .15s background-color, .15s border-color;
+}
+
+.nk-category-list .nk-btn.nk-btn-primary:hover {
+  background-color: #c82f1a;
+  border-color: #b62a18;
+}
+
+.nk-category-list .nk-btn.nk-btn-primary .fas {
+  margin-right: 5px;
+}
+
+/* Alertes */
+.nk-category-list .alert-success {
+  background-color: #38a220;
+  border-color: #297718;
+  color: #fff;
+  padding: 15px 20px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.nk-category-list .alert-info {
+  background-color: #22a2b1;
+  border-color: #1a7b86;
+  color: #fff;
+  padding: 15px 20px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.nk-category-list .alert-info .btn-primary {
+  background-color: #dd163b;
+  border-color: #dd163b;
+  color: #fff;
+  margin-left: 15px;
+  padding: 6px 12px;
+  font-size: .9rem;
+}
+
+.nk-category-list .alert-info .btn-primary:hover {
+  background-color: #c82f1a;
+  border-color: #b62a18;
+}
+
+/* Carte Catégorie */
+.nk-category-card {
+  background-color: #232930;
+  border: 1px solid #293139;
+  border-radius: 4px;
+  -webkit-transition: .2s transform, .15s border-color;
+  -o-transition: .2s transform, .15s border-color;
+  transition: .2s transform, .15s border-color;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.nk-category-card:hover {
+  transform: translateY(-5px);
+  border-color: #dd163b;
+}
+
+.nk-category-card .card-body {
+  padding: 20px;
+  color: #fff;
+}
+
+.nk-category-card .card-title {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 1.25rem;
+  color: #fff;
+  margin-bottom: 15px;
+  -o-text-overflow: ellipsis;
+     text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.nk-category-card .card-text {
+  font-family: "Open Sans", sans-serif;
+  font-size: .9rem;
+  color: #7f8b92;
+  margin-bottom: 10px;
+}
+
+.nk-category-card .card-text .fas {
+  margin-right: 8px;
+  color: #dd163b;
+}
+
+/* Boutons d'action */
+.nk-category-card .btn-group .nk-btn {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: .9rem;
+  padding: 6px 12px;
+  border-radius: 4px;
+  -webkit-transition: .15s background-color, .15s color;
+  -o-transition: .15s background-color, .15s color;
+  transition: .15s background-color, .15s color;
+  margin-right: 5px;
+}
+
+.nk-category-card .btn-group .nk-btn-outline-primary {
+  color: #dd163b;
+  border-color: #dd163b;
+  background-color: transparent;
+}
+
+.nk-category-card .btn-group .nk-btn-outline-primary:hover {
+  background-color: #dd163b;
+  color: #fff;
+}
+
+.nk-category-card .btn-group .nk-btn-outline-secondary {
+  color: #7f8b92;
+  border-color: #7f8b92;
+  background-color: transparent;
+}
+
+.nk-category-card .btn-group .nk-btn-outline-secondary:hover {
+  background-color: #7f8b92;
+  color: #fff;
+}
+
+.nk-category-card .nk-btn-outline-danger {
+  color: #e2361f;
+  border-color: #e2361f;
+  background-color: transparent;
+}
+
+.nk-category-card .nk-btn-outline-danger:hover {
+  background-color: #e2361f;
+  color: #fff;
+}
+
+.nk-category-card .nk-btn .fas {
+  margin-right: 5px;
+}
+
+/* Responsivité */
+@media (max-width: 767px) {
+  .nk-category-list h1 {
+      font-size: 2rem;
+  }
+  .nk-category-card .card-title {
+      font-size: 1.1rem;
+  }
+  .nk-category-card .card-text {
+      font-size: .85rem;
+  }
+  .nk-category-card .btn-group .nk-btn,
+  .nk-category-card .nk-btn-outline-danger {
+      font-size: .8rem;
+      padding: 5px 10px;
+  }
+}
+/*---------------------------
+  Détails de la catégorie
+ ----------------------------*/
+ .nk-category-details {
+  padding: 40px 0;
+}
+
+.nk-category-details h1 {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 2.5rem;
+  color: #fff;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+/* Alertes */
+.nk-category-details .alert-danger {
+  background-color: #e2361f;
+  border-color: #c82f1a;
+  color: #fff;
+  padding: 15px 20px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+/* Carte des détails */
+.nk-category-detail-card {
+  background-color: #232930;
+  border: 1px solid #293139;
+  border-radius: 4px;
+  -webkit-transition: .15s border-color;
+  -o-transition: .15s border-color;
+  transition: .15s border-color;
+}
+
+.nk-category-detail-card:hover {
+  border-color: #dd163b;
+}
+
+.nk-category-detail-card .card-body {
+  padding: 20px;
+  color: #fff;
+}
+
+.nk-category-detail-card .card-title {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 1.5rem;
+  color: #fff;
+  margin-bottom: 15px;
+}
+
+.nk-category-detail-card .list-group-item {
+  background-color: transparent;
+  border: none; /* Suppression de la bordure comme dans ton <style> */
+  color: #7f8b92;
+  font-family: "Open Sans", sans-serif;
+  font-size: .9rem;
+  padding: 10px 0;
+}
+
+.nk-category-detail-card .list-group-item strong {
+  color: #fff;
+  margin-right: 5px;
+}
+
+/* Boutons d'action */
+.nk-category-details .nk-btn {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: .9rem;
+  padding: 10px 20px;
+  border-radius: 4px;
+  -webkit-transition: .15s background-color, .15s color;
+  -o-transition: .15s background-color, .15s color;
+  transition: .15s background-color, .15s color;
+  margin-right: 10px;
+}
+
+.nk-category-details .nk-btn-outline-primary {
+  color: #dd163b;
+  border-color: #dd163b;
+  background-color: transparent;
+}
+
+.nk-category-details .nk-btn-outline-primary:hover {
+  background-color: #dd163b;
+  color: #fff;
+}
+
+.nk-category-details .nk-btn-outline-secondary {
+  color: #7f8b92;
+  border-color: #7f8b92;
+  background-color: transparent;
+}
+
+.nk-category-details .nk-btn-outline-secondary:hover {
+  background-color: #7f8b92;
+  color: #fff;
+}
+
+.nk-category-details .nk-btn-outline-danger {
+  color: #e2361f;
+  border-color: #e2361f;
+  background-color: transparent;
+}
+
+.nk-category-details .nk-btn-outline-danger:hover {
+  background-color: #e2361f;
+  color: #fff;
+}
+
+.nk-category-details .nk-btn .fas {
+  margin-right: 5px;
+}
+
+/* Responsivité */
+@media (max-width: 767px) {
+  .nk-category-details h1 {
+      font-size: 2rem;
+  }
+  .nk-category-detail-card .card-title {
+      font-size: 1.25rem;
+  }
+  .nk-category-detail-card .list-group-item {
+      font-size: .85rem;
+  }
+  .nk-category-details .nk-btn {
+      font-size: .8rem;
+      padding: 8px 15px;
+  }
+}
+/*---------------------------
+  Champ de recherche d'événements (sur la même ligne que le titre)
+ ----------------------------*/
+ .nk-search-form {
+  flex-shrink: 0; /* Empêche le formulaire de se réduire trop */
+}
+
+.nk-search-form .nk-form.nk-form-style-1 {
+  display: flex;
+  align-items: center;
+}
+
+.nk-search-form .input-group {
+  width: 300px; /* Largeur fixe pour éviter qu'il prenne trop de place */
+}
+
+.nk-search-form .form-control {
+  background-color: #232930;
+  border: 1px solid #293139;
+  color: #000;
+  font-family: "Open Sans", sans-serif;
+  font-size: .9rem;
+  padding: 8px 12px; /* Réduit légèrement la taille pour l'alignement */
+  border-radius: 4px 0 0 4px;
+  -webkit-transition: .15s border-color;
+  -o-transition: .15s border-color;
+  transition: .15s border-color;
+}
+
+.nk-search-form .form-control:focus {
+  border-color: #dd163b;
+  outline: none;
+  box-shadow: none;
+}
+
+.nk-search-form .form-control::placeholder {
+  color: #7f8b92;
+}
+
+.nk-search-form .nk-btn.nk-btn-color-main-1 {
+  background-color: #dd163b;
+  border: 1px solid #dd163b;
+  color: #fff;
+  padding: 8px 12px; /* Réduit légèrement pour l'alignement */
+  border-radius: 0 4px 4px 0;
+  -webkit-transition: .15s background-color, .15s border-color;
+  -o-transition: .15s background-color, .15s border-color;
+  transition: .15s background-color, .15s border-color;
+}
+
+.nk-search-form .nk-btn.nk-btn-color-main-1:hover {
+  background-color: #c82f1a;
+  border-color: #b62a18;
+}
+
+.nk-search-form .nk-btn .fas {
+  font-size: 1rem;
+}
+
+/* Responsivité */
+@media (max-width: 767px) {
+  .nk-event-list .d-flex {
+      flex-direction: column; /* Passe en colonne sur mobile */
+      align-items: flex-start;
+  }
+  .nk-search-form {
+      width: 100%; /* Pleine largeur sur mobile */
+      margin-top: 10px; /* Espace entre le titre et le champ */
+  }
+  .nk-search-form .input-group {
+      width: 100%; /* Pleine largeur sur mobile */
+  }
+  .nk-search-form .form-control {
+      font-size: .85rem;
+      padding: 6px 10px;
+  }
+  .nk-search-form .nk-btn.nk-btn-color-main-1 {
+      padding: 6px 10px;
+  }
+}
+/*---------------------------
+  Dropdown de tri des événements
+ ----------------------------*/
+ .nk-sort-dropdown {
+  margin: 0 15px;
+  flex-shrink: 0;
+}
+
+.nk-sort-dropdown .nk-sort-select {
+  background-color: #232930;
+  border: 1px solid #293139;
+  color: #fff;
+  font-family: "Open Sans", sans-serif;
+  font-size: .9rem;
+  padding: 8px 12px;
+  border-radius: 4px;
+  -webkit-transition: .15s border-color;
+  -o-transition: .15s border-color;
+  transition: .15s border-color;
+  width: 200px; /* Largeur fixe pour cohérence */
+  height: 38px; /* Même hauteur que le champ de recherche */
+}
+
+.nk-sort-dropdown .nk-sort-select:focus {
+  border-color: #dd163b;
+  outline: none;
+  box-shadow: none;
+}
+
+.nk-sort-dropdown .nk-sort-select option {
+  background-color: #232930;
+  color: #fff;
+}
+
+/* Responsivité */
+@media (max-width: 767px) {
+  .nk-sort-dropdown {
+      width: 100%; /* Pleine largeur sur mobile */
+      margin-top: 10px;
+  }
+  .nk-sort-dropdown .nk-sort-select {
+      width: 100%;
+      font-size: .85rem;
+      padding: 6px 10px;
+  }
+}

@@ -6,6 +6,7 @@ use App\Repository\Categorie_eventRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: Categorie_eventRepository::class)]
 class CategorieEvent
@@ -16,9 +17,19 @@ class CategorieEvent
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "Le nom de la catégorie ne peut pas être vide.")]
+    #[Assert\Length(
+        max: 255,
+        maxMessage: "Le nom de la catégorie ne peut pas dépasser {{ limit }} caractères."
+    )]
     private ?string $nom = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "La description de la catégorie ne peut pas être vide.")]
+    #[Assert\Length(
+        max: 255,
+        maxMessage: "La description de la catégorie ne peut pas dépasser {{ limit }} caractères."
+    )]
     private ?string $descCategorieEvent = null;
 
     /**
@@ -48,16 +59,16 @@ class CategorieEvent
         return $this;
     }
 
-    public function getDescriptioncategorie(): ?string
-    {
-        return $this->descCategorieEvent;
-    }
+    public function getDescCategorieEvent(): ?string
+{
+    return $this->descCategorieEvent;
+}
 
-    public function setDescriptioncategorie(string $descriptioncategorie): static
-    {
-        $this->descCategorieEvent = $descriptioncategorie;
-        return $this;
-    }
+public function setDescCategorieEvent(?string $descCategorieEvent): self
+{
+    $this->descCategorieEvent = $descCategorieEvent;
+    return $this;
+}
 
     /**
      * @return Collection<int, Evenement>

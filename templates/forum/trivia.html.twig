@@ -1,0 +1,286 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Level OP | Gaming Trivia{% endblock %}
+
+{% block body %}
+    <div class="nk-gap-1"></div>
+    <div class="container">
+        <ul class="nk-breadcrumbs">
+            <li><a href="{{ path('app_home') }}">Home</a></li>
+            <li><span class="fa fa-angle-right"></span></li>
+            <li><a href="{{ path('forum_index') }}">Forum</a></li>
+            <li><span class="fa fa-angle-right"></span></li>
+            <li><span>Gaming Trivia</span></li>
+        </ul>
+    </div>
+    <div class="nk-gap-1"></div>
+
+    <div class="container">
+        <div class="nk-gap-2"></div>
+
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label }}">{{ message }}</div>
+            {% endfor %}
+        {% endfor %}
+
+        <h2 class="nk-title h1">Gaming Trivia Challenge</h2>
+        <p>Test your gaming knowledge with these trivia questions!</p>
+
+        <div class="nk-gap-1"></div>
+
+        <div id="trivia-game">
+            {% for index, question in triviaQuestions %}
+                <div class="trivia-question" data-index="{{ index }}" style="display: {{ index == 0 ? 'block' : 'none' }};">
+                    <div class="nk-forum-topic-content">
+                        <h3>Question {{ index + 1 }}: {{ question.question }}</h3>
+                        <div class="nk-gap-1"></div>
+                        <div class="answer-options">
+                            {% for answer in question.all_answers %}
+                                <button class="nk-btn nk-btn-rounded nk-btn-color-main-1 answer-btn" data-answer="{{ answer }}">{{ answer }}</button>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" class="correct-answer" value="{{ question.correct_answer }}">
+                    </div>
+                    <div class="nk-gap-1"></div>
+                    <div class="answer-feedback" style="display: none;"></div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="nk-gap-1"></div>
+        <div class="trivia-navigation">
+            <button id="prev-question" class="nk-btn nk-btn-rounded nk-btn-color-dark" disabled>Previous</button>
+            <button id="next-question" class="nk-btn nk-btn-rounded nk-btn-color-white" disabled>Next</button>
+            <button id="finish-quiz" class="nk-btn nk-btn-rounded nk-btn-color-white" style="display: none;">Finish</button>
+        </div>
+
+        <div class="nk-gap-2"></div>
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .trivia-question {
+            background-color: #1c2526;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .answer-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .answer-btn {
+            flex: 1 1 45%;
+            text-align: left;
+            white-space: normal;
+            word-wrap: break-word;
+             background-color: #0585e6; /* Default color set to #0585e6 */
+            color: #fff; /* White text for contrast */
+        }
+        .answer-btn.correct {
+            background-color: #28a745 !important;
+        }
+        .answer-btn.incorrect {
+            background-color: #dc3545 !important;
+        }
+        .answer-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .answer-feedback.correct {
+            background-color: #28a745;
+            color: white;
+        }
+        .answer-feedback.incorrect {
+            background-color: #dc3545;
+            color: white;
+        }
+        .trivia-navigation {
+            display: flex;
+            justify-content: space-between;
+        }
+        .nk-gaming-swal {
+            border: 2px solid #0585e6;
+            box-shadow: 0 0 20px rgba(5, 133, 230, 0.5);
+            font-family: 'Montserrat', sans-serif;
+        }
+        .nk-gaming-swal-title {
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .nk-gaming-swal-content {
+            color: #d1d5db;
+        }
+        .swal2-confirm {
+            transition: transform 0.2s ease;
+        }
+        .swal2-confirm:hover {
+            transform: scale(1.05);
+        }
+        .swal2-image {
+            margin: 0 auto;
+            border-radius: 10px;
+        }
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        $(document).ready(function() {
+            const totalQuestions = $('.trivia-question').length;
+            let currentIndex = 0;
+            let answeredQuestions = new Set();
+            let score = 0; // Track the user's score
+
+            function getPersonalizedMessage(score) {
+                if (score <= 3) {
+                    return "Oh non ! Tu peux faire mieux. Continue à t'entraîner !";
+                } else if (score <= 6) {
+                    return "Pas mal ! Tu as un bon niveau, mais il y a encore du progrès à faire.";
+                } else if (score <= 9) {
+                    return "Superbe performance ! Tu es presque un expert en gaming !";
+                } else {
+                    return "Incroyable ! Tu es un véritable maître du gaming ! Félicitations !";
+                }
+            }
+
+            function getScoreboardGif(score) {
+                if (score < 5) {
+                    return '{{ asset('images/one-piece-luffy.gif') }}';
+                } else {
+                    return '{{ asset('images/one-piece-monkey-d-luffy.gif') }}';
+                }
+            }
+
+            function updateNavigation() {
+                $('#prev-question').prop('disabled', currentIndex === 0);
+                if (currentIndex === totalQuestions - 1) {
+                    $('#next-question').hide();
+                    if (answeredQuestions.has(currentIndex)) {
+                        $('#finish-quiz').show();
+                    } else {
+                        $('#finish-quiz').hide();
+                    }
+                } else {
+                    $('#next-question').show();
+                    $('#finish-quiz').hide();
+                    $('#next-question').prop('disabled', !answeredQuestions.has(currentIndex));
+                }
+            }
+
+            function showQuestion(index) {
+                $('.trivia-question').hide();
+                $(`.trivia-question[data-index="${index}"]`).show();
+                currentIndex = index;
+                updateNavigation();
+            }
+
+            $('.answer-btn').on('click', function() {
+                const $btn = $(this);
+                const $question = $btn.closest('.trivia-question');
+                const index = parseInt($question.data('index'));
+                const selectedAnswer = $btn.data('answer');
+                const correctAnswer = $question.find('.correct-answer').val();
+
+                if (answeredQuestions.has(index)) {
+                    return; // Prevent re-answering
+                }
+
+                $.ajax({
+                    url: '{{ path('api_trivia_validate') }}',
+                    method: 'POST',
+                    data: {
+                        questionIndex: index,
+                        selectedAnswer: selectedAnswer,
+                        correctAnswer: correctAnswer,
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            const $feedback = $question.find('.answer-feedback');
+                            if (response.isCorrect) {
+                                $btn.addClass('correct');
+                                $feedback.addClass('correct').text('Correct! Well done!');
+                                score++; // Increment score for correct answer
+                            } else {
+                                $btn.addClass('incorrect');
+                                $feedback.addClass('incorrect').text(`Incorrect. The correct answer was: ${response.correctAnswer}`);
+                                $question.find(`.answer-btn[data-answer="${response.correctAnswer}"]`).addClass('correct');
+                            }
+                            $feedback.show();
+                            answeredQuestions.add(index);
+                            updateNavigation();
+                        } else {
+                            Swal.fire({
+                                title: 'Error',
+                                text: response.message,
+                                icon: 'error',
+                                background: '#1c2526',
+                                color: '#d1d5db',
+                                confirmButtonColor: '#fe0369'
+                            });
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'An error occurred while validating your answer.',
+                            icon: 'error',
+                            background: '#1c2526',
+                            color: '#d1d5db',
+                            confirmButtonColor: '#fe0369'
+                        });
+                    }
+                });
+
+                // Disable all buttons for this question after answering
+                $question.find('.answer-btn').prop('disabled', true);
+            });
+
+            $('#prev-question').on('click', function() {
+                if (currentIndex > 0) {
+                    showQuestion(currentIndex - 1);
+                }
+            });
+
+            $('#next-question').on('click', function() {
+                if (currentIndex < totalQuestions - 1) {
+                    showQuestion(currentIndex + 1);
+                }
+            });
+
+            $('#finish-quiz').on('click', function() {
+                const message = getPersonalizedMessage(score);
+                const gifPath = getScoreboardGif(score);
+                Swal.fire({
+                    title: 'Quiz Terminé !',
+                    html: `Tu as obtenu un score de ${score} sur ${totalQuestions} !<br><br>${message}`,
+                    imageUrl: gifPath,
+                    imageWidth: 100,
+                    imageAlt: 'Luffy Scoreboard GIF',
+                    background: '#1c2526',
+                    color: '#d1d5db',
+                    confirmButtonColor: '#fe0369',
+                    confirmButtonText: 'Retour au Forum',
+                    customClass: {
+                        container: 'nk-gaming-swal',
+                        title: 'nk-gaming-swal-title',
+                        content: 'nk-gaming-swal-content',
+                        image: 'swal2-image'
+                    }
+                }).then(() => {
+                    window.location.href = '{{ path('forum_topics') }}';
+                });
+            });
+
+            // Initialize the first question
+            showQuestion(0);
+        });
+    </script>
+{% endblock %}
