@@ -50,45 +50,45 @@ class ForumController extends AbstractController
             $this->addFlash('error', 'You must be logged in to create a topic.');
             return $this->redirectToRoute('app_login_page');
         }
-
+    
         $question = new Questions();
         $question->setUtilisateurId($utilisateur);
         $form = $this->createForm(TopicFormType::class, $question);
         $form->handleRequest($request);
-
+    
         if ($form->isSubmitted() && $form->isValid()) {
             try {
                 $mediaFile = $form->get('media_file')->getData();
                 $mediaType = $form->get('media_type')->getData();
-
+    
                 $this->logger->info('Form submitted with media file and type.', [
                     'media_file_exists' => $mediaFile ? 'Yes' : 'No',
                     'media_type' => $mediaType ? $mediaType->value : 'none',
                 ]);
-
+    
                 if ($mediaFile) {
                     $mimeType = $mediaFile->getMimeType();
                     $isImage = in_array($mimeType, ['image/jpeg', 'image/png', 'image/gif']);
                     $isVideo = in_array($mimeType, ['video/mp4', 'video/mpeg', 'video/webm', 'video/quicktime', 'video/x-msvideo']);
-
+    
                     if ($mediaType && $mediaType->value === 'image' && !$isImage) {
                         $this->logger->error('Media type mismatch: Selected image, but file is not an image.', ['mime_type' => $mimeType]);
                         throw new \Exception('Selected media type is "image," but the uploaded file is not an image.');
                     }
-
+    
                     if ($mediaType && $mediaType->value === 'video' && !$isVideo) {
                         $this->logger->error('Media type mismatch: Selected video, but file is not a video.', ['mime_type' => $mimeType]);
                         throw new \Exception('Selected media type is "video," but the uploaded file is not a video.');
                     }
-
+    
                     $mediaFilename = uniqid() . '.' . $mediaFile->guessExtension();
                     $uploadsDirectory = $this->getParameter('uploads_directory');
-
+    
                     if (!is_dir($uploadsDirectory)) {
                         mkdir($uploadsDirectory, 0777, true);
                         $this->logger->info('Created uploads directory.', ['directory' => $uploadsDirectory]);
                     }
-
+    
                     $mediaFile->move($uploadsDirectory, $mediaFilename);
                     $this->logger->info('Media file uploaded successfully.', [
                         'filename' => $mediaFilename,
@@ -99,13 +99,13 @@ class ForumController extends AbstractController
                 } else {
                     $question->setMediaPath(null);
                 }
-
+    
                 $question->setVotes(0);
                 $question->setCreatedAt(new \DateTime());
-
+    
                 $entityManager->persist($question);
                 $entityManager->flush();
-
+    
                 $this->addFlash('success', 'Topic created successfully!');
                 return $this->redirectToRoute('forum_topics');
             } catch (\Exception $e) {
@@ -116,39 +116,42 @@ class ForumController extends AbstractController
                 $this->addFlash('error', 'An error occurred while creating the topic: ' . $e->getMessage());
             }
         }
-
+    
         $sentimentMap = $request->getSession()->get('sentiment_map', [
             'positive' => ['👍', '😊', '😂', '❤️', '🎉', '😍', '👏', '🌟', '😎', '💪'],
             'negative' => ['👎', '😢', '😡', '💔', '😤', '😞', '🤬', '😣', '💢', '😠'],
             'neutral' => ['🤔', '😐', '🙂', '👀', '🤷', '😶', '🤝', '🙄', '😴', '🤓']
         ]);
-
+    
         $threshold = -5;
-
+    
+        // Join with utilisateur to ensure the user exists
         $highQualityQuestions = $questionsRepository->createQueryBuilder('q')
+            ->innerJoin('q.utilisateur_id', 'u')  // Join with utilisateur table
             ->where('q.votes >= :threshold')
             ->setParameter('threshold', $threshold)
             ->orderBy('q.votes', 'DESC')
             ->getQuery()
             ->getResult();
-
+    
         $lowQualityQuestions = $questionsRepository->createQueryBuilder('q')
+            ->innerJoin('q.utilisateur_id', 'u')  // Join with utilisateur table
             ->where('q.votes < :threshold')
             ->setParameter('threshold', $threshold)
             ->orderBy('q.votes', 'DESC')
             ->getQuery()
             ->getResult();
-
+    
         $questions = array_merge($highQualityQuestions, $lowQualityQuestions);
-
+    
         $topics = array_map(function (Questions $question) use ($entityManager, $sentimentMap) {
             $user = $question->getUtilisateurId();
             $game = $question->getGameId();
-
+    
             $updateForm = $this->createForm(TopicFormType::class, $question, [
                 'action' => $this->generateUrl('forum_update_topic', ['id' => $question->getQuestionId()]),
             ]);
-
+    
             $reactionRepository = $entityManager->getRepository(QuestionReactions::class);
             $reactions = $reactionRepository->findBy(['question_id' => $question->getQuestionId()]);
             $reactionCounts = [];
@@ -156,11 +159,11 @@ class ForumController extends AbstractController
                 $emoji = $reaction->getEmoji();
                 $reactionCounts[$emoji] = ($reactionCounts[$emoji] ?? 0) + 1;
             }
-
+    
             $positiveCount = 0;
             $negativeCount = 0;
             $neutralCount = 0;
-
+    
             foreach ($reactionCounts as $emoji => $count) {
                 if (in_array($emoji, $sentimentMap['positive'])) {
                     $positiveCount += $count;
@@ -170,14 +173,14 @@ class ForumController extends AbstractController
                     $neutralCount += $count;
                 }
             }
-
+    
             $sentiment = 'neutral';
             if ($positiveCount > $negativeCount && $positiveCount > $neutralCount) {
                 $sentiment = 'positive';
             } elseif ($negativeCount > $positiveCount && $negativeCount > $neutralCount) {
                 $sentiment = 'negative';
             }
-
+    
             return [
                 'id' => $question->getQuestionId(),
                 'title' => $question->getTitle(),
@@ -188,6 +191,7 @@ class ForumController extends AbstractController
                 'icon' => 'ion-chatboxes',
                 'locked' => false,
                 'startedBy' => $user ? $user->getNickname() : 'Unknown',
+                'startedById' => $user ? $user->getId() : null,
                 'startedOn' => $question->getCreatedAt() ? $question->getCreatedAt()->format('F j, Y') : 'Not set',
                 'postCount' => $question->getCommentaires()->count(),
                 'lastActivityUser' => $user ? $user->getNickname() : 'Unknown',
@@ -199,16 +203,15 @@ class ForumController extends AbstractController
                 'sentiment' => $sentiment,
             ];
         }, $questions);
-
+    
         $trendingPosts = $redditService->fetchTopGamingPosts(5);
-
+    
         return $this->render('forum/topics.html.twig', [
             'topics' => $topics,
             'newTopicForm' => $form->createView(),
             'trendingPosts' => $trendingPosts,
         ]);
     }
-
     #[Route('/forum/topic/{id}', name: 'forum_single_topic', methods: ['GET', 'POST'])]
     public function singleTopic(
         int $id,

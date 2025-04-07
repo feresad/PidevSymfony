@@ -99,7 +99,7 @@
                                 <span class="reply-label">Repondre</span>
                             </a>
                         </span>
-                        <span class="nk-forum-action-btn">
+                        <span class="nk-forum-action-btn spam-btn" data-id="{{ question.id }}" data-type="question" data-user-id="{{ question.utilisateurId.id }}">
                             <a href="#" class="nk-anchor">
                                 <span class="fa fa-flag"></span> Spam
                             </a>
@@ -194,7 +194,7 @@
                                         </form>
                                     </span>
                                 {% endif %}
-                                <span class="nk-forum-action-btn">
+                                <span class="nk-forum-action-btn spam-btn" data-id="{{ comment.id }}" data-type="comment" data-user-id="{{ comment.utilisateurId.id }}">
                                     <a href="#" class="nk-anchor">
                                         <span class="fa fa-flag"></span> Spam
                                     </a>
@@ -382,6 +382,77 @@
         .reply-card {
             padding: 12px;
             border-radius: 12px;
+        }
+        /* Report Modal Styles */
+        .report-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(35, 41, 48, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 2000;
+            width: 400px;
+            max-width: 90%;
+        }
+        .report-modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1999;
+        }
+        .report-modal form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .report-modal select,
+        .report-modal textarea {
+            background: rgba(41, 49, 57, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #d1d5db;
+            padding: 8px;
+            border-radius: 5px;
+            font-family: 'Montserrat', sans-serif;
+        }
+        .report-modal select:focus,
+        .report-modal textarea:focus {
+            outline: none;
+            border-color: #0585e6;
+            box-shadow: 0 0 5px rgba(5, 133, 230, 0.5);
+        }
+        .report-modal button {
+            padding: 8px 16px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            font-family: 'Montserrat', sans-serif;
+        }
+        .report-modal button:hover {
+            transform: scale(1.05);
+        }
+        .report-modal .submit-btn {
+            background: #0585e6;
+            color: #fff;
+        }
+        .report-modal .cancel-btn {
+            background: #404854;
+            color: #fff;
+        }
+        .report-modal h3 {
+            color: #fff;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
     </style>
 {% endblock %}
@@ -778,6 +849,110 @@
                             $submitButton.prop('disabled', false);
                         });
                     }
+                });
+            });
+
+            $(document).on('click', '.spam-btn', function(e) {
+                e.preventDefault();
+                const $btn = $(this);
+                const id = $btn.data('id');
+                const type = $btn.data('type');
+                const userId = $btn.data('user-id');
+
+                if (!userId || isNaN(userId) || parseInt(userId) <= 0) {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Invalid user ID for reporting.',
+                        icon: 'error',
+                        background: '#1c2526',
+                        color: '#d1d5db',
+                        confirmButtonColor: '#ff6f61'
+                    });
+                    return;
+                }
+
+                const modalHtml = `
+                    <div class="report-modal-backdrop"></div>
+                    <div class="report-modal">
+                        <h3>Report Content</h3>
+                        <form id="report-form-${id}">
+                            <input type="hidden" name="reporterId" value="{{ app.user ? app.user.id : '' }}">
+                            <input type="hidden" name="reportedUserId" value="${userId}">
+                            <input type="hidden" name="status" value="PENDING">
+                            <select name="reason" required>
+                                <option value="">Select a reason</option>
+                                <option value="MINEUR_IMPLIQUE">Minor Involved</option>
+                                <option value="HARCELEMENT">Harassment</option>
+                                <option value="SUICIDE_AUTOMUTILATION">Suicide/Self-Harm</option>
+                                <option value="CONTENU_VIOLENT">Violent Content</option>
+                                <option value="VENTE_ARTICLES_RESTREINTS">Restricted Items Sale</option>
+                                <option value="CONTENU_ADULTE">Adult Content</option>
+                                <option value="ARNAQUE_FAUSSE_INFORMATION">Scam/False Information</option>
+                                <option value="CONTENU_NON_DESIRE">Unwanted Content</option>
+                            </select>
+                            <textarea name="evidence" placeholder="Additional details (optional)" rows="4"></textarea>
+                            <div style="display: flex; gap: 10px;">
+                                <button type="submit" class="submit-btn">Submit</button>
+                                <button type="button" class="cancel-btn">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                `;
+
+                $('.report-modal, .report-modal-backdrop').remove();
+                $('body').append(modalHtml);
+
+                $(`#report-form-${id}`).on('submit', function(e) {
+                    e.preventDefault();
+                    const formData = $(this).serializeArray();
+                    const data = {};
+                    formData.forEach(item => data[item.name] = item.value);
+
+                    console.log('Sending report data:', data);
+
+                    $.ajax({
+                        url: '{{ path('report_create') }}',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(data),
+                        success: function(response) {
+                            if (response.success) {
+                                Swal.fire({
+                                    title: 'Success',
+                                    text: 'Report submitted successfully',
+                                    icon: 'success',
+                                    background: '#1c2526',
+                                    color: '#d1d5db',
+                                    confirmButtonColor: '#0585e6'
+                                });
+                                $('.report-modal, .report-modal-backdrop').remove();
+                            } else {
+                                Swal.fire({
+                                    title: 'Error',
+                                    text: response.message || 'Failed to submit report',
+                                    icon: 'error',
+                                    background: '#1c2526',
+                                    color: '#d1d5db',
+                                    confirmButtonColor: '#ff6f61'
+                                });
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('AJAX error:', status, error, xhr.responseText);
+                            Swal.fire({
+                                title: 'Error',
+                                text: 'Failed to submit report: ' + (xhr.responseJSON?.message || 'Server error'),
+                                icon: 'error',
+                                background: '#1c2526',
+                                color: '#d1d5db',
+                                confirmButtonColor: '#ff6f61'
+                            });
+                        }
+                    });
+                });
+
+                $('.cancel-btn, .report-modal-backdrop').on('click', function() {
+                    $('.report-modal, .report-modal-backdrop').remove();
                 });
             });
         });

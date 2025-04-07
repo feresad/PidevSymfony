@@ -109,6 +109,11 @@
                             <div class="reaction-wrapper">
                                 <img src="{{ asset('images/meme_icon.png') }}" alt="React" class="reaction-icon" data-id="{{ topic.id }}" data-type="question">
                             </div>
+                            <span class="spam-btn" data-id="{{ topic.id }}" data-type="question" data-user-id="{{ topic.startedById }}">
+                                <a href="#" class="nk-anchor">
+                                    <span class="fa fa-flag"></span> Spam
+                                </a>
+                            </span>
                         </div>
                     </div>
                     <div class="nk-forum-count">
@@ -378,81 +383,61 @@
 
         /* Glassmorphism Effect for .nk-forum-item */
         .nk-forum-item {
-            /* Translucent background with slight white tint */
             background: rgba(255, 255, 255, 0.1);
-            /* Blur effect for the background */
             backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px); /* For Safari support */
-            /* Subtle border with a light tint */
+            -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            /* Rounded corners */
             border-radius: 20px;
-            /* Soft shadow for floating effect */
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            /* Smooth transition for hover */
             transition: all 0.3s ease;
-            /* Ensure padding and margin remain consistent */
             margin-bottom: 10px;
             padding: 10px;
-            /* Ensure the card is above the background */
             position: relative;
             z-index: 1;
         }
 
-        /* Hover effect for .nk-forum-item */
         .nk-forum-item:hover {
-            /* Slightly darker translucent background on hover */
             background: rgba(255, 255, 255, 0.15);
-            /* Slightly increase shadow for depth */
             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-            /* Maintain the existing hover background color transition */
             transition: all 0.3s ease;
         }
 
-        /* Fallback for browsers that don't support backdrop-filter */
         @supports not (backdrop-filter: blur(10px)) {
             .nk-forum-item {
-                /* Fallback to a solid background with slight transparency */
-                background: rgba(35, 41, 48, 0.9); /* Slightly darker than the original #232930 */
-                /* Remove the blur effect */
+                background: rgba(35, 41, 48, 0.9);
                 backdrop-filter: none;
                 -webkit-backdrop-filter: none;
             }
             .nk-forum-item:hover {
-                background: rgba(41, 49, 57, 0.9); /* Slightly darker than the original #293139 */
+                background: rgba(41, 49, 57, 0.9);
             }
         }
 
-        /* Ensure text remains readable on the translucent background */
         .nk-forum-item h3 a,
         .nk-forum-item .nk-forum-title-sub,
         .nk-forum-item .nk-forum-content p,
         .nk-forum-item .nk-forum-count,
         .nk-forum-item .nk-forum-activity-title,
         .nk-forum-item .nk-forum-activity-date {
-            color: #ffffff; /* White text for better contrast */
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5); /* Subtle shadow for readability */
-        }
-
-        /* Adjust the vote count color for readability */
-        .nk-forum-vote-section .vote-count {
-            color: #ffffff; /* White for better contrast */
+            color: #ffffff;
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
         }
 
-        /* Ensure the sentiment badge remains visible */
-        .sentiment-badge {
-            /* Add a slight background opacity to ensure readability */
-            background-color: rgba(40, 167, 69, 0.8); /* Positive */
-        }
-        .sentiment-negative {
-            background-color: rgba(220, 53, 69, 0.8); /* Negative */
-        }
-        .sentiment-neutral {
-            background-color: rgba(108, 117, 125, 0.8); /* Neutral */
+        .nk-forum-vote-section .vote-count {
+            color: #ffffff;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
         }
 
-        /* Optional: Add a subtle gradient overlay to mimic light reflection */
+        .sentiment-badge {
+            background-color: rgba(40, 167, 69, 0.8);
+        }
+        .sentiment-negative {
+            background-color: rgba(220, 53, 69, 0.8);
+        }
+        .sentiment-neutral {
+            background-color: rgba(108, 117, 125, 0.8);
+        }
+
         .nk-forum-item::before {
             content: '';
             position: absolute;
@@ -466,8 +451,80 @@
                 rgba(255, 255, 255, 0) 50%
             );
             border-radius: 20px;
-            pointer-events: none; /* Prevent interaction with the overlay */
+            pointer-events: none;
             z-index: -1;
+        }
+
+        /* Report Modal Styles */
+        .report-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(35, 41, 48, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 2000;
+            width: 400px;
+            max-width: 90%;
+        }
+        .report-modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1999;
+        }
+        .report-modal form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .report-modal select,
+        .report-modal textarea {
+            background: rgba(41, 49, 57, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #d1d5db;
+            padding: 8px;
+            border-radius: 5px;
+            font-family: 'Montserrat', sans-serif;
+        }
+        .report-modal select:focus,
+        .report-modal textarea:focus {
+            outline: none;
+            border-color: #0585e6;
+            box-shadow: 0 0 5px rgba(5, 133, 230, 0.5);
+        }
+        .report-modal button {
+            padding: 8px 16px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            font-family: 'Montserrat', sans-serif;
+        }
+        .report-modal button:hover {
+            transform: scale(1.05);
+        }
+        .report-modal .submit-btn {
+            background: #0585e6;
+            color: #fff;
+        }
+        .report-modal .cancel-btn {
+            background: #404854;
+            color: #fff;
+        }
+        .report-modal h3 {
+            color: #fff;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
     </style>
 {% endblock %}
@@ -489,7 +546,6 @@
                 neutral: []
             };
 
-            // Debounce function to limit frequent calls
             function debounce(func, wait) {
                 let timeout;
                 return function(...args) {
@@ -498,7 +554,6 @@
                 };
             }
 
-            // Fetch emojis and categorize by sentiment
             function loadEmojis() {
                 return $.ajax({
                     url: 'https://emoji-api.com/emojis?access_key=22b221fd734cfd73f62238bc32fa072f636bc63b',
@@ -553,7 +608,6 @@
                 });
             }
 
-            // Fetch and display reactions
             function fetchReactions(id, type, $display) {
                 $.ajax({
                     url: '{{ path('react_action') }}',
@@ -572,7 +626,6 @@
                 });
             }
 
-            // Update reaction display dynamically
             function updateReactionDisplay($display, reactionCounts) {
                 let reactionHtml = '';
                 for (const [emoji, count] of Object.entries(reactionCounts)) {
@@ -581,7 +634,6 @@
                 $display.html(reactionHtml);
             }
 
-            // Initialize reactions on page load
             function initializeReactions() {
                 $('.reaction-display').each(function() {
                     const $display = $(this);
@@ -593,14 +645,11 @@
                 });
             }
 
-            // Show emoji picker sorted by sentiment
             const showEmojiPicker = debounce(function($icon, id, type) {
                 if (sentimentMap.positive.length === 0) return;
 
-                // Remove any existing picker
                 $('.emoji-picker-container').remove();
 
-                // Create the picker HTML
                 let pickerHtml = '<div class="emoji-picker-container">';
                 
                 pickerHtml += '<div class="emoji-section"><h4>Positive</h4><div class="emoji-grid">';
@@ -623,11 +672,9 @@
 
                 pickerHtml += '</div>';
 
-                // Append the picker to the body
                 $('body').append(pickerHtml);
                 const $newPicker = $('.emoji-picker-container');
 
-                // Position the picker below the reaction icon
                 const iconOffset = $icon.offset();
                 const iconHeight = $icon.outerHeight();
                 const viewportHeight = $(window).height();
@@ -641,15 +688,12 @@
                     left: iconOffset.left
                 }).fadeIn(100);
 
-                // Store the associated reaction wrapper for later use
                 $newPicker.data('reaction-wrapper', $icon.closest('.reaction-wrapper'));
             }, 200);
 
-            // Load emojis and initialize
             loadEmojis().then(() => {
                 initializeReactions();
 
-                // Show picker on hover
                 $(document).on('mouseenter', '.reaction-icon', function() {
                     const $icon = $(this);
                     const id = $icon.data('id');
@@ -657,23 +701,19 @@
                     showEmojiPicker($icon, id, type);
                 });
 
-                // Keep picker open when hovering over it
                 $(document).on('mouseenter', '.emoji-picker-container', function() {
-                    $(this).stop().fadeIn(100); // Ensure it stays visible
+                    $(this).stop().fadeIn(100);
                 });
 
-                // Hide picker when leaving both the reaction wrapper and the picker
                 $(document).on('mouseleave', '.reaction-wrapper', function(e) {
                     const $wrapper = $(this);
                     const $picker = $('.emoji-picker-container');
                     const relatedTarget = $(e.relatedTarget);
 
-                    // Check if the cursor is moving to the picker or its children
                     if ($picker.length && (relatedTarget.is($picker) || relatedTarget.closest('.emoji-picker-container').length)) {
-                        return; // Don't hide the picker
+                        return;
                     }
 
-                    // If the picker is associated with this wrapper, hide it
                     if ($picker.data('reaction-wrapper')?.is($wrapper)) {
                         $picker.fadeOut(100, function() {
                             $(this).remove();
@@ -686,18 +726,15 @@
                     const $wrapper = $picker.data('reaction-wrapper');
                     const relatedTarget = $(e.relatedTarget);
 
-                    // Check if the cursor is moving back to the reaction wrapper
                     if ($wrapper && (relatedTarget.is($wrapper) || relatedTarget.closest('.reaction-wrapper').length)) {
-                        return; // Don't hide the picker
+                        return;
                     }
 
-                    // Hide the picker
                     $picker.fadeOut(100, function() {
                         $(this).remove();
                     });
                 });
 
-                // Handle emoji selection
                 $(document).on('click', '.emoji-option', function() {
                     const $emoji = $(this);
                     const emoji = $emoji.data('emoji');
@@ -745,7 +782,6 @@
                 });
             });
 
-            // Search functionality
             $('#topicSearch').on('input', function() {
                 const searchTerm = $(this).val().toLowerCase().trim();
                 $('.nk-forum-item').each(function() {
@@ -766,7 +802,6 @@
                 });
             });
 
-            // Voting
             $(document).on('click', '.vote-btn', function(e) {
                 e.preventDefault();
                 const $btn = $(this);
@@ -812,7 +847,6 @@
                 });
             });
 
-            // Share functionality with title and content formatting
             $(document).on('click', '.share-link', function(e) {
                 e.preventDefault();
                 const $link = $(this);
@@ -837,7 +871,7 @@
 
                             switch (platform) {
                                 case 'facebook':
-                                    platformUrl = `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}"e=${shareText}`;
+                                    platformUrl = `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}&quote=${shareText}`;
                                     break;
                                 case 'twitter':
                                     platformUrl = `https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareText}`;
@@ -879,7 +913,6 @@
                 });
             });
 
-            // Profanity check
             $(document).on('submit', '.profanity-check-form', function(e) {
                 e.preventDefault();
                 const $form = $(this);
@@ -929,6 +962,118 @@
                             $submitButton.prop('disabled', false);
                         });
                     }
+                });
+            });
+
+            $(document).on('click', '.spam-btn', function(e) {
+                e.preventDefault();
+                const $btn = $(this);
+                const id = $btn.data('id');
+                const type = $btn.data('type');
+                const userId = $btn.data('user-id');
+
+                if (!userId || isNaN(userId) || parseInt(userId) <= 0) {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Invalid user ID for reporting.',
+                        imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
+                        imageWidth: 100,
+                        imageHeight: 100,
+                        background: '#1c2526',
+                        color: '#d1d5db',
+                        confirmButtonColor: '#ff6f61'
+                    });
+                    return;
+                }
+
+                const modalHtml = `
+                    <div class="report-modal-backdrop"></div>
+                    <div class="report-modal">
+                        <h3>Report Content</h3>
+                        <form id="report-form-${id}">
+                            <input type="hidden" name="reporterId" value="{{ app.user ? app.user.id : '' }}">
+                            <input type="hidden" name="reportedUserId" value="${userId}">
+                            <input type="hidden" name="status" value="PENDING">
+                            <select name="reason" required>
+                                <option value="">Select a reason</option>
+                                <option value="MINEUR_IMPLIQUE">Minor Involved</option>
+                                <option value="HARCELEMENT">Harassment</option>
+                                <option value="SUICIDE_AUTOMUTILATION">Suicide/Self-Harm</option>
+                                <option value="CONTENU_VIOLENT">Violent Content</option>
+                                <option value="VENTE_ARTICLES_RESTREINTS">Restricted Items Sale</option>
+                                <option value="CONTENU_ADULTE">Adult Content</option>
+                                <option value="ARNAQUE_FAUSSE_INFORMATION">Scam/False Information</option>
+                                <option value="CONTENU_NON_DESIRE">Unwanted Content</option>
+                            </select>
+                            <textarea name="evidence" placeholder="Additional details (optional)" rows="4"></textarea>
+                            <div style="display: flex; gap: 10px;">
+                                <button type="submit" class="submit-btn">Submit</button>
+                                <button type="button" class="cancel-btn">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                `;
+
+                $('.report-modal, .report-modal-backdrop').remove();
+                $('body').append(modalHtml);
+
+                $(`#report-form-${id}`).on('submit', function(e) {
+                    e.preventDefault();
+                    const formData = $(this).serializeArray();
+                    const data = {};
+                    formData.forEach(item => data[item.name] = item.value);
+
+                    console.log('Sending report data:', data);
+
+                    $.ajax({
+                        url: '{{ path('report_create') }}',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(data),
+                        success: function(response) {
+                            if (response.success) {
+                                Swal.fire({
+                                    title: 'Success',
+                                    text: 'Report submitted successfully',
+                                    imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
+                                    imageWidth: 100,
+                                    imageHeight: 100,
+                                    background: '#1c2526',
+                                    color: '#d1d5db',
+                                    confirmButtonColor: '#0585e6'
+                                });
+                                $('.report-modal, .report-modal-backdrop').remove();
+                            } else {
+                                Swal.fire({
+                                    title: 'Error',
+                                    text: response.message || 'Failed to submit report',
+                                    imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
+                                    imageWidth: 100,
+                                    imageHeight: 100,
+                                    background: '#1c2526',
+                                    color: '#d1d5db',
+                                    confirmButtonColor: '#ff6f61'
+                                });
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('AJAX error:', status, error, xhr.responseText);
+                            Swal.fire({
+                                title: 'Error',
+                                text: 'Failed to submit report: ' + (xhr.responseJSON?.message || 'Server error'),
+                                imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
+                                imageWidth: 100,
+                                imageHeight: 100,
+                                background: '#1c2526',
+                                color: '#d1d5db',
+                                confirmButtonColor: '#ff6f61'
+                            });
+                        }
+                    });
+                });
+
+                $('.cancel-btn, .report-modal-backdrop').on('click', function() {
+                    $('.report-modal, .report-modal-backdrop').remove();
                 });
             });
         });
