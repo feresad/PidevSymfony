@@ -7,12 +7,6 @@
         <div class="container mt-4 nk-event-details">
             <h1>{{ evenement.nomEvent }}</h1>
 
-            {% for message in app.flashes('error') %}
-                <div class="alert alert-danger">
-                    {{ message }}
-                </div>
-            {% endfor %}
-
             <div class="nk-event-detail-card">
                 <div class="nk-event-img">
                     <img src="{{ image_base_url ~ evenement.photoEvent }}" alt="{{ evenement.nomEvent }}">

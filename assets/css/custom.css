@@ -284,7 +284,7 @@ header h2 {
 
 .nk-event-card .nk-event-img img {
   width: 100%;
-  height: auto;
+  max-height: 200px;
   -webkit-transition: -webkit-transform .15s ease-in-out;
   transition: -webkit-transform .15s ease-in-out;
   -o-transition: transform .15s ease-in-out;
@@ -1072,4 +1072,117 @@ footer {
 .form-control.is-invalid:focus {
   border-color: #dc3545;
   box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+#calendar-holder {
+  background-color: #fff; /* Fond blanc déjà défini dans le HTML */
+  border-radius: 8px; /* Coins arrondis pour un look moderne */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Ombre douce */
+  padding: 20px; /* Espacement interne */
+  max-width: 1200px; /* Largeur maximale pour éviter un étirement excessif */
+  margin: 0 auto; /* Centrage */
+}
+
+/* Barre d'outils (header) */
+.fc-header-toolbar {
+  background-color: #232930; /* Fond sombre inspiré de GoodGames */
+  color: #fff; /* Texte blanc */
+  padding: 10px 15px; /* Espacement */
+  border-radius: 6px 6px 0 0; /* Coins arrondis en haut uniquement */
+  margin-bottom: 15px; /* Séparation avec le calendrier */
+}
+
+/* Boutons dans la barre d'outils */
+.fc-button {
+  background-color: #dd163b; /* Rouge principal du thème */
+  border: none; /* Suppression des bordures par défaut */
+  color: #fff; /* Texte blanc */
+  padding: 8px 15px; /* Taille confortable */
+  border-radius: 4px; /* Coins légèrement arrondis */
+  text-transform: uppercase; /* Style moderne et audacieux */
+  font-weight: 600; /* Poids inspiré de GoodGames */
+  transition: background-color 0.2s ease; /* Transition fluide */
+}
+
+.fc-button:hover, .fc-button:focus {
+  background-color: #b51231; /* Rouge plus sombre au survol */
+  color: #fff;
+}
+
+.fc-button:active, .fc-button.fc-button-active {
+  background-color: #9e0f2a; /* Encore plus sombre quand actif */
+}
+
+/* Titre dans la barre d'outils */
+.fc-toolbar-title {
+  font-family: "Montserrat", sans-serif; /* Police utilisée dans GoodGames */
+  font-size: 1.5rem; /* Taille moderne */
+  font-weight: 700; /* Gras pour attirer l'attention */
+}
+
+/* Jours de la semaine */
+.fc-col-header-cell {
+  background-color: #f8f9fa; /* Gris très clair pour contraste avec le fond blanc */
+  color: #232930; /* Texte sombre */
+  font-weight: 600;
+  padding: 10px;
+  border-bottom: 2px solid #dd163b; /* Ligne rouge pour souligner */
+}
+
+/* Cellules des jours */
+.fc-daygrid-day {
+  background-color: #fff; /* Fond blanc pour chaque jour */
+  border: 1px solid #e9ecef; /* Bordure subtile */
+}
+
+.fc-daygrid-day:hover {
+  background-color: #f8f9fa; /* Légère surbrillance au survol */
+}
+
+/* Événements */
+.fc-event {
+  background-color: #dd163b; /* Rouge principal pour les événements */
+  border: none; /* Pas de bordure par défaut */
+  color: #fff; /* Texte blanc */
+  padding: 5px 10px; /* Espacement interne */
+  border-radius: 4px; /* Coins arrondis */
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.fc-event:hover {
+  transform: translateY(-2px); /* Légère élévation au survol */
+  box-shadow: 0 2px 8px rgba(221, 22, 59, 0.3); /* Ombre rouge subtile */
+}
+
+/* Jour actuel */
+.fc-day-today {
+  background-color: #fff3f4 !important; /* Fond légèrement rosé pour le jour actuel */
+  border: 2px solid #dd163b; /* Bordure rouge marquée */
+}
+
+/* Vue hebdomadaire et quotidienne - Heures */
+.fc-timegrid-slot {
+  border-color: #e9ecef; /* Bordure légère */
+  color: #232930; /* Texte sombre */
+}
+
+/* Responsive adjustments */
+@media (max-width: 767px) {
+  #calendar-holder {
+      padding: 10px; /* Réduction de l'espacement sur mobile */
+  }
+
+  .fc-header-toolbar {
+      flex-direction: column; /* Empilement vertical sur petits écrans */
+      text-align: center;
+  }
+
+  .fc-toolbar-chunk {
+      margin: 5px 0; /* Espacement entre les sections */
+  }
+
+  .fc-button {
+      padding: 6px 10px; /* Boutons plus petits */
+  }
 }

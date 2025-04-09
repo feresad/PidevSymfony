@@ -6,6 +6,7 @@ use App\Entity\Evenement;
 use App\Form\EvenementType;
 
 use App\Repository\EvenementRepository;
+use App\Repository\ClientEvenementRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
@@ -18,7 +19,7 @@ use Symfony\Component\Routing\Attribute\Route;
 final class EvnementController extends AbstractController
 {
     #[Route('/all',name: 'evenement_list')]
-    public function gettAll(EvenementRepository $repo, Request $request):Response{
+    public function gettAll(EvenementRepository $repo, Request $request, ClientEvenementRepository $clientEvenementRepo):Response{
         $search = $request->query->get('search', '');
         $sort = $request->query->get('sort', 'nom_asc');
         $page = $request->query->getInt('page', 1);
@@ -27,6 +28,15 @@ final class EvnementController extends AbstractController
         $totalEvenements = $repo->countBySearch($search);
         $maxPages = ceil($totalEvenements / $limit);
 
+        // Récupérer les réservations de l'utilisateur connecté
+        $userReservations = [];
+        if ($this->getUser()) {
+            $reservations = $clientEvenementRepo->findBy(['client' => $this->getUser()]);
+            foreach ($reservations as $reservation) {
+                $userReservations[$reservation->getEvenement()->getId()] = true;
+            }
+        }
+
         return $this->render('evenement/ListeEvenement.html.twig', [
             'evenements' => $evenements,
             'image_base_url' => $this->getParameter('image_base_url'),
@@ -34,6 +44,7 @@ final class EvnementController extends AbstractController
             'max_pages' => $maxPages,
             'search' => $search,
             'sort' => $sort,
+            'userReservations' => $userReservations,
         ]);
     }
     #[Route('/add', name: 'evenement_ajouter')]
@@ -104,14 +115,24 @@ final class EvnementController extends AbstractController
             $photoFile = $form->get('photoFile')->getData();
 
             if ($photoFile) {
-                $newFilename = uniqid().'.'.$photoFile->guessExtension();
+                $newFilename = uniqid() . '.' . $photoFile->guessExtension();
 
                 try {
-                    $image_base_url = $this->getParameter('image_base_url');
-                    $photoFile->move($image_base_url, $newFilename);
+                    $uploadDir = $this->getParameter('dossier_upload');
+
+                    // Supprimer l'ancienne photo si elle existe
+                    if ($evenement->getPhotoEvent()) {
+                        $oldFile = $uploadDir . '/' . $evenement->getPhotoEvent();
+                        if (file_exists($oldFile)) {
+                            unlink($oldFile);
+                        }
+                    }
+
+                    // Déplacer la nouvelle photo
+                    $photoFile->move($uploadDir, $newFilename);
                     $evenement->setPhotoEvent($newFilename);
                 } catch (FileException $e) {
-                    $this->addFlash('error', 'Erreur lors de l\'upload du fichier.');
+                    $this->addFlash('error', 'Erreur lors de l\'upload du fichier : ' . $e->getMessage());
                     return $this->redirectToRoute('evenement_modifier', ['id' => $id]);
                 }
             }
@@ -206,6 +227,34 @@ final class EvnementController extends AbstractController
             'evenement' => $evenement,
             'image_base_url' => $this->getParameter('image_base_url'),
         ]);
+    }
+    #[Route('/calendar', name: 'evenement_calendar')]
+public function calendar(): Response
+{
+    return $this->render('evenement/calendar.html.twig');
+}
+#[Route('/load-events', name: 'evenement_load_events')]
+    public function loadEvents(Request $request, EvenementRepository $repo): Response
+    {
+        $start = new \DateTime($request->query->get('start'));
+        $end = new \DateTime($request->query->get('end'));
+
+        // Récupérer les événements dans l'intervalle de dates
+        $evenements = $repo->findByDateRange($start, $end);
+        $events = [];
+
+        foreach ($evenements as $evenement) {
+            $events[] = [
+                'title' => $evenement->getNomEvent(),
+                'start' => $evenement->getDateEvent()->format('c'), // Format ISO 8601
+                'url' => $this->generateUrl('evenement_detailles', ['id' => $evenement->getId()]),
+                'backgroundColor' => '#3788d8',
+                'borderColor' => '#3788d8',
+                'textColor' => '#ffffff',
+            ];
+        }
+
+        return new Response(json_encode($events), 200, ['Content-Type' => 'application/json']);
     }
 }
 

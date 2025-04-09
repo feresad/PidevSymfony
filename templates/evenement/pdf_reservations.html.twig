@@ -5,51 +5,159 @@
     <title>Réservations pour {{ evenement.nomEvent }}</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            margin: 30px;
+            color: #2d3748;
+            background-color: #f7fafc;
+            line-height: 1.5;
         }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            margin-bottom: 40px;
+            border-left: 6px solid #fe0369;
+        }
+
+        .logo {
+            width: 90px;
+            height: 90px;
+            object-fit: contain;
+            border-radius: 50%; /* Cercle pour un look moderne */
+            background-color: #edf2f7;
+            padding: 5px;
+        }
+
+        .header-content {
+            text-align: right;
+        }
+
         h1 {
-            text-align: center;
-            color: #333;
+            margin: 0;
+            font-size: 26px;
+            font-weight: 600;
+            color: #2d3748;
+            letter-spacing: 0.5px;
         }
+
+        .export-date {
+            font-size: 13px;
+            color: #718096;
+            margin-top: 6px;
+            font-style: italic;
+        }
+
+        .content {
+            background-color: #ffffff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            font-size: 14px;
         }
+
         th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
+            padding: 14px 20px;
             text-align: left;
+            border-bottom: 1px solid #e2e8f0;
         }
+
         th {
-            background-color: #f2f2f2;
+            background-color: #4a5568;
+            color: #ffffff;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        td {
+            background-color: #ffffff;
+            color: #4a5568;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:nth-child(even) td {
+            background-color: #f7fafc;
+        }
+
+        .no-reservations {
+            text-align: center;
+            color: #718096;
+            font-size: 16px;
+            padding: 30px;
+            background-color: #edf2f7;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-weight: 500;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 20px;
+            width: calc(100% - 60px); /* Ajusté pour marges */
+            text-align: center;
+            font-size: 12px;
+            color: black;
+            padding-top: 15px;
+            border-top: 1px dashed #e2e8f0;
+        }
+
+        .footer span {
+            font-weight: 600;
+            color: #fe0369; /* Vert pour accentuer "LevelOP" */
         }
     </style>
 </head>
 <body>
-    <h1>Réservations pour {{ evenement.nomEvent }}</h1>
+    <div class="header">
+        {% if logo_base64 %}
+            <img src="data:image/png;base64,{{ logo_base64 }}" alt="Logo LevelOP" class="logo">
+        {% endif %}
+        <div class="header-content">
+            <h1>Réservations pour {{ evenement.nomEvent }}</h1>
+            <p class="export-date">Exporté le : {{ date_exportation }}</p>
+        </div>
+    </div>
 
-    {% if reservations is empty %}
-        <p>Aucune réservation pour cet événement.</p>
-    {% else %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Nom</th>
-                    <th>Prénom</th>
-                    <th>Email</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for reservation in reservations %}
+    <div class="content">
+        {% if reservations is empty %}
+            <p class="no-reservations">Aucune réservation pour cet événement</p>
+        {% else %}
+            <table>
+                <thead>
                     <tr>
-                        <td>{{ reservation.client.nom }}</td>
-                        <td>{{ reservation.client.prenom }}</td>
-                        <td>{{ reservation.client.email }}</td>
+                        <th>Nom</th>
+                        <th>Prénom</th>
+                        <th>Email</th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% endif %}
+                </thead>
+                <tbody>
+                    {% for reservation in reservations %}
+                        <tr>
+                            <td>{{ reservation.client.nom }}</td>
+                            <td>{{ reservation.client.prenom }}</td>
+                            <td>{{ reservation.client.email }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+
+    <div class="footer">
+        Généré par <span>LevelOP</span>
+    </div>
 </body>
 </html>
