@@ -47,223 +47,254 @@
         </div>
 
         <div class="nk-forum">
-            {% for topic in topics %}
-                <div class="nk-forum-item {{ topic.locked ? 'nk-forum-locked' : '' }} sentiment-{{ topic.sentiment }}" 
-                     data-game="{{ topic.gameImage ? topic.gameImage|replace({'img/games/': ''}) : 'No game' }}" 
-                     data-author="{{ topic.startedBy }}" 
-                     data-title="{{ topic.title|lower }}" 
-                     data-content="{{ topic.content ? topic.content|lower : '' }}">
-                    <div class="nk-forum-vote-section">
-                        <button class="vote-btn upvote-btn voting-button upvote" data-id="{{ topic.id }}" data-type="question" data-vote-type="UP" data-fallback="↑">
-                            <img src="{{ asset('images/uppvote-emoji.png') }}" alt="Upvote" class="vote-icon">
-                        </button>
-                        <span class="vote-count">{{ topic.votes|default(0) }}</span>
-                        <button class="vote-btn downvote-btn voting-button downvote" data-id="{{ topic.id }}" data-type="question" data-vote-type="DOWN" data-fallback="↓">
-                            <img src="{{ asset('images/doownvote-emoji.png') }}" alt="Downvote" class="vote-icon">
-                        </button>
-                    </div>
-                    <div class="nk-forum-title">
-                        <h3><a href="{{ path('forum_single_topic', { id: topic.id }) }}">{{ topic.title }}</a></h3>
-                        <div class="nk-forum-title-sub">
-                            Started by <a href="#">{{ topic.startedBy }}</a> on {{ topic.startedOn }}
-                            <span class="sentiment-badge sentiment-{{ topic.sentiment }}">{{ topic.sentiment|capitalize }}</span>
-                        </div>
-                        {% if topic.content is defined and topic.content %}
-                            <div class="nk-forum-content mt-2">
-                                <p>
-                                    {{ topic.content|slice(0, 150) }}
-                                    {% if topic.content|length > 150 %}...{% endif %}
-                                </p>
-                            </div>
-                        {% endif %}
-                        {% if topic.image is defined and topic.image %}
-                            <div class="nk-forum-title-image mt-8">
-                                <img src="http://localhost/img/games/{{ topic.image }}" alt="Topic Image" style="max-width: 200px;">
-                            </div>
-                        {% endif %}
-                        {% if topic.video is defined and topic.video %}
-                            <div class="nk-forum-title-video mt-8">
-                                <video width="400" height="300" controls>
-                                    <source src="http://localhost/img/games/{{ topic.video }}" type="video/mp4">
-                                    Your browser does not support the video tag.
-                                </video>
-                            </div>
-                        {% endif %}
-                        <div class="nk-forum-reactions mt-8">
-                            <div class="reaction-display" data-id="{{ topic.id }}" data-type="question">
-                                {% for emoji, count in topic.reactionCounts|default([]) %}
-                                    <span class="reaction-item" data-emoji="{{ emoji }}">{{ emoji }} {{ count }}</span>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        <div class="nk-forum-actions mt-8">
-                            <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-main-1" data-bs-toggle="modal" data-bs-target="#updateTopicModal-{{ topic.id }}">
-                                Update
+            {% if topics|length > 0 %}
+                {% for topic in topics %}
+                    <div class="nk-forum-item {{ topic.locked ? 'nk-forum-locked' : '' }} sentiment-{{ topic.sentiment }}" 
+                         data-game="{{ topic.gameImage ? topic.gameImage|replace({'img/games/': ''}) : 'No game' }}" 
+                         data-author="{{ topic.startedBy }}" 
+                         data-title="{{ topic.title|lower }}" 
+                         data-content="{{ topic.content ? topic.content|lower : '' }}">
+                        <div class="nk-forum-vote-section">
+                            <button class="vote-btn upvote-btn voting-button upvote" data-id="{{ topic.id }}" data-type="question" data-vote-type="UP" data-fallback="↑">
+                                <img src="{{ asset('images/uppvote-emoji.png') }}" alt="Upvote" class="vote-icon">
                             </button>
-                            <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-danger" data-bs-toggle="modal" data-bs-target="#deleteTopicModal-{{ topic.id }}">
-                                Delete
+                            <span class="vote-count">{{ topic.votes|default(0) }}</span>
+                            <button class="vote-btn downvote-btn voting-button downvote" data-id="{{ topic.id }}" data-type="question" data-vote-type="DOWN" data-fallback="↓">
+                                <img src="{{ asset('images/doownvote-emoji.png') }}" alt="Downvote" class="vote-icon">
                             </button>
-                            <span class="share-btn" data-id="{{ topic.id }}" data-bs-toggle="modal" data-bs-target="#shareModal-{{ topic.id }}">
-                                <img src="{{ asset('images/share_icon.png') }}" alt="Share" class="share-icon">
-                            </span>
-                            <div class="reaction-wrapper">
-                                <img src="{{ asset('images/meme_icon.png') }}" alt="React" class="reaction-icon" data-id="{{ topic.id }}" data-type="question">
-                            </div>
-                            <span class="spam-btn" data-id="{{ topic.id }}" data-type="question" data-user-id="{{ topic.startedById }}">
-                                <a href="#" class="nk-anchor">
-                                    <span class="fa fa-flag"></span> Spam
-                                </a>
-                            </span>
                         </div>
-                    </div>
-                    <div class="nk-forum-count">
-                        {{ topic.postCount }} posts
-                    </div>
-                    <div class="nk-forum-activity">
-                        {% if topic.gameImage is defined and topic.gameImage %}
-                            <div class="nk-forum-game-image mb-2">
-                                <img src="http://localhost/img/games/{{ topic.gameImage }}" alt="Game Image" class="game-image">
+                        <div class="nk-forum-title">
+                            <h3><a href="{{ path('forum_single_topic', { id: topic.id }) }}">{{ topic.title }}</a></h3>
+                            <div class="nk-forum-title-sub">
+                                Started by <a href="#">{{ topic.startedBy }}</a> on {{ topic.startedOn }}
+                                <span class="sentiment-badge sentiment-{{ topic.sentiment }}">{{ topic.sentiment|capitalize }}</span>
                             </div>
-                        {% else %}
-                            <div class="nk-forum-game-image mb-2">
-                                <img src="{{ asset('assets/images/default-game.jpg') }}" alt="Default Game Image" class="game-image">
-                            </div>
-                        {% endif %}
-                        <div class="nk-forum-activity-title" title="{{ topic.lastActivityUser }}">
-                            Last by <a href="#">{{ topic.lastActivityUser }}</a>
-                        </div>
-                        <div class="nk-forum-activity-date">
-                            {{ topic.lastActivityDate }}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Share Modal -->
-                <div class="modal fade" id="shareModal-{{ topic.id }}" tabindex="-1" aria-labelledby="shareModalLabel-{{ topic.id }}" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="shareModalLabel-{{ topic.id }}">Share Topic</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <p>Share this topic on your favorite platform:</p>
-                                <div class="share-options">
-                                    <a href="#" class="share-link facebook-share" data-id="{{ topic.id }}" target="_blank">
-                                        <i class="fab fa-facebook-f"></i> Facebook
-                                    </a>
-                                    <a href="#" class="share-link reddit-share" data-id="{{ topic.id }}" target="_blank">
-                                        <i class="fab fa-reddit-alien"></i> Reddit
-                                    </a>
-                                    <a href="#" class="share-link twitter-share" data-id="{{ topic.id }}" target="_blank">
-                                        <i class="fab fa-twitter"></i> Twitter
-                                    </a>
+                            {% if topic.content is defined and topic.content %}
+                                <div class="nk-forum-content mt-2">
+                                    <p>
+                                        {{ topic.content|slice(0, 150) }}
+                                        {% if topic.content|length > 150 %}...{% endif %}
+                                    </p>
+                                </div>
+                            {% endif %}
+                            {% if topic.image is defined and topic.image %}
+                                <div class="nk-forum-title-image mt-8">
+                                    <img src="http://localhost/img/games/{{ topic.image }}" alt="Topic Image" style="max-width: 200px;">
+                                </div>
+                            {% endif %}
+                            {% if topic.video is defined and topic.video %}
+                                <div class="nk-forum-title-video mt-8">
+                                    <video width="400" height="300" controls>
+                                        <source src="http://localhost/img/games/{{ topic.video }}" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                </div>
+                            {% endif %}
+                            <div class="nk-forum-reactions mt-8">
+                                <div class="reaction-display" data-id="{{ topic.id }}" data-type="question">
+                                    {% for emoji, count in topic.reactionCounts|default([]) %}
+                                        <span class="reaction-item" data-emoji="{{ emoji }}">{{ emoji }} {{ count }}</span>
+                                    {% endfor %}
                                 </div>
                             </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <div class="nk-forum-actions mt-8">
+                                <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-main-1" data-bs-toggle="modal" data-bs-target="#updateTopicModal-{{ topic.id }}">
+                                    Update
+                                </button>
+                                <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-danger" data-bs-toggle="modal" data-bs-target="#deleteTopicModal-{{ topic.id }}">
+                                    Delete
+                                </button>
+                                <span class="share-btn" data-id="{{ topic.id }}" data-bs-toggle="modal" data-bs-target="#shareModal-{{ topic.id }}">
+                                    <img src="{{ asset('images/share_icon.png') }}" alt="Share" class="share-icon">
+                                </span>
+                                <div class="reaction-wrapper">
+                                    <img src="{{ asset('images/meme_icon.png') }}" alt="React" class="reaction-icon" data-id="{{ topic.id }}" data-type="question">
+                                </div>
+                                <span class="spam-btn" data-id="{{ topic.id }}" data-type="question" data-user-id="{{ topic.startedById }}">
+                                    <a href="#" class="nk-anchor">
+                                        <span class="fa fa-flag"></span> Spam
+                                    </a>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="nk-forum-count">
+                            {{ topic.postCount }} posts
+                        </div>
+                        <div class="nk-forum-activity">
+                            {% if topic.gameImage is defined and topic.gameImage %}
+                                <div class="nk-forum-game-image mb-2">
+                                    <img src="http://localhost/img/games/{{ topic.gameImage }}" alt="Game Image" class="game-image">
+                                </div>
+                            {% else %}
+                                <div class="nk-forum-game-image mb-2">
+                                    <img src="{{ asset('assets/images/default-game.jpg') }}" alt="Default Game Image" class="game-image">
+                                </div>
+                            {% endif %}
+                            <div class="nk-forum-activity-title" title="{{ topic.lastActivityUser }}">
+                                Last by <a href="#">{{ topic.lastActivityUser }}</a>
+                            </div>
+                            <div class="nk-forum-activity-date">
+                                {{ topic.lastActivityDate }}
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Update Topic Modal -->
-                <div class="modal fade" id="updateTopicModal-{{ topic.id }}" tabindex="-1" aria-labelledby="updateTopicModalLabel-{{ topic.id }}" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="updateTopicModalLabel-{{ topic.id }}">Update Topic</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <!-- Share Modal -->
+                    <div class="modal fade" id="shareModal-{{ topic.id }}" tabindex="-1" aria-labelledby="shareModalLabel-{{ topic.id }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="shareModalLabel-{{ topic.id }}">Share Topic</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>Share this topic on your favorite platform:</p>
+                                    <div class="share-options">
+                                        <a href="#" class="share-link facebook-share" data-id="{{ topic.id }}" target="_blank">
+                                            <i class="fab fa-facebook-f"></i> Facebook
+                                        </a>
+                                        <a href="#" class="share-link reddit-share" data-id="{{ topic.id }}" target="_blank">
+                                            <i class="fab fa-reddit-alien"></i> Reddit
+                                        </a>
+                                        <a href="#" class="share-link twitter-share" data-id="{{ topic.id }}" target="_blank">
+                                            <i class="fab fa-twitter"></i> Twitter
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
                             </div>
-                            <div class="modal-body">
-                                {{ form_start(topic.updateForm, {'attr': {'class': 'profanity-check-form'}}) }}
-                                    <div class="mb-3">
-                                        {{ form_label(topic.updateForm.title, null, {'label_attr': {'class': 'form-label'}}) }}
-                                        {{ form_widget(topic.updateForm.title, {'attr': {'class': 'form-control'}}) }}
-                                        {{ form_errors(topic.updateForm.title) }}
-                                    </div>
-                                    <div class="mb-3">
-                                        {{ form_label(topic.updateForm.content, null, {'label_attr': {'class': 'form-label'}}) }}
-                                        {{ form_widget(topic.updateForm.content, {'attr': {'class': 'form-control'}}) }}
-                                        {{ form_errors(topic.updateForm.content) }}
-                                    </div>
-                                    <div class="mb-3">
-                                        {{ form_label(topic.updateForm.media_type, null, {'label_attr': {'class': 'form-label'}}) }}
-                                        {{ form_widget(topic.updateForm.media_type, {'attr': {'class': 'form-control'}}) }}
-                                        {{ form_errors(topic.updateForm.media_type) }}
-                                    </div>
-                                    <div class="mb-3">
-                                        {{ form_label(topic.updateForm.media_file, null, {'label_attr': {'class': 'form-label'}}) }}
-                                        {{ form_widget(topic.updateForm.media_file, {'attr': {'class': 'form-control-file'}}) }}
-                                        {{ form_errors(topic.updateForm.media_file) }}
-                                    </div>
-                                    <div class="mb-3">
-                                        {{ form_label(topic.updateForm.game_id, null, {'label_attr': {'class': 'form-label'}}) }}
-                                        {{ form_widget(topic.updateForm.game_id, {'attr': {'class': 'form-control'}}) }}
-                                        {{ form_errors(topic.updateForm.game_id) }}
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">Emotes</label>
-                                        <div class="emotes-options">
-                                            <button type="button" class="btn btn-emote" onclick="addEmote('😊', 'update_topic_form_{{ topic.id }}_content')">😊</button>
-                                            <button type="button" class="btn btn-emote" onclick="addEmote('😂', 'update_topic_form_{{ topic.id }}_content')">😂</button>
-                                            <button type="button" class="btn btn-emote" onclick="addEmote('❤️', 'update_topic_form_{{ topic.id }}_content')">❤️</button>
-                                            <button type="button" class="btn btn-emote" onclick="addEmote('👍', 'update_topic_form_{{ topic.id }}_content')">👍</button>
+                        </div>
+                    </div>
+
+                    <!-- Update Topic Modal -->
+                    <div class="modal fade" id="updateTopicModal-{{ topic.id }}" tabindex="-1" aria-labelledby="updateTopicModalLabel-{{ topic.id }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="updateTopicModalLabel-{{ topic.id }}">Update Topic</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    {{ form_start(topic.updateForm, {'attr': {'class': 'profanity-check-form'}}) }}
+                                        <div class="mb-3">
+                                            {{ form_label(topic.updateForm.title, null, {'label_attr': {'class': 'form-label'}}) }}
+                                            {{ form_widget(topic.updateForm.title, {'attr': {'class': 'form-control'}}) }}
+                                            {{ form_errors(topic.updateForm.title) }}
                                         </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                        {{ form_widget(topic.updateForm.submit, {'attr': {'class': 'btn btn-primary'}}) }}
-                                    </div>
-                                {{ form_end(topic.updateForm) }}
+                                        <div class="mb-3">
+                                            {{ form_label(topic.updateForm.content, null, {'label_attr': {'class': 'form-label'}}) }}
+                                            {{ form_widget(topic.updateForm.content, {'attr': {'class': 'form-control'}}) }}
+                                            {{ form_errors(topic.updateForm.content) }}
+                                        </div>
+                                        <div class="mb-3">
+                                            {{ form_label(topic.updateForm.media_type, null, {'label_attr': {'class': 'form-label'}}) }}
+                                            {{ form_widget(topic.updateForm.media_type, {'attr': {'class': 'form-control'}}) }}
+                                            {{ form_errors(topic.updateForm.media_type) }}
+                                        </div>
+                                        <div class="mb-3">
+                                            {{ form_label(topic.updateForm.media_file, null, {'label_attr': {'class': 'form-label'}}) }}
+                                            {{ form_widget(topic.updateForm.media_file, {'attr': {'class': 'form-control-file'}}) }}
+                                            {{ form_errors(topic.updateForm.media_file) }}
+                                        </div>
+                                        <div class="mb-3">
+                                            {{ form_label(topic.updateForm.game_id, null, {'label_attr': {'class': 'form-label'}}) }}
+                                            {{ form_widget(topic.updateForm.game_id, {'attr': {'class': 'form-control'}}) }}
+                                            {{ form_errors(topic.updateForm.game_id) }}
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Emotes</label>
+                                            <div class="emotes-options">
+                                                <button type="button" class="btn btn-emote" onclick="addEmote('😊', 'update_topic_form_{{ topic.id }}_content')">😊</button>
+                                                <button type="button" class="btn btn-emote" onclick="addEmote('😂', 'update_topic_form_{{ topic.id }}_content')">😂</button>
+                                                <button type="button" class="btn btn-emote" onclick="addEmote('❤️', 'update_topic_form_{{ topic.id }}_content')">❤️</button>
+                                                <button type="button" class="btn btn-emote" onclick="addEmote('👍', 'update_topic_form_{{ topic.id }}_content')">👍</button>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            {{ form_widget(topic.updateForm.submit, {'attr': {'class': 'btn btn-primary'}}) }}
+                                        </div>
+                                    {{ form_end(topic.updateForm) }}
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Delete Topic Modal -->
-                <div class="modal fade" id="deleteTopicModal-{{ topic.id }}" tabindex="-1" aria-labelledby="deleteTopicModalLabel-{{ topic.id }}" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="deleteTopicModalLabel-{{ topic.id }}">Delete Topic</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                Are you sure you want to delete the topic "<strong>{{ topic.title }}</strong>"? This action cannot be undone.
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                <a href="{{ path('forum_delete_topic', { id: topic.id }) }}" class="btn btn-danger">Delete</a>
+                    <!-- Delete Topic Modal -->
+                    <div class="modal fade" id="deleteTopicModal-{{ topic.id }}" tabindex="-1" aria-labelledby="deleteTopicModalLabel-{{ topic.id }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="deleteTopicModalLabel-{{ topic.id }}">Delete Topic</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    Are you sure you want to delete the topic "<strong>{{ topic.title }}</strong>"? This action cannot be undone.
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <a href="{{ path('forum_delete_topic', { id: topic.id }) }}" class="btn btn-danger">Delete</a>
+                                </div>
                             </div>
                         </div>
                     </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center">
+                    <p>No topics found on this page.</p>
                 </div>
-            {% endfor %}
+            {% endif %}
         </div>
 
         <div class="nk-gap-2"></div>
 
-        <div class="row">
-            <div class="col-md-12">
-                <div class="nk-pagination nk-pagination-left">
-                    <a href="#" class="nk-pagination-prev">
-                        <span class="ion-ios-arrow-back"></span>
-                    </a>
-                    <nav>
-                        <a class="nk-pagination-current" href="#">1</a>
-                        <a href="#">2</a>
-                        <a href="#">3</a>
-                        <a href="#">4</a>
-                        <span>...</span>
-                        <a href="#">14</a>
-                    </nav>
-                    <a href="#" class="nk-pagination-next">
-                        <span class="ion-ios-arrow-forward"></span>
-                    </a>
+        {% if topics|length > 0 %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="nk-pagination nk-pagination-center">
+                        <a href="{{ path('forum_topics', {'page': pagination.currentPage - 1}) }}"
+                           class="nk-pagination-prev {{ pagination.currentPage == 1 ? 'disabled' : '' }}">
+                            <span class="ion-ios-arrow-back"></span>
+                        </a>
+
+                        <nav>
+                            {% if pagination.currentPage > 3 %}
+                                <a href="{{ path('forum_topics', {'page': 1}) }}">1</a>
+                                {% if pagination.currentPage > 4 %}
+                                    <span>...</span>
+                                {% endif %}
+                            {% endif %}
+
+                            {% for i in max(1, pagination.currentPage - 2)..min(pagination.totalPages, pagination.currentPage + 2) %}
+                                <a href="{{ path('forum_topics', {'page': i}) }}"
+                                   class="{{ pagination.currentPage == i ? 'nk-pagination-current' : '' }}">
+                                    {{ i }}
+                                </a>
+                            {% endfor %}
+
+                            {% if pagination.currentPage < pagination.totalPages - 2 %}
+                                {% if pagination.currentPage < pagination.totalPages - 3 %}
+                                    <span>...</span>
+                                {% endif %}
+                                <a href="{{ path('forum_topics', {'page': pagination.totalPages}) }}">{{ pagination.totalPages }}</a>
+                            {% endif %}
+                        </nav>
+
+                        <a href="{{ path('forum_topics', {'page': pagination.currentPage + 1}) }}"
+                           class="nk-pagination-next {{ pagination.currentPage == pagination.totalPages ? 'disabled' : '' }}">
+                            <span class="ion-ios-arrow-forward"></span>
+                        </a>
+                    </div>
+
+                    <div class="text-center mt-2">
+                        Showing {{ (pagination.currentPage - 1) * pagination.itemsPerPage + 1 }}-{{ min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems) }} 
+                        of {{ pagination.totalItems }} topics
+                    </div>
                 </div>
             </div>
-        </div>
+        {% endif %}
 
         <!-- New Topic Modal -->
         <div class="modal fade" id="newTopicModal" tabindex="-1" aria-labelledby="newTopicModalLabel" aria-hidden="true">
@@ -378,7 +409,7 @@
             color: #fff !important;
         }
         .nk-btn-color-main-2:hover {
-            background-color: #0471c6 !important; /* Slightly darker shade for hover effect */
+            background-color: #0471c6 !important;
         }
 
         /* Glassmorphism Effect for .nk-forum-item */
@@ -525,6 +556,34 @@
             margin-bottom: 15px;
             text-transform: uppercase;
             letter-spacing: 1px;
+        }
+
+        /* Pagination Styles */
+        .nk-pagination .disabled {
+            pointer-events: none;
+            opacity: 0.5;
+        }
+        .nk-pagination-center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+        .nk-pagination nav a {
+            margin: 0 5px;
+            padding: 5px 10px;
+            text-decoration: none;
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 100px;
+            transition: background 0.3s ease;
+        }
+        .nk-pagination nav a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .nk-pagination-current {
+            background-color: #fe0369 !important;
+            color: white !important;
         }
     </style>
 {% endblock %}
@@ -871,7 +930,7 @@
 
                             switch (platform) {
                                 case 'facebook':
-                                    platformUrl = `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}&quote=${shareText}`;
+                                    platformUrl = `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}"e=${shareText}`;
                                     break;
                                 case 'twitter':
                                     platformUrl = `https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareText}`;
@@ -986,6 +1045,12 @@
                     return;
                 }
 
+                // Retrieve the content of the topic
+                let contentToReport = '';
+                if (type === 'question') {
+                    contentToReport = $(`.nk-forum-item[data-title="${$btn.closest('.nk-forum-item').data('title')}"] .nk-forum-content p`).text().trim();
+                }
+
                 const modalHtml = `
                     <div class="report-modal-backdrop"></div>
                     <div class="report-modal">
@@ -1005,7 +1070,7 @@
                                 <option value="ARNAQUE_FAUSSE_INFORMATION">Scam/False Information</option>
                                 <option value="CONTENU_NON_DESIRE">Unwanted Content</option>
                             </select>
-                            <textarea name="evidence" placeholder="Additional details (optional)" rows="4"></textarea>
+                            <textarea name="evidence" placeholder="Additional details (optional)" rows="4">${contentToReport}</textarea>
                             <div style="display: flex; gap: 10px;">
                                 <button type="submit" class="submit-btn">Submit</button>
                                 <button type="button" class="cancel-btn">Cancel</button>

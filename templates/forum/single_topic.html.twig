@@ -212,26 +212,61 @@
                 {% endfor %}
             {% endmacro %}
 
-            {{ _self.render_comments(comments) }}
+            {% if comments|length > 0 %}
+                {{ _self.render_comments(comments) }}
+            {% else %}
+                <li class="text-center">No comments found on this page.</li>
+            {% endif %}
         </ul>
 
         <div class="nk-gap-2"></div>
-        <div class="nk-pagination nk-pagination-left">
-            <a href="#" class="nk-pagination-prev">
-                <span class="ion-ios-arrow-back"></span>
-            </a>
-            <nav>
-                <a class="nk-pagination-current" href="#">1</a>
-                <a href="#">2</a>
-                <a href="#">3</a>
-                <a href="#">4</a>
-                <span>...</span>
-                <a href="#">14</a>
-            </nav>
-            <a href="#" class="nk-pagination-next">
-                <span class="ion-ios-arrow-forward"></span>
-            </a>
-        </div>
+
+        {% if comments|length > 0 %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="nk-pagination nk-pagination-center">
+                        <a href="{{ path('forum_single_topic', {'id': question.id, 'page': pagination.currentPage - 1}) }}"
+                           class="nk-pagination-prev {{ pagination.currentPage == 1 ? 'disabled' : '' }}">
+                            <span class="ion-ios-arrow-back"></span>
+                        </a>
+
+                        <nav>
+                            {% if pagination.currentPage > 3 %}
+                                <a href="{{ path('forum_single_topic', {'id': question.id, 'page': 1}) }}">1</a>
+                                {% if pagination.currentPage > 4 %}
+                                    <span>...</span>
+                                {% endif %}
+                            {% endif %}
+
+                            {% for i in max(1, pagination.currentPage - 2)..min(pagination.totalPages, pagination.currentPage + 2) %}
+                                <a href="{{ path('forum_single_topic', {'id': question.id, 'page': i}) }}"
+                                   class="{{ pagination.currentPage == i ? 'nk-pagination-current' : '' }}">
+                                    {{ i }}
+                                </a>
+                            {% endfor %}
+
+                            {% if pagination.currentPage < pagination.totalPages - 2 %}
+                                {% if pagination.currentPage < pagination.totalPages - 3 %}
+                                    <span>...</span>
+                                {% endif %}
+                                <a href="{{ path('forum_single_topic', {'id': question.id, 'page': pagination.totalPages}) }}">{{ pagination.totalPages }}</a>
+                            {% endif %}
+                        </nav>
+
+                        <a href="{{ path('forum_single_topic', {'id': question.id, 'page': pagination.currentPage + 1}) }}"
+                           class="nk-pagination-next {{ pagination.currentPage == pagination.totalPages ? 'disabled' : '' }}">
+                            <span class="ion-ios-arrow-forward"></span>
+                        </a>
+                    </div>
+
+                    <div class="text-center mt-2">
+                        Showing {{ (pagination.currentPage - 1) * pagination.itemsPerPage + 1 }}-{{ min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems) }} 
+                        of {{ pagination.totalItems }} comments
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
         <div class="nk-gap-2"></div>
     </div>
 {% endblock %}
@@ -454,6 +489,33 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
+        /* Pagination Styles */
+        .nk-pagination .disabled {
+            pointer-events: none;
+            opacity: 0.5;
+        }
+        .nk-pagination-center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        .nk-pagination nav a {
+            margin: 0 5px;
+            padding: 5px 10px;
+            text-decoration: none;
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 100px;
+            transition: background 0.3s ease;
+        }
+        .nk-pagination nav a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .nk-pagination-current {
+            background-color: #fe0369 !important;
+            color: white !important;
+        }
     </style>
 {% endblock %}
 
@@ -502,10 +564,6 @@
                         }
                     });
 
-                    console.log('Positive Emojis:', sentimentMap.positive);
-                    console.log('Negative Emojis:', sentimentMap.negative);
-                    console.log('Neutral Emojis:', sentimentMap.neutral);
-
                     if (sentimentMap.positive.length < 10) sentimentMap.positive = ['👍', '😊', '😂', '❤️', '🎉', '😍', '👏', '🌟', '😎', '💪'];
                     if (sentimentMap.negative.length < 10) sentimentMap.negative = ['👎', '😢', '😡', '💔', '😤', '😞', '🤬', '😣', '💢', '😠'];
                     if (sentimentMap.neutral.length < 10) sentimentMap.neutral = ['🤔', '😐', '🙂', '👀', '🤷', '😶', '🤝', '🙄', '😴', '🤓'];
@@ -523,7 +581,6 @@
                         }
                     });
                 }).catch(() => {
-                    console.error('Failed to load emojis');
                     sentimentMap = {
                         positive: ['👍', '😊', '😂', '❤️', '🎉', '😍', '👏', '🌟', '😎', '💪'],
                         negative: ['👎', '😢', '😡', '💔', '😤', '😞', '🤬', '😣', '💢', '😠'],
@@ -871,6 +928,14 @@
                     return;
                 }
 
+                // Determine content based on type
+                let contentToReport = '';
+                if (type === 'question') {
+                    contentToReport = $('.question-card[data-id="' + id + '"] .nk-forum-topic-content p').text().trim();
+                } else if (type === 'comment') {
+                    contentToReport = $('.comment-card[data-id="' + id + '"] .nk-forum-topic-content p').text().trim();
+                }
+
                 const modalHtml = `
                     <div class="report-modal-backdrop"></div>
                     <div class="report-modal">
@@ -890,7 +955,7 @@
                                 <option value="ARNAQUE_FAUSSE_INFORMATION">Scam/False Information</option>
                                 <option value="CONTENU_NON_DESIRE">Unwanted Content</option>
                             </select>
-                            <textarea name="evidence" placeholder="Additional details (optional)" rows="4"></textarea>
+                            <textarea name="evidence" placeholder="Additional details (optional)" rows="4">${contentToReport}</textarea>
                             <div style="display: flex; gap: 10px;">
                                 <button type="submit" class="submit-btn">Submit</button>
                                 <button type="button" class="cancel-btn">Cancel</button>
@@ -907,8 +972,6 @@
                     const formData = $(this).serializeArray();
                     const data = {};
                     formData.forEach(item => data[item.name] = item.value);
-
-                    console.log('Sending report data:', data);
 
                     $.ajax({
                         url: '{{ path('report_create') }}',
@@ -938,7 +1001,6 @@
                             }
                         },
                         error: function(xhr, status, error) {
-                            console.error('AJAX error:', status, error, xhr.responseText);
                             Swal.fire({
                                 title: 'Error',
                                 text: 'Failed to submit report: ' + (xhr.responseJSON?.message || 'Server error'),

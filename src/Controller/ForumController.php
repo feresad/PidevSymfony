@@ -123,24 +123,42 @@ class ForumController extends AbstractController
             'neutral' => ['🤔', '😐', '🙂', '👀', '🤷', '😶', '🤝', '🙄', '😴', '🤓']
         ]);
     
+        // Pagination parameters
+        $page = $request->query->getInt('page', 1);
+        $limit = 10; // Number of topics per page
         $threshold = -5;
     
-        // Join with utilisateur to ensure the user exists
+        // Get total count for pagination
+        $totalQuestions = $questionsRepository->createQueryBuilder('q')
+            ->select('COUNT(q.question_id)')
+            ->innerJoin('q.utilisateur_id', 'u')
+            ->getQuery()
+            ->getSingleScalarResult();
+    
+        // Paginated queries
         $highQualityQuestions = $questionsRepository->createQueryBuilder('q')
-            ->innerJoin('q.utilisateur_id', 'u')  // Join with utilisateur table
+            ->innerJoin('q.utilisateur_id', 'u')
             ->where('q.votes >= :threshold')
             ->setParameter('threshold', $threshold)
             ->orderBy('q.votes', 'DESC')
+            ->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
     
-        $lowQualityQuestions = $questionsRepository->createQueryBuilder('q')
-            ->innerJoin('q.utilisateur_id', 'u')  // Join with utilisateur table
-            ->where('q.votes < :threshold')
-            ->setParameter('threshold', $threshold)
-            ->orderBy('q.votes', 'DESC')
-            ->getQuery()
-            ->getResult();
+        $remaining = $limit - count($highQualityQuestions);
+        $lowQualityQuestions = [];
+        if ($remaining > 0) {
+            $lowQualityQuestions = $questionsRepository->createQueryBuilder('q')
+                ->innerJoin('q.utilisateur_id', 'u')
+                ->where('q.votes < :threshold')
+                ->setParameter('threshold', $threshold)
+                ->orderBy('q.votes', 'DESC')
+                ->setFirstResult(max(0, ($page - 1) * $limit - count($highQualityQuestions)))
+                ->setMaxResults($remaining)
+                ->getQuery()
+                ->getResult();
+        }
     
         $questions = array_merge($highQualityQuestions, $lowQualityQuestions);
     
@@ -205,11 +223,18 @@ class ForumController extends AbstractController
         }, $questions);
     
         $trendingPosts = $redditService->fetchTopGamingPosts(5);
+        $totalPages = ceil($totalQuestions / $limit);
     
         return $this->render('forum/topics.html.twig', [
             'topics' => $topics,
             'newTopicForm' => $form->createView(),
             'trendingPosts' => $trendingPosts,
+            'pagination' => [
+                'currentPage' => $page,
+                'totalPages' => $totalPages,
+                'totalItems' => $totalQuestions,
+                'itemsPerPage' => $limit,
+            ],
         ]);
     }
     #[Route('/forum/topic/{id}', name: 'forum_single_topic', methods: ['GET', 'POST'])]
@@ -225,8 +250,25 @@ class ForumController extends AbstractController
             $this->addFlash('error', 'Topic not found.');
             return $this->redirectToRoute('forum_topics');
         }
-
+    
+        // Pagination settings
+        $itemsPerPage = 10; // Adjust as needed
+        $page = max(1, $request->query->getInt('page', 1));
         $threshold = -5;
+    
+        // Count total top-level comments for pagination
+        $totalComments = $commentaireRepository->createQueryBuilder('c')
+            ->select('COUNT(c.commentaire_id)') // Changed from c.id to c.commentaire_id
+            ->where('c.question_id = :questionId')
+            ->andWhere('c.parent_commentaire_id IS NULL')
+            ->setParameter('questionId', $question->getQuestionId())
+            ->getQuery()
+            ->getSingleScalarResult();
+    
+        $totalPages = max(1, ceil($totalComments / $itemsPerPage));
+        $page = min($page, $totalPages); // Ensure page doesn't exceed total pages
+    
+        // Fetch high-quality comments (votes >= threshold) with pagination
         $highQualityComments = $commentaireRepository->createQueryBuilder('c')
             ->where('c.question_id = :questionId')
             ->andWhere('c.parent_commentaire_id IS NULL')
@@ -234,26 +276,37 @@ class ForumController extends AbstractController
             ->setParameter('questionId', $question->getQuestionId())
             ->setParameter('threshold', $threshold)
             ->orderBy('c.votes', 'DESC')
+            ->setFirstResult(($page - 1) * $itemsPerPage)
+            ->setMaxResults($itemsPerPage)
             ->getQuery()
             ->getResult();
-
-        $lowQualityComments = $commentaireRepository->createQueryBuilder('c')
-            ->where('c.question_id = :questionId')
-            ->andWhere('c.parent_commentaire_id IS NULL')
-            ->andWhere('c.votes < :threshold')
-            ->setParameter('questionId', $question->getQuestionId())
-            ->setParameter('threshold', $threshold)
-            ->orderBy('c.votes', 'DESC')
-            ->getQuery()
-            ->getResult();
-
+    
+        // Fetch low-quality comments (votes < threshold) only if high-quality comments don't fill the page
+        $remainingSlots = $itemsPerPage - count($highQualityComments);
+        $lowQualityComments = [];
+        if ($remainingSlots > 0) {
+            $lowQualityComments = $commentaireRepository->createQueryBuilder('c')
+                ->where('c.question_id = :questionId')
+                ->andWhere('c.parent_commentaire_id IS NULL')
+                ->andWhere('c.votes < :threshold')
+                ->setParameter('questionId', $question->getQuestionId())
+                ->setParameter('threshold', $threshold)
+                ->orderBy('c.votes', 'DESC')
+                ->setFirstResult(0) // Start from beginning of low-quality comments
+                ->setMaxResults($remainingSlots)
+                ->getQuery()
+                ->getResult();
+        }
+    
         $topLevelComments = array_merge($highQualityComments, $lowQualityComments);
-
+    
+        // Comment form
         $comment = new Commentaire();
         $commentForm = $this->createForm(CommentFormType::class, $comment, [
             'action' => $this->generateUrl('comment_create', ['id' => $id]),
         ]);
-
+    
+        // Question-related data
         $game = $question->getGameId();
         $reactionRepository = $entityManager->getRepository(QuestionReactions::class);
         $reactions = $reactionRepository->findBy(['question_id' => $question->getQuestionId()]);
@@ -262,7 +315,7 @@ class ForumController extends AbstractController
             $emoji = $reaction->getEmoji();
             $reactionCounts[$emoji] = ($reactionCounts[$emoji] ?? 0) + 1;
         }
-
+    
         $questionData = [
             'id' => $question->getQuestionId(),
             'title' => $question->getTitle(),
@@ -275,13 +328,15 @@ class ForumController extends AbstractController
             'votes' => $question->getVotes(),
             'reactionCounts' => $reactionCounts,
         ];
-
+    
+        // Sentiment map from session
         $sentimentMap = $request->getSession()->get('sentiment_map', [
             'positive' => ['👍', '😊', '😂', '❤️', '🎉', '😍', '👏', '🌟', '😎', '💪'],
             'negative' => ['👎', '😢', '😡', '💔', '😤', '😞', '🤬', '😣', '💢', '😠'],
             'neutral' => ['🤔', '😐', '🙂', '👀', '🤷', '😶', '🤝', '🙄', '😴', '🤓']
         ]);
-
+    
+        // Recursive function to map comments and their children
         $mapComment = function (Commentaire $comment) use (&$mapComment, $entityManager, $commentaireRepository, $sentimentMap) {
             $childCommentaires = $commentaireRepository->createQueryBuilder('c')
                 ->where('c.parent_commentaire_id = :parentId')
@@ -289,7 +344,7 @@ class ForumController extends AbstractController
                 ->orderBy('c.votes', 'DESC')
                 ->getQuery()
                 ->getResult();
-
+    
             $reactionRepository = $entityManager->getRepository(CommentaireReactions::class);
             $reactions = $reactionRepository->findBy(['commentaire_id' => $comment->getCommentaireId()]);
             $reactionCounts = [];
@@ -297,11 +352,11 @@ class ForumController extends AbstractController
                 $emoji = $reaction->getEmoji();
                 $reactionCounts[$emoji] = ($reactionCounts[$emoji] ?? 0) + 1;
             }
-
+    
             $positiveCount = 0;
             $negativeCount = 0;
             $neutralCount = 0;
-
+    
             foreach ($reactionCounts as $emoji => $count) {
                 if (in_array($emoji, $sentimentMap['positive'])) {
                     $positiveCount += $count;
@@ -311,14 +366,14 @@ class ForumController extends AbstractController
                     $neutralCount += $count;
                 }
             }
-
+    
             $sentiment = 'neutral';
             if ($positiveCount > $negativeCount && $positiveCount > $neutralCount) {
                 $sentiment = 'positive';
             } elseif ($negativeCount > $positiveCount && $negativeCount > $neutralCount) {
                 $sentiment = 'negative';
             }
-
+    
             return [
                 'id' => $comment->getCommentaireId(),
                 'content' => $comment->getContenu(),
@@ -333,13 +388,22 @@ class ForumController extends AbstractController
                 'sentiment' => $sentiment,
             ];
         };
-
+    
         $commentData = array_map($mapComment, $topLevelComments);
-
+    
+        // Pagination data
+        $pagination = [
+            'currentPage' => $page,
+            'totalPages' => $totalPages,
+            'totalItems' => $totalComments,
+            'itemsPerPage' => $itemsPerPage,
+        ];
+    
         return $this->render('forum/single_topic.html.twig', [
             'question' => $questionData,
             'comments' => $commentData,
             'comment_form' => $commentForm->createView(),
+            'pagination' => $pagination,
         ]);
     }
 
@@ -482,64 +546,7 @@ class ForumController extends AbstractController
         return $this->redirectToRoute('forum_topics');
     }
 
-    #[Route('/vote', name: 'vote_action', methods: ['POST'])]
-    public function voteAction(Request $request, EntityManagerInterface $entityManager, QuestionsRepository $questionsRepository): Response
-    {
-        $id = $request->request->get('id');
-        $type = $request->request->get('type');
-        $voteType = $request->request->get('vote_type');
-
-        /** @var Utilisateur|null $utilisateur */
-        $utilisateur = $this->getUser();
-        if (!$utilisateur) {
-            $this->addFlash('error', 'You must be logged in to vote.');
-            return $this->redirectToRoute('app_login_page');
-        }
-
-        if ($type === 'question') {
-            $entity = $questionsRepository->find($id);
-            if (!$entity) {
-                $this->addFlash('error', 'Question not found.');
-                return $this->redirectToRoute('forum_topics');
-            }
-
-            $currentVotes = $entity->getVotes() ?? 0;
-            if ($voteType === 'UP') {
-                $entity->setVotes($currentVotes + 1);
-            } elseif ($voteType === 'DOWN') {
-                $entity->setVotes($currentVotes - 1);
-            }
-
-            $entityManager->persist($entity);
-            $entityManager->flush();
-
-            $this->addFlash('success', 'Vote recorded successfully!');
-            return $this->redirectToRoute('forum_single_topic', ['id' => $id]);
-        } elseif ($type === 'comment') {
-            $entity = $entityManager->getRepository(Commentaire::class)->find($id);
-            if (!$entity) {
-                $this->addFlash('error', 'Comment not found.');
-                return $this->redirectToRoute('forum_topics');
-            }
-
-            $currentVotes = $entity->getVotes() ?? 0;
-            if ($voteType === 'UP') {
-                $entity->setVotes($currentVotes + 1);
-            } elseif ($voteType === 'DOWN') {
-                $entity->setVotes($currentVotes - 1);
-            }
-
-            $entityManager->persist($entity);
-            $entityManager->flush();
-
-            $this->addFlash('success', 'Vote recorded successfully!');
-            return $this->redirectToRoute('forum_single_topic', ['id' => $entity->getQuestionId()->getQuestionId()]);
-        }
-
-        $this->addFlash('error', 'Invalid vote type.');
-        return $this->redirectToRoute('forum_topics');
-    }
-
+   
     #[Route('/ajax/vote', name: 'ajax_vote_action', methods: ['POST'])]
     public function ajaxVoteAction(Request $request, EntityManagerInterface $entityManager, QuestionsRepository $questionsRepository): JsonResponse
     {
