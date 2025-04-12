@@ -17,7 +17,7 @@
     </div>
     <div class="nk-gap-1"></div>
 
-    <div class="container">
+    <div class="container nk-forum-container">
         <div class="nk-gap-2"></div>
 
         {% for label, messages in app.flashes %}
@@ -37,7 +37,7 @@
                     </div>
                     <div class="nk-forum-topic-author-role">{{ question.utilisateurId.getPrivilege() }}</div>
                     <div class="nk-forum-topic-author-since">
-                        Member since {{ question.utilisateurId.getId() ? question.utilisateurId.getId()|date('F d, Y') : 'Unknown' }}
+                        Membre depuis {{ question.utilisateurId.getId() ? question.utilisateurId.getId()|date('F d, Y') : 'Unknown' }}
                     </div>
                 </div>
                 <div class="nk-forum-topic-content">
@@ -80,7 +80,6 @@
                         </div>
                         <div class="reaction-wrapper">
                             <img src="{{ asset('images/meme_icon.png') }}" alt="React" class="reaction-icon" data-id="{{ question.id }}" data-type="question">
-                            <div class="emoji-picker" style="display: none;"></div>
                         </div>
                     </div>
                     <div class="nk-forum-topic-footer-right">
@@ -122,7 +121,7 @@
                             </div>
                             <div class="nk-forum-topic-author-role">{{ comment.utilisateurId.getPrivilege() }}</div>
                             <div class="nk-forum-topic-author-since">
-                                Member since {{ comment.utilisateurId.getId() ? comment.utilisateurId.getId()|date('F d, Y') : 'Unknown' }}
+                                Membre depuis {{ comment.utilisateurId.getId() ? comment.utilisateurId.getId()|date('F d, Y') : 'Unknown' }}
                             </div>
                         </div>
                         <div class="nk-forum-topic-content">
@@ -152,7 +151,6 @@
                                     </div>
                                     <div class="reaction-wrapper">
                                         <img src="{{ asset('images/meme_icon.png') }}" alt="React" class="reaction-icon" data-id="{{ comment.id }}" data-type="comment">
-                                        <div class="emoji-picker" style="display: none;"></div>
                                     </div>
                                 </div>
                             </div>
@@ -182,14 +180,14 @@
                                 {% if app.user and app.user.id == comment.utilisateurId.id %}
                                     <span class="nk-forum-action-btn update-btn" data-id="{{ comment.id }}">
                                         <a href="#" class="nk-anchor">
-                                            <span class="fa fa-edit"></span> Update
+                                            <span class="fa fa-edit"></span> Modifier
                                         </a>
                                     </span>
                                     <span class="nk-forum-action-btn">
                                         <form action="{{ path('comment_delete', {'id': comment.id}) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this comment?');">
                                             <input type="hidden" name="_token" value="{{ csrf_token('delete_comment_' ~ comment.id) }}">
                                             <button type="submit" class="nk-anchor">
-                                                <span class="fa fa-trash"></span> Delete
+                                                <span class="fa fa-trash"></span> Sup
                                             </button>
                                         </form>
                                     </span>
@@ -274,19 +272,49 @@
 {% block stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('css/single_topic.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
+        body {
+            background: url('{{ asset('images/jinx.jpg') }}') no-repeat center center fixed;
+            background-size: cover;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(28, 37, 38, 0.7); 
+            backdrop-filter: blur(5px); 
+            z-index: -1;
+        }
+
+        .nk-forum-container {
+            position: relative;
+            z-index: 1; 
+        }
+
         .nk-forum-reactions { display: flex; align-items: center; gap: 10px; }
         .reaction-display { display: flex; gap: 5px; }
-        .reaction-item { background-color: #293139; padding: 4px 8px; border-radius: 3px; font-size: 1.5rem; line-height: 1; }
+        .reaction-item { 
+            background-color: rgba(41, 49, 57, 0.8); 
+            padding: 4px 8px; 
+            border-radius: 3px; 
+            font-size: 1.5rem; 
+            line-height: 1; 
+        }
         .reaction-wrapper { position: relative; display: inline-flex; align-items: center; }
         .reaction-icon { width: 24px; height: 24px; cursor: pointer; transition: transform 0.3s ease; }
         .reaction-icon:hover { transform: scale(1.1); }
         .emoji-picker-container {
             position: absolute;
-            bottom: 100%;
+            top: 100%;
             left: 0;
-            background-color: #232930;
-            border: 1px solid #293139;
+            background-color: rgba(35, 41, 48, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             padding: 10px;
             border-radius: 5px;
             z-index: 2000;
@@ -323,9 +351,9 @@
             text-transform: uppercase;
             display: inline-block;
         }
-        .sentiment-positive { background-color: #28a745; color: #fff; }
-        .sentiment-negative { background-color: #dc3545; color: #fff; }
-        .sentiment-neutral { background-color: #6c757d; color: #fff; }
+        .sentiment-positive { background-color: rgba(40, 167, 69, 0.8); color: #fff; }
+        .sentiment-negative { background-color: rgba(220, 53, 69, 0.8); color: #fff; }
+        .sentiment-neutral { background-color: rgba(108, 117, 125, 0.8); color: #fff; }
         .reply-card .nk-forum-topic-author img {
             width: 40px;
             height: 40px;
@@ -341,83 +369,114 @@
             color: #0056b3;
             text-decoration: underline;
         }
-        .comment-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+
+        /* Glassmorphism for Cards with Adjusted Dark Blue Hue */
+        .nk-forum-topic .question-card,
+        .nk-forum-topic .comment-card {
+            background: rgba(20, 40, 80, 0.15); /* Slightly brighter dark blue for better visibility */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(40, 60, 120, 0.2); /* Adjusted border color */
             border-radius: 15px;
-            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
             transition: all 0.3s ease;
             padding: 15px;
             margin-bottom: 10px;
             position: relative;
             z-index: 1;
         }
-        .comment-card:hover {
-            background: rgba(255, 255, 255, 0.15);
-            box-shadow: 0 10px 32px rgba(0, 0, 0, 0.25);
+        .nk-forum-topic .question-card:hover,
+        .nk-forum-topic .comment-card:hover {
+            background: rgba(30, 50, 100, 0.2); /* Lighter dark blue on hover */
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
         }
-        @supports not (backdrop-filter: blur(8px)) {
-            .comment-card {
-                background: rgba(35, 41, 48, 0.9);
+        @supports not (backdrop-filter: blur(10px)) {
+            .nk-forum-topic .question-card,
+            .nk-forum-topic .comment-card {
+                background: rgba(20, 40, 80, 0.9); /* Adjusted fallback */
             }
-            .comment-card:hover {
-                background: rgba(41, 49, 57, 0.9);
-            }
-        }
-        .comment-card.low-quality-comment {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        @supports not (backdrop-filter: blur(8px)) {
-            .comment-card.low-quality-comment {
-                background: rgba(46, 28, 28, 0.9);
+            .nk-forum-topic .question-card:hover,
+            .nk-forum-topic .comment-card:hover {
+                background: rgba(30, 50, 100, 0.9);
             }
         }
-        .comment-card .nk-forum-topic-author-name a,
-        .comment-card .nk-forum-topic-author-role,
-        .comment-card .nk-forum-topic-author-since,
-        .comment-card .nk-forum-topic-content p,
-        .comment-card .nk-forum-topic-date,
-        .comment-card .nk-forum-action-btn a,
-        .comment-card .nk-forum-action-btn button.nk-anchor {
+        .nk-forum-topic .comment-card.low-quality-comment {
+            background: rgba(15, 30, 70, 0.15); /* Adjusted for low-quality */
+            border: 1px solid rgba(30, 50, 110, 0.2);
+        }
+        @supports not (backdrop-filter: blur(10px)) {
+            .nk-forum-topic .comment-card.low-quality-comment {
+                background: rgba(15, 30, 70, 0.9);
+            }
+        }
+        .nk-forum-topic .question-card .nk-forum-topic-author-name a,
+        .nk-forum-topic .question-card .nk-forum-topic-author-role,
+        .nk-forum-topic .question-card .nk-forum-topic-author-since,
+        .nk-forum-topic .question-card .nk-forum-topic-content h3,
+        .nk-forum-topic .question-card .nk-forum-topic-content p,
+        .nk-forum-topic .question-card .nk-forum-topic-date,
+        .nk-forum-topic .question-card .nk-forum-action-btn a,
+        .nk-forum-topic .question-card .nk-forum-action-btn button.nk-anchor,
+        .nk-forum-topic .comment-card .nk-forum-topic-author-name a,
+        .nk-forum-topic .comment-card .nk-forum-topic-author-role,
+        .nk-forum-topic .comment-card .nk-forum-topic-author-since,
+        .nk-forum-topic .comment-card .nk-forum-topic-content p,
+        .nk-forum-topic .comment-card .nk-forum-topic-date,
+        .nk-forum-topic .comment-card .nk-forum-action-btn a,
+        .nk-forum-topic .comment-card .nk-forum-action-btn button.nk-anchor {
             color: #ffffff;
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
         }
-        .comment-card .nk-forum-vote-section .vote-count {
+        .nk-forum-topic .question-card .nk-forum-vote-section .vote-count,
+        .nk-forum-topic .comment-card .nk-forum-vote-section .vote-count {
             color: #ffffff;
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
         }
-        .comment-card .sentiment-badge {
-            background-color: rgba(40, 167, 69, 0.8);
-        }
-        .comment-card .sentiment-negative {
-            background-color: rgba(220, 53, 69, 0.8);
-        }
-        .comment-card .sentiment-neutral {
-            background-color: rgba(108, 117, 125, 0.8);
-        }
-        .comment-card .low-quality-label {
-            color: #ff6f61;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-        }
-        .comment-card::before {
+        .nk-forum-topic .question-card::before,
+        .nk-forum-topic .comment-card::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 50%);
+            background: linear-gradient(135deg, rgba(20, 40, 80, 0.1) 0%, rgba(20, 40, 80, 0) 50%); /* Adjusted gradient */
             border-radius: 15px;
             pointer-events: none;
             z-index: -1;
         }
-        .reply-card {
+        .nk-forum-topic .reply-card {
             padding: 12px;
             border-radius: 12px;
         }
+
+        /* Glassmorphism for Attachment Section */
+        .nk-forum-topic .question-card .nk-forum-topic-attachments {
+            background: rgba(21, 31, 53, 0.15) !important; /* Match the question-card background, force with !important */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(3, 16, 54, 0.2);
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 15px;
+        }
+        @supports not (backdrop-filter: blur(10px)) {
+            .nk-forum-topic .question-card .nk-forum-topic-attachments {
+                background: rgba(2, 11, 27, 0.9) !important;
+            }
+        }
+        .nk-forum-topic .question-card .nk-forum-topic-attachments h4 {
+            color: #ffffff;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+        .nk-forum-topic .question-card .nk-forum-topic-attachments img,
+        .nk-forum-topic .question-card .nk-forum-topic-attachments video {
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
         /* Report Modal Styles */
         .report-modal {
             position: fixed;
@@ -489,6 +548,7 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
+
         /* Pagination Styles */
         .nk-pagination .disabled {
             pointer-events: none;
@@ -626,8 +686,10 @@
                 });
             }
 
-            const showEmojiPicker = debounce(function($icon, $picker, id, type) {
+            const showEmojiPicker = debounce(function($icon, id, type) {
                 if (sentimentMap.positive.length === 0) return;
+
+                $('.emoji-picker-container').remove();
 
                 let pickerHtml = '<div class="emoji-picker-container">';
                 
@@ -650,7 +712,24 @@
                 pickerHtml += '</div></div>';
 
                 pickerHtml += '</div>';
-                $picker.html(pickerHtml).fadeIn(100);
+
+                $('body').append(pickerHtml);
+                const $newPicker = $('.emoji-picker-container');
+
+                const iconOffset = $icon.offset();
+                const iconHeight = $icon.outerHeight();
+                const viewportHeight = $(window).height();
+                const pickerHeight = $newPicker.outerHeight();
+                let topPosition = iconOffset.top + iconHeight;
+                if (topPosition + pickerHeight > viewportHeight) {
+                    topPosition = iconOffset.top - pickerHeight;
+                }
+                $newPicker.css({
+                    top: topPosition,
+                    left: iconOffset.left
+                }).fadeIn(100);
+
+                $newPicker.data('reaction-wrapper', $icon.closest('.reaction-wrapper'));
             }, 200);
 
             loadEmojis().then(() => {
@@ -660,13 +739,41 @@
                     const $icon = $(this);
                     const id = $icon.data('id');
                     const type = $icon.data('type');
-                    const $picker = $icon.siblings('.emoji-picker');
-                    showEmojiPicker($icon, $picker, id, type);
+                    showEmojiPicker($icon, id, type);
                 });
 
-                $(document).on('mouseleave', '.reaction-wrapper', function() {
-                    const $picker = $(this).find('.emoji-picker');
-                    $picker.fadeOut(100);
+                $(document).on('mouseenter', '.emoji-picker-container', function() {
+                    $(this).stop().fadeIn(100);
+                });
+
+                $(document).on('mouseleave', '.reaction-wrapper', function(e) {
+                    const $wrapper = $(this);
+                    const $picker = $('.emoji-picker-container');
+                    const relatedTarget = $(e.relatedTarget);
+
+                    if ($picker.length && (relatedTarget.is($picker) || relatedTarget.closest('.emoji-picker-container').length)) {
+                        return;
+                    }
+
+                    if ($picker.data('reaction-wrapper')?.is($wrapper)) {
+                        $picker.fadeOut(100, function() {
+                            $(this).remove();
+                        });
+                    }
+                });
+
+                $(document).on('mouseleave', '.emoji-picker-container', function(e) {
+                    const $picker = $(this);
+                    const $wrapper = $picker.data('reaction-wrapper');
+                    const relatedTarget = $(e.relatedTarget);
+
+                    if ($wrapper && (relatedTarget.is($wrapper) || relatedTarget.closest('.reaction-wrapper').length)) {
+                        return;
+                    }
+
+                    $picker.fadeOut(100, function() {
+                        $(this).remove();
+                    });
                 });
 
                 $(document).on('click', '.emoji-option', function() {
@@ -674,8 +781,8 @@
                     const emoji = $emoji.data('emoji');
                     const id = $emoji.data('id');
                     const type = $emoji.data('type');
-                    const $display = $emoji.closest('.nk-forum-reactions').find('.reaction-display');
-                    const $picker = $emoji.closest('.emoji-picker');
+                    const $display = $(`.reaction-display[data-id="${id}"]`);
+                    const $picker = $('.emoji-picker-container');
 
                     $.ajax({
                         url: '{{ path('react_action') }}',
@@ -684,7 +791,9 @@
                         success: function(response) {
                             if (response.success) {
                                 updateReactionDisplay($display, response.reactionCounts);
-                                $picker.fadeOut(100);
+                                $picker.fadeOut(100, function() {
+                                    $(this).remove();
+                                });
                             } else {
                                 Swal.fire({
                                     title: 'Error',
@@ -928,7 +1037,6 @@
                     return;
                 }
 
-                // Determine content based on type
                 let contentToReport = '';
                 if (type === 'question') {
                     contentToReport = $('.question-card[data-id="' + id + '"] .nk-forum-topic-content p').text().trim();
@@ -939,13 +1047,13 @@
                 const modalHtml = `
                     <div class="report-modal-backdrop"></div>
                     <div class="report-modal">
-                        <h3>Report Content</h3>
+                        <h3>Signaler</h3>
                         <form id="report-form-${id}">
                             <input type="hidden" name="reporterId" value="{{ app.user ? app.user.id : '' }}">
                             <input type="hidden" name="reportedUserId" value="${userId}">
                             <input type="hidden" name="status" value="PENDING">
                             <select name="reason" required>
-                                <option value="">Select a reason</option>
+                                <option value="">Sélectionnez une raison</option>
                                 <option value="MINEUR_IMPLIQUE">Minor Involved</option>
                                 <option value="HARCELEMENT">Harassment</option>
                                 <option value="SUICIDE_AUTOMUTILATION">Suicide/Self-Harm</option>
@@ -955,9 +1063,9 @@
                                 <option value="ARNAQUE_FAUSSE_INFORMATION">Scam/False Information</option>
                                 <option value="CONTENU_NON_DESIRE">Unwanted Content</option>
                             </select>
-                            <textarea name="evidence" placeholder="Additional details (optional)" rows="4">${contentToReport}</textarea>
+                            <textarea name="preuve" placeholder="Additional details (optional)" rows="4">${contentToReport}</textarea>
                             <div style="display: flex; gap: 10px;">
-                                <button type="submit" class="submit-btn">Submit</button>
+                                <button type="submit" class="submit-btn">OK</button>
                                 <button type="button" class="cancel-btn">Cancel</button>
                             </div>
                         </form>

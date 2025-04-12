@@ -361,19 +361,18 @@
 }
 
 .nk-forum-trending-link {
-    color: #d1d5db; /* Light gray for readability */
-    text-decoration: none; /* No underline */
+    color: #d1d5db; 
+    text-decoration: none; 
     font-size: 0.95rem;
-    font-family: 'Courier New', Courier, monospace; /* Techy font */
+    font-family: 'Courier New', Courier, monospace; 
     transition: color 0.3s ease;
 }
 
 .nk-forum-trending-link:hover {
-    color: #ff4500; /* Reddit orange on hover */
-    text-decoration: none; /* Explicitly no underline on hover */
+    color: #ff4500; 
+    text-decoration: none; 
 }
 
-/* Pulse Animation for Background */
 @keyframes pulse {
     0% {
         transform: scale(1);

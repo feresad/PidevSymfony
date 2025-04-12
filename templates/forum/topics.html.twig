@@ -10,7 +10,7 @@
             <li><span class="fa fa-angle-right"></span></li>
             <li><a href="{{ path('forum_index') }}">Forum</a></li>
             <li><span class="fa fa-angle-right"></span></li>
-            <li><span>Main Game Discussions</span></li>
+            <li><span>Discussions principales</span></li>
         </ul>
     </div>
     <div class="nk-gap-1"></div>
@@ -23,9 +23,9 @@
                 </div>
             </div>
             <div class="col-md-4 text-end">
-                <a href="{{ path('forum_trivia') }}" class="nk-btn nk-btn-rounded nk-btn-color-main-2 me-2">Play Trivia</a>
+                <a href="{{ path('forum_trivia') }}" class="nk-btn nk-btn-rounded nk-btn-color-main-2 me-2">Jouer Trivia</a>
                 <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-white" data-bs-toggle="modal" data-bs-target="#newTopicModal">
-                    New Topic
+                    Nouveau sujet
                 </button>
             </div>
         </div>
@@ -33,7 +33,7 @@
         <div class="nk-forum-trending mb-3">
             <div class="nk-forum-trending-header">
                 <img src="{{ asset('images/reddit-icon.png') }}" alt="Reddit" class="nk-forum-trending-icon">
-                <span>Trending on r/gaming</span>
+                <span>Trending sur r/gaming</span>
             </div>
             <ul class="nk-forum-trending-list">
                 {% for post in trendingPosts %}
@@ -66,7 +66,7 @@
                         <div class="nk-forum-title">
                             <h3><a href="{{ path('forum_single_topic', { id: topic.id }) }}">{{ topic.title }}</a></h3>
                             <div class="nk-forum-title-sub">
-                                Started by <a href="#">{{ topic.startedBy }}</a> on {{ topic.startedOn }}
+                                Lancé par <a href="#">{{ topic.startedBy }}</a> le {{ topic.startedOn }}
                                 <span class="sentiment-badge sentiment-{{ topic.sentiment }}">{{ topic.sentiment|capitalize }}</span>
                             </div>
                             {% if topic.content is defined and topic.content %}
@@ -98,12 +98,14 @@
                                 </div>
                             </div>
                             <div class="nk-forum-actions mt-8">
-                                <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-main-1" data-bs-toggle="modal" data-bs-target="#updateTopicModal-{{ topic.id }}">
-                                    Update
-                                </button>
-                                <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-danger" data-bs-toggle="modal" data-bs-target="#deleteTopicModal-{{ topic.id }}">
-                                    Delete
-                                </button>
+                                {% if app.user and app.user.id == topic.startedById %}
+                                    <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-main-1" data-bs-toggle="modal" data-bs-target="#updateTopicModal-{{ topic.id }}">
+                                        Modifier
+                                    </button>
+                                    <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-danger" data-bs-toggle="modal" data-bs-target="#deleteTopicModal-{{ topic.id }}">
+                                        Supprimer
+                                    </button>
+                                {% endif %}
                                 <span class="share-btn" data-id="{{ topic.id }}" data-bs-toggle="modal" data-bs-target="#shareModal-{{ topic.id }}">
                                     <img src="{{ asset('images/share_icon.png') }}" alt="Share" class="share-icon">
                                 </span>
@@ -131,7 +133,7 @@
                                 </div>
                             {% endif %}
                             <div class="nk-forum-activity-title" title="{{ topic.lastActivityUser }}">
-                                Last by <a href="#">{{ topic.lastActivityUser }}</a>
+                                Dernier par <a href="#">{{ topic.lastActivityUser }}</a>
                             </div>
                             <div class="nk-forum-activity-date">
                                 {{ topic.lastActivityDate }}
@@ -168,78 +170,80 @@
                         </div>
                     </div>
 
-                    <!-- Update Topic Modal -->
-                    <div class="modal fade" id="updateTopicModal-{{ topic.id }}" tabindex="-1" aria-labelledby="updateTopicModalLabel-{{ topic.id }}" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="updateTopicModalLabel-{{ topic.id }}">Update Topic</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    {{ form_start(topic.updateForm, {'attr': {'class': 'profanity-check-form'}}) }}
-                                        <div class="mb-3">
-                                            {{ form_label(topic.updateForm.title, null, {'label_attr': {'class': 'form-label'}}) }}
-                                            {{ form_widget(topic.updateForm.title, {'attr': {'class': 'form-control'}}) }}
-                                            {{ form_errors(topic.updateForm.title) }}
-                                        </div>
-                                        <div class="mb-3">
-                                            {{ form_label(topic.updateForm.content, null, {'label_attr': {'class': 'form-label'}}) }}
-                                            {{ form_widget(topic.updateForm.content, {'attr': {'class': 'form-control'}}) }}
-                                            {{ form_errors(topic.updateForm.content) }}
-                                        </div>
-                                        <div class="mb-3">
-                                            {{ form_label(topic.updateForm.media_type, null, {'label_attr': {'class': 'form-label'}}) }}
-                                            {{ form_widget(topic.updateForm.media_type, {'attr': {'class': 'form-control'}}) }}
-                                            {{ form_errors(topic.updateForm.media_type) }}
-                                        </div>
-                                        <div class="mb-3">
-                                            {{ form_label(topic.updateForm.media_file, null, {'label_attr': {'class': 'form-label'}}) }}
-                                            {{ form_widget(topic.updateForm.media_file, {'attr': {'class': 'form-control-file'}}) }}
-                                            {{ form_errors(topic.updateForm.media_file) }}
-                                        </div>
-                                        <div class="mb-3">
-                                            {{ form_label(topic.updateForm.game_id, null, {'label_attr': {'class': 'form-label'}}) }}
-                                            {{ form_widget(topic.updateForm.game_id, {'attr': {'class': 'form-control'}}) }}
-                                            {{ form_errors(topic.updateForm.game_id) }}
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Emotes</label>
-                                            <div class="emotes-options">
-                                                <button type="button" class="btn btn-emote" onclick="addEmote('😊', 'update_topic_form_{{ topic.id }}_content')">😊</button>
-                                                <button type="button" class="btn btn-emote" onclick="addEmote('😂', 'update_topic_form_{{ topic.id }}_content')">😂</button>
-                                                <button type="button" class="btn btn-emote" onclick="addEmote('❤️', 'update_topic_form_{{ topic.id }}_content')">❤️</button>
-                                                <button type="button" class="btn btn-emote" onclick="addEmote('👍', 'update_topic_form_{{ topic.id }}_content')">👍</button>
+                    {% if app.user and app.user.id == topic.startedById %}
+                        <!-- Update Topic Modal -->
+                        <div class="modal fade" id="updateTopicModal-{{ topic.id }}" tabindex="-1" aria-labelledby="updateTopicModalLabel-{{ topic.id }}" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="updateTopicModalLabel-{{ topic.id }}">Update Topic</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        {{ form_start(topic.updateForm, {'attr': {'class': 'profanity-check-form'}}) }}
+                                            <div class="mb-3">
+                                                {{ form_label(topic.updateForm.title, null, {'label_attr': {'class': 'form-label'}}) }}
+                                                {{ form_widget(topic.updateForm.title, {'attr': {'class': 'form-control'}}) }}
+                                                {{ form_errors(topic.updateForm.title) }}
                                             </div>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                            {{ form_widget(topic.updateForm.submit, {'attr': {'class': 'btn btn-primary'}}) }}
-                                        </div>
-                                    {{ form_end(topic.updateForm) }}
+                                            <div class="mb-3">
+                                                {{ form_label(topic.updateForm.content, null, {'label_attr': {'class': 'form-label'}}) }}
+                                                {{ form_widget(topic.updateForm.content, {'attr': {'class': 'form-control'}}) }}
+                                                {{ form_errors(topic.updateForm.content) }}
+                                            </div>
+                                            <div class="mb-3">
+                                                {{ form_label(topic.updateForm.media_type, null, {'label_attr': {'class': 'form-label'}}) }}
+                                                {{ form_widget(topic.updateForm.media_type, {'attr': {'class': 'form-control'}}) }}
+                                                {{ form_errors(topic.updateForm.media_type) }}
+                                            </div>
+                                            <div class="mb-3">
+                                                {{ form_label(topic.updateForm.media_file, null, {'label_attr': {'class': 'form-label'}}) }}
+                                                {{ form_widget(topic.updateForm.media_file, {'attr': {'class': 'form-control-file'}}) }}
+                                                {{ form_errors(topic.updateForm.media_file) }}
+                                            </div>
+                                            <div class="mb-3">
+                                                {{ form_label(topic.updateForm.game_id, null, {'label_attr': {'class': 'form-label'}}) }}
+                                                {{ form_widget(topic.updateForm.game_id, {'attr': {'class': 'form-control'}}) }}
+                                                {{ form_errors(topic.updateForm.game_id) }}
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Emotes</label>
+                                                <div class="emotes-options">
+                                                    <button type="button" class="btn btn-emote" onclick="addEmote('😊', 'update_topic_form_{{ topic.id }}_content')">😊</button>
+                                                    <button type="button" class="btn btn-emote" onclick="addEmote('😂', 'update_topic_form_{{ topic.id }}_content')">😂</button>
+                                                    <button type="button" class="btn btn-emote" onclick="addEmote('❤️', 'update_topic_form_{{ topic.id }}_content')">❤️</button>
+                                                    <button type="button" class="btn btn-emote" onclick="addEmote('👍', 'update_topic_form_{{ topic.id }}_content')">👍</button>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                {{ form_widget(topic.updateForm.submit, {'attr': {'class': 'btn btn-primary'}}) }}
+                                            </div>
+                                        {{ form_end(topic.updateForm) }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Delete Topic Modal -->
-                    <div class="modal fade" id="deleteTopicModal-{{ topic.id }}" tabindex="-1" aria-labelledby="deleteTopicModalLabel-{{ topic.id }}" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="deleteTopicModalLabel-{{ topic.id }}">Delete Topic</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    Are you sure you want to delete the topic "<strong>{{ topic.title }}</strong>"? This action cannot be undone.
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                    <a href="{{ path('forum_delete_topic', { id: topic.id }) }}" class="btn btn-danger">Delete</a>
+                        <!-- Delete Topic Modal -->
+                        <div class="modal fade" id="deleteTopicModal-{{ topic.id }}" tabindex="-1" aria-labelledby="deleteTopicModalLabel-{{ topic.id }}" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="deleteTopicModalLabel-{{ topic.id }}">Supprimer le sujet</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        Êtes-vous sûr de vouloir supprimer le sujet ? "<strong>{{ topic.title }}</strong>"? This action cannot be undone.
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <a href="{{ path('forum_delete_topic', { id: topic.id }) }}" class="btn btn-danger">Supprimer</a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    {% endif %}
                 {% endfor %}
             {% else %}
                 <div class="text-center">
@@ -301,7 +305,7 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="newTopicModalLabel">Create New Topic</h5>
+                        <h5 class="modal-title" id="newTopicModalLabel">Créer nouveau sujet</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
@@ -359,23 +363,86 @@
     <link rel="stylesheet" href="{{ asset('css/topics.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
-        .nk-gaming-swal { border: 2px solid #0585e6; box-shadow: 0 0 20px rgba(5, 133, 230, 0.5); font-family: 'Montserrat', sans-serif; }
-        .nk-gaming-swal-title { color: #fff; text-transform: uppercase; letter-spacing: 1px; }
-        .nk-gaming-swal-content { color: #d1d5db; }
-        .swal2-confirm { transition: transform 0.2s ease; }
-        .swal2-confirm:hover { transform: scale(1.05); }
-        .nk-forum-reactions { display: flex; align-items: center; gap: 10px; }
-        .reaction-display { display: flex; gap: 5px; }
-        .reaction-item { background-color: #293139; padding: 4px 8px; border-radius: 3px; font-size: 1.5rem; line-height: 1; }
-        .reaction-wrapper { position: relative; display: inline-flex; align-items: center; }
-        .reaction-icon { width: 30px; height: 30px; cursor: pointer; transition: transform 0.3s ease; }
-        .reaction-icon:hover { transform: scale(1.1); }
+        /* Background Styling */
+        body {
+            background: url('{{ asset('images/arcane.jpg') }}') no-repeat center center fixed;
+            background-size: cover;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(28, 37, 38, 0.7); /* Semi-transparent overlay for readability */
+            backdrop-filter: blur(5px); /* Subtle blur for elegance */
+            z-index: -1;
+        }
+
+        .nk-forum-container {
+            position: relative;
+            z-index: 1; /* Ensure content stays above background */
+        }
+
+        /* Existing Styles */
+        .nk-gaming-swal { 
+            border: 2px solid #0585e6; 
+            box-shadow: 0 0 20px rgba(5, 133, 230, 0.5); 
+            font-family: 'Montserrat', sans-serif; 
+        }
+        .nk-gaming-swal-title { 
+            color: #fff; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+        }
+        .nk-gaming-swal-content { 
+            color: #d1d5db; 
+        }
+        .swal2-confirm { 
+            transition: transform 0.2s ease; 
+        }
+        .swal2-confirm:hover { 
+            transform: scale(1.05); 
+        }
+        .nk-forum-reactions { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+        }
+        .reaction-display { 
+            display: flex; 
+            gap: 5px; 
+        }
+        .reaction-item { 
+            background-color: rgba(41, 49, 57, 0.8); 
+            padding: 4px 8px; 
+            border-radius: 3px; 
+            font-size: 1.5rem; 
+            line-height: 1; 
+        }
+        .reaction-wrapper { 
+            position: relative; 
+            display: inline-flex; 
+            align-items: center; 
+        }
+        .reaction-icon { 
+            width: 30px; 
+            height: 30px; 
+            cursor: pointer; 
+            transition: transform 0.3s ease; 
+        }
+        .reaction-icon:hover { 
+            transform: scale(1.1); 
+        }
         .emoji-picker-container {
             position: absolute;
             top: 100%;
             left: 0;
-            background-color: #232930;
-            border: 1px solid #293139;
+            background-color: rgba(35, 41, 48, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             padding: 10px;
             border-radius: 5px;
             z-index: 1000;
@@ -383,12 +450,34 @@
             max-height: 200px;
             overflow-y: auto;
         }
-        .emoji-section { margin-bottom: 10px; }
-        .emoji-section h4 { color: #d1d5db; font-size: 1rem; margin-bottom: 5px; }
-        .emoji-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
-        .emoji-option { cursor: pointer; font-size: 1.2rem; padding: 4px; text-align: center; }
-        .emoji-option:hover { background-color: #0585e6; border-radius: 3px; }
-        .nk-forum-actions { display: flex; align-items: center; gap: 10px; }
+        .emoji-section { 
+            margin-bottom: 10px; 
+        }
+        .emoji-section h4 { 
+            color: #d1d5db; 
+            font-size: 1rem; 
+            margin-bottom: 5px; 
+        }
+        .emoji-grid { 
+            display: grid; 
+            grid-template-columns: repeat(5, 1fr); 
+            gap: 8px; 
+        }
+        .emoji-option { 
+            cursor: pointer; 
+            font-size: 1.2rem; 
+            padding: 4px; 
+            text-align: center; 
+        }
+        .emoji-option:hover { 
+            background-color: #0585e6; 
+            border-radius: 3px; 
+        }
+        .nk-forum-actions { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+        }
         .sentiment-badge {
             margin-left: 10px;
             padding: 2px 8px;
@@ -397,12 +486,27 @@
             font-weight: bold;
             text-transform: uppercase;
         }
-        .sentiment-positive { background-color: #28a745; color: #fff; }
-        .sentiment-negative { background-color: #dc3545; color: #fff; }
-        .sentiment-neutral { background-color: #6c757d; color: #fff; }
-        .nk-forum-item.sentiment-positive { border-left: 4px solid #28a745; }
-        .nk-forum-item.sentiment-negative { border-left: 4px solid #dc3545; }
-        .nk-forum-item.sentiment-neutral { border-left: 4px solid #6c757d; }
+        .sentiment-positive { 
+            background-color: rgba(40, 167, 69, 0.8); 
+            color: #fff; 
+        }
+        .sentiment-negative { 
+            background-color: rgba(220, 53, 69, 0.8); 
+            color: #fff; 
+        }
+        .sentiment-neutral { 
+            background-color: rgba(108, 117, 125, 0.8); 
+            color: #fff; 
+        }
+        .nk-forum-item.sentiment-positive { 
+            border-left: 4px solid #28a745; 
+        }
+        .nk-forum-item.sentiment-negative { 
+            border-left: 4px solid #dc3545; 
+        }
+        .nk-forum-item.sentiment-neutral { 
+            border-left: 4px solid #6c757d; 
+        }
     
         .nk-btn-color-main-2 {
             background-color: #0585e6 !important;
@@ -457,16 +561,6 @@
         .nk-forum-vote-section .vote-count {
             color: #ffffff;
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-        }
-
-        .sentiment-badge {
-            background-color: rgba(40, 167, 69, 0.8);
-        }
-        .sentiment-negative {
-            background-color: rgba(220, 53, 69, 0.8);
-        }
-        .sentiment-neutral {
-            background-color: rgba(108, 117, 125, 0.8);
         }
 
         .nk-forum-item::before {
@@ -930,7 +1024,7 @@
 
                             switch (platform) {
                                 case 'facebook':
-                                    platformUrl = `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}"e=${shareText}`;
+                                    platformUrl = `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}&quote=${shareText}`;
                                     break;
                                 case 'twitter':
                                     platformUrl = `https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareText}`;
@@ -976,7 +1070,7 @@
                 e.preventDefault();
                 const $form = $(this);
                 const title = $form.find('input[name*="[title]"]').val() || '';
-                const content = $form.find('textarea[name*="[content]"]').val() || '';
+                const content = $form.find('textarea$name*="[content]"]').val() || '';
                 const combinedContent = title + ' ' + content;
 
                 const $submitButton = $form.find('button[type="submit"]');
@@ -1045,7 +1139,6 @@
                     return;
                 }
 
-                // Retrieve the content of the topic
                 let contentToReport = '';
                 if (type === 'question') {
                     contentToReport = $(`.nk-forum-item[data-title="${$btn.closest('.nk-forum-item').data('title')}"] .nk-forum-content p`).text().trim();
@@ -1054,13 +1147,13 @@
                 const modalHtml = `
                     <div class="report-modal-backdrop"></div>
                     <div class="report-modal">
-                        <h3>Report Content</h3>
+                        <h3>Signaler</h3>
                         <form id="report-form-${id}">
                             <input type="hidden" name="reporterId" value="{{ app.user ? app.user.id : '' }}">
                             <input type="hidden" name="reportedUserId" value="${userId}">
                             <input type="hidden" name="status" value="PENDING">
                             <select name="reason" required>
-                                <option value="">Select a reason</option>
+                                <option value="">Sélectionnez une raison</option>
                                 <option value="MINEUR_IMPLIQUE">Minor Involved</option>
                                 <option value="HARCELEMENT">Harassment</option>
                                 <option value="SUICIDE_AUTOMUTILATION">Suicide/Self-Harm</option>
@@ -1070,9 +1163,9 @@
                                 <option value="ARNAQUE_FAUSSE_INFORMATION">Scam/False Information</option>
                                 <option value="CONTENU_NON_DESIRE">Unwanted Content</option>
                             </select>
-                            <textarea name="evidence" placeholder="Additional details (optional)" rows="4">${contentToReport}</textarea>
+                            <textarea name="preuve" placeholder="Additional details (optional)" rows="4">${contentToReport}</textarea>
                             <div style="display: flex; gap: 10px;">
-                                <button type="submit" class="submit-btn">Submit</button>
+                                <button type="submit" class="submit-btn">OK</button>
                                 <button type="button" class="cancel-btn">Cancel</button>
                             </div>
                         </form>
