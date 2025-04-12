@@ -6,11 +6,11 @@
     <div class="nk-gap-1"></div>
     <div class="container">
         <ul class="nk-breadcrumbs">
-            <li><a href="{{ path('app_home') }}">Home</a></li>
+            <li><a href="{{ path('app_home') }}" class="ds-ds">Home</a></li>
             <li><span class="fa fa-angle-right"></span></li>
-            <li><a href="{{ path('forum_index') }}">Forum</a></li>
+            <li><a href="{{ path('forum_index') }}" class="ds-ds">Forum</a></li>
             <li><span class="fa fa-angle-right"></span></li>
-            <li><span>Discussions principales</span></li>
+            <li><span class="ds-ds">>Discussions principales</span></li>
         </ul>
     </div>
     <div class="nk-gap-1"></div>
@@ -363,7 +363,6 @@
     <link rel="stylesheet" href="{{ asset('css/topics.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
-        /* Background Styling */
         body {
             background: url('{{ asset('images/arcane.jpg') }}') no-repeat center center fixed;
             background-size: cover;
@@ -377,17 +376,32 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(28, 37, 38, 0.7); /* Semi-transparent overlay for readability */
-            backdrop-filter: blur(5px); /* Subtle blur for elegance */
-            z-index: -1;
+            background: rgba(28, 37, 38, 0.7);
+            pointer-events: none; 
         }
 
         .nk-forum-container {
+            background: rgba(10, 31, 40, 1) !important;
             position: relative;
-            z-index: 1; /* Ensure content stays above background */
         }
 
-        /* Existing Styles */
+        /* Simplify modal styling */
+        .modal-backdrop {
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal {
+            display: none; /* Ensure Bootstrap handles visibility */
+        }
+
+        .modal-content {
+            background: rgba(35, 41, 48, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            color: #d1d5db;
+        }
+
+        /* Rest of your styles (unchanged) */
         .nk-gaming-swal { 
             border: 2px solid #0585e6; 
             box-shadow: 0 0 20px rgba(5, 133, 230, 0.5); 
@@ -399,7 +413,7 @@
             letter-spacing: 1px; 
         }
         .nk-gaming-swal-content { 
-            color: #d1d5db; 
+            color:rgb(255, 255, 255); 
         }
         .swal2-confirm { 
             transition: transform 0.2s ease; 
@@ -445,7 +459,6 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             padding: 10px;
             border-radius: 5px;
-            z-index: 1000;
             max-width: 200px;
             max-height: 200px;
             overflow-y: auto;
@@ -516,35 +529,29 @@
             background-color: #0471c6 !important;
         }
 
-        /* Glassmorphism Effect for .nk-forum-item */
         .nk-forum-item {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(3, 41, 97, 0.15) !important; 
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid #0585e6 !important;
             border-radius: 20px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
             transition: all 0.3s ease;
             margin-bottom: 10px;
             padding: 10px;
-            position: relative;
-            z-index: 1;
         }
 
         .nk-forum-item:hover {
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(1, 33, 58, 0.25) !important; 
             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
         }
 
         @supports not (backdrop-filter: blur(10px)) {
             .nk-forum-item {
-                background: rgba(35, 41, 48, 0.9);
-                backdrop-filter: none;
-                -webkit-backdrop-filter: none;
+                background: rgba(5, 133, 230, 0.4) !important; 
             }
             .nk-forum-item:hover {
-                background: rgba(41, 49, 57, 0.9);
+                background: rgba(5, 133, 230, 0.5) !important;
             }
         }
 
@@ -562,7 +569,12 @@
             color: #ffffff;
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
         }
+        
+        .ds-ds {  
+                    color: #ffffff !important;
+                    z-index:1000;
 
+        }
         .nk-forum-item::before {
             content: '';
             position: absolute;
@@ -577,10 +589,8 @@
             );
             border-radius: 20px;
             pointer-events: none;
-            z-index: -1;
         }
 
-        /* Report Modal Styles */
         .report-modal {
             position: fixed;
             top: 50%;
@@ -593,7 +603,6 @@
             border-radius: 15px;
             border: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            z-index: 2000;
             width: 400px;
             max-width: 90%;
         }
@@ -604,7 +613,6 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.5);
-            z-index: 1999;
         }
         .report-modal form {
             display: flex;
@@ -652,7 +660,6 @@
             letter-spacing: 1px;
         }
 
-        /* Pagination Styles */
         .nk-pagination .disabled {
             pointer-events: none;
             opacity: 0.5;
@@ -1024,7 +1031,7 @@
 
                             switch (platform) {
                                 case 'facebook':
-                                    platformUrl = `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}&quote=${shareText}`;
+                                    platformUrl = `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}&quote=${shareText}`; // Fixed syntax
                                     break;
                                 case 'twitter':
                                     platformUrl = `https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareText}`;
@@ -1070,7 +1077,7 @@
                 e.preventDefault();
                 const $form = $(this);
                 const title = $form.find('input[name*="[title]"]').val() || '';
-                const content = $form.find('textarea$name*="[content]"]').val() || '';
+                const content = $form.find('textarea[name*="[content]"]').val() || ''; // Fixed selector syntax
                 const combinedContent = title + ' ' + content;
 
                 const $submitButton = $form.find('button[type="submit"]');
@@ -1163,7 +1170,7 @@
                                 <option value="ARNAQUE_FAUSSE_INFORMATION">Scam/False Information</option>
                                 <option value="CONTENU_NON_DESIRE">Unwanted Content</option>
                             </select>
-                            <textarea name="preuve" placeholder="Additional details (optional)" rows="4">${contentToReport}</textarea>
+                            <textarea name="evidence" placeholder="Additional details (optional)" rows="4">${contentToReport}</textarea>
                             <div style="display: flex; gap: 10px;">
                                 <button type="submit" class="submit-btn">OK</button>
                                 <button type="button" class="cancel-btn">Cancel</button>

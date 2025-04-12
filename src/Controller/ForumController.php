@@ -123,19 +123,16 @@ class ForumController extends AbstractController
             'neutral' => ['🤔', '😐', '🙂', '👀', '🤷', '😶', '🤝', '🙄', '😴', '🤓']
         ]);
     
-        // Pagination parameters
         $page = $request->query->getInt('page', 1);
-        $limit = 10; // Number of topics per page
+        $limit = 10; 
         $threshold = -5;
     
-        // Get total count for pagination
         $totalQuestions = $questionsRepository->createQueryBuilder('q')
             ->select('COUNT(q.question_id)')
             ->innerJoin('q.utilisateur_id', 'u')
             ->getQuery()
             ->getSingleScalarResult();
     
-        // Paginated queries
         $highQualityQuestions = $questionsRepository->createQueryBuilder('q')
             ->innerJoin('q.utilisateur_id', 'u')
             ->where('q.votes >= :threshold')
@@ -251,14 +248,12 @@ class ForumController extends AbstractController
             return $this->redirectToRoute('forum_topics');
         }
     
-        // Pagination settings
-        $itemsPerPage = 10; // Adjust as needed
+        $itemsPerPage = 10; 
         $page = max(1, $request->query->getInt('page', 1));
         $threshold = -5;
     
-        // Count total top-level comments for pagination
         $totalComments = $commentaireRepository->createQueryBuilder('c')
-            ->select('COUNT(c.commentaire_id)') // Changed from c.id to c.commentaire_id
+            ->select('COUNT(c.commentaire_id)') 
             ->where('c.question_id = :questionId')
             ->andWhere('c.parent_commentaire_id IS NULL')
             ->setParameter('questionId', $question->getQuestionId())
@@ -266,9 +261,8 @@ class ForumController extends AbstractController
             ->getSingleScalarResult();
     
         $totalPages = max(1, ceil($totalComments / $itemsPerPage));
-        $page = min($page, $totalPages); // Ensure page doesn't exceed total pages
+        $page = min($page, $totalPages); 
     
-        // Fetch high-quality comments (votes >= threshold) with pagination
         $highQualityComments = $commentaireRepository->createQueryBuilder('c')
             ->where('c.question_id = :questionId')
             ->andWhere('c.parent_commentaire_id IS NULL')
@@ -281,7 +275,6 @@ class ForumController extends AbstractController
             ->getQuery()
             ->getResult();
     
-        // Fetch low-quality comments (votes < threshold) only if high-quality comments don't fill the page
         $remainingSlots = $itemsPerPage - count($highQualityComments);
         $lowQualityComments = [];
         if ($remainingSlots > 0) {
@@ -292,7 +285,7 @@ class ForumController extends AbstractController
                 ->setParameter('questionId', $question->getQuestionId())
                 ->setParameter('threshold', $threshold)
                 ->orderBy('c.votes', 'DESC')
-                ->setFirstResult(0) // Start from beginning of low-quality comments
+                ->setFirstResult(0) 
                 ->setMaxResults($remainingSlots)
                 ->getQuery()
                 ->getResult();
@@ -300,13 +293,11 @@ class ForumController extends AbstractController
     
         $topLevelComments = array_merge($highQualityComments, $lowQualityComments);
     
-        // Comment form
         $comment = new Commentaire();
         $commentForm = $this->createForm(CommentFormType::class, $comment, [
             'action' => $this->generateUrl('comment_create', ['id' => $id]),
         ]);
     
-        // Question-related data
         $game = $question->getGameId();
         $reactionRepository = $entityManager->getRepository(QuestionReactions::class);
         $reactions = $reactionRepository->findBy(['question_id' => $question->getQuestionId()]);
@@ -329,14 +320,12 @@ class ForumController extends AbstractController
             'reactionCounts' => $reactionCounts,
         ];
     
-        // Sentiment map from session
         $sentimentMap = $request->getSession()->get('sentiment_map', [
             'positive' => ['👍', '😊', '😂', '❤️', '🎉', '😍', '👏', '🌟', '😎', '💪'],
             'negative' => ['👎', '😢', '😡', '💔', '😤', '😞', '🤬', '😣', '💢', '😠'],
             'neutral' => ['🤔', '😐', '🙂', '👀', '🤷', '😶', '🤝', '🙄', '😴', '🤓']
         ]);
     
-        // Recursive function to map comments and their children
         $mapComment = function (Commentaire $comment) use (&$mapComment, $entityManager, $commentaireRepository, $sentimentMap) {
             $childCommentaires = $commentaireRepository->createQueryBuilder('c')
                 ->where('c.parent_commentaire_id = :parentId')
@@ -391,7 +380,6 @@ class ForumController extends AbstractController
     
         $commentData = array_map($mapComment, $topLevelComments);
     
-        // Pagination data
         $pagination = [
             'currentPage' => $page,
             'totalPages' => $totalPages,

@@ -16,12 +16,19 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 class AdminGamesController extends AbstractController
 {
     #[Route('/dashboard', name: 'admin_games_dashboard', methods: ['GET'])]
-    public function index(GamesRepository $gamesRepository): Response
+    public function index(Request $request, GamesRepository $gamesRepository): Response
     {
-        $games = $gamesRepository->findAll();
-
+        $searchTerm = $request->query->get('search', ''); 
+    
+        if ($searchTerm) {
+            $games = $gamesRepository->findByName($searchTerm); 
+        } else {
+            $games = $gamesRepository->findAll(); 
+        }
+    
         return $this->render('admin_games/index.html.twig', [
             'games' => $games,
+            'searchTerm' => $searchTerm, 
         ]);
     }
 
@@ -68,10 +75,8 @@ class AdminGamesController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Handle file upload
             $imageFile = $form->get('image_path')->getData();
             if ($imageFile) {
-                // Delete old image if exists
                 if ($game->getImagePath()) {
                     $oldImagePath = $this->getParameter('uploads_directory') . '/' . $game->getImagePath();
                     if (file_exists($oldImagePath)) {
@@ -108,7 +113,6 @@ class AdminGamesController extends AbstractController
     public function delete(Request $request, Games $game, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete' . $game->getGameId(), $request->request->get('_token'))) {
-            // Delete image if exists
             if ($game->getImagePath()) {
                 $imagePath = $this->getParameter('uploads_directory') . '/' . $game->getImagePath();
                 if (file_exists($imagePath)) {
