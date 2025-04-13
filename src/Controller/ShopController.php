@@ -25,7 +25,6 @@ class ShopController extends AbstractController
     private $systemSpecsService;
     private $entityManager;
     private $geminiFpsService;
-    private $stripeSecretKey;
     private $mailer;
 
     public function __construct(
@@ -37,7 +36,6 @@ class ShopController extends AbstractController
         $this->systemSpecsService = $systemSpecsService;
         $this->entityManager = $entityManager;
         $this->geminiFpsService = $geminiFpsService;
-        $this->stripeSecretKey = 'sk_test_51QvMH5PNauIHPjoTTov10mAdNwhbSH0ycAHTkArf2taZUSP5rtsMNxgyehsKnq4dfoazZz1nXkGNrQQn4uzSxZBt00pANi7uFX';
         $this->mailer = $mailer;
     }
 
@@ -180,8 +178,8 @@ class ShopController extends AbstractController
             'price_in_tnd' => $stock->getPrixProduit(), // Original price in TND for display
             'price_in_eur' => $priceInEur, // EUR price for Stripe
             'image_base_url' => $this->getParameter('image_base_url'),
-            'stripe_public_key' => 'pk_test_51QvMH5PNauIHPjoTJ7G3UdYOgde0MSEOdc6LdDFGwrMtnu8TcJxUybk5NHGUJLAWDw5TVoYGECHEjUdQWG9L1ZW200ehbE8mgp',
-            'stripe_secret_key' => 'sk_test_51QvMH5PNauIHPjoTTov10mAdNwhbSH0ycAHTkArf2taZUSP5rtsMNxgyehsKnq4dfoazZz1nXkGNrQQn4uzSxZBt00pANi7uFX'
+            'stripe_public_key' => $this->getParameter('stripe_public_key'),
+            'stripe_secret_key' => $this->getParameter('stripe_secret_key')
         ]);
     }
 
@@ -190,7 +188,7 @@ class ShopController extends AbstractController
     {
         try {
             // Initialize Stripe
-            \Stripe\Stripe::setApiKey($this->stripeSecretKey);
+            \Stripe\Stripe::setApiKey($this->getParameter('stripe_secret_key'));
             
             // Get the JSON data from the request
             $data = json_decode($request->getContent(), true);
@@ -322,14 +320,20 @@ class ShopController extends AbstractController
     {
         // Only if there's email implementation
         if ($this->mailer) {
+            // Get the product
+            $produit = $commande->getProduit();
+            
+            // Render the email template
+            $emailHtml = $this->renderView('shop/email_confirmation.html.twig', [
+                'commande' => $commande,
+                'produit' => $produit
+            ]);
+            
             $email = (new Email())
                 ->from('levelopcorporation@gmail.com')
                 ->to($commande->getUtilisateur()->getEmail())
                 ->subject('Confirmation de votre commande #' . $commande->getId())
-                ->html('<p>Merci pour votre commande. Votre commande #' . 
-                       $commande->getId() . ' pour ' . 
-                       $commande->getProduit()->getNomProduit() . 
-                       ' a été confirmée.</p>');
+                ->html($emailHtml);
 
             $this->mailer->send($email);
         }
