@@ -11,7 +11,7 @@
             <div class="card-body">
                 <h5 class="card-title">Détails de l'événement</h5>
                 <ul class="list-group list-group-flush">
-                    <p class="card-text">
+                    <p class="card-text" style="color: black;">
                         Catégorie : {{ evenement.categorie ? evenement.categorie.nom : 'Non spécifiée' }}
                     </p>
                     <li class="list-group-item">
@@ -24,9 +24,9 @@
                         <strong>Places maximum :</strong> {{ evenement.maxPlacesEvent }}
                     </li>
                 </ul>
-                <h5 class="mt-3">QR Code</h5>
+                <h5 class="mt-3" style="color: black;">QR Code</h5>
                 <img src="{{ path('evenement_qrcode', {id: evenement.id}) }}" alt="QR Code de l'événement" class="img-fluid">
-                <p>Scannez ce QR Code pour voir les détails de l'événement.</p>
+                <p style="color: black;">Scannez ce QR Code pour voir les détails de l'événement.</p>
             </div>
         </div>
 
