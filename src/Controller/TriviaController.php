@@ -25,19 +25,17 @@ class TriviaController extends AbstractController
     public function trivia(): Response
     {
         try {
-            // Fetch 10 trivia questions from the Video Games category (category 15)
             $response = $this->httpClient->request('GET', 'https://opentdb.com/api.php', [
                 'query' => [
                     'amount' => 10,
-                    'category' => 15, // Video Games category
-                    'type' => 'multiple', // Multiple choice questions
+                    'category' => 15, 
+                    'type' => 'multiple', 
                 ],
             ]);
 
             $data = $response->toArray();
             $questions = $data['results'] ?? [];
 
-            // Process questions to decode HTML entities and shuffle answers
             foreach ($questions as &$question) {
                 $question['question'] = html_entity_decode($question['question'], ENT_QUOTES, 'UTF-8');
                 $question['correct_answer'] = html_entity_decode($question['correct_answer'], ENT_QUOTES, 'UTF-8');
@@ -45,7 +43,6 @@ class TriviaController extends AbstractController
                     return html_entity_decode($answer, ENT_QUOTES, 'UTF-8');
                 }, $question['incorrect_answers']);
 
-                // Combine correct and incorrect answers, then shuffle
                 $question['all_answers'] = array_merge(
                     [$question['correct_answer']],
                     $question['incorrect_answers']

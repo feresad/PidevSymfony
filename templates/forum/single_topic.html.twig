@@ -898,51 +898,58 @@
                 $(this).closest('.reply-form-container').hide();
             });
 
-            $(document).on('click', '.update-btn', function(e) {
-                e.preventDefault();
-                const $btn = $(this);
-                const commentId = $btn.data('id');
-                const $card = $btn.closest('li');
-                const $updateContainer = $card.find('.update-form-container').first();
-                const currentContent = $card.find('.nk-forum-topic-content p').html();
+          $(document).on('click', '.update-btn', function(e) {
+    e.preventDefault();
+    const $btn = $(this);
+    const commentId = $btn.data('id');
+    const $card = $btn.closest('li');
+    const $updateContainer = $card.find('.update-form-container').first();
+    
+    // Get the current content, stripping any HTML mention spans
+    let currentContent = $card.find('.nk-forum-topic-content p').clone();
+    currentContent.find('.mention').remove();
+    currentContent = currentContent.text().trim();
 
-                $('.reply-form-container').hide();
-                $('.update-form-container').hide();
+    // Hide other forms
+    $('.reply-form-container').hide();
+    $('.update-form-container').hide();
 
-                if ($updateContainer.is(':visible')) {
-                    $updateContainer.hide();
-                    return;
-                }
+    if ($updateContainer.is(':visible')) {
+        $updateContainer.hide();
+        return;
+    }
 
-                let updateFormHtml = `
-                    <div class="nk-gap-1"></div>
-                    <form action="{{ path('comment_update', {'id': 'COMMENT_ID'}) }}" method="POST" class="profanity-check-form">
-                        <div class="mb-3">
-                            {{ contenu_field|raw }}
-                            {{ form_rest|raw }}
-                        </div>
-                        <button type="submit" class="nk-btn nk-btn-rounded nk-btn-color-white">Update Comment</button>
-                        <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-dark cancel-update">Cancel</button>
-                    </form>
-                `;
+    let updateFormHtml = `
+        <div class="nk-gap-1"></div>
+        <form action="{{ path('comment_update', {'id': 'COMMENT_ID'}) }}" method="POST" class="profanity-check-form">
+            <div class="mb-3">
+                {{ contenu_field|raw }}
+                {{ form_rest|raw }}
+            </div>
+            <button type="submit" class="nk-btn nk-btn-rounded nk-btn-color-white">Update Comment</button>
+            <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-dark cancel-update">Cancel</button>
+        </form>
+    `;
 
-                const finalFormHtml = updateFormHtml.replace('COMMENT_ID', commentId);
-                $updateContainer.html(finalFormHtml).show();
+    const finalFormHtml = updateFormHtml.replace('COMMENT_ID', commentId);
+    $updateContainer.html(finalFormHtml).show();
 
-                const $summernote = $updateContainer.find('.nk-summernote');
-                $summernote.summernote({
-                    height: 200,
-                    toolbar: [
-                        ['style', ['bold', 'italic', 'underline', 'clear']],
-                        ['font', ['fontsize']],
-                        ['para', ['ul', 'ol', 'paragraph']],
-                        ['misc', ['codeview']]
-                    ],
-                    fontSizes: ['8', '9', '10', '11', '12', '14', '16', '18', '20', '22', '24', '28', '30', '36', '48', '64'],
-                    placeholder: 'Update your comment here...'
-                });
-                $summernote.summernote('code', currentContent);
-            });
+    const $summernote = $updateContainer.find('.nk-summernote');
+    $summernote.summernote({
+        height: 200,
+        toolbar: [
+            ['style', ['bold', 'italic', 'underline', 'clear']],
+            ['font', ['fontsize']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['misc', ['codeview']]
+        ],
+        fontSizes: ['8', '9', '10', '11', '12', '14', '16', '18', '20', '22', '24', '28', '30', '36', '48', '64'],
+        placeholder: 'Update your comment here...'
+    });
+
+    // Set the current content in Summernote
+    $summernote.summernote('code', currentContent);
+});
 
             $(document).on('click', '.cancel-update', function() {
                 $(this).closest('.update-form-container').hide();

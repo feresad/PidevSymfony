@@ -112,7 +112,7 @@
                                 <div class="reaction-wrapper">
                                     <img src="{{ asset('images/meme_icon.png') }}" alt="React" class="reaction-icon" data-id="{{ topic.id }}" data-type="question">
                                 </div>
-                                <span class="spam-btn" data-id="{{ topic.id }}" data-type="question" data-user-id="{{ topic.startedById }}">
+                                <span class="spam-btn"  data-id="{{ topic.id }}" data-type="question" data-user-id="{{ topic.startedById }}">
                                     <a href="#" class="nk-anchor">
                                         <span class="fa fa-flag"></span> Spam
                                     </a>
@@ -686,6 +686,12 @@
             background-color: #fe0369 !important;
             color: white !important;
         }
+
+        
+
+        .nk-anchor { display: inline-flex; spacing: 3px;  align-items: center; color: #d1d5db; font-size: 1rem; text-decoration: none; transition: color 0.3s ease; background: none; border: none; padding: 0; cursor: pointer !important; }
+
+        
     </style>
 {% endblock %}
 
