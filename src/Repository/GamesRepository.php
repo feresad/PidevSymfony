@@ -6,6 +6,9 @@ use App\Entity\Games;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<Games>
+ */
 class GamesRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -13,5 +16,18 @@ class GamesRepository extends ServiceEntityRepository
         parent::__construct($registry, Games::class);
     }
 
-    // Add custom methods as needed
+    /**
+     * Find games by name (partial match)
+     *
+     * @param string $name
+     * @return Games[]
+     */
+    public function findByName(string $name): array
+    {
+        return $this->createQueryBuilder('g')
+            ->andWhere('g.game_name LIKE :name')
+            ->setParameter('name', '%' . $name . '%')
+            ->getQuery()
+            ->getResult();
+    }
 }

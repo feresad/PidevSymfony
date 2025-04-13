@@ -52,3 +52,4 @@ services:
     App\Service\GeminiFpsService:
         arguments:
             $apiKey: '%gemini.api_key%'
+

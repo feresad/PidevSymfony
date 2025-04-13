@@ -50,45 +50,45 @@ class ForumController extends AbstractController
             $this->addFlash('error', 'You must be logged in to create a topic.');
             return $this->redirectToRoute('app_login_page');
         }
-
+    
         $question = new Questions();
         $question->setUtilisateurId($utilisateur);
         $form = $this->createForm(TopicFormType::class, $question);
         $form->handleRequest($request);
-
+    
         if ($form->isSubmitted() && $form->isValid()) {
             try {
                 $mediaFile = $form->get('media_file')->getData();
                 $mediaType = $form->get('media_type')->getData();
-
+    
                 $this->logger->info('Form submitted with media file and type.', [
                     'media_file_exists' => $mediaFile ? 'Yes' : 'No',
                     'media_type' => $mediaType ? $mediaType->value : 'none',
                 ]);
-
+    
                 if ($mediaFile) {
                     $mimeType = $mediaFile->getMimeType();
                     $isImage = in_array($mimeType, ['image/jpeg', 'image/png', 'image/gif']);
                     $isVideo = in_array($mimeType, ['video/mp4', 'video/mpeg', 'video/webm', 'video/quicktime', 'video/x-msvideo']);
-
+    
                     if ($mediaType && $mediaType->value === 'image' && !$isImage) {
                         $this->logger->error('Media type mismatch: Selected image, but file is not an image.', ['mime_type' => $mimeType]);
                         throw new \Exception('Selected media type is "image," but the uploaded file is not an image.');
                     }
-
+    
                     if ($mediaType && $mediaType->value === 'video' && !$isVideo) {
                         $this->logger->error('Media type mismatch: Selected video, but file is not a video.', ['mime_type' => $mimeType]);
                         throw new \Exception('Selected media type is "video," but the uploaded file is not a video.');
                     }
-
+    
                     $mediaFilename = uniqid() . '.' . $mediaFile->guessExtension();
                     $uploadsDirectory = $this->getParameter('uploads_directory');
-
+    
                     if (!is_dir($uploadsDirectory)) {
                         mkdir($uploadsDirectory, 0777, true);
                         $this->logger->info('Created uploads directory.', ['directory' => $uploadsDirectory]);
                     }
-
+    
                     $mediaFile->move($uploadsDirectory, $mediaFilename);
                     $this->logger->info('Media file uploaded successfully.', [
                         'filename' => $mediaFilename,
@@ -99,13 +99,13 @@ class ForumController extends AbstractController
                 } else {
                     $question->setMediaPath(null);
                 }
-
+    
                 $question->setVotes(0);
                 $question->setCreatedAt(new \DateTime());
-
+    
                 $entityManager->persist($question);
                 $entityManager->flush();
-
+    
                 $this->addFlash('success', 'Topic created successfully!');
                 return $this->redirectToRoute('forum_topics');
             } catch (\Exception $e) {
@@ -116,39 +116,57 @@ class ForumController extends AbstractController
                 $this->addFlash('error', 'An error occurred while creating the topic: ' . $e->getMessage());
             }
         }
-
+    
         $sentimentMap = $request->getSession()->get('sentiment_map', [
             'positive' => ['👍', '😊', '😂', '❤️', '🎉', '😍', '👏', '🌟', '😎', '💪'],
             'negative' => ['👎', '😢', '😡', '💔', '😤', '😞', '🤬', '😣', '💢', '😠'],
             'neutral' => ['🤔', '😐', '🙂', '👀', '🤷', '😶', '🤝', '🙄', '😴', '🤓']
         ]);
-
+    
+        $page = $request->query->getInt('page', 1);
+        $limit = 10; 
         $threshold = -5;
-
+    
+        $totalQuestions = $questionsRepository->createQueryBuilder('q')
+            ->select('COUNT(q.question_id)')
+            ->innerJoin('q.utilisateur_id', 'u')
+            ->getQuery()
+            ->getSingleScalarResult();
+    
         $highQualityQuestions = $questionsRepository->createQueryBuilder('q')
+            ->innerJoin('q.utilisateur_id', 'u')
             ->where('q.votes >= :threshold')
             ->setParameter('threshold', $threshold)
             ->orderBy('q.votes', 'DESC')
+            ->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
-
-        $lowQualityQuestions = $questionsRepository->createQueryBuilder('q')
-            ->where('q.votes < :threshold')
-            ->setParameter('threshold', $threshold)
-            ->orderBy('q.votes', 'DESC')
-            ->getQuery()
-            ->getResult();
-
+    
+        $remaining = $limit - count($highQualityQuestions);
+        $lowQualityQuestions = [];
+        if ($remaining > 0) {
+            $lowQualityQuestions = $questionsRepository->createQueryBuilder('q')
+                ->innerJoin('q.utilisateur_id', 'u')
+                ->where('q.votes < :threshold')
+                ->setParameter('threshold', $threshold)
+                ->orderBy('q.votes', 'DESC')
+                ->setFirstResult(max(0, ($page - 1) * $limit - count($highQualityQuestions)))
+                ->setMaxResults($remaining)
+                ->getQuery()
+                ->getResult();
+        }
+    
         $questions = array_merge($highQualityQuestions, $lowQualityQuestions);
-
+    
         $topics = array_map(function (Questions $question) use ($entityManager, $sentimentMap) {
             $user = $question->getUtilisateurId();
             $game = $question->getGameId();
-
+    
             $updateForm = $this->createForm(TopicFormType::class, $question, [
                 'action' => $this->generateUrl('forum_update_topic', ['id' => $question->getQuestionId()]),
             ]);
-
+    
             $reactionRepository = $entityManager->getRepository(QuestionReactions::class);
             $reactions = $reactionRepository->findBy(['question_id' => $question->getQuestionId()]);
             $reactionCounts = [];
@@ -156,11 +174,11 @@ class ForumController extends AbstractController
                 $emoji = $reaction->getEmoji();
                 $reactionCounts[$emoji] = ($reactionCounts[$emoji] ?? 0) + 1;
             }
-
+    
             $positiveCount = 0;
             $negativeCount = 0;
             $neutralCount = 0;
-
+    
             foreach ($reactionCounts as $emoji => $count) {
                 if (in_array($emoji, $sentimentMap['positive'])) {
                     $positiveCount += $count;
@@ -170,14 +188,14 @@ class ForumController extends AbstractController
                     $neutralCount += $count;
                 }
             }
-
+    
             $sentiment = 'neutral';
             if ($positiveCount > $negativeCount && $positiveCount > $neutralCount) {
                 $sentiment = 'positive';
             } elseif ($negativeCount > $positiveCount && $negativeCount > $neutralCount) {
                 $sentiment = 'negative';
             }
-
+    
             return [
                 'id' => $question->getQuestionId(),
                 'title' => $question->getTitle(),
@@ -188,6 +206,7 @@ class ForumController extends AbstractController
                 'icon' => 'ion-chatboxes',
                 'locked' => false,
                 'startedBy' => $user ? $user->getNickname() : 'Unknown',
+                'startedById' => $user ? $user->getId() : null,
                 'startedOn' => $question->getCreatedAt() ? $question->getCreatedAt()->format('F j, Y') : 'Not set',
                 'postCount' => $question->getCommentaires()->count(),
                 'lastActivityUser' => $user ? $user->getNickname() : 'Unknown',
@@ -199,16 +218,22 @@ class ForumController extends AbstractController
                 'sentiment' => $sentiment,
             ];
         }, $questions);
-
+    
         $trendingPosts = $redditService->fetchTopGamingPosts(5);
-
+        $totalPages = ceil($totalQuestions / $limit);
+    
         return $this->render('forum/topics.html.twig', [
             'topics' => $topics,
             'newTopicForm' => $form->createView(),
             'trendingPosts' => $trendingPosts,
+            'pagination' => [
+                'currentPage' => $page,
+                'totalPages' => $totalPages,
+                'totalItems' => $totalQuestions,
+                'itemsPerPage' => $limit,
+            ],
         ]);
     }
-
     #[Route('/forum/topic/{id}', name: 'forum_single_topic', methods: ['GET', 'POST'])]
     public function singleTopic(
         int $id,
@@ -222,8 +247,22 @@ class ForumController extends AbstractController
             $this->addFlash('error', 'Topic not found.');
             return $this->redirectToRoute('forum_topics');
         }
-
+    
+        $itemsPerPage = 10; 
+        $page = max(1, $request->query->getInt('page', 1));
         $threshold = -5;
+    
+        $totalComments = $commentaireRepository->createQueryBuilder('c')
+            ->select('COUNT(c.commentaire_id)') 
+            ->where('c.question_id = :questionId')
+            ->andWhere('c.parent_commentaire_id IS NULL')
+            ->setParameter('questionId', $question->getQuestionId())
+            ->getQuery()
+            ->getSingleScalarResult();
+    
+        $totalPages = max(1, ceil($totalComments / $itemsPerPage));
+        $page = min($page, $totalPages); 
+    
         $highQualityComments = $commentaireRepository->createQueryBuilder('c')
             ->where('c.question_id = :questionId')
             ->andWhere('c.parent_commentaire_id IS NULL')
@@ -231,26 +270,34 @@ class ForumController extends AbstractController
             ->setParameter('questionId', $question->getQuestionId())
             ->setParameter('threshold', $threshold)
             ->orderBy('c.votes', 'DESC')
+            ->setFirstResult(($page - 1) * $itemsPerPage)
+            ->setMaxResults($itemsPerPage)
             ->getQuery()
             ->getResult();
-
-        $lowQualityComments = $commentaireRepository->createQueryBuilder('c')
-            ->where('c.question_id = :questionId')
-            ->andWhere('c.parent_commentaire_id IS NULL')
-            ->andWhere('c.votes < :threshold')
-            ->setParameter('questionId', $question->getQuestionId())
-            ->setParameter('threshold', $threshold)
-            ->orderBy('c.votes', 'DESC')
-            ->getQuery()
-            ->getResult();
-
+    
+        $remainingSlots = $itemsPerPage - count($highQualityComments);
+        $lowQualityComments = [];
+        if ($remainingSlots > 0) {
+            $lowQualityComments = $commentaireRepository->createQueryBuilder('c')
+                ->where('c.question_id = :questionId')
+                ->andWhere('c.parent_commentaire_id IS NULL')
+                ->andWhere('c.votes < :threshold')
+                ->setParameter('questionId', $question->getQuestionId())
+                ->setParameter('threshold', $threshold)
+                ->orderBy('c.votes', 'DESC')
+                ->setFirstResult(0) 
+                ->setMaxResults($remainingSlots)
+                ->getQuery()
+                ->getResult();
+        }
+    
         $topLevelComments = array_merge($highQualityComments, $lowQualityComments);
-
+    
         $comment = new Commentaire();
         $commentForm = $this->createForm(CommentFormType::class, $comment, [
             'action' => $this->generateUrl('comment_create', ['id' => $id]),
         ]);
-
+    
         $game = $question->getGameId();
         $reactionRepository = $entityManager->getRepository(QuestionReactions::class);
         $reactions = $reactionRepository->findBy(['question_id' => $question->getQuestionId()]);
@@ -259,7 +306,7 @@ class ForumController extends AbstractController
             $emoji = $reaction->getEmoji();
             $reactionCounts[$emoji] = ($reactionCounts[$emoji] ?? 0) + 1;
         }
-
+    
         $questionData = [
             'id' => $question->getQuestionId(),
             'title' => $question->getTitle(),
@@ -272,13 +319,13 @@ class ForumController extends AbstractController
             'votes' => $question->getVotes(),
             'reactionCounts' => $reactionCounts,
         ];
-
+    
         $sentimentMap = $request->getSession()->get('sentiment_map', [
             'positive' => ['👍', '😊', '😂', '❤️', '🎉', '😍', '👏', '🌟', '😎', '💪'],
             'negative' => ['👎', '😢', '😡', '💔', '😤', '😞', '🤬', '😣', '💢', '😠'],
             'neutral' => ['🤔', '😐', '🙂', '👀', '🤷', '😶', '🤝', '🙄', '😴', '🤓']
         ]);
-
+    
         $mapComment = function (Commentaire $comment) use (&$mapComment, $entityManager, $commentaireRepository, $sentimentMap) {
             $childCommentaires = $commentaireRepository->createQueryBuilder('c')
                 ->where('c.parent_commentaire_id = :parentId')
@@ -286,7 +333,7 @@ class ForumController extends AbstractController
                 ->orderBy('c.votes', 'DESC')
                 ->getQuery()
                 ->getResult();
-
+    
             $reactionRepository = $entityManager->getRepository(CommentaireReactions::class);
             $reactions = $reactionRepository->findBy(['commentaire_id' => $comment->getCommentaireId()]);
             $reactionCounts = [];
@@ -294,11 +341,11 @@ class ForumController extends AbstractController
                 $emoji = $reaction->getEmoji();
                 $reactionCounts[$emoji] = ($reactionCounts[$emoji] ?? 0) + 1;
             }
-
+    
             $positiveCount = 0;
             $negativeCount = 0;
             $neutralCount = 0;
-
+    
             foreach ($reactionCounts as $emoji => $count) {
                 if (in_array($emoji, $sentimentMap['positive'])) {
                     $positiveCount += $count;
@@ -308,14 +355,14 @@ class ForumController extends AbstractController
                     $neutralCount += $count;
                 }
             }
-
+    
             $sentiment = 'neutral';
             if ($positiveCount > $negativeCount && $positiveCount > $neutralCount) {
                 $sentiment = 'positive';
             } elseif ($negativeCount > $positiveCount && $negativeCount > $neutralCount) {
                 $sentiment = 'negative';
             }
-
+    
             return [
                 'id' => $comment->getCommentaireId(),
                 'content' => $comment->getContenu(),
@@ -330,13 +377,21 @@ class ForumController extends AbstractController
                 'sentiment' => $sentiment,
             ];
         };
-
+    
         $commentData = array_map($mapComment, $topLevelComments);
-
+    
+        $pagination = [
+            'currentPage' => $page,
+            'totalPages' => $totalPages,
+            'totalItems' => $totalComments,
+            'itemsPerPage' => $itemsPerPage,
+        ];
+    
         return $this->render('forum/single_topic.html.twig', [
             'question' => $questionData,
             'comments' => $commentData,
             'comment_form' => $commentForm->createView(),
+            'pagination' => $pagination,
         ]);
     }
 
@@ -479,64 +534,7 @@ class ForumController extends AbstractController
         return $this->redirectToRoute('forum_topics');
     }
 
-    #[Route('/vote', name: 'vote_action', methods: ['POST'])]
-    public function voteAction(Request $request, EntityManagerInterface $entityManager, QuestionsRepository $questionsRepository): Response
-    {
-        $id = $request->request->get('id');
-        $type = $request->request->get('type');
-        $voteType = $request->request->get('vote_type');
-
-        /** @var Utilisateur|null $utilisateur */
-        $utilisateur = $this->getUser();
-        if (!$utilisateur) {
-            $this->addFlash('error', 'You must be logged in to vote.');
-            return $this->redirectToRoute('app_login_page');
-        }
-
-        if ($type === 'question') {
-            $entity = $questionsRepository->find($id);
-            if (!$entity) {
-                $this->addFlash('error', 'Question not found.');
-                return $this->redirectToRoute('forum_topics');
-            }
-
-            $currentVotes = $entity->getVotes() ?? 0;
-            if ($voteType === 'UP') {
-                $entity->setVotes($currentVotes + 1);
-            } elseif ($voteType === 'DOWN') {
-                $entity->setVotes($currentVotes - 1);
-            }
-
-            $entityManager->persist($entity);
-            $entityManager->flush();
-
-            $this->addFlash('success', 'Vote recorded successfully!');
-            return $this->redirectToRoute('forum_single_topic', ['id' => $id]);
-        } elseif ($type === 'comment') {
-            $entity = $entityManager->getRepository(Commentaire::class)->find($id);
-            if (!$entity) {
-                $this->addFlash('error', 'Comment not found.');
-                return $this->redirectToRoute('forum_topics');
-            }
-
-            $currentVotes = $entity->getVotes() ?? 0;
-            if ($voteType === 'UP') {
-                $entity->setVotes($currentVotes + 1);
-            } elseif ($voteType === 'DOWN') {
-                $entity->setVotes($currentVotes - 1);
-            }
-
-            $entityManager->persist($entity);
-            $entityManager->flush();
-
-            $this->addFlash('success', 'Vote recorded successfully!');
-            return $this->redirectToRoute('forum_single_topic', ['id' => $entity->getQuestionId()->getQuestionId()]);
-        }
-
-        $this->addFlash('error', 'Invalid vote type.');
-        return $this->redirectToRoute('forum_topics');
-    }
-
+   
     #[Route('/ajax/vote', name: 'ajax_vote_action', methods: ['POST'])]
     public function ajaxVoteAction(Request $request, EntityManagerInterface $entityManager, QuestionsRepository $questionsRepository): JsonResponse
     {

@@ -21,6 +21,7 @@
 
         <!-- FontAwesome -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
         <!-- Flickity -->
         <link rel="stylesheet" href="{{ asset('vendor/flickity/dist/flickity.min.css') }}">
 
@@ -37,6 +38,84 @@
         <!-- Forum CSS -->
         <link rel="stylesheet" href="{{ asset('css/forum.css') }}">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5/main.min.css">
+
+        <!-- Notification CSS -->
+        <style>
+            .notification-wrapper {
+                position: relative;
+                display: inline-block;
+                margin-left: 15px;
+            }
+
+            .notification-bell {
+                font-size: 20px;
+                color: #fff;
+                cursor: pointer;
+                transition: color 0.3s ease;
+            }
+
+            .notification-bell:hover {
+                color: #0585e6;
+            }
+
+            .notification-count {
+                position: absolute;
+                top: -5px;
+                right: -10px;
+                border-radius: 50%;
+                width: 18px;
+                height: 18px;
+                line-height: 18px;
+                text-align: center;
+                font-size: 12px;
+            }
+
+            .notification-dropdown {
+                position: absolute;
+                top: 35px;
+                right: 0;
+                background: rgba(35, 41, 48, 0.95);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 5px;
+                width: 300px;
+                max-height: 400px;
+                overflow-y: auto;
+                z-index: 1000;
+                box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            }
+
+            .notification-list {
+                margin: 0;
+            }
+
+            .notification-item {
+                padding: 10px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                color: #d1d5db;
+                cursor: pointer;
+                transition: background 0.3s ease;
+            }
+
+            .notification-item:hover {
+                background: rgba(255, 255, 255, 0.1);
+            }
+
+            .notification-item a {
+                color: #d1d5db;
+                text-decoration: none;
+                display: block;
+            }
+
+            .notification-item small {
+                display: block;
+                color: #a0a0a0;
+                font-size: 0.8em;
+            }
+
+            .notification-item:last-child {
+                border-bottom: none;
+            }
+        </style>
     {% endblock %}
 </head>
 <body>
@@ -72,6 +151,17 @@
                         <li><a href="{{ path('evenement_list') }}">Evenement</a></li>
                         <li><a href="{{ path('app_store') }}">Boutique</a></li>
                         <li><a href="{{ path('session_list') }}">Coach</a></li>
+                        {% if app.user %}
+                            <li class="nk-nav-item">
+                                <div class="notification-wrapper">
+                                    <span class="notification-bell fas fa-bell" title="Notifications"></span>
+                                    <span class="notification-count badge bg-danger" style="display: none;">0</span>
+                                    <div class="notification-dropdown" style="display: none;">
+                                        <ul class="notification-list list-unstyled"></ul>
+                                    </div>
+                                </div>
+                            </li>
+                        {% endif %}
                     </ul>
                 </div>
             </div>
@@ -232,7 +322,6 @@
     
                 const data = await response.text();
     
-    
                 const incomingChatLi = createChatLi("", "incoming");
                 chatbox.appendChild(incomingChatLi);
                 const messageElement = incomingChatLi.querySelector("p");
@@ -253,11 +342,89 @@
                 }
             });
     
-            // Send with button
             sendChatBtn.addEventListener("click", handleChat);
     
             // Toggle chatbot visibility
             chatbotToggler.addEventListener("click", () => document.body.classList.toggle("show-chatbot"));
+        </script>
+
+        <script>
+            $(document).ready(function() {
+                const $bell = $('.notification-bell');
+                const $count = $('.notification-count');
+                const $dropdown = $('.notification-dropdown');
+                const $list = $('.notification-list');
+
+                function fetchNotifications() {
+                    $.ajax({
+                        url: '{{ path('api_notifications') }}',
+                        method: 'GET',
+                        success: function(response) {
+                            if (response.success) {
+                                const notifications = response.notifications;
+                                $count.text(notifications.length);
+                                $count.toggle(notifications.length > 0);
+
+                                $list.empty();
+                                if (notifications.length > 0) {
+                                    notifications.forEach(function(notification) {
+                                        $list.append(`
+                                            <li class="notification-item" data-id="${notification.id}">
+                                                <a href="${notification.link}">${notification.message}</a>
+                                                <small>${notification.createdAt}</small>
+                                            </li>
+                                        `);
+                                    });
+                                } else {
+                                    $list.append('<li class="notification-item">Aucune nouvelle notification</li>');
+                                }
+                            }
+                        },
+                        error: function() {
+                            console.error('Failed to fetch notifications');
+                        }
+                    });
+                }
+
+                fetchNotifications();
+                setInterval(fetchNotifications, 30000);
+
+                $bell.on('click', function(e) {
+                    e.preventDefault();
+                    $dropdown.toggle();
+                });
+
+                $list.on('click', '.notification-item', function(e) {
+                    e.preventDefault();
+                    const $item = $(this);
+                    const notificationId = $item.data('id');
+                    const link = $item.find('a').attr('href');
+
+                    if (notificationId) {
+                        $.ajax({
+                            url: '{{ path('api_notifications_read', {'id': 'ID'}) }}'.replace('ID', notificationId),
+                            method: 'POST',
+                            success: function(response) {
+                                if (response.success) {
+                                    fetchNotifications(); 
+                                    window.location.href = link; 
+                                }
+                            },
+                            error: function() {
+                                console.error('Failed to mark notification as read');
+                            }
+                        });
+                    } else {
+                        $dropdown.hide(); 
+                    }
+                });
+
+                $(document).on('click', function(e) {
+                    if (!$bell.is(e.target) && !$dropdown.is(e.target) && $dropdown.has(e.target).length === 0) {
+                        $dropdown.hide();
+                    }
+                });
+            });
         </script>
     {% endblock %}
 </body>

@@ -11,38 +11,61 @@
     text-decoration: none;
 }
 
-/* Style for parent comment cards */
-.comment-card:not(.reply-card) {
-    background-color: #1c2526;
-    padding: 20px;
-    margin-bottom: 15px;
+/* Style for parent comment cards with glassmorphism */
+.nk-forum-topic .comment-card:not(.reply-card) {
+    background: rgba(20, 40, 80, 0.15); /* Match adjusted dark blue */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(40, 60, 120, 0.2);
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    padding: 20px;
+    margin-bottom: 15px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
 }
-.comment-card:not(.reply-card):hover {
+.nk-forum-topic .comment-card:not(.reply-card):hover {
+    background: rgba(30, 50, 100, 0.2); /* Match hover */
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
 }
+@supports not (backdrop-filter: blur(10px)) {
+    .nk-forum-topic .comment-card:not(.reply-card) {
+        background: rgba(20, 40, 80, 0.9);
+    }
+    .nk-forum-topic .comment-card:not(.reply-card):hover {
+        background: rgba(30, 50, 100, 0.9);
+    }
+}
 
-/* Style for reply cards */
-.reply-card {
-    background-color: #2a2f38;
+/* Style for reply cards with glassmorphism */
+.nk-forum-topic .reply-card {
+    background: rgba(25, 45, 85, 0.15); /* Slightly lighter dark blue for replies */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border-left: 4px solid #0585e6;
+    border: 1px solid rgba(45, 65, 125, 0.2);
     padding: 15px;
     margin-top: 8px;
     margin-bottom: 8px;
     border-radius: 6px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
     position: relative;
-    transition: background-color 0.3s ease;
+    transition: background 0.3s ease;
 }
-.reply-card:hover {
-    background-color: #323a45;
+.nk-forum-topic .reply-card:hover {
+    background: rgba(35, 55, 105, 0.2);
+}
+@supports not (backdrop-filter: blur(10px)) {
+    .nk-forum-topic .reply-card {
+        background: rgba(25, 45, 85, 0.9);
+    }
+    .nk-forum-topic .reply-card:hover {
+        background: rgba(35, 55, 105, 0.9);
+    }
 }
 
 /* Add a reply indicator (pseudo-element) */
-.reply-card::before {
+.nk-forum-topic .reply-card::before {
     content: "\f3e5";
     font-family: "Font Awesome 5 Free";
     font-weight: 900;
@@ -55,7 +78,7 @@
 }
 
 /* Improve readability of reply content */
-.reply-card .nk-forum-topic-content p {
+.nk-forum-topic .reply-card .nk-forum-topic-content p {
     font-size: 0.95rem;
     line-height: 1.6;
     color: #d1d5db;
@@ -63,52 +86,103 @@
 }
 
 /* Style the author section in replies */
-.reply-card .nk-forum-topic-author {
+.nk-forum-topic .reply-card .nk-forum-topic-author {
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     padding-bottom: 10px;
     margin-bottom: 10px;
 }
-.reply-card .nk-forum-topic-author-name a {
+.nk-forum-topic .reply-card .nk-forum-topic-author-name a {
     color: #0585e6;
     font-size: 0.9rem;
 }
-.reply-card .nk-forum-topic-author-role,
-.reply-card .nk-forum-topic-author-since {
+.nk-forum-topic .reply-card .nk-forum-topic-author-role,
+.nk-forum-topic .reply-card .nk-forum-topic-author-since {
     font-size: 0.8rem;
     color: #a0a5aa;
 }
 
 /* Style the footer in replies */
-.reply-card .nk-forum-topic-footer {
+.nk-forum-topic .reply-card .nk-forum-topic-footer {
     font-size: 0.85rem;
     color: #a0a5aa;
 }
-.reply-card .nk-forum-action-btn a {
+.nk-forum-topic .reply-card .nk-forum-action-btn a {
     color: #0585e6;
     transition: color 0.3s ease;
     text-decoration: none;
 }
-.reply-card .nk-forum-action-btn a:hover {
+.nk-forum-topic .reply-card .nk-forum-action-btn a:hover {
     color: #0585e6;
     text-decoration: none;
 }
 
-/* Ensure nested replies have consistent styling */
-.reply-card .reply-card {
-    background-color: #333c47;
+/* Ensure nested replies have consistent glassmorphism styling */
+.nk-forum-topic .reply-card .reply-card {
+    background: rgba(30, 50, 90, 0.15); /* Slightly different dark blue for nested replies */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border-left-color: #ff6f61;
+    border: 1px solid rgba(50, 70, 130, 0.2);
 }
-.reply-card .reply-card::before {
+.nk-forum-topic .reply-card .reply-card:hover {
+    background: rgba(40, 60, 110, 0.2);
+}
+@supports not (backdrop-filter: blur(10px)) {
+    .nk-forum-topic .reply-card .reply-card {
+        background: rgba(30, 50, 90, 0.9);
+    }
+    .nk-forum-topic .reply-card .reply-card:hover {
+        background: rgba(40, 60, 110, 0.9);
+    }
+}
+.nk-forum-topic .reply-card .reply-card::before {
     color: #ff6f61;
 }
-.reply-card .reply-card .nk-forum-topic-author-name a,
-.reply-card .reply-card .nk-forum-action-btn a {
+.nk-forum-topic .reply-card .reply-card .nk-forum-topic-author-name a,
+.nk-forum-topic .reply-card .reply-card .nk-forum-action-btn a {
     color: #ff6f61;
     text-decoration: none;
 }
-.reply-card .reply-card .nk-forum-action-btn a:hover {
+.nk-forum-topic .reply-card .reply-card .nk-forum-action-btn a:hover {
     color: #e65b50;
     text-decoration: none;
+}
+
+/* Glassmorphism for Attachment Section in Comments/Replies */
+.nk-forum-topic .question-card .nk-forum-topic-attachments,
+.nk-forum-topic .comment-card .nk-forum-topic-attachments,
+.nk-forum-topic .reply-card .nk-forum-topic-attachments {
+    background: rgba(20, 40, 80, 0.15) !important; /* Match the question-card background, force with !important */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(40, 60, 120, 0.2);
+    border-radius: 10px;
+    padding: 10px;
+    margin-top: 15px;
+}
+@supports not (backdrop-filter: blur(10px)) {
+    .nk-forum-topic .question-card .nk-forum-topic-attachments,
+    .nk-forum-topic .comment-card .nk-forum-topic-attachments,
+    .nk-forum-topic .reply-card .nk-forum-topic-attachments {
+        background: rgba(20, 40, 80, 0.9) !important;
+    }
+}
+.nk-forum-topic .question-card .nk-forum-topic-attachments h4,
+.nk-forum-topic .comment-card .nk-forum-topic-attachments h4,
+.nk-forum-topic .reply-card .nk-forum-topic-attachments h4 {
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    margin-bottom: 10px;
+    font-size: 1rem;
+}
+.nk-forum-topic .question-card .nk-forum-topic-attachments img,
+.nk-forum-topic .question-card .nk-forum-topic-attachments video,
+.nk-forum-topic .comment-card .nk-forum-topic-attachments img,
+.nk-forum-topic .comment-card .nk-forum-topic-attachments video,
+.nk-forum-topic .reply-card .nk-forum-topic-attachments img,
+.nk-forum-topic .reply-card .nk-forum-topic-attachments video {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 /* Remove underline from all action buttons */
