@@ -179,7 +179,6 @@ class ShopController extends AbstractController
             'price_in_eur' => $priceInEur, // EUR price for Stripe
             'image_base_url' => $this->getParameter('image_base_url'),
             'stripe_public_key' => $this->getParameter('stripe_public_key'),
-            'stripe_secret_key' => $this->getParameter('stripe_secret_key')
         ]);
     }
 
