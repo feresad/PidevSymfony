@@ -29,8 +29,20 @@
                             </div>
                         </form>
                     </div>
+                    <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-white"><a href="{{ path('categorie_list')}}" style="color:white;">Categorie</a></button>
                 </div>
             </div>
+
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success">
+                    {{ message }}
+                </div>
+            {% endfor %}
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger">
+                    {{ message }}
+                </div>
+            {% endfor %}
 
             <div class="row">
                 {% for evenement in evenements %}
@@ -59,25 +71,26 @@
                                             <i class="fas fa-eye"></i> Voir
                                         </a>
                                     </div>
+
                                     {% if app.user %}
-                                    {% if evenement.dateEvent < "now"|date("Y-m-d H:i") %}
-                                        <span class="nk-btn nk-btn-disabled">
-                                        <i class="fas fa-clock"></i> Événement terminé
-                                        </span>
-                                    {% else %}
-                                        {% if userReservations[evenement.id] is defined %}
-                                            <form action="{{ path('evenement_annuler_reservation', {id: evenement.id}) }}" method="post" class="d-inline">
-                                                <button type="submit" class="nk-btn nk-btn-primary"  onclick="return confirm('Êtes-vous sûr de vouloir Annuler la Reservation ?');">
-                                                    <i class="fas fa-times"></i> Annuler
-                                                </button>
-                                            </form>
+                                        {% if evenement.dateEvent <= now %}
+                                            <span class="badge badge-secondary" style="font-size: 14px;">Événement passé</span>
+                                        {% elseif evenement.dateEvent <= now|date_modify('+24 hours') %}
+                                            <span class="badge badge-secondary" style="font-size: 14px;">Réservations closes</span>
                                         {% else %}
-                                            <form action="{{ path('reserver_evenement', {id: evenement.id}) }}" method="post" class="d-inline">
-                                                <button type="submit" class="nk-btn nk-btn-primary">
-                                                    <i class="fas fa-ticket-alt"></i> Réserver
-                                                </button>
-                                            </form>
-                                        {% endif %}
+                                            {% if userReservations[evenement.id] is defined %}
+                                                <form action="{{ path('evenement_annuler_reservation', {id: evenement.id}) }}" method="post" class="d-inline">
+                                                    <button type="submit" class="nk-btn nk-btn-primary" onclick="return confirm('Êtes-vous sûr de vouloir annuler la réservation ?');">
+                                                        <i class="fas fa-times"></i> Annuler
+                                                    </button>
+                                                </form>
+                                            {% else %}
+                                                <form action="{{ path('reserver_evenement', {id: evenement.id}) }}" method="post" class="d-inline">
+                                                    <button type="submit" class="nk-btn nk-btn-primary">
+                                                        <i class="fas fa-ticket-alt"></i> Réserver
+                                                    </button>
+                                                </form>
+                                            {% endif %}
                                         {% endif %}
                                     {% else %}
                                         <a href="{{ path('app_login_page') }}" class="nk-btn nk-btn-primary">
@@ -92,9 +105,6 @@
                     <div class="col-12">
                         <div class="alert alert-info">
                             Aucun événement n'a été trouvé.
-                            <a href="{{ path('evenement_ajouter') }}" class="btn btn-primary btn-sm ml-3">
-                                <i class="fas fa-plus"></i> Créer un événement
-                            </a>
                         </div>
                     </div>
                 {% endfor %}

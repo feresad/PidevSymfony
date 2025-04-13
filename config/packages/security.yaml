@@ -45,6 +45,10 @@ security:
     - { path: ^/admin, roles: ROLE_ADMIN }
     - { path: ^/coach, roles: ROLE_COACH }
     - { path: ^/home, roles: [ROLE_CLIENT, ROLE_ADMIN, ROLE_COACH] }
+    - { path: ^/evenement/add, roles: [ROLE_ADMIN] }
+    - { path: ^/categorie/show/, roles: [ROLE_CLIENT, ROLE_ADMIN, ROLE_COACH] }
+    - { path: ^/categorie/all, roles: [ROLE_CLIENT, ROLE_ADMIN, ROLE_COACH] }
+    - { path: ^/categorie/, roles: [ROLE_ADMIN] }
     - { path: ^/$, roles: PUBLIC_ACCESS }
     - { path: ^/, roles: [ROLE_CLIENT, ROLE_COACH, ROLE_ADMIN] }
     - { path: ^/reset-password, roles: PUBLIC_ACCESS }

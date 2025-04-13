@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Admin;
 use App\Entity\ClientEvenement;
 use App\Entity\Evenement;
 use App\Entity\Utilisateur;
@@ -25,34 +26,32 @@ final class ClientEvenementController extends AbstractController
     #[Route('/admin/export-pdf/{id}', name: 'evenement_export_pdf')]
     public function exportPdf(int $id, EvenementRepository $evenementRepo, ClientEvenementRepository $clientEvenementRepo): Response
     {
-        // Récupérer l'événement
+
         $evenement = $evenementRepo->find($id);
         if (!$evenement) {
             $this->addFlash('error', 'Événement non trouvé.');
             return $this->redirectToRoute('evenement_list_admin');
         }
-        
-        // Récupérer les réservations pour cet événement
+     
         $reservations = $clientEvenementRepo->findBy(['evenement' => $evenement]);
 
-        // Configurer Dompdf
+      
         $pdfOptions = new Options();
         $pdfOptions->set('defaultFont', 'Arial');
         $dompdf = new Dompdf($pdfOptions);
 
-        // Date d'exportation dynamique (aujourd'hui)
+    
         $dateExportation = new \DateTime();
         
-        // Chemin absolu vers le logo
         $logoPath = $this->getParameter('kernel.project_dir') . '/assets/images/lev.png';
         
-        // Convertir l'image en base64
+
         $logoBase64 = '';
         if (file_exists($logoPath)) {
             $logoBase64 = base64_encode(file_get_contents($logoPath));
         }
 
-        // Générer le contenu HTML pour le PDF
+
         $html = $this->renderView('evenement/pdf_reservations.html.twig', [
             'evenement' => $evenement,
             'reservations' => $reservations,
@@ -60,15 +59,13 @@ final class ClientEvenementController extends AbstractController
             'date_exportation' => $dateExportation->format('d/m/Y'), // Format JJ/MM/AAAA
         ]);
 
-        // Charger le HTML dans Dompdf
+
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
 
-        // Générer le nom du fichier
         $filename = 'Reservations_' . $evenement->getNomEvent() . '_' . date('Ymd') . '.pdf';
 
-        // Retourner le PDF en tant que réponse
         return new Response(
             $dompdf->output(),
             Response::HTTP_OK,
@@ -90,7 +87,11 @@ final class ClientEvenementController extends AbstractController
             return $this->redirectToRoute('app_login_page');
         }
 
-        // Récupérer l'événement
+        if ($this->isGranted('ROLE_ADMIN')) {
+            $this->addFlash('info', 'Vous êtes un admin, vous avez déjà l\'opportunité de participer sans réserver.');
+            return $this->redirectToRoute('evenement_list');
+        }
+
         $evenement = $evenementRepo->find($id);
         if (!$evenement) {
             $this->addFlash('error', 'Événement non trouvé.');
@@ -121,10 +122,9 @@ final class ClientEvenementController extends AbstractController
         $entityManager->persist($evenement);
         $entityManager->flush();
 
-        // Récupérer l'email de l'utilisateur depuis la base de données
         $userEmail = $user->getUserIdentifier();
         
-        // Envoyer l'email de confirmation
+
         $email = (new Email())
             ->from('noreply@votredomaine.com')
             ->to($userEmail)
@@ -135,7 +135,6 @@ final class ClientEvenementController extends AbstractController
                 'reservation' => $reservation
             ]));
 
-        // Joindre l'image du logo
         $logoPath = $this->getParameter('kernel.project_dir') . '/assets/images/level.png';
         if (file_exists($logoPath)) {
             $email->embedFromPath($logoPath, 'logo');
@@ -145,7 +144,6 @@ final class ClientEvenementController extends AbstractController
             $mailer->send($email);
             $this->addFlash('success', 'Réservation effectuée avec succès ! Un e-mail de confirmation vous a été envoyé.');
         } catch (\Exception $e) {
-            // Log l'erreur mais ne bloque pas la réservation
             $this->addFlash('warning', 'La réservation a été effectuée mais l\'email de confirmation n\'a pas pu être envoyé.');
         }
     
@@ -198,7 +196,7 @@ final class ClientEvenementController extends AbstractController
 
         try {
             $mailer->send($email);
-            $this->addFlash('success', 'Votre réservation a été annulée avec succès. Un email de confirmation vous a été envoyé.');
+            $this->addFlash('success', 'Votre réservation a été annulée avec succès. Un email d\'annulation vous a été envoyé.');
         } catch (\Exception $e) {
             $this->addFlash('warning', 'La réservation a été annulée mais l\'email de confirmation n\'a pas pu être envoyé.');
         }

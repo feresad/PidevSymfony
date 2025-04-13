@@ -43,6 +43,7 @@ class Evenement
     private ?string $lieuEvent = null;
     
     #[ORM\Column(type: "string", length: 255)]
+    #[Assert\NotBlank(message: "La photo de l'événement ne peut pas être vide.")]
     private string $photoEvent;
 
     #[ORM\ManyToOne(targetEntity: CategorieEvent::class, inversedBy: 'evenements')]
