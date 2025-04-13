@@ -19,7 +19,8 @@ class ForgotPasswordType extends AbstractType
                 'label' => 'Email',
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Entrez votre email'
+                    'placeholder' => 'Entrez votre email',
+                    'autocomplete' => 'email'
                 ],
                 'constraints' => [
                     new NotBlank([
@@ -28,7 +29,8 @@ class ForgotPasswordType extends AbstractType
                     new Email([
                         'message' => 'Veuillez entrer une adresse email valide'
                     ])
-                ]
+                ],
+                'error_bubbling' => false
             ])
             ->add('submit', SubmitType::class, [
                 'label' => 'Réinitialiser le mot de passe',
@@ -44,7 +46,10 @@ class ForgotPasswordType extends AbstractType
             'data_class' => null,
             'csrf_protection' => true,
             'csrf_field_name' => '_token',
-            'csrf_token_id'   => 'forgot_password'
+            'csrf_token_id'   => 'forgot_password',
+            'attr' => [
+                'novalidate' => 'novalidate'
+            ]
         ]);
     }
 }

@@ -22,6 +22,19 @@ class UtilisateurRepository extends ServiceEntityRepository
         return $this->findOneBy(['email' => $email]);
     }
 
+    public function searchByNickname(?string $query)
+    {
+        $qb = $this->createQueryBuilder('u');
+        
+        if ($query) {
+            $qb->where('u.nickname LIKE :query')
+               ->setParameter('query', '%' . $query . '%')
+               ->orderBy('u.nickname', 'ASC');
+        }
+        
+        return $qb->getQuery();
+    }
+
     /**
      * Get the ID of the currently logged-in user
      * @return int|null The user ID or null if no user is logged in
