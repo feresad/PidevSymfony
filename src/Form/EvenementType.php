@@ -20,10 +20,10 @@ class EvenementType extends AbstractType
             ->add('nomEvent')
             ->add('categorie', EntityType::class, [
                 'class' => CategorieEvent::class,
-                'choice_label' => 'nom', // Affiche le nom dans le dropdown
+                'choice_label' => 'nom',
                 'label' => 'Catégorie de l\'événement',
                 'placeholder' => 'Sélectionner une catégorie',
-                'required' => false,
+                'required' => true,
             ])
             ->add('maxPlacesEvent')
             ->add('dateEvent', null, [

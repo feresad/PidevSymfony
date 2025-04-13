@@ -65,4 +65,13 @@ class EvenementRepository extends ServiceEntityRepository
 
         return (int) $queryBuilder->getQuery()->getSingleScalarResult();
     }
+    public function findByDateRange(\DateTimeInterface $start, \DateTimeInterface $end)
+    {
+        return $this->createQueryBuilder('e')
+            ->where('e.dateEvent BETWEEN :start AND :end')
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->getQuery()
+            ->getResult();
+    }
 }

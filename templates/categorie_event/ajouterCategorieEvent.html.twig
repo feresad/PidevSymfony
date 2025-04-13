@@ -23,13 +23,17 @@
             <div class="mb-3">
                 {{ form_label(form.nom, 'Nom de la catégorie', {'label_attr': {'class': 'form-label'}}) }}
                 {{ form_widget(form.nom, {'attr': {'class': 'form-control', 'required': 'required'}}) }}
-                {{ form_errors(form.nom, {'attr': {'class': 'invalid-feedback'}}) }}
+                <div class="invalid-feedback">
+                    {{ form_errors(form.nom) }}
+                </div>
             </div>
 
             <div class="mb-3">
                 {{ form_label(form.descCategorieEvent, 'Description', {'label_attr': {'class': 'form-label'}}) }}
                 {{ form_widget(form.descCategorieEvent, {'attr': {'class': 'form-control', 'required': 'required'}}) }}
-                {{ form_errors(form.descCategorieEvent, {'attr': {'class': 'invalid-feedback'}}) }}
+                <div class="invalid-feedback">
+                    {{ form_errors(form.descCategorieEvent) }}
+                </div> 
             </div>
 
             <div class="d-flex justify-content-center gap-2 mt-3">

@@ -1,0 +1,40 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Calendrier des événements</h1>
+    <div id="calendar-holder"></div>
+    <img class="nk-page-background-top" src="{{ asset('images/bg-top.png') }}" alt="">
+    <img class="nk-page-background-bottom" src="{{ asset('images/bg-bottom.png') }}" alt="">
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const calendarEl = document.getElementById('calendar-holder');
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                events: {
+                    url: "{{ path('evenement_load_events') }}",
+                    method: 'GET',
+                    failure: () => {
+                        console.error('Erreur lors du chargement des événements');
+                    }
+                },
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                locale: 'fr',
+                timeZone: 'Europe/Paris',
+                eventClick: function(info) {
+                    if (info.event.url) {
+                        window.open(info.event.url, '_blank');
+                        info.jsEvent.preventDefault();
+                    }
+                }
+            });
+            calendar.render();
+        });
+    </script>
+{% endblock %}

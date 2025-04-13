@@ -36,6 +36,7 @@
 
         <!-- Forum CSS -->
         <link rel="stylesheet" href="{{ asset('css/forum.css') }}">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5/main.min.css">
     {% endblock %}
 </head>
 <body>
@@ -63,10 +64,10 @@
             <div class="container">
                 <div class="nk-nav-table">
                     <a href="{{ path('app_home') }}" class="nk-nav-logo">
-                        <img src="{{ asset('images/level.png') }}" alt="Level OP" width="199">
+                        <img src="{{ asset('images/level.png') }}" alt="Level OP" width="110">
                     </a>
                     <ul class="nk-nav nk-nav-right d-none d-lg-table-cell" data-nav-mobile="#nk-nav-mobile">
-                        <li><a href="{{ path('app_home') }}">Home</a></li>
+                        <li><a href="{{ path('app_home') }}">Accueil</a></li>
                         <li><a href="{{ path('forum_topics') }}">Forum</a></li>
                         <li><a href="{{ path('evenement_list') }}">Evenement</a></li>
                         <li><a href="{{ path('app_store') }}">Boutique</a></li>
@@ -86,16 +87,16 @@
                 <div class="row">
                     <div class="col-lg-5">
                         <img src="{{ asset('images/level.png') }}" alt="Level OP" width="199" class="nk-footer-logo">
-                        <p>Level OP is your premier source for everything gaming.</p>
+                        <p>Level OP est Votre source incontournable pour tout ce qui concerne le gaming.</p>
                     </div>
                     <div class="col-lg-2">
                         <h4 class="nk-footer-title">Sections</h4>
                         <ul class="nk-footer-links">
-                            <li><a href="{{ path('app_home') }}">Home</a></li>
+                            <li><a href="{{ path('app_home') }}">Accueil</a></li>
                             <li><a href="{{ path('forum_topics') }}">Forum</a></li>
                             <li><a href="{{ path('evenement_list') }}">Evenement</a></li>
                             <li><a href="{{ path('app_store') }}">Boutique</a></li>
-                            <li><a href="#">Contact</a></li>
+                            <li><a href="{{ path('session_client_list') }}">Coach</a></li>
                         </ul>
                     </div>
                     <div class="col-lg-2">
@@ -119,7 +120,7 @@
                     </div>
                 </div>
                 <div class="text-center">
-                    <p>© 2025 Level OP. All rights reserved.</p>
+                    <p>© 2025 Level OP. Tous droits réservés.</p>
                 </div>
             </div>
 
@@ -147,6 +148,7 @@
             </div>
         </footer>
     {% endblock %}
+    
 
     {% block javascripts %}
         <!-- jQuery -->
@@ -171,6 +173,7 @@
         <!-- GoodGames -->
         <script src="{{ asset('js/goodgames.min.js') }}"></script>
         <script src="{{ asset('js/goodgames-init.js') }}"></script>
+        <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5/main.min.js"></script>
 
         <!-- Chatbot JavaScript -->
         <script>
