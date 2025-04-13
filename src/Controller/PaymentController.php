@@ -18,9 +18,9 @@ class PaymentController extends AbstractController
     public function __construct(LoggerInterface $logger)
     {
         $this->logger = $logger;
-        $this->stripeSecretKey = 'sk_test_51QwnFBQo8eHPYc0vBA9m5i0nBxdhefRpQrwYyk8VAPRg21d2UKSRiUJsR7T7VIFAlyeiDuQaZRwSCeQveeOETK9q00BDEThZIx'; // Replace with your actual secret key
-        $this->stripePublicKey = 'pk_test_51QwnFBQo8eHPYc0v04VP2JyrN9TFqSFAeFs8erzKsOZahQInhF5PdtQewLQnHrsslCFZRgotwE2C3FkTaXFmgrUK00HhB47nqu'; // Replace with your actual public key
-        Stripe::setApiKey($this->stripeSecretKey);
+        $this->stripeSecretKey = $_ENV['STRIPE_SECRET_KEY'] ?? throw new \RuntimeException('STRIPE_SECRET_KEY not defined in environment variables.');
+$this->stripePublicKey = $_ENV['STRIPE_PUBLIC_KEY'] ?? throw new \RuntimeException('STRIPE_PUBLIC_KEY not defined in environment variables.');
+       Stripe::setApiKey($this->stripeSecretKey);
     }
 
     #[Route('/payment/process', name: 'payment_process', methods: ['POST'])]
