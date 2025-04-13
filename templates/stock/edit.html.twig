@@ -9,16 +9,17 @@
             <div class="card" style="background-color: #091221; border-color: #0236a5;">
                 <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #0236a5; color: white;">
                     <h2 class="mb-0">Modifier un Stock</h2>
-                    <div class="btn-group">
-                        <a href="{{ path('app_stock_index') }}" class="btn me-2" style="background-color: #0585c6; color: white;">Retour à la liste</a>
-                        <a href="{{ path('app_stock_show', {'id': stock.id}) }}" class="btn" style="background-color: #fc0369; color: white;">Voir détails</a>
-                    </div>
                 </div>
                 <div class="card-body p-4">
                     {{ form_start(form) }}
                         <div class="form-group mb-4">
                             {{ form_label(form.produit, null, {'label_attr': {'style': 'color: white; font-weight: 600;'}}) }}
                             {{ form_widget(form.produit, {'attr': {'class': 'form-control', 'style': 'background-color: #091221; color: white; border-color: #0236a5;'}}) }}
+                        </div>
+
+                        <div class="form-group mb-4">
+                            {{ form_label(form.games, 'Jeu', {'label_attr': {'style': 'color: white; font-weight: 600;'}}) }}
+                            {{ form_widget(form.games, {'attr': {'class': 'form-control', 'style': 'background-color: #091221; color: white; border-color: #0236a5;'}}) }}
                         </div>
 
                         <div class="form-group mb-4">

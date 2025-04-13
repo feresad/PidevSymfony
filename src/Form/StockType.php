@@ -3,15 +3,18 @@
 namespace App\Form;
 
 use App\Entity\Stock;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use App\Entity\Produit;
+use App\Entity\Games;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
-use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormBuilderInterface; // Correct import
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\PositiveOrZero;
+use Symfony\Component\Validator\Constraints\Positive;
+use Symfony\Component\Validator\Constraints\File;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 
 class StockType extends AbstractType
 {
@@ -19,36 +22,65 @@ class StockType extends AbstractType
     {
         $builder
             ->add('produit', EntityType::class, [
-                'class' => 'App\Entity\Produit',
+                'class' => Produit::class,
                 'choice_label' => 'nomProduit',
                 'label' => 'Produit',
-                'constraints' => [new NotBlank(['message' => 'Veuillez sélectionner un produit'])]
+                'constraints' => [
+                    new NotBlank([
+                        'message' => 'Veuillez sélectionner un produit',
+                    ]),
+                ],
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('games', EntityType::class, [
+                'class' => Games::class,
+                'choice_label' => 'gameName',
+                'label' => 'Jeu',
+                'required' => false,
+                'placeholder' => 'Sélectionner un jeu (optionnel)',
+                'attr' => ['class' => 'form-control']
             ])
             ->add('quantity', IntegerType::class, [
+                'constraints' => [
+                    new NotBlank([
+                        'message' => 'Veuillez entrer une quantité',
+                    ]),
+                    new PositiveOrZero([
+                        'message' => 'La quantité doit être un nombre positif ou zéro',
+                    ]),
+                ],
                 'label' => 'Quantité',
-                'constraints' => [
-                    new NotBlank(['message' => 'La quantité est obligatoire']),
-                    new PositiveOrZero(['message' => 'La quantité doit être positive'])
-                ]
+                'attr' => ['class' => 'form-control', 'min' => '0', 'step' => '1']
             ])
-            ->add('prixProduit', IntegerType::class, [
-                'label' => 'Prix',
+            ->add('prix_produit', IntegerType::class, [
                 'constraints' => [
-                    new NotBlank(['message' => 'Le prix est obligatoire']),
-                    new PositiveOrZero(['message' => 'Le prix doit être positif'])
-                ]
+                    new NotBlank([
+                        'message' => 'Veuillez entrer un prix',
+                    ]),
+                    new Positive([
+                        'message' => 'Le prix doit être un nombre positif',
+                    ]),
+                ],
+                'label' => 'Prix',
+                'attr' => ['class' => 'form-control', 'min' => '0.01', 'step' => '0.01']
             ])
             ->add('fichierImage', FileType::class, [
-                'label' => 'Image',
-                'required' => false,
-                'mapped' => false,
                 'constraints' => [
                     new File([
-                        'maxSize' => '5M',
-                        'mimeTypes' => ['image/jpeg', 'image/png'],
-                        'mimeTypesMessage' => 'Veuillez télécharger une image valide (JPEG ou PNG)',
-                    ])
-                ]
+                        'maxSize' => '5m',
+                        'mimeTypes' => [
+                            'image/jpeg',
+                            'image/png',
+                            'image/gif',
+                        ],
+                        'mimeTypesMessage' => 'Veuillez uploader une image valide (JPEG, PNG, GIF)',
+                        'maxSizeMessage' => 'L\'image ne doit pas dépasser 5 Mo',
+                    ]),
+                ],
+                'label' => 'Image (laisser vide pour conserver l\'actuelle)',
+                'mapped' => false,
+                'required' => false,
+                'attr' => ['class' => 'form-control', 'accept' => 'image/jpeg,image/png,image/gif']
             ]);
     }
 

@@ -1,0 +1,312 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Paiement Réussi - Commande #{{ commande.id }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .success-container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 40px 30px;
+            background-color: rgba(26, 30, 34, 0.8);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes checkmark {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .success-icon {
+            font-size: 64px;
+            color: #4cd137;
+            margin-bottom: 25px;
+            animation: checkmark 0.8s ease-in-out forwards;
+            display: inline-block;
+        }
+        
+        .success-title {
+            color: #ffffff;
+            font-size: 32px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+        
+        .success-message {
+            color: #a3a3a3;
+            font-size: 16px;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            padding: 0 20px;
+        }
+        
+        .order-details {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 25px;
+            margin: 30px 0;
+            text-align: left;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .order-details h3 {
+            color: #ffffff;
+            font-size: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+        
+        .order-item {
+            display: flex;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            align-items: center;
+        }
+        
+        .order-item-image {
+            width: 70px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-right: 20px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s;
+        }
+        
+        .order-item-image:hover {
+            transform: scale(1.05);
+        }
+        
+        .order-item-details {
+            flex: 1;
+        }
+        
+        .order-item-name {
+            color: #ffffff;
+            font-size: 18px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .order-item-price {
+            color: #dd163b;
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+        
+        .order-id {
+            color: #a3a3a3;
+            font-size: 16px;
+            margin-bottom: 25px;
+            background: rgba(0, 0, 0, 0.2);
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .order-id span {
+            color: #dd163b;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+        
+        .order-status {
+            text-align: center;
+            margin-top: 15px;
+            padding: 8px 0;
+        }
+        
+        .order-status-text {
+            color: #4cd137;
+            font-weight: bold;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: rgba(76, 209, 55, 0.1);
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+        
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .success-button {
+            display: inline-block;
+            padding: 14px 28px;
+            background-color: #dd163b;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            text-transform: uppercase;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(221, 22, 59, 0.3);
+        }
+        
+        .success-button:hover {
+            background-color: #b31230;
+            color: #ffffff;
+            text-decoration: none;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(221, 22, 59, 0.4);
+        }
+        
+        .secondary-button {
+            background-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
+        }
+        
+        .secondary-button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 6px 20px rgba(255, 255, 255, 0.15);
+        }
+        
+        .invoice-button {
+            background-color: #dd163b;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            text-transform: uppercase;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(221, 22, 59, 0.3);
+            padding: 14px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .invoice-button:hover {
+            background-color: #b31230;
+            color: #ffffff;
+            text-decoration: none;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(221, 22, 59, 0.4);
+        }
+        
+        @media (max-width: 767px) {
+            .success-container {
+                margin: 30px 15px;
+                padding: 30px 20px;
+            }
+            
+            .button-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .success-button {
+                width: 100%;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <!-- START: Breadcrumbs -->
+    <div class="nk-gap-1"></div>
+    <div class="container">
+        <ul class="nk-breadcrumbs">
+            <li><a href="{{ path('app_home') }}">HOME</a></li>
+            <li><span class="fa fa-angle-right"></span></li>
+            <li><a href="{{ path('app_store') }}">STORE</a></li>
+            <li><span class="fa fa-angle-right"></span></li>
+            <li><span>Paiement Réussi</span></li>
+        </ul>
+    </div>
+    <div class="nk-gap-1"></div>
+    <!-- END: Breadcrumbs -->
+
+    <div class="container">
+        <div class="success-container">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            
+            <h1 class="success-title">Paiement Réussi!</h1>
+            <p class="success-message">
+                Merci pour votre achat. Votre commande a été confirmée et sera traitée dans les plus brefs délais.
+            </p>
+            
+            <div class="order-id">
+                Numéro de commande: <span>#{{ commande.id }}</span>
+            </div>
+            
+            <div class="order-details">
+                <h3>Détails de la commande</h3>
+                
+                <div class="order-item">
+                    {% set stock = commande.produit.stocks.first() %}
+                    {% if stock %}
+                    <img src="{{ image_base_url }}/{{ stock.image }}" alt="{{ commande.produit.nomProduit }}" class="order-item-image">
+                    <div class="order-item-details">
+                        <div class="order-item-name">{{ commande.produit.nomProduit }}</div>
+                        <div class="order-item-price">{{ stock.prixProduit }} TND</div>
+                    </div>
+                    {% else %}
+                    <div class="order-item-details">
+                        <div class="order-item-name">{{ commande.produit.nomProduit }}</div>
+                        <div class="order-item-price">Prix non disponible</div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="order-status">
+                    <div class="order-status-text">
+                        {{ commande.status }}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="button-container">
+                <a href="{{ path('app_store') }}" class="success-button secondary-button">
+                    <i class="fas fa-shopping-cart mr-2"></i> Continuer les achats
+                </a>
+                <a href="{{ path('app_generate_invoice', {'id': commande.id}) }}" class="success-button invoice-button">
+                    <i class="fas fa-file-pdf mr-2"></i> Télécharger la facture
+                </a>
+                {% if is_granted('ROLE_USER') %}
+                <a href="{{ path('app_home') }}" class="success-button">
+                    <i class="fas fa-home mr-2"></i> Retour à l'accueil
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <img class="nk-page-background-top" src="{{ asset('images/bg-top.png') }}" alt="">
+    <img class="nk-page-background-bottom" src="{{ asset('images/bg-bottom.png') }}" alt="">
+{% endblock %} 

@@ -21,22 +21,35 @@ class GeminiFpsService
         try {
             $osInfo = php_uname('s') . ' ' . php_uname('m');
             $prompt = sprintf(
-                "You are a gaming performance analysis AI. I need detailed FPS estimates for the following configuration:\n\n" .
+                "You are an expert gaming performance analyst with deep knowledge of hardware benchmarking and game optimization. " .
+                "Based on extensive benchmarking data and real-world testing, provide accurate FPS estimates for the following configuration:\n\n" .
                 "Game: %s\n" .
-                "System Details:\n" .
+                "System Configuration:\n" .
                 "- Operating System: %s\n" .
                 "- CPU: %s\n" .
-                "- RAM: %s\n" .
-                "- GPU: %s\n\n" .
-                "Please provide FPS estimates for three quality settings at 1080p resolution:\n" .
-                "1. Low Settings\n" .
-                "2. Medium Settings\n" .
-                "3. High Settings\n\n" .
-                "Format your response exactly like this example:\n" .
-                "Low: 80-90 FPS\n" .
-                "Medium: 60-70 FPS\n" .
-                "High: 40-50 FPS\n\n" .
-                "Only provide the FPS numbers in this exact format. Do not include any other text or explanations.",
+                "- RAM: %s GB\n" .
+                "- GPU: %s\n" .
+                "- Resolution: 1920x1080 (1080p)\n\n" .
+                "Consider these factors in your estimation:\n" .
+                "1. CPU single-core and multi-core performance\n" .
+                "2. GPU memory and architecture capabilities\n" .
+                "3. RAM speed and capacity impact\n" .
+                "4. Game engine optimization\n" .
+                "5. DirectX/Vulkan API overhead\n\n" .
+                "Provide realistic FPS ranges for three quality presets at 1080p:\n" .
+                "1. Low Settings (Shadows Low, Textures Low, Effects Low)\n" .
+                "2. Medium Settings (Balanced preset)\n" .
+                "3. High Settings (Maximum quality, with RT if supported)\n\n" .
+                "Format your response exactly like this:\n" .
+                "Low: [min]-[max] FPS\n" .
+                "Medium: [min]-[max] FPS\n" .
+                "High: [min]-[max] FPS\n\n" .
+                "Ensure the estimates are realistic and account for:\n" .
+                "- Frame time consistency\n" .
+                "- CPU/GPU bottlenecks\n" .
+                "- Game optimization level\n" .
+                "- Similar hardware benchmarks\n\n" .
+                "Only provide the FPS numbers in the exact format specified. No additional text.",
                 $specs['game_name'] ?? 'Unknown Game',
                 $osInfo,
                 $specs['cpu'],
@@ -68,9 +81,9 @@ class GeminiFpsService
                         ]
                     ],
                     'generationConfig' => [
-                        'temperature' => 0.7,
-                        'topK' => 40,
-                        'topP' => 0.95,
+                        'temperature' => 0.3,  // Reduced temperature for more consistent results
+                        'topK' => 20,          // Reduced for more focused responses
+                        'topP' => 0.85,        // Adjusted for better precision
                         'maxOutputTokens' => 1024,
                     ]
                 ]
@@ -119,6 +132,78 @@ class GeminiFpsService
             ];
         } catch (\Exception $e) {
             throw new \Exception('Failed to parse FPS data: ' . $e->getMessage());
+        }
+    }
+
+    public function getRecommendedSpecs(string $gameName): array
+    {
+        try {
+            $prompt = sprintf(
+                "You are a gaming hardware expert. Based on real benchmarking data and official requirements, " .
+                "provide detailed recommended specifications for running '%s' at 1080p 60+ FPS with high settings.\n\n" .
+                "Consider:\n" .
+                "1. Modern hardware availability\n" .
+                "2. Game engine requirements\n" .
+                "3. Optimal performance targets\n" .
+                "4. Price-to-performance ratio\n\n" .
+                "Format your response exactly like this:\n" .
+                "{\n" .
+                "\"cpu\": \"Specific CPU model recommendation\",\n" .
+                "\"gpu\": \"Specific GPU model recommendation\",\n" .
+                "\"ram\": \"RAM amount and speed\",\n" .
+                "\"storage\": \"Storage recommendation\",\n" .
+                "\"os\": \"Minimum OS version\"\n" .
+                "}\n\n" .
+                "Provide only the JSON response, no additional text.",
+                $gameName
+            );
+
+            $response = $this->callGeminiApi($prompt);
+            return $this->parseSpecsResponse($response);
+        } catch (\Exception $e) {
+            throw new \Exception('Failed to get recommended specs: ' . $e->getMessage());
+        }
+    }
+
+    private function parseSpecsResponse(array $response): array
+    {
+        try {
+            if (!isset($response['candidates'][0]['content']['parts'][0]['text'])) {
+                throw new \Exception('Invalid response structure from Gemini API');
+            }
+
+            $text = $response['candidates'][0]['content']['parts'][0]['text'];
+            
+            // Remove any potential markdown formatting
+            $text = preg_replace('/```json\s*|\s*```/', '', $text);
+            
+            // Decode JSON response
+            $specs = json_decode($text, true);
+            
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new \Exception('Invalid JSON response from API');
+            }
+
+            // Validate required fields
+            $requiredFields = ['cpu', 'gpu', 'ram', 'storage', 'os'];
+            foreach ($requiredFields as $field) {
+                if (!isset($specs[$field])) {
+                    throw new \Exception("Missing required field: $field");
+                }
+            }
+
+            return [
+                'recommended' => [
+                    'cpu' => $specs['cpu'],
+                    'gpu' => $specs['gpu'],
+                    'ram' => $specs['ram'],
+                    'storage' => $specs['storage'],
+                    'os' => $specs['os']
+                ],
+                'performance_note' => 'These specifications target 1080p resolution at 60+ FPS with high settings.'
+            ];
+        } catch (\Exception $e) {
+            throw new \Exception('Failed to parse recommended specs: ' . $e->getMessage());
         }
     }
 } 

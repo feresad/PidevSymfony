@@ -21,10 +21,8 @@ class SystemSpecsService
             // Get CPU information
             $cpuInfo = $this->getCpuInfo();
 
-            // Get RAM information (simplified)
-            $ramInfo = [
-                'total' => '24' // Fixed at 24GB as requested
-            ];
+            // Get RAM information
+            $ramInfo = $this->getRamInfo();
 
             // Get GPU information
             $gpuInfo = $this->getGpuInfo();
@@ -81,6 +79,48 @@ class SystemSpecsService
     }
 
     /**
+     * Get RAM information
+     * @return array
+     */
+    private function getRamInfo(): array
+    {
+        if (PHP_OS === 'WINNT') {
+            // Windows
+            $cmd = 'wmic ComputerSystem get TotalPhysicalMemory /Value';
+            $output = [];
+            exec($cmd, $output);
+            
+            $totalMemory = 0;
+            foreach ($output as $line) {
+                if (strpos($line, 'TotalPhysicalMemory=') !== false) {
+                    $totalMemory = trim(explode('=', $line)[1]);
+                    // Convert bytes to GB and round to nearest integer
+                    $totalMemory = round((float)$totalMemory / (1024 * 1024 * 1024));
+                    break;
+                }
+            }
+            
+            return [
+                'total' => $totalMemory ? $totalMemory . '' : 'Unknown'
+            ];
+        } else {
+            // Linux/Unix
+            $meminfo = file_get_contents('/proc/meminfo');
+            if (preg_match('/MemTotal:\s+(\d+)\s+kB/', $meminfo, $matches)) {
+                // Convert kB to GB and round to nearest integer
+                $totalMemory = round((float)$matches[1] / (1024 * 1024));
+                return [
+                    'total' => $totalMemory . ''
+                ];
+            }
+            
+            return [
+                'total' => 'Unknown'
+            ];
+        }
+    }
+
+    /**
      * Get GPU information
      * @return array
      */
@@ -95,19 +135,27 @@ class SystemSpecsService
             $gpus = [];
             foreach ($output as $line) {
                 if (strpos($line, 'Name=') !== false) {
-                    $gpus[] = trim(explode('=', $line)[1]);
+                    $gpuName = trim(explode('=', $line)[1]);
+                    if (!empty($gpuName)) {
+                        $gpus[] = $gpuName;
+                    }
                 }
             }
             
-            return $gpus;
+            return empty($gpus) ? ['Unknown GPU'] : $gpus;
         } else {
             // Linux/Unix
-            $cmd = 'lspci | grep -i vga';
+            $cmd = 'lspci | grep -i "vga\|3d\|display"';
             $output = [];
             exec($cmd, $output);
             
+            if (empty($output)) {
+                return ['Unknown GPU'];
+            }
+
             return array_map(function($line) {
-                return trim(substr($line, strpos($line, ':') + 1));
+                $parts = explode(':', $line, 3);
+                return isset($parts[2]) ? trim($parts[2]) : trim($parts[1] ?? 'Unknown GPU');
             }, $output);
         }
     }

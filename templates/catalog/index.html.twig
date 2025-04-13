@@ -1,0 +1,135 @@
+{% extends 'baseadmin.html.twig' %}
+
+{% block title %}Liste des Produits{% endblock %}
+
+{% block body %}
+    <div class="container-main mt-4 liste">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Catalogue des Produits</h1>
+            <div class="d-flex align-items-center">
+                <div class="mr-3">
+                    <select name="sort" class="form-control" form="productFilterForm">
+                        <option value="nom_asc" {{ sort|default('') == 'nom_asc' ? 'selected' : '' }}>Nom (A-Z)</option>
+                        <option value="nom_desc" {{ sort|default('') == 'nom_desc' ? 'selected' : '' }}>Nom (Z-A)</option>
+                        <option value="prix_asc" {{ sort|default('') == 'prix_asc' ? 'selected' : '' }}>Prix (Croissant)</option>
+                        <option value="prix_desc" {{ sort|default('') == 'prix_desc' ? 'selected' : '' }}>Prix (Décroissant)</option>
+                    </select>
+                </div>
+                <div class="mr-3">
+                    <form action="{{ path('app_catalog_index') }}" method="get" class="needs-validation" id="productFilterForm">
+                        <div class="input-group">
+                            <input type="text" name="search" class="form-control" placeholder="Rechercher un produit..." value="{{ search|default('') }}">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ path('app_produit_new') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Nouveau Produit
+                    </a>
+                    <a href="{{ path('app_stock_new') }}" class="btn btn-success">
+                        <i class="fas fa-box"></i> Nouveau Stock
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        {% for message in app.flashes('success') %}
+            <div class="alert-success">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        <div class="grid-row">
+            {% for product in products %}
+                <div class="grid-col">
+                    <div class="card-main h-100">
+                        {% if product.image %}
+                            <img src="{{ image_base_url ~ product.image }}" class="card-img-main" alt="{{ product.nom_produit }}">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ product.nom_produit }}</h5>
+                            <p class="card-text">
+                                <i class="fas fa-tag"></i> {{ product.prix_produit }} TND
+                            </p>
+                            <p class="card-text">
+                                <i class="fas fa-boxes"></i> Stock: {{ product.quantity }}
+                            </p>
+                            <p class="card-text">
+                                <i class="fas fa-gamepad"></i> {{ product.produit.platform|default('Non spécifié') }}
+                            </p>
+                            <p class="card-text">
+                                <i class="fas fa-globe"></i> {{ product.produit.region|default('Non spécifié') }}
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="btn-group">
+                                    <a href="{{ path('app_catalog_product_details', {id: product.produit_id}) }}" class="btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i> Voir
+                                    </a>
+                                </div>
+                                <form method="post" action="{{ path('app_stock_delete', {'id': product.stock_id}) }}" style="display: inline-block" 
+                                      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce produit?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ product.stock_id) }}">
+                                    <button class="btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i> Supprimer
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="col-12">
+                    <div class="alert-info">
+                        Aucun produit n'a été trouvé.
+                        <a href="{{ path('app_produit_new') }}" class="btn-main btn-sm ml-3">
+                            <i class="fas fa-plus"></i> Créer un produit
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if max_pages|default(1) > 1 %}
+            <nav aria-label="Pagination des produits" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item {{ current_page|default(1) == 1 ? 'disabled' : '' }}">
+                        <a class="page-link" href="{{ path('app_catalog_index', { page: (current_page|default(1)) - 1, search: search|default(''), sort: sort|default('') }) }}">Précédent</a>
+                    </li>
+                    {% for i in 1..max_pages %}
+                        <li class="page-item {{ current_page|default(1) == i ? 'active' : '' }}">
+                            <a class="page-link" href="{{ path('app_catalog_index', { page: i, search: search|default(''), sort: sort|default('') }) }}">{{ i }}</a>
+                        </li>
+                    {% endfor %}
+                    <li class="page-item {{ current_page|default(1) == max_pages ? 'disabled' : '' }}">
+                        <a class="page-link" href="{{ path('app_catalog_index', { page: (current_page|default(1)) + 1, search: search|default(''), sort: sort|default('') }) }}">Suivant</a>
+                    </li>
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Soumission du formulaire de tri
+            $('select[name="sort"]').on('change', function() {
+                $('#productFilterForm').submit();
+            });
+
+            // Gestion de la pagination avec jQuery
+            $('.page-link').on('click', function(e) {
+                e.preventDefault();
+                var url = $(this).attr('href');
+                if (url) {
+                    window.location.href = url;
+                }
+            });
+        });
+    </script>
+{% endblock %} 

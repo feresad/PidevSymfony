@@ -1,13 +1,44 @@
 {% extends 'base.html.twig' %}
-
+{% block title %}{{ stock.produit.nomProduit }} - Boutique{% endblock %}
 {% block stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('assets/css/produit.css') }}">
     <style>
+        .nk-page-background-top,
+        .nk-page-background-bottom {
+            position: fixed;
+            left: 0;
+            width: 100%;
+            height: auto;
+            z-index: -1;
+            pointer-events: none;
+            opacity: 0.9;
+        }
+
+        .nk-page-background-top {
+            top: 0;
+            transform: translateY(-14%) translateX(-14%) scale(1.28);
+        }
+
+        .nk-page-background-bottom {
+            bottom: 0;
+            transform: translateY(14%) translateX(-14%) scale(1.28);
+        }
+
+        @media (max-width: 575px) {
+            .nk-page-background-top,
+            .nk-page-background-bottom {
+                display: none;
+            }
+        }
+
         html, body {
             overflow-x: hidden;
             width: 100%;
             position: relative;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         .container {
@@ -21,43 +52,38 @@
             display: flex;
             flex-wrap: wrap;
             margin: 0;
-            min-height: 800px;
             width: 100%;
         }
 
         /* Column base styles */
-        .col-lg-5, .col-lg-4, .col-lg-3 {
+        .col-lg-5, .col-lg-4 {
             padding: 0 15px;
             display: flex;
             flex-direction: column;
-            width: 33.33%; /* Equal width for all columns */
+            width: 50%;
         }
 
         /* Product container styles */
         .product-container {
-            background-color: #1a1e22;
-            padding: 30px;
-            border-radius: 5px;
-            height: 100%;
+            padding: 20px;
             display: flex;
             flex-direction: column;
+            backdrop-filter: blur(15px);
+            background-color: rgba(26, 30, 34, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
         }
 
         /* Image Column Styles */
-        .product-images {
-            position: relative;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-        
         .main-image {
             width: 100%;
-            margin-bottom: 20px;
             border-radius: 5px;
             overflow: hidden;
             flex: 0 0 auto;
             aspect-ratio: 16/9;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            margin: 0;
         }
         
         .main-image img {
@@ -65,6 +91,7 @@
             height: 100%;
             object-fit: cover;
             border-radius: 5px;
+            display: block;
         }
 
         .thumbnails {
@@ -221,8 +248,10 @@
         
         .specs-section {
             background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             padding: 20px;
-            border-radius: 5px;
+            border-radius: 8px;
             margin-bottom: 15px;
         }
         
@@ -256,9 +285,9 @@
         }
 
         @media (max-width: 992px) {
-            .col-lg-5, .col-lg-4, .col-lg-3 {
+            .col-lg-5, .col-lg-4 {
                 width: 100%;
-                margin-bottom: 30px;
+                margin-bottom: 20px;
             }
 
             .row {
@@ -271,7 +300,7 @@
         }
 
         .fps-estimate-button {
-            background: #ff00ff;
+            background: #dd163b;
             color: #ffffff;
             border: none;
             border-radius: 5px;
@@ -306,7 +335,7 @@
         }
 
         .fps-title {
-            color: #ff00ff;
+            color: #dd163b;
             text-transform: uppercase;
             text-align: center;
             margin-bottom: 15px;
@@ -358,191 +387,406 @@
             display: inline-block;
             width: 24px;
             height: 24px;
-            border: 3px solid #ff00ff;
+            border: 3px solid #dd163b !important;
             border-radius: 50%;
-            border-top-color: transparent;
+            border-top-color: transparent !important;
             animation: spin 1s linear infinite;
+        }
+
+        /* Reviews Section Styles */
+        .reviews-container {
+            margin-top: 20px;
+            margin-bottom: 20px;
+            padding: 30px;
+            background-color: rgba(26, 30, 34, 0.4);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+        }
+        .reviews-title {
+            color: #ffffff;
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+        .review-item {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .review-nickname {
+            color: #ff00ff;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .review-comment {
+            color: #808080;
+            font-size: 14px;
+        }
+        .review-date {
+            color: #505050;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        .review-form {
+            margin-top: 30px;
+        }
+        .review-form h3 {
+            color: #ffffff;
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+        .review-form textarea {
+            background: rgba(42, 46, 50, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            color: #ffffff;
+            padding: 15px;
+            width: 100%;
+            margin-bottom: 15px;
+            min-height: 100px;
+            resize: vertical;
+        }
+        .review-form button {
+            background: #dd163b;
+            color: #ffffff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        .review-form button:hover {
+            background: #b31230;
+        }
+
+        /* Remove excessive gaps */
+        .nk-gap-3 {
+            height: 20px !important; /* Reduced from default */
+        }
+
+        /* Make main content take available space */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* FPS Modal Styles */
+        #fpsModal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: auto;
+            height: auto;
+            background: none;
+        }
+
+        .modal-content {
+            position: relative;
+            width: 400px;
+            margin: 0 auto;
+            padding: 15px;
+            background-color: rgba(26, 30, 34, 0.95) !important;
+            backdrop-filter: blur(15px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-radius: 8px !important;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5) !important;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            padding-right: 20px;
+        }
+
+        .close {
+            position: absolute;
+            right: 10px;
+            top: 5px;
+            font-size: 20px !important;
+            color: #fff !important;
+            opacity: 0.7;
+            cursor: pointer !important;
+        }
+
+        .specs-section.recommended {
+            background: rgba(20, 20, 20, 0.8);
+            border: 1px solid rgba(221, 22, 59, 0.3);
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .specs-section.current {
+            background: rgba(20, 20, 20, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .specs-list {
+            display: grid;
+            gap: 8px;
+        }
+
+        .spec-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+            font-size: 13px;
+        }
+
+        .spec-item:last-child {
+            border-bottom: none;
+        }
+
+        .modal-content::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .modal-content::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-content::-webkit-scrollbar-thumb {
+            background: #dd163b;
+            border-radius: 2px;
+        }
+
+        .modal-content::-webkit-scrollbar-thumb:hover {
+            background: #ff1744;
+        }
+
+        .specs-section-title {
+            color: #dd163b;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 16px;
+            text-transform: uppercase;
         }
     </style>
 {% endblock %}
-
 {% block body %}
-    <!-- START: Breadcrumbs -->
-    <div class="nk-gap-1"></div>
-    <div class="container">
-        <ul class="nk-breadcrumbs">
-            <li><a href="{{ path('app_home') }}">HOME</a></li>
-            <li><span class="fa fa-angle-right"></span></li>
-            <li><a href="{{ path('app_store') }}">STORE</a></li>
-            <li><span class="fa fa-angle-right"></span></li>
-            <li><span>{{ produit.produit.nomProduit }}</span></li>
-        </ul>
-    </div>
-    <div class="nk-gap-1"></div>
-    <!-- END: Breadcrumbs -->
-
-    <div class="container">
-        <div class="row">
-            <!-- Left Column - Images (40%) -->
-            <div class="col-lg-5">
-                <div class="product-container">
-                    <div class="product-images">
+    <main>
+        <!-- START: Breadcrumbs -->
+        <div class="nk-gap-1"></div>
+        <div class="container">
+            <ul class="nk-breadcrumbs">
+                <li><a href="{{ path('app_home') }}">HOME</a></li>
+                <li><span class="fa fa-angle-right"></span></li>
+                <li><a href="{{ path('app_store') }}">STORE</a></li>
+                <li><span class="fa fa-angle-right"></span></li>
+                <li><span>{{ stock.produit.nomProduit }}</span></li>
+            </ul>
+        </div>
+        <div class="nk-gap-1"></div>
+        <!-- END: Breadcrumbs -->
+        <div class="container">
+            <div class="row">
+                <!-- Left Column - Images (50%) -->
+                <div class="col-lg-5">
+                    <div class="product-container">
                         <div class="main-image">
-                            <img src="{{ image_base_url ~ '/' ~ produit.image }}" alt="{{ produit.produit.nomProduit }}" id="mainImage">
-                        </div>
-                        <div class="thumbnails">
-                            <div class="thumbnail active" onclick="updateMainImage(this, '{{ image_base_url ~ '/' ~ produit.image }}')">
-                                <img src="{{ image_base_url ~ '/' ~ produit.image }}" alt="Thumbnail 1">
-                            </div>
-                            <div class="thumbnail" onclick="updateMainImage(this, '{{ image_base_url ~ '/' ~ produit.image }}')">
-                                <img src="{{ image_base_url ~ '/' ~ produit.image }}" alt="Thumbnail 2">
-                            </div>
-                            <div class="thumbnail" onclick="updateMainImage(this, '{{ image_base_url ~ '/' ~ produit.image }}')">
-                                <img src="{{ image_base_url ~ '/' ~ produit.image }}" alt="Thumbnail 3">
-                            </div>
+                            <img src="{{ image_base_url ~ '/' ~ stock.image }}" alt="{{ stock.produit.nomProduit }}" id="mainImage">
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Middle Column - Product Info (35%) -->
-            <div class="col-lg-4">
-                <div class="product-container">
-                    <div class="product-info">
-                        <h1 class="product-title">{{ produit.produit.nomProduit }} ({{ produit.produit.platform }}) - {{ produit.produit.region }}</h1>
-                        
-                        <div class="rating-container">
-                            <span class="rating-stars">
-                                {% for i in 1..5 %}
-                                    {% if i <= produit.produit.score %}
-                                        <span style="color: #ffd700;">★</span>
-                                    {% else %}
-                                        <span style="color: #808080;">★</span>
-                                    {% endif %}
-                                {% endfor %}
-                            </span>
-                            <span style="color: #808080;">{{ produit.produit.score }}</span>
-                        </div>
-
-                        <div class="product-meta">
-                            <div class="meta-item">
-                                <span style="color: #808080;">Plateforme:</span>
-                                <span style="color: #ffffff;">{{ produit.produit.platform }}</span>
+                <!-- Middle Column - Product Info (50%) -->
+                <div class="col-lg-4">
+                    <div class="product-container">
+                        <div class="product-info">
+                            <h1 class="product-title">{{ stock.produit.nomProduit }} ({{ stock.produit.platform }}) - {{ stock.produit.region }}</h1>
+                            <div class="rating-container">
+                                <span class="rating-stars">
+                                    {% for i in 1..5 %}
+                                        {% if i <= product.score %}
+                                            <span style="color: #ffd700;">★</span>
+                                        {% else %}
+                                            <span style="color: #808080;">★</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                </span>
+                                <span style="color: #808080;">{{ product.score }}</span>
                             </div>
-                            <div class="meta-item">
-                                <span style="color: #808080;">Région:</span>
-                                <span style="color: #ffffff;">{{ produit.produit.region }}</span>
-                            </div>
-                            <div class="meta-item">
-                                <span style="color: #808080;">Type:</span>
-                                <span style="color: #ffffff;">{{ produit.produit.type }}</span>
-                            </div>
-                        </div>
-
-                        <div style="color: #808080; font-style: italic; margin: 20px 0; font-size: 14px;">
-                            {{ produit.produit.description }}
-                        </div>
-
-                        <div class="price-container">
-                            <div class="price">{{ produit.prixProduit|number_format(0) }} DNT</div>
-                            <div class="stock-status">En Stock</div>
-                            <button class="order-button">PASSER EN COMMANDE</button>
-                        </div>
-
-                        <div class="seller-info">
-                            <div style="margin-bottom: 10px;">
-                                Offre de <span style="color: #ffffff;">LEVEL</span><span style="color: #dd163b;">OP</span>
-                            </div>
-                            <div>
-                                <span style="color: #00ff00;">96% Avis positifs</span>
-                                <span style="color: #808080;">(105)</span>
-                            </div>
-                        </div>
-
-                        <div style="flex-grow: 1;"></div> <!-- Spacer to push content up -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Column - System Specs (25%) -->
-            <div class="col-lg-3">
-                <div class="product-container">
-                    <div class="specs-container">
-                        <h2 class="specs-title">SPÉCIFICATIONS SYSTÈME</h2>
-                        
-                        <div class="specs-content">
-                            <div class="specs-section">
-                                <h3 class="specs-section-title">SYSTÈME D'EXPLOITATION</h3>
-                                <div class="specs-item">
-                                    <span class="specs-label">Plateforme:</span>
-                                    <span class="specs-value">WINNT</span>
+                            <div class="product-meta">
+                                <div class="meta-item">
+                                    <span style="color: #808080;">Plateforme:</span>
+                                    <span style="color: #ffffff;">{{product.platform }}</span>
                                 </div>
-                                <div class="specs-item">
-                                    <span class="specs-label">Version:</span>
-                                    <span class="specs-value">10.0</span>
+                                <div class="meta-item">
+                                    <span style="color: #808080;">Région:</span>
+                                    <span style="color: #ffffff;">{{ product.region }}</span>
                                 </div>
-                                <div class="specs-item">
-                                    <span class="specs-label">Architecture:</span>
-                                    <span class="specs-value">AMD64</span>
+                                <div class="meta-item">
+                                    <span style="color: #808080;">Type:</span>
+                                    <span style="color: #ffffff;">{{ product.type }}</span>
                                 </div>
                             </div>
-
-                            <div class="specs-section">
-                                <h3 class="specs-section-title">PROCESSEUR</h3>
-                                <div class="specs-item">
-                                    <span class="specs-label">Processeur:</span>
-                                    <span class="specs-value">11th Gen Intel(R) Core(TM) i3-1115G4 @ 3.00GHz</span>
-                                </div>
-                        </div>
-
-                            <div class="specs-section">
-                                <h3 class="specs-section-title">MÉMOIRE</h3>
-                                <div class="specs-item">
-                                    <span class="specs-label">Mémoire RAM:</span>
-                                    <span class="specs-value">24 GB</span>
-                                </div>
+                            <div style="color: #808080; font-style: italic; margin: 20px 0; font-size: 14px;">
+                                {{ product.description }}
                             </div>
-
-                            <div class="specs-section">
-                                <h3 class="specs-section-title">CARTE GRAPHIQUE</h3>
-                                <div class="specs-item">
-                                    <span class="specs-label">Carte graphique 1:</span>
-                                    <span class="specs-value">Intel(R) UHD Graphics</span>
-                                </div>
-                                
-                                <button class="fps-estimate-button" onclick="estimateFps()">
-                                    Estimer les FPS
+                            <div class="price-container">
+                                <div class="price">{{ stock.prixProduit|number_format(0) }} TND</div>
+                                {% if stock.quantity > 0 %}
+                                    <div class="stock-status">En Stock</div>
+                                    <a href="{{ path('app_payment_page', {'id': product.id}) }}" class="order-button">PASSER EN COMMANDE</a>
+                                {% else %}
+                                    <div class="stock-status" style="color: #dd163b; font-weight: bold;">Hors Stock</div>
+                                    <button class="order-button" style="background-color: #555555; cursor: not-allowed;" disabled>PASSER EN COMMAND</button>
+                                {% endif %}
+                            </div>
+                            <div style="margin-top: 15px;">
+                                <button id="openFpsModalBtn" class="order-button" style="background: #dd163b;">
+                                    VÉRIFIER LA COMPATIBILITÉ
                                 </button>
-
-                                <div class="loading-spinner">
-                                    <div class="spinner"></div>
-                                    <div style="margin-top: 10px;">Estimation en cours...</div>
-                                </div>
-
-                                <div class="fps-results">
-                                    <div class="fps-title">Estimation FPS</div>
-                                    <div class="fps-setting">
-                                        <span class="fps-setting-label">Paramètres bas</span>
-                                        <div class="fps-range" id="fpsLow">--</div>
-                                    </div>
-                                    <div class="fps-setting">
-                                        <span class="fps-setting-label">Paramètres moyens</span>
-                                        <div class="fps-range" id="fpsMedium">--</div>
-                                    </div>
-                                    <div class="fps-setting">
-                                        <span class="fps-setting-label">Paramètres élevés</span>
-                                        <div class="fps-range" id="fpsHigh">--</div>
-                                    </div>
+                            </div>
+                            <div class="seller-info">
+                                <div style="margin-bottom: 10px; margin-top: 15px;">
+                                    Offre de <span style="color: #ffffff;">LEVEL</span><span style="color: #dd163b;">OP</span>
                                 </div>
                             </div>
+                            <div style="flex-grow: 1;"></div> <!-- Spacer to push content up -->
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+        <div class="nk-gap-2"></div>  <!-- Reduced from nk-gap-3 -->
+        <!-- FPS Modal -->
+        <div class="modal-overlay" id="modalOverlay"></div>
+        <div id="fpsModal">
+            <div class="modal-content">
+                <span class="close" style="cursor: pointer;">&times;</span>
+                <h2 style="color: #dd163b; text-align: center; margin-bottom: 20px;">CONFIGURATION RECOMMANDÉE</h2>
+                {% if recommendedSpecs %}
+                <div class="specs-section recommended">
+                    <div class="specs-list">
+                        <div class="spec-item">
+                            <span style="color: #808080;">Processeur:</span>
+                            <span style="color: #ffffff;">{{ recommendedSpecs.recommended.cpu }}</span>
+                        </div>
+                        <div class="spec-item">
+                            <span style="color: #808080;">Carte Graphique:</span>
+                            <span style="color: #ffffff;">{{ recommendedSpecs.recommended.gpu }}</span>
+                        </div>
+                        <div class="spec-item">
+                            <span style="color: #808080;">Mémoire RAM:</span>
+                            <span style="color: #ffffff;">{{ recommendedSpecs.recommended.ram }}</span>
+                        </div>
+                        <div class="spec-item">
+                            <span style="color: #808080;">Stockage:</span>
+                            <span style="color: #ffffff;">{{ recommendedSpecs.recommended.storage }}</span>
+                        </div>
+                        <div class="spec-item">
+                            <span style="color: #808080;">Système:</span>
+                            <span style="color: #ffffff;">{{ recommendedSpecs.recommended.os }}</span>
+                        </div>
+                    </div>
+                    <div style="color: #808080; font-size: 12px; margin-top: 10px; text-align: center;">
+                        {{ recommendedSpecs.performance_note }}
+                    </div>
+                </div>
+                {% endif %}
+                <div class="specs-section current">
+                    <h3 class="specs-section-title">VOTRE CONFIGURATION</h3>
+                    <div class="specs-item">
+                        <span class="specs-label">Processeur:</span>
+                        <span class="specs-value">{{ systemSpecs.cpu.name }}</span>
+                    </div>
+                    <div class="specs-item">
+                        <span class="specs-label">Mémoire RAM:</span>
+                        <span class="specs-value">{{ systemSpecs.ram.total }} GB</span>
+                    </div>
+                    <div class="specs-item">
+                        <span class="specs-label">Carte graphique:</span>
+                        <span class="specs-value">{{ systemSpecs.gpus[0] }}</span>
+                    </div>
+                </div>
+                <button id="estimateFpsBtn" class="fps-estimate-button" data-url="{{ path('app_estimate_fps') }}" style="background: #dd163b; color: #ffffff; border: none; border-radius: 5px; padding: 12px 20px; font-size: 14px; cursor: pointer; width: 100%; margin: 20px 0; text-transform: uppercase; font-weight: bold;">
+                    VÉRIFIEZ LES FPS
+                </button>
+                <div id="loadingSpinner" class="loading-spinner">
+                    <div class="spinner" style="border: 3px solid #dd163b; border-top-color: transparent;"></div>
+                    <p>Estimation en cours...</p>
+                </div>
+                <div id="fpsResults" class="fps-results">
+                    <h3 class="fps-title" style="color: #dd163b;">ESTIMATIONS FPS</h3>
+                    <div class="fps-setting">
+                        <span class="fps-setting-label">Qualité Basse:</span>
+                        <span id="lowFps" class="fps-range" style="color: #dd163b;">--</span>
+                    </div>
+                    <div class="fps-setting">
+                        <span class="fps-setting-label">Qualité Moyenne:</span>
+                        <span id="mediumFps" class="fps-range" style="color: #dd163b;">--</span>
+                    </div>
+                    <div class="fps-setting">
+                        <span class="fps-setting-label">Qualité Haute:</span>
+                        <span id="highFps" class="fps-range" style="color: #dd163b;">--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Remove the FPS Check Button from main page -->
+        <div class="nk-gap-2"></div>
+        <!-- Reviews Section -->
+        <div class="container">
+            <div class="reviews-container">
+                <h2 class="reviews-title">AVIS DES UTILISATEURS ({{ reviewCount }})</h2>
+                {% if reviews is empty %}
+                    <p style="color: #808080;">Aucun avis pour ce produit pour le moment.</p>
+                {% else %}
+                    {% for review in reviews %}
+                        <div class="review-item">
+                            <div class="review-header">
+                                <span class="review-nickname">{{ review.utilisateur.nickname }}</span>
+                            </div>
+                            <div class="review-comment">{{ review.comment|default('Aucun commentaire') }}</div>
+                            <div class="review-date">{{ review.createdAt|date('d/m/Y H:i') }}</div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                {% if canReview %}
+                    <div class="review-form">
+                        <h3>Laissez votre avis</h3>
+                        <form method="post">
+                            <textarea name="comment" placeholder="Écrivez votre commentaire ici..." required></textarea>
+                            <button type="submit">Soumettre l'avis</button>
+                        </form>
+                    </div>
+                {% elseif app.user %}
+                    <p style="color: #808080; margin-top: 20px;">Vous devez acheter ce produit pour laisser un avis.</p>
+                {% else %}
+                    <p style="color: #808080; margin-top: 20px;">
+                        <a href="{{ path('app_login') }}" style="color: #dd163b;">Connectez-vous</a> pour laisser un avis après avoir acheté ce produit.
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+    <img class="nk-page-background-top" src="{{ asset('images/bg-top.png') }}" alt="">
+    <img class="nk-page-background-bottom" src="{{ asset('images/bg-bottom.png') }}" alt="">
 {% endblock %}
-
 {% block javascripts %}
     {{ parent() }}
     <script>
@@ -559,94 +803,65 @@
                     });
                 });
             }
-
-            // Thumbnail click handler
-            $('.nk-gallery-thumbnails img').on('click', function() {
-                $('.nk-gallery-thumbnails img').removeClass('active');
-                $(this).addClass('active');
-                const newSrc = $(this).attr('src');
-                $('.nk-gallery-item-box img').attr('src', newSrc);
-            });
+            // Modal functionality
+            const modal = document.getElementById('fpsModal');
+            const overlay = document.getElementById('modalOverlay');
+            const btn = document.getElementById('openFpsModalBtn');
+            const span = document.getElementsByClassName('close')[0];
+            const estimateBtn = document.getElementById('estimateFpsBtn');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const fpsResults = document.getElementById('fpsResults');
+            btn.onclick = function() {
+                modal.style.display = 'block';
+                overlay.style.display = 'block';
+            }
+            span.onclick = function() {
+                modal.style.display = 'none';
+                overlay.style.display = 'none';
+            }
+            overlay.onclick = function() {
+                modal.style.display = 'none';
+                overlay.style.display = 'none';
+            }
+            // FPS Estimation functionality
+            if (estimateBtn) {
+                estimateBtn.addEventListener('click', function() {
+                    loadingSpinner.style.display = 'block';
+                    fpsResults.style.display = 'none';
+                    // Prepare the data
+                    const data = {
+                        cpu: '{{ systemSpecs.cpu.name }}',
+                        ram: '{{ systemSpecs.ram.total }}',
+                        gpu: '{{ systemSpecs.gpus[0] }}',
+                        game_name: '{{ product.nomProduit }}'
+                    };
+                    // Make API call
+                    const url = this.getAttribute('data-url');
+                    fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify(data)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        loadingSpinner.style.display = 'none';
+                        fpsResults.style.display = 'block';
+                        if (data.error) {
+                            throw new Error(data.message || 'Failed to estimate FPS');
+                        }
+                        document.getElementById('lowFps').textContent = `${data.low.min}-${data.low.max} FPS`;
+                        document.getElementById('mediumFps').textContent = `${data.medium.min}-${data.medium.max} FPS`;
+                        document.getElementById('highFps').textContent = `${data.high.min}-${data.high.max} FPS`;
+                    })
+                    .catch(error => {
+                        loadingSpinner.style.display = 'none';
+                        alert('Error: ' + error.message);
+                    });
+                });
+            }
         });
-
-        function updateMainImage(thumbnail, imageUrl) {
-            document.getElementById('mainImage').src = imageUrl;
-            document.querySelectorAll('.thumbnail').forEach(thumb => {
-                thumb.classList.remove('active');
-            });
-            thumbnail.classList.add('active');
-        }
-
-        function estimateFps() {
-            const loadingSpinner = document.querySelector('.loading-spinner');
-            const fpsResults = document.querySelector('.fps-results');
-            const estimateButton = document.querySelector('.fps-estimate-button');
-            
-            // Show loading spinner
-            loadingSpinner.classList.add('active');
-            estimateButton.disabled = true;
-            fpsResults.classList.remove('active');
-
-            // Get system specs
-            const specs = {
-                cpu: '{{ systemSpecs.cpu.name }}',
-                ram: '{{ systemSpecs.ram.total }}',
-                gpu: '{{ systemSpecs.gpus[0] }}',
-                game_name: '{{ produit.produit.nomProduit }}'
-            };
-
-            // Make API request
-            const url = "{{ path('app_estimate_fps') }}";
-            
-            console.log('Sending request to:', url);
-            console.log('With specs:', specs);
-            
-            fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(specs)
-            })
-            .then(async response => {
-                console.log('Response status:', response.status);
-                const data = await response.text();
-                console.log('Raw response:', data);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}, body: ${data}`);
-                }
-                
-                try {
-                    return JSON.parse(data);
-                } catch (e) {
-                    console.error('Failed to parse JSON:', e);
-                    throw new Error(`Invalid JSON response: ${data}`);
-                }
-            })
-            .then(data => {
-                console.log('Parsed data:', data);
-                if (data.error) {
-                    throw new Error(`API Error: ${data.error}${data.message ? ' - ' + data.message : ''}`);
-                }
-                // Update results
-                document.getElementById('fpsLow').textContent = `${data.low.min}-${data.low.max} FPS`;
-                document.getElementById('fpsMedium').textContent = `${data.medium.min}-${data.medium.max} FPS`;
-                document.getElementById('fpsHigh').textContent = `${data.high.min}-${data.high.max} FPS`;
-                
-                // Show results
-                fpsResults.classList.add('active');
-            })
-            .catch(error => {
-                console.error('FPS Estimation Error:', error);
-                const errorMessage = error.message || 'Unknown error occurred';
-                alert(`Failed to estimate FPS: ${errorMessage}`);
-            })
-            .finally(() => {
-                // Hide loading spinner
-                loadingSpinner.classList.remove('active');
-                estimateButton.disabled = false;
-            });
-        }
     </script>
 {% endblock %}
