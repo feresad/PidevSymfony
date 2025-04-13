@@ -2,8 +2,10 @@
 
 namespace App\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
 use App\Repository\ReservationRepository;
+use Doctrine\ORM\Mapping as ORM;
+use App\Entity\Session_game;
+use App\Entity\User; // ← très important d'importer User aussi !
 
 #[ORM\Entity(repositoryClass: ReservationRepository::class)]
 class Reservation
@@ -20,17 +22,48 @@ class Reservation
     #[ORM\JoinColumn(name: 'session_id_id', referencedColumnName: 'id', nullable: false)]
     private Session_game $session;
 
-    #[ORM\Column(type: 'integer')]
-    private int $clientId;
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private Utilisateur $client; // ← ici on remplace int par User
 
-    public function getId(): ?int { return $this->id; }
+    // --- GETTERS & SETTERS ---
 
-    public function getDateReservation(): \DateTimeInterface { return $this->dateReservation; }
-    public function setDateReservation(\DateTimeInterface $dateReservation): self { $this->dateReservation = $dateReservation; return $this; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-    public function getSession(): Session_game { return $this->session; }
-    public function setSession(Session_game $session): self { $this->session = $session; return $this; }
+    public function getDateReservation(): \DateTimeInterface
+    {
+        return $this->dateReservation;
+    }
 
-    public function getClientId(): int { return $this->clientId; }
-    public function setClientId(int $clientId): self { $this->clientId = $clientId; return $this; }
-} 
+    public function setDateReservation(\DateTimeInterface $dateReservation): self
+    {
+        $this->dateReservation = $dateReservation;
+        return $this;
+    }
+
+    public function getSession(): Session_game
+    {
+        return $this->session;
+    }
+
+    public function setSession(Session_game $session): self
+    {
+        $this->session = $session;
+        return $this;
+    }
+
+    public function getClient(): Utilisateur
+    {
+        return $this->client;
+    }
+
+    public function setClient(Utilisateur $client): self
+    {
+        $this->client = $client;
+        return $this;
+    }
+    
+}

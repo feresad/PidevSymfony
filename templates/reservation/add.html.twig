@@ -3,60 +3,83 @@
 {% block title %}Réserver une session{% endblock %}
 
 {% block body %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h2 class="card-title text-center text-primary mb-4">Réserver une session</h2>
-                    
-                    <div class="session-details mb-4">
-                     {% if session.imageName %}
-                        <img src="{{ image_base_url ~  session.imageName }}" 
-                             class="card-img-top" 
-                             alt="{{ session.game }}" 
-                             style="height: 200px; object-fit: cover;">
-                    {% endif %}
-                        <h3 class="h5 text-primary">{{ session.game }}</h3>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="badge bg-success fs-6">{{ session.prix }} DT</span>
-                            <span class="text-muted">{{ session.dureeSession }}</span>
+<div class="nk-main">
+    <div class="nk-gap-2"></div>
+    <div class="container">
+        <div class="nk-gap-2"></div>
+        <h1 class="nk-title text-center">Réserver une session</h1>
+        <h3 class="nk-sub-title text-center mb-30">{{ session.game }}</h3>
+        
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="nk-box-2 bg-dark-2">
+                    {% if session.imageName %}
+                        <div class="nk-image-box">
+                            <img src="{{ image_base_url ~ session.imageName }}" 
+                                 alt="{{ session.game }}" 
+                                 class="nk-img">
                         </div>
+                        <div class="nk-gap-1"></div>
+                    {% endif %}
+                    
+                    <div class="nk-product-price text-center">
+                        <span> Prix : {{ session.prix }} DT </span>
+                        <div class="nk-gap-1"></div>
+                            <span> Durée : {{ session.dureeSession }} min </span>
+                        </span>
                     </div>
-
+                    
+                    <div class="nk-gap-2"></div>
+                    
                     {% for message in app.flashes('error') %}
-                        <div class="alert alert-danger">
+                        <div class="nk-info-box text-danger">
+                            <div class="nk-info-box-icon">
+                                <i class="ion-close-round"></i>
+                            </div>
                             {{ message }}
                         </div>
+                        <div class="nk-gap-1"></div>
                     {% endfor %}
 
                     {% for message in app.flashes('success') %}
-                        <div class="alert alert-success">
+                        <div class="nk-info-box text-success">
+                            <div class="nk-info-box-icon">
+                                <i class="ion-checkmark-round"></i>
+                            </div>
                             {{ message }}
                         </div>
+                        <div class="nk-gap-1"></div>
                     {% endfor %}
 
-                    <form method="post">
-                        <div class="mb-4">
-                            <label for="date_reservation" class="form-label">Date de réservation</label>
-                            <input type="date" 
-                                   class="form-control" 
-                                   id="date_reservation" 
-                                   name="date_reservation" 
-                                   min="{{ 'now'|date('Y-m-d') }}" 
-                        
-                                   required>
-                            <div class="form-text">Choisissez une date pour votre session</div>
+                    <form method="post" class="nk-form">
+                        <div class="row vertical-gap">
+                            <div class="col-md-12">
+                                <label for="date_reservation" class="nk-form-label">Date de réservation</label>
+                                <input type="date" 
+                                       class="form-control required" 
+                                       id="date_reservation" 
+                                       name="date_reservation" 
+                                       min="{{ 'now'|date('Y-m-d') }}" 
+                                       required>
+                                <div class="nk-form-helper text-white opacity-75">Choisissez une date pour votre session</div>
+                            </div>
                         </div>
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">Confirmer la réservation</button>
-                            <a href="{{ path('session_client_list') }}" class="btn btn-outline-secondary">Retour aux sessions</a>
-                            
+                        
+                        <div class="nk-gap-1"></div>
+                        
+                        <div class="text-center">
+                            <button type="submit" class="nk-btn nk-btn-rounded nk-btn-color-main-1">Confirmer la réservation</button>
+                            <div class="nk-gap-1"></div>
+                            <a href="{{ path('session_client_list') }}" class="nk-btn nk-btn-rounded nk-btn-color-white">Retour aux sessions</a>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
+    <div class="nk-gap-2"></div>
 </div>
+ <!-- Background de la page d'accueil -->
+    <img class="nk-page-background-top" src="{{ asset('images/bg-top.png') }}" alt="">
+    <img class="nk-page-background-bottom" src="{{ asset('images/bg-bottom.png') }}" alt="">
 {% endblock %}

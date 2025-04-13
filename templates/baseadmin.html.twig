@@ -93,7 +93,7 @@
             <!-- Add the Gaming Dashboard link here -->
             <li>
                 <a href="{{ path('admin_games_dashboard') }}">
-                        <ion-icon name="game-controller-outline"></ion-icon>
+                    <ion-icon name="game-controller-outline"></ion-icon>
                     <span>Gaming Dashboard</span>
                 </a>
             </li>
@@ -118,6 +118,13 @@
                         <li><a href="{{ path('app_stock_index') }}" data-turbo="true">Liste Stock</a></li>
                     </div>
                 </ul>
+            </li>
+            <!-- Nouveau bouton pour Summary Dashboard -->
+            <li>
+                <a href="{{ path('app_summary') }}">
+                    <ion-icon name="stats-chart-outline"></ion-icon>
+                    <span>Summary Dashboard</span>
+                </a>
             </li>
             <li>
                 <a href="">
@@ -182,10 +189,10 @@
     {% block javascripts %}
     <script>
         document.getElementById('logout-button').addEventListener('click', function (e) {
-e.preventDefault(); // prevent default anchor behavior
-localStorage.clear(); // clear localStorage
-window.location.href = '/logout'; // redirect to Symfony logout route
-});
+            e.preventDefault(); // prevent default anchor behavior
+            localStorage.clear(); // clear localStorage
+            window.location.href = '/logout'; // redirect to Symfony logout route
+        });
     </script>
     <script>
         function toggleSidebar() {
