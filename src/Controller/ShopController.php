@@ -186,7 +186,7 @@ class ShopController extends AbstractController
     public function processPayment(int $id, Request $request, EntityManagerInterface $entityManager, StockRepository $stockRepository): JsonResponse
     {
         try {
-            // Initialize Stripe
+            // Initialize Stripe with parameter that comes from .env.local
             \Stripe\Stripe::setApiKey($this->getParameter('stripe_secret_key'));
             
             // Get the JSON data from the request
