@@ -78,18 +78,29 @@
                 {{ form_label(registrationForm.plainPassword.first) }}
                 {{ form_widget(registrationForm.plainPassword.first, {
                     'attr': {
-                        'class': 'form-control',
+                        'class': 'form-control password-input',
                         'placeholder': 'Votre mot de passe'
                     }
                 }) }}
                 {{ form_errors(registrationForm.plainPassword.first) }}
+                <div class="password-requirements">
+                    Le mot de passe doit contenir :
+                    <ul>
+                        <li>Au moins 8 caractères</li>
+                        <li>Au moins une lettre majuscule</li>
+                        <li>Au moins une lettre minuscule</li>
+                        <li>Au moins un chiffre</li>
+                        <li>Au moins un caractère spécial (@$!%*#?&)</li>
+                    </ul>
+                </div>
+                <div class="password-strength"></div>
             </div>
 
             <div class="form-group">
                 {{ form_label(registrationForm.plainPassword.second) }}
                 {{ form_widget(registrationForm.plainPassword.second, {
                     'attr': {
-                        'class': 'form-control',
+                        'class': 'form-control password-input',
                         'placeholder': 'Confirmez votre mot de passe'
                     }
                 }) }}
@@ -104,4 +115,50 @@
         {{ form_end(registrationForm) }}
     </div>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const passwordInput = document.querySelector('#{{ registrationForm.plainPassword.first.vars.id }}');
+            const strengthIndicator = document.querySelector('.password-strength');
+            const requirements = document.querySelectorAll('.password-requirements li');
+            
+            function checkPasswordStrength(password) {
+                let strength = 0;
+                const checks = {
+                    length: password.length >= 8,
+                    uppercase: /[A-Z]/.test(password),
+                    lowercase: /[a-z]/.test(password),
+                    numbers: /[0-9]/.test(password),
+                    special: /[@$!%*#?&]/.test(password)
+                };
+                
+                // Update requirements list
+                requirements[0].style.color = checks.length ? '#4caf50' : '#666';
+                requirements[1].style.color = checks.uppercase ? '#4caf50' : '#666';
+                requirements[2].style.color = checks.lowercase ? '#4caf50' : '#666';
+                requirements[3].style.color = checks.numbers ? '#4caf50' : '#666';
+                requirements[4].style.color = checks.special ? '#4caf50' : '#666';
+                
+                // Calculate strength
+                strength = Object.values(checks).filter(Boolean).length;
+                return strength;
+            }
+            
+            passwordInput.addEventListener('input', function() {
+                const strength = checkPasswordStrength(this.value);
+                strengthIndicator.className = 'password-strength';
+                
+                if (strength >= 5) {
+                    strengthIndicator.classList.add('strength-strong');
+                } else if (strength >= 3) {
+                    strengthIndicator.classList.add('strength-medium');
+                } else if (strength > 0) {
+                    strengthIndicator.classList.add('strength-weak');
+                }
+            });
+        });
+    </script>
 {% endblock %} 

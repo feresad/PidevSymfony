@@ -14,6 +14,7 @@ use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Regex;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 class RegisterFormType extends AbstractType
 {
@@ -91,10 +92,6 @@ class RegisterFormType extends AbstractType
                     new Length([
                         'min' => 8,
                         'minMessage' => 'Votre mot de passe doit comporter au moins {{ limit }} caractères',
-                    ]),
-                    new Regex([
-                        'pattern' => '/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/',
-                        'message' => 'Le mot de passe doit contenir au moins une lettre, un chiffre et un caractère spécial',
                     ]),
                 ],
             ])

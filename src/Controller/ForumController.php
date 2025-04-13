@@ -44,17 +44,14 @@ class ForumController extends AbstractController
         EntityManagerInterface $entityManager,
         RedditService $redditService
     ): Response {
-        $question = new Questions();
-        $utilisateur = $utilisateurRepository->findOneBy([], ['id' => 'ASC']);
+        /** @var Utilisateur|null $utilisateur */
+        $utilisateur = $this->getUser();
         if (!$utilisateur) {
-            $this->addFlash('error', 'No users found in the database. Please add a user.');
-            return $this->render('forum/topics.html.twig', [
-                'topics' => [],
-                'newTopicForm' => null,
-                'trendingPosts' => [],
-            ]);
+            $this->addFlash('error', 'You must be logged in to create a topic.');
+            return $this->redirectToRoute('app_login_page');
         }
 
+        $question = new Questions();
         $question->setUtilisateurId($utilisateur);
         $form = $this->createForm(TopicFormType::class, $question);
         $form->handleRequest($request);
@@ -379,6 +376,13 @@ class ForumController extends AbstractController
             return $this->redirectToRoute('forum_topics');
         }
 
+        /** @var Utilisateur|null $utilisateur */
+        $utilisateur = $this->getUser();
+        if (!$utilisateur || $question->getUtilisateurId()->getId() !== $utilisateur->getId()) {
+            $this->addFlash('error', 'You are not authorized to delete this topic.');
+            return $this->redirectToRoute('forum_topics');
+        }
+
         try {
             if ($question->getMediaPath()) {
                 $mediaPath = $this->getParameter('uploads_directory') . '\\' . $question->getMediaPath();
@@ -405,6 +409,13 @@ class ForumController extends AbstractController
         $question = $questionsRepository->find($id);
         if (!$question) {
             $this->addFlash('error', 'Topic not found.');
+            return $this->redirectToRoute('forum_topics');
+        }
+
+        /** @var Utilisateur|null $utilisateur */
+        $utilisateur = $this->getUser();
+        if (!$utilisateur || $question->getUtilisateurId()->getId() !== $utilisateur->getId()) {
+            $this->addFlash('error', 'You are not authorized to update this topic.');
             return $this->redirectToRoute('forum_topics');
         }
 
@@ -475,6 +486,13 @@ class ForumController extends AbstractController
         $type = $request->request->get('type');
         $voteType = $request->request->get('vote_type');
 
+        /** @var Utilisateur|null $utilisateur */
+        $utilisateur = $this->getUser();
+        if (!$utilisateur) {
+            $this->addFlash('error', 'You must be logged in to vote.');
+            return $this->redirectToRoute('app_login_page');
+        }
+
         if ($type === 'question') {
             $entity = $questionsRepository->find($id);
             if (!$entity) {
@@ -525,6 +543,12 @@ class ForumController extends AbstractController
         $id = $request->request->get('id');
         $type = $request->request->get('type');
         $voteType = $request->request->get('vote_type');
+
+        /** @var Utilisateur|null $utilisateur */
+        $utilisateur = $this->getUser();
+        if (!$utilisateur) {
+            return new JsonResponse(['success' => false, 'message' => 'You must be logged in to vote.'], 401);
+        }
 
         if ($type === 'question') {
             $entity = $questionsRepository->find($id);
@@ -597,7 +621,7 @@ class ForumController extends AbstractController
             'success' => true,
             'url' => $topicUrl,
             'title' => $question->getTitle() ?? '',
-            'content' => strip_tags($question->getContent() ?? ''), // Full content, no truncation
+            'content' => strip_tags($question->getContent() ?? ''),
             'image' => $imageUrl,
         ];
 

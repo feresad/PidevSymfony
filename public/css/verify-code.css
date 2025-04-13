@@ -1,0 +1,101 @@
+.verify-code-container {
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 30px;
+    background: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.verify-code-container h1 {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 28px;
+    font-weight: 600;
+}
+
+.verify-code-container p {
+    color: #666;
+    margin-bottom: 30px;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+.verify-code-container form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.verify-code-container input[type="text"] {
+    padding: 12px 20px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 24px;
+    transition: all 0.3s ease;
+    text-align: center;
+    letter-spacing: 8px;
+    color: #333;
+    font-weight: 600;
+    width: 100%;
+    max-width: 280px;
+    margin: 0 auto;
+    background-color: #fff;
+}
+
+.verify-code-container input[type="text"]::placeholder {
+    color: #bbb;
+    font-size: 16px;
+    letter-spacing: 1px;
+    font-weight: normal;
+}
+
+.verify-code-container input[type="text"]:focus {
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+    outline: none;
+    background-color: #fff;
+}
+
+.verify-code-container .btn-primary {
+    background-color: #4a90e2;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.verify-code-container .btn-primary:hover {
+    background-color: #357abd;
+    transform: translateY(-2px);
+}
+
+.alert-danger {
+    background-color: #ffebee;
+    color: #c62828;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border-left: 4px solid #c62828;
+}
+
+/* Responsive design */
+@media (max-width: 576px) {
+    .verify-code-container {
+        margin: 20px;
+        padding: 20px;
+    }
+    
+    .verify-code-container h1 {
+        font-size: 24px;
+    }
+    
+    .verify-code-container p {
+        font-size: 14px;
+    }
+} 

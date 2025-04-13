@@ -3,72 +3,34 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Collections\ArrayCollection;
+use App\Repository\ReservationRepository;
 
-
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: ReservationRepository::class)]
 class Reservation
 {
-    public function __construct()
-    {
-    }
-
-
     #[ORM\Id]
-    #[ORM\Column(type: "integer")]
-    private int $id;
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private ?int $id = null;
 
-    #[ORM\Column(type: "integer")]
-    private int $session_id_id;
+    #[ORM\Column(type: 'datetime')]
+    private \DateTimeInterface $dateReservation;
 
-    #[ORM\Column(type: "integer")]
-    private int $client_id;
+    #[ORM\ManyToOne(targetEntity: Session_game::class)]
+    #[ORM\JoinColumn(name: 'session_id_id', referencedColumnName: 'id', nullable: false)]
+    private Session_game $session;
 
-    #[ORM\Column(type: "date")]
-    private \DateTimeInterface $date_reservation;
+    #[ORM\Column(type: 'integer')]
+    private int $clientId;
 
-    public function getId(): int
-    {
-        return $this->id;
-    }
+    public function getId(): ?int { return $this->id; }
 
-    public function setId(int $id): self
-    {
-        $this->id = $id;
-        return $this;
-    }
+    public function getDateReservation(): \DateTimeInterface { return $this->dateReservation; }
+    public function setDateReservation(\DateTimeInterface $dateReservation): self { $this->dateReservation = $dateReservation; return $this; }
 
-    public function getSession_id_id(): int
-    {
-        return $this->session_id_id;
-    }
+    public function getSession(): Session_game { return $this->session; }
+    public function setSession(Session_game $session): self { $this->session = $session; return $this; }
 
-    public function setSession_id_id(int $session_id_id): self
-    {
-        $this->session_id_id = $session_id_id;
-        return $this;
-    }
-
-    public function getClient_id(): int
-    {
-        return $this->client_id;
-    }
-
-    public function setClient_id(int $client_id): self
-    {
-        $this->client_id = $client_id;
-        return $this;
-    }
-
-    public function getDate_reservation(): \DateTimeInterface
-    {
-        return $this->date_reservation;
-    }
-
-    public function setDate_reservation(\DateTimeInterface $date_reservation): self
-    {
-        $this->date_reservation = $date_reservation;
-        return $this;
-    }
-}
+    public function getClientId(): int { return $this->clientId; }
+    public function setClientId(int $clientId): self { $this->clientId = $clientId; return $this; }
+} 

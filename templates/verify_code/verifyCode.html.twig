@@ -2,20 +2,54 @@
 
 {% block title %}Vérification du code{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/verify-code.css') }}">
+{% endblock %}
+
 {% block body %}
-<div class="verify-code-container">
-    <h1>Vérification du Code</h1>
-    <p>Un code de vérification a été envoyé à votre adresse email. Veuillez l’entrer ci-dessous.</p>
+<div class="container">
+    <div class="verify-code-container">
+        <h1>Vérification du Code</h1>
+        <p>Un code de vérification a été envoyé à votre adresse email. Veuillez l'entrer ci-dessous.</p>
 
-    {% for message in app.flashes('error') %}
-        <div class="alert alert-danger">
-            {{ message }}
-        </div>
-    {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger">
+                {{ message }}
+            </div>
+        {% endfor %}
 
-    <form method="post" action="{{ path('app_check_otp') }}">
-        <input type="text" name="otp" placeholder="Code OTP" required class="form-control mb-3" />
-        <button type="submit" class="btn btn-primary">Vérifier</button>
-    </form>
+        <form method="post" action="{{ path('app_check_otp') }}">
+            <div class="form-group">
+                <input type="text" 
+                       name="otp" 
+                       placeholder="000000"
+                       required 
+                       maxlength="6"
+                       pattern="[0-9]*"
+                       inputmode="numeric"
+                       autocomplete="one-time-code"
+                       class="form-control" 
+                       autofocus />
+            </div>
+            <button type="submit" class="btn btn-primary">
+                Vérifier
+            </button>
+        </form>
+    </div>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const input = document.querySelector('input[name="otp"]');
+            
+            // Only allow numbers
+            input.addEventListener('input', function(e) {
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+        });
+    </script>
 {% endblock %}

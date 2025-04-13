@@ -1,0 +1,47 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ajouter une session{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .form-control {
+        color: white !important;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <h2 class="mb-0 text-center">Ajouter une nouvelle session</h2>
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-8">
+            {{ form_start(form) }}
+            <div class="mb-3">
+                {{ form_label(form.game, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                {{ form_widget(form.game, {'attr': {'class': 'form-control form-control-lg', 'placeholder': 'Entrez le nom du jeu'}}) }}
+                {{ form_errors(form.game, {'attr': {'class': 'text-danger'}}) }}
+            </div>
+            <div class="mb-3">
+                {{ form_label(form.prix, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                {{ form_widget(form.prix, {'attr': {'class': 'form-control form-control-lg', 'placeholder': 'Entrez le prix'}}) }}
+                {{ form_errors(form.prix, {'attr': {'class': 'text-danger'}}) }}
+            </div>
+            <div class="mb-3">
+                {{ form_label(form.dureeSession, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                {{ form_widget(form.dureeSession, {'attr': {'class': 'form-control form-control-lg', 'placeholder': 'Entrez la durée'}}) }}
+                {{ form_errors(form.dureeSession, {'attr': {'class': 'text-danger'}}) }}
+
+            <div class="mb-3">
+                {{ form_label(form.image, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                {{ form_widget(form.image, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                {{ form_errors(form.image, {'attr': {'class': 'text-danger'}}) }}
+            </div>
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary btn-lg">Ajouter la session</button>
+            </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}
