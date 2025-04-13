@@ -18,8 +18,8 @@
     padding: 20px;
     margin-bottom: 15px;
     background-color: #232930;
-    border: 1px solid #293139;
-    border-radius: 5px;
+    border: 1px solid #292b39;
+    border-radius: 20px;
     transition: background-color 0.3s ease;
 }
 .container .nk-forum .nk-forum-item:hover {
@@ -149,7 +149,7 @@
     border-bottom: 1px solid #444 !important;
 }
 .reply-form-container, .update-form-container {
-    margin-left: 100px; /* Indent to align with the content */
+    margin-left: 100px; 
     padding: 10px;
     background-color: #232930;
     border: 1px solid #293139;
@@ -158,4 +158,78 @@
 
 .reply-form-container .nk-btn, .update-form-container .nk-btn {
     margin-right: 10px;
+}
+.notification-wrapper {
+    position: relative;
+    display: inline-block;
+    margin-left: 15px;
+}
+
+.notification-bell {
+    font-size: 20px;
+    color: #fff;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.notification-bell:hover {
+    color: #0585e6;
+}
+
+.notification-count {
+    position: absolute;
+    top: -5px;
+    right: -10px;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
+    text-align: center;
+    font-size: 12px;
+}
+
+.notification-dropdown {
+    position: absolute;
+    top: 35px;
+    right: 0;
+    background: rgba(35, 41, 48, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+    width: 300px;
+    max-height: 400px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.notification-list {
+    margin: 0;
+}
+
+.notification-item {
+    padding: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: #d1d5db;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.notification-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.notification-item a {
+    color: #d1d5db;
+    text-decoration: none;
+    display: block;
+}
+
+.notification-item small {
+    display: block;
+    color: #a0a0a0;
+    font-size: 0.8em;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
 }

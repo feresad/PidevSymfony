@@ -1,9 +1,6 @@
-{% extends 'baseadmin.html.twig' %}
-
 {% block title %}{{ game ? 'Edit Game' : 'Add New Game' }}{% endblock %}
 
 {% block body %}
-    <!-- Display Flash Messages -->
     {% for label, messages in app.flashes %}
         {% for message in messages %}
             <div class="flash-{{ label }}">
@@ -48,42 +45,87 @@
         </div>
     </div>
 
-    <!-- Custom CSS -->
     <style>
+        body {
+            background: #091221; 
+            color: #fff;
+        }
+
+        .details {
+            padding: 20px;
+        }
+
+        .recentOrders {
+            background: rgba(9, 18, 33, 0.8); 
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .cardHeader {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .cardHeader h2 {
+            font-size: 1.8rem;
+            color: #0585e6; 
+        }
+
         .form-group {
             margin-bottom: 20px;
         }
+
         .form-group label {
             display: block;
             margin-bottom: 5px;
             font-weight: bold;
+            color: #fe0369; 
         }
+
         .form-group input, .form-group select {
             width: 100%;
             padding: 8px;
             border-radius: 5px;
-            border: 1px solid #ccc;
+            border: 1px solid #0585e6; 
+            background: #0236a5;
+            color: #fff;
         }
+
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
         .btn {
             padding: 10px 20px;
-            background: #03a9f4;
+            background: #0585e6; 
             color: #fff;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            transition: background 0.3s ease;
         }
+
+        .btn:hover {
+            background: #fe0369; 
+        }
+
         .flash-success {
-            color: green;
+            color: #fff;
             padding: 10px;
             margin: 10px 0;
-            background: #e0f7e0;
+            background: rgba(5, 133, 230, 0.3); 
+            border: 1px solid #0585e6;
             border-radius: 5px;
         }
+
         .flash-error {
-            color: red;
+            color: #fff;
             padding: 10px;
             margin: 10px 0;
-            background: #ffe0e0;
+            background: rgba(254, 3, 105, 0.3); 
+            border: 1px solid #fe0369;
             border-radius: 5px;
         }
     </style>

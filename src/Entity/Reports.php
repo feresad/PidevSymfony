@@ -3,43 +3,51 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Collections\ArrayCollection;
-
 use App\Entity\Utilisateur;
 
 #[ORM\Entity]
+#[ORM\Table(name: "reports")]
 class Reports
 {
     public function __construct()
     {
+        $this->status = 'PENDING';
+        $this->created_at = new \DateTime();
     }
 
-
     #[ORM\Id]
+    #[ORM\GeneratedValue]
     #[ORM\Column(type: "integer")]
     private int $reportId;
 
-        #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: "reportss")]
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: "reportss")]
     #[ORM\JoinColumn(name: 'reporterId', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private Utilisateur $reporterId;
 
-        #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: "reportss")]
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: "reportss")]
     #[ORM\JoinColumn(name: 'reportedUserId', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private Utilisateur $reportedUserId;
 
-    #[ORM\Column(type: "string")]
+    #[ORM\Column(
+        type: "string",
+        columnDefinition: "ENUM('MINEUR_IMPLIQUE','HARCELEMENT','SUICIDE_AUTOMUTILATION','CONTENU_VIOLENT','VENTE_ARTICLES_RESTREINTS','CONTENU_ADULTE','ARNAQUE_FAUSSE_INFORMATION','CONTENU_NON_DESIRE')"
+    )]
     private string $reason;
 
-    #[ORM\Column(type: "string", length: 255)]
-    private string $evidence;
+    #[ORM\Column(type: "string", length: 255, nullable: true)]
+    private ?string $evidence = null;
 
-    #[ORM\Column(type: "string")]
-    private string $status;
+    #[ORM\Column(
+        type: "string",
+        columnDefinition: "ENUM('PENDING','REVIEWED','RESOLVED')",
+        options: ["default" => "PENDING"]
+    )]
+    private ?string $status = 'PENDING';
 
     #[ORM\Column(type: "datetime")]
     private \DateTimeInterface $created_at;
 
+    // Getters and Setters remain unchanged...
     public function getReportId(): int
     {
         return $this->reportId;
@@ -51,23 +59,23 @@ class Reports
         return $this;
     }
 
-    public function getReporterId(): int
+    public function getReporterId(): Utilisateur
     {
         return $this->reporterId;
     }
 
-    public function setReporterId(int $reporterId): self
+    public function setReporterId(Utilisateur $reporterId): self
     {
         $this->reporterId = $reporterId;
         return $this;
     }
 
-    public function getReportedUserId(): int
+    public function getReportedUserId(): Utilisateur
     {
         return $this->reportedUserId;
     }
 
-    public function setReportedUserId(int $reportedUserId): self
+    public function setReportedUserId(Utilisateur $reportedUserId): self
     {
         $this->reportedUserId = $reportedUserId;
         return $this;
@@ -84,12 +92,12 @@ class Reports
         return $this;
     }
 
-    public function getEvidence(): string
+    public function getEvidence(): ?string
     {
         return $this->evidence;
     }
 
-    public function setEvidence(string $evidence): self
+    public function setEvidence(?string $evidence): self
     {
         $this->evidence = $evidence;
         return $this;
@@ -100,18 +108,18 @@ class Reports
         return $this->status;
     }
 
-    public function setStatus(string $status): self
+    public function setStatus(?string $status): self
     {
-        $this->status = $status;
+        $this->status = $status ?? 'PENDING'; // Fallback to 'PENDING' if null
         return $this;
     }
 
-    public function getCreated_at(): \DateTimeInterface
+    public function getCreatedAt(): \DateTimeInterface
     {
         return $this->created_at;
     }
 
-    public function setCreated_at(\DateTimeInterface $created_at): self
+    public function setCreatedAt(\DateTimeInterface $created_at): self
     {
         $this->created_at = $created_at;
         return $this;

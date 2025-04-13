@@ -4,6 +4,9 @@ namespace App\Controller;
 use App\Entity\Utilisateur;
 
 use App\Entity\Commentaire;
+use App\Entity\Notification;
+use App\Repository\NotificationRepository;
+
 use App\Entity\Questions;
 use App\Entity\QuestionVotes;
 use App\Entity\CommentaireVotes;
@@ -43,70 +46,98 @@ class CommentController extends AbstractController
     }
 
     #[Route('/forum/topic/{id}/comment', name: 'comment_create', methods: ['POST'])]
-    public function create(
-        int $id,
-        Request $request,
-        QuestionsRepository $questionsRepository,
-        UtilisateurRepository $utilisateurRepository,
-        EntityManagerInterface $entityManager
-    ): Response {
-        $question = $questionsRepository->find($id);
-        if (!$question) {
-            $this->addFlash('error', 'Topic not found.');
-            return $this->redirectToRoute('forum_topics');
-        }
-
-        /** @var Utilisateur|null $utilisateur */
-        $utilisateur = $this->getUser();
-        if (!$utilisateur) {
-            $this->addFlash('error', 'You must be logged in to comment.');
-            return $this->redirectToRoute('app_login_page');
-        }
-
-        $comment = new Commentaire();
-        $comment->setQuestionId($question);
-        $comment->setUtilisateurId($utilisateur);
-
-        $form = $this->createForm(CommentFormType::class, $comment);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $type = $request->request->get('type');
-            $parentId = $request->request->get('parent_id');
-
-            if ($type === 'comment' && $parentId) {
-                $parentComment = $entityManager->getRepository(Commentaire::class)->find($parentId);
-                if ($parentComment) {
-                    $comment->setParentCommentaireId($parentComment);
-                    // Tag the original commenter in the content
-                    $originalCommenter = $parentComment->getUtilisateurId()->getNickname();
-                    $currentContent = $comment->getContenu();
-                    $taggedContent = "@{$originalCommenter} {$currentContent}";
-                    $comment->setContenu($taggedContent);
-                } else {
-                    $this->addFlash('error', 'Parent comment not found.');
-                    return $this->redirectToRoute('forum_single_topic', ['id' => $id]);
-                }
-            }
-
-            try {
-                $entityManager->beginTransaction();
-                $comment->setVotes(0);
-                $comment->setCreationAt(new \DateTime());
-                $entityManager->persist($comment);
-                $entityManager->flush();
-                $entityManager->commit();
-
-                $this->addFlash('success', 'Comment added successfully!');
-            } catch (\Exception $e) {
-                $entityManager->rollback();
-                $this->logger->error('Error adding comment', ['error' => $e->getMessage()]);
-                $this->addFlash('error', 'Error adding comment: ' . $e->getMessage());
-            }
-        }
-
-        return $this->redirectToRoute('forum_single_topic', ['id' => $id]);
+public function create(
+    int $id,
+    Request $request,
+    QuestionsRepository $questionsRepository,
+    UtilisateurRepository $utilisateurRepository,
+    EntityManagerInterface $entityManager
+): Response {
+    $question = $questionsRepository->find($id);
+    if (!$question) {
+        $this->addFlash('error', 'Topic not found.');
+        return $this->redirectToRoute('forum_topics');
     }
+
+    /** @var Utilisateur|null $utilisateur */
+    $utilisateur = $this->getUser();
+    if (!$utilisateur) {
+        $this->addFlash('error', 'Vous devez être connecté pour commenter.');
+        return $this->redirectToRoute('app_login_page');
+    }
+
+    $comment = new Commentaire();
+    $comment->setQuestionId($question);
+    $comment->setUtilisateurId($utilisateur);
+
+    $form = $this->createForm(CommentFormType::class, $comment);
+    $form->handleRequest($request);
+
+    if ($form->isSubmitted() && $form->isValid()) {
+        $type = $request->request->get('type');
+        $parentId = $request->request->get('parent_id');
+        $parentComment = null;
+
+        if ($type === 'comment' && $parentId) {
+            $parentComment = $entityManager->getRepository(Commentaire::class)->find($parentId);
+            if ($parentComment) {
+                $comment->setParentCommentaireId($parentComment);
+                $originalCommenter = $parentComment->getUtilisateurId()->getNickname();
+                $currentContent = $comment->getContenu();
+                $taggedContent = "@{$originalCommenter} {$currentContent}";
+                $comment->setContenu($taggedContent);
+            } else {
+                $this->addFlash('error', 'Parent comment not found.');
+                return $this->redirectToRoute('forum_single_topic', ['id' => $id]);
+            }
+        }
+
+        try {
+            // Set comment properties
+            $comment->setVotes(0);
+            $comment->setCreationAt(new \DateTime());
+            $entityManager->persist($comment);
+
+            $targetUser = $parentComment ? $parentComment->getUtilisateurId() : $question->getUtilisateurId();
+            if ($targetUser && $targetUser->getId() !== $utilisateur->getId()) {
+                $notification = new Notification();
+                $notification->setUser($targetUser);
+                $notification->setMessage("Quelqu'un a commenté votre " . ($parentComment ? "commentaire" : "question") . ": '{$question->getTitle()}'");
+                $entityManager->persist($notification);
+            }
+
+            $entityManager->flush();
+
+            if (isset($notification)) {
+                $notification->setLink($this->generateUrl('forum_single_topic', ['id' => $question->getQuestionId()]) . '#comment-' . $comment->getCommentaireId());
+                $entityManager->flush();
+            }
+
+            $this->addFlash('success', 'Commentaire ajouté avec succès !');
+        } catch (\Exception $e) {
+            $this->logger->error('Error adding comment or notification', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            $this->addFlash('error', 'Error adding comment: ' . $e->getMessage());
+        }
+    } else {
+        if ($form->isSubmitted()) {
+            $errors = $form->getErrors(true, true);
+            $errorMessages = [];
+            foreach ($errors as $error) {
+                $errorMessages[] = $error->getMessage();
+            }
+            $this->logger->warning('Form validation failed', ['errors' => $errorMessages]);
+            $this->addFlash('error', 'Form validation failed: ' . implode(', ', $errorMessages));
+        } else {
+            $this->logger->warning('Form was not submitted');
+            $this->addFlash('error', 'Form was not submitted. Please try again.');
+        }
+    }
+
+    return $this->redirectToRoute('forum_single_topic', ['id' => $id]);
+}
 
     #[Route('/api/check-profanity', name: 'api_check_profanity', methods: ['POST'])]
     public function checkProfanity(Request $request): JsonResponse
@@ -472,4 +503,53 @@ class CommentController extends AbstractController
             return new JsonResponse(['success' => false, 'message' => 'Error processing reaction'], 500);
         }
     }
+    #[Route('/api/notifications', name: 'api_notifications', methods: ['GET'])]
+    public function getNotifications(NotificationRepository $notificationRepository): JsonResponse
+    {
+        /** @var Utilisateur|null $utilisateur */
+        $utilisateur = $this->getUser();
+        if (!$utilisateur) {
+            return new JsonResponse(['success' => false, 'message' => 'You must be logged in.'], 401);
+        }
+    
+        try {
+            $notifications = $notificationRepository->findUnreadByUser($utilisateur->getId());
+            $data = array_map(function (Notification $notification) {
+                return [
+                    'id' => $notification->getId(),
+                    'message' => $notification->getMessage(),
+                    'link' => $notification->getLink(),
+                    'createdAt' => $notification->getCreatedAt()->format('Y-m-d H:i:s'),
+                ];
+            }, $notifications);
+    
+            return new JsonResponse(['success' => true, 'notifications' => $data]);
+        } catch (\Exception $e) {
+            $this->logger->error('Error fetching notifications', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return new JsonResponse(['success' => false, 'message' => 'Error fetching notifications'], 500);
+        }
+    }
+
+#[Route('/api/notifications/read/{id}', name: 'api_notifications_read', methods: ['POST'])]
+public function markNotificationRead(int $id, EntityManagerInterface $entityManager): JsonResponse
+{
+    /** @var Utilisateur|null $utilisateur */
+    $utilisateur = $this->getUser();
+    if (!$utilisateur) {
+        return new JsonResponse(['success' => false, 'message' => 'You must be logged in.'], 401);
+    }
+
+    $notification = $entityManager->getRepository(Notification::class)->find($id);
+    if (!$notification || $notification->getUser()->getId() !== $utilisateur->getId()) {
+        return new JsonResponse(['success' => false, 'message' => 'Notification not found or not authorized.'], 404);
+    }
+
+    $notification->setIsRead(true);
+    $entityManager->flush();
+
+    return new JsonResponse(['success' => true, 'message' => 'Notification marked as read']);
+}
 }

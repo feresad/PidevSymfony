@@ -18,71 +18,59 @@
             <div class="alert alert-danger" role="alert">{{ flash_error }}</div>
         {% endfor %}
 
-        {{ form_start(registrationForm, {'attr': {'class': 'registration-form'}}) }}
+        {{ form_start(registrationForm, {'attr': {'class': 'registration-form', 'onsubmit': 'return validateForm(event)'}}) }}
+            {% if not registrationForm.vars.valid %}
+                <div class="alert alert-danger">
+                    {{ form_errors(registrationForm) }}
+                </div>
+            {% endif %}
+
             <div class="form-group">
                 {{ form_label(registrationForm.nom) }}
-                {{ form_widget(registrationForm.nom, {
-                    'attr': {
-                        'class': 'form-control',
-                        'placeholder': 'Votre nom'
-                    }
-                }) }}
-                {{ form_errors(registrationForm.nom) }}
+                {{ form_widget(registrationForm.nom) }}
+                <div class="error-message">
+                    {{ form_errors(registrationForm.nom) }}
+                </div>
             </div>
 
             <div class="form-group">
                 {{ form_label(registrationForm.prenom) }}
-                {{ form_widget(registrationForm.prenom, {
-                    'attr': {
-                        'class': 'form-control',
-                        'placeholder': 'Votre prénom'
-                    }
-                }) }}
-                {{ form_errors(registrationForm.prenom) }}
+                {{ form_widget(registrationForm.prenom) }}
+                <div class="error-message">
+                    {{ form_errors(registrationForm.prenom) }}
+                </div>
             </div>
 
             <div class="form-group">
                 {{ form_label(registrationForm.email) }}
-                {{ form_widget(registrationForm.email, {
-                    'attr': {
-                        'class': 'form-control',
-                        'placeholder': 'Votre email'
-                    }
-                }) }}
-                {{ form_errors(registrationForm.email) }}
+                {{ form_widget(registrationForm.email) }}
+                <div class="error-message">
+                    {{ form_errors(registrationForm.email) }}
+                </div>
             </div>
 
             <div class="form-group">
                 {{ form_label(registrationForm.nickname) }}
-                {{ form_widget(registrationForm.nickname, {
-                    'attr': {
-                        'class': 'form-control',
-                        'placeholder': "Votre nom d'utilisateur"
-                    }
-                }) }}
-                {{ form_errors(registrationForm.nickname) }}
+                {{ form_widget(registrationForm.nickname) }}
+                <div class="error-message">
+                    {{ form_errors(registrationForm.nickname) }}
+                </div>
             </div>
 
             <div class="form-group">
                 {{ form_label(registrationForm.numero) }}
-                {{ form_widget(registrationForm.numero, {
-                    'attr': {
-                        'class': 'form-control',
-                        'placeholder': 'Votre numéro de téléphone'
-                    }
-                }) }}
-                {{ form_errors(registrationForm.numero) }}
+                {{ form_widget(registrationForm.numero) }}
+                <div class="error-message">
+                    {{ form_errors(registrationForm.numero) }}
+                </div>
             </div>
 
             <div class="form-group">
                 {{ form_label(registrationForm.plainPassword.first) }}
-                {{ form_widget(registrationForm.plainPassword.first, {
-                    'attr': {
-                        'class': 'form-control password-input',
-                        'placeholder': 'Votre mot de passe'
-                    }
-                }) }}
-                {{ form_errors(registrationForm.plainPassword.first) }}
+                {{ form_widget(registrationForm.plainPassword.first) }}
+                <div class="error-message">
+                    {{ form_errors(registrationForm.plainPassword.first) }}
+                </div>
                 <div class="password-requirements">
                     Le mot de passe doit contenir :
                     <ul>
@@ -98,13 +86,10 @@
 
             <div class="form-group">
                 {{ form_label(registrationForm.plainPassword.second) }}
-                {{ form_widget(registrationForm.plainPassword.second, {
-                    'attr': {
-                        'class': 'form-control password-input',
-                        'placeholder': 'Confirmez votre mot de passe'
-                    }
-                }) }}
-                {{ form_errors(registrationForm.plainPassword.second) }}
+                {{ form_widget(registrationForm.plainPassword.second) }}
+                <div class="error-message">
+                    {{ form_errors(registrationForm.plainPassword.second) }}
+                </div>
             </div>
 
             <button type="submit" class="btn-register">S'inscrire</button>
@@ -124,6 +109,21 @@
             const passwordInput = document.querySelector('#{{ registrationForm.plainPassword.first.vars.id }}');
             const strengthIndicator = document.querySelector('.password-strength');
             const requirements = document.querySelectorAll('.password-requirements li');
+            const numeroInput = document.querySelector('#{{ registrationForm.numero.vars.id }}');
+            
+            // Add input validation for number field
+            numeroInput.addEventListener('input', function(e) {
+                // Remove any non-numeric characters
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+
+            // Prevent paste of non-numeric content
+            numeroInput.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+                const numericText = pastedText.replace(/[^0-9]/g, '');
+                document.execCommand('insertText', false, numericText);
+            });
             
             function checkPasswordStrength(password) {
                 let strength = 0;
@@ -159,6 +159,34 @@
                     strengthIndicator.classList.add('strength-weak');
                 }
             });
+
+            // Form validation
+            function validateForm(event) {
+                const form = event.target;
+                let isValid = true;
+                let firstErrorField = null;
+
+                // Check all required fields
+                const requiredFields = form.querySelectorAll('[required]');
+                requiredFields.forEach(field => {
+                    if (!field.value) {
+                        isValid = false;
+                        if (!firstErrorField) {
+                            firstErrorField = field;
+                        }
+                    }
+                });
+
+                if (!isValid) {
+                    event.preventDefault();
+                    if (firstErrorField) {
+                        firstErrorField.focus();
+                    }
+                    return false;
+                }
+
+                return true;
+            }
         });
     </script>
 {% endblock %} 

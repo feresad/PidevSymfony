@@ -33,13 +33,16 @@ class SessionType extends AbstractType
                     'title' => 'Entrez le prix en euros (€)'
                 ]
             ])
-            ->add('dureeSession', TextType::class, [
-                'label' => 'Durée',
+            ->add('dureeSession', NumberType::class, [
+                'label' => 'Durée (minutes)',
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Ex: 2 heures, 90 minutes...',
-                    'title' => 'Spécifiez la durée de la session'
-                ]
+                    'step' => '30',
+                    'min' => '30',
+                    'placeholder' => 'Ex: 30, 60, 90...',
+                    'title' => 'Spécifiez la durée de la session en minutes (par intervalles de 30)'
+                ],
+                'html5' => true
             ])
             ->add('image', FileType::class, [
                 'label' => 'Image',

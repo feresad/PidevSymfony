@@ -1,0 +1,79 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Réservations des Sessions{% endblock %}
+
+{% block body %}
+<div class="nk-main">
+    <div class="nk-gap-2"></div>
+    <div class="container">
+        <div class="nk-gap-2"></div>
+        <h1 class="nk-title text-center">Réservations des Sessions</h1>
+        <h3 class="nk-sub-title text-center mb-30">Liste des réservations de coaching</h3>
+        <div class="nk-gap-2"></div>
+
+        {# Affichage des messages flash #}
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label == 'success' ? 'success' : 'danger' }} text-center" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+        
+        <div class="table-responsive">
+            <table class="nk-table">
+                <thead>
+                    <tr>
+                        <th>Client</th>
+                        <th>Email</th>
+                        <th>Jeu</th>
+                        <th>Prix</th>
+                        <th>Date</th>
+                        <th>Durée</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reservation in reservations %}
+                        <tr>
+                            <td>{{ reservation.client.nom }} {{ reservation.client.prenom }}</td>
+                            <td>{{ reservation.client.email }}</td>
+                            <td>{{ reservation.session.game }}</td>
+                            <td>{{ reservation.session.prix }} DT</td>
+                            <td>{{ reservation.dateReservation|date('d/m/Y') }}</td>
+                            <td>{{ reservation.session.dureeSession }}</td>
+                            <td>
+                                <form action="{{ path('send_meet_link', {'id': reservation.id}) }}" method="post" style="display: inline;">
+                                    <button type="submit" class="nk-btn nk-btn-rounded nk-btn-color-main-1 btn-sm">
+                                        <i class="fas fa-video mr-1"></i> Envoyer le lien
+                                    </button>
+                                </form>
+                                <form action="{{ path('refuse_reservation', {'id': reservation.id}) }}" method="post" style="display: inline; margin-left: 5px;">
+                                    <button type="submit" class="nk-btn nk-btn-rounded nk-btn-color-main-1 btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir refuser cette réservation ?');">
+                                        <i class="fas fa-times mr-1"></i> Refuser
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center">
+                                <div class="alert alert-info">
+                                    Aucune réservation trouvée.
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="text-center mt-4">
+            <a href="{{ path('session_list') }}" class="nk-btn nk-btn-rounded nk-btn-color-main-1">Retour aux Sessions</a>
+        </div>
+    </div>
+    <div class="nk-gap-2"></div>
+</div>
+ <!-- Background de la page d'accueil -->
+    <img class="nk-page-background-top" src="{{ asset('images/bg-top.png') }}" alt="">
+    <img class="nk-page-background-bottom" src="{{ asset('images/bg-bottom.png') }}" alt="">
+{% endblock %}

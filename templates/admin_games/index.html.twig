@@ -30,7 +30,14 @@
         <div class="recentOrders">
             <div class="cardHeader">
                 <h2>Games</h2>
-                <a href="{{ path('admin_games_new') }}" class="btn">Add New Game</a>
+                <div class="header-actions">
+                    <!-- Search Bar -->
+                    <form method="get" action="{{ path('admin_games_dashboard') }}" class="search-form">
+                        <input type="text" name="search" placeholder="Rechercher des jeux par nom..." value="{{ searchTerm|default('') }}" class="search-input">
+                        <button type="submit" class="btn search-btn">Search</button>
+                    </form>
+                    <a href="{{ path('admin_games_new') }}" class="btn">Ajouter</a>
+                </div>
             </div>
 
             <div class="gameCards">
@@ -50,10 +57,10 @@
                                 <p><strong>Questions:</strong> {{ game.getQuestions()|length }}</p>
                             </div>
                             <div class="gameActions">
-                                <a href="{{ path('admin_games_edit', {'id': game.getGameId()}) }}" class="btn">Edit</a>
+                                <a href="{{ path('admin_games_edit', {'id': game.getGameId()}) }}" class="btn">Modifier</a>
                                 <form method="post" action="{{ path('admin_games_delete', {'id': game.getGameId()}) }}" onsubmit="return confirm('Are you sure you want to delete this game?');">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ game.getGameId()) }}">
-                                    <button type="submit" class="btn danger">Delete</button>
+                                    <button type="submit" class="btn danger">Supprimer</button>
                                 </form>
                             </div>
                         </div>
@@ -65,58 +72,206 @@
 
     <!-- Custom CSS for game cards -->
     <style>
+        body {
+            background: #091221;
+            color: #fff;
+        }
+
+        .cardBox {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .card {
+            background: linear-gradient(145deg, #0236a5, #0585e6);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(5, 133, 230, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .numbers {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #fe0369;
+        }
+
+        .cardName {
+            font-size: 1.2rem;
+            color: #fff;
+            opacity: 0.9;
+        }
+
+        .iconBx ion-icon {
+            font-size: 2.5rem;
+            color: #fe0369;
+        }
+
+        .details {
+            padding: 20px;
+        }
+
+        .recentOrders {
+            background: rgba(9, 18, 33, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .cardHeader {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .cardHeader h2 {
+            font-size: 1.8rem;
+            color: #0585e6;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .search-form {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-input {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #0585e6;
+            background: #0236a5;
+            color: #fff;
+            width: 200px;
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .search-btn {
+            padding: 8px 15px;
+            background: #fe0369;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .search-btn:hover {
+            background: #0585e6;
+        }
+
         .gameCards {
             display: flex;
             flex-wrap: wrap;
             gap: 20px;
             padding: 20px;
         }
+
         .gameCard {
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 7px 25px rgba(0, 0, 0, 0.08);
+            background: linear-gradient(145deg, #0236a5, #091221);
+            border: 1px solid #0585e6;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(5, 133, 230, 0.2);
             padding: 15px;
             width: 300px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
+
+        .gameCard:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(254, 3, 105, 0.3);
+        }
+
         .gameImage {
-            width: 100%;
-            height: 100%;
+            width: 50%;
+            height: 50%;
             object-fit: cover;
-            border-radius: 5px;
+            border-radius: 10px;
+            
         }
+
         .gameInfo {
             padding: 10px 0;
             text-align: center;
+            color: #fff;
         }
+
+        .gameInfo h3 {
+            font-size: 1.3rem;
+            color: #fe0369;
+            margin-bottom: 5px;
+        }
+
+        .gameInfo p {
+            font-size: 0.9rem;
+            color: #0585e6;
+            margin: 3px 0;
+        }
+
         .gameActions {
             display: flex;
             gap: 10px;
+            margin-top: 10px;
         }
+
         .btn {
-            padding: 5px 15px;
+            padding: 8px 20px;
             text-decoration: none;
+            color:rgb(255, 255, 255);
+            background: #0585e6;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #fe0369;
             color: #fff;
-            background: #03a9f4;
-            border-radius: 5px;
         }
+
         .btn.danger {
-            background: #f44336;
+            background: #fe0369;
+            color: #fff;
         }
+
+        .btn.danger:hover {
+            background: #0585e6;
+        }
+
         .flash-success {
-            color: green;
+            color: #fff;
             padding: 10px;
             margin: 10px 0;
-            background: #e0f7e0;
+            background: rgba(5, 133, 230, 0.3);
+            border: 1px solid #0585e6;
             border-radius: 5px;
         }
+
         .flash-error {
-            color: red;
+            color: #fff;
             padding: 10px;
             margin: 10px 0;
-            background: #ffe0e0;
+            background: rgba(254, 3, 105, 0.3);
+            border: 1px solid #fe0369;
             border-radius: 5px;
         }
     </style>

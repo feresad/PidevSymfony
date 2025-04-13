@@ -23,6 +23,10 @@ class RegisterFormType extends AbstractType
         $builder
             ->add('nom', TextType::class, [
                 'label' => 'Nom',
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => 'Votre nom'
+                ],
                 'constraints' => [
                     new NotBlank([
                         'message' => 'Veuillez entrer votre nom',
@@ -35,6 +39,10 @@ class RegisterFormType extends AbstractType
             ])
             ->add('prenom', TextType::class, [
                 'label' => 'Prénom',
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => 'Votre prénom'
+                ],
                 'constraints' => [
                     new NotBlank([
                         'message' => 'Veuillez entrer votre prénom',
@@ -46,6 +54,10 @@ class RegisterFormType extends AbstractType
                 ],
             ])
             ->add('email', EmailType::class, [
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => 'Votre email'
+                ],
                 'constraints' => [
                     new NotBlank([
                         'message' => 'Veuillez entrer votre email',
@@ -57,6 +69,10 @@ class RegisterFormType extends AbstractType
             ])
             ->add('nickname', TextType::class, [
                 'label' => "Nom d'utilisateur",
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => "Votre nom d'utilisateur"
+                ],
                 'constraints' => [
                     new NotBlank([
                         'message' => "Veuillez entrer un nom d'utilisateur",
@@ -69,31 +85,53 @@ class RegisterFormType extends AbstractType
             ])
             ->add('numero', TextType::class, [
                 'label' => 'Numéro de téléphone',
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => 'Votre numéro de téléphone',
+                    'pattern' => '[0-9]*',
+                    'inputmode' => 'numeric'
+                ],
                 'constraints' => [
                     new NotBlank([
                         'message' => 'Veuillez entrer votre numéro de téléphone',
                     ]),
                     new Regex([
-                        'pattern' => '/^[0-9]{8}$/',
-                        'message' => 'Veuillez entrer un numéro de téléphone valide (8 chiffres)',
+                        'pattern' => '/^[0-9]+$/',
+                        'message' => 'Le numéro de téléphone ne doit contenir que des chiffres',
                     ]),
                 ],
             ])
             ->add('plainPassword', RepeatedType::class, [
                 'type' => PasswordType::class,
                 'mapped' => false,
-                'first_options' => ['label' => 'Mot de passe'],
-                'second_options' => ['label' => 'Confirmer le mot de passe'],
-                'invalid_message' => 'Les mots de passe doivent correspondre',
-                'constraints' => [
-                    new NotBlank([
-                        'message' => 'Veuillez entrer un mot de passe',
-                    ]),
-                    new Length([
-                        'min' => 8,
-                        'minMessage' => 'Votre mot de passe doit comporter au moins {{ limit }} caractères',
-                    ]),
+                'first_options' => [
+                    'label' => 'Mot de passe',
+                    'attr' => [
+                        'class' => 'form-control password-input',
+                        'placeholder' => 'Votre mot de passe'
+                    ],
+                    'constraints' => [
+                        new NotBlank([
+                            'message' => 'Veuillez entrer un mot de passe',
+                        ]),
+                        new Length([
+                            'min' => 8,
+                            'minMessage' => 'Votre mot de passe doit comporter au moins {{ limit }} caractères',
+                        ]),
+                        new Regex([
+                            'pattern' => '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/',
+                            'message' => 'Le mot de passe doit contenir au moins une lettre majuscule, une lettre minuscule, un chiffre et un caractère spécial',
+                        ]),
+                    ],
                 ],
+                'second_options' => [
+                    'label' => 'Confirmer le mot de passe',
+                    'attr' => [
+                        'class' => 'form-control password-input',
+                        'placeholder' => 'Confirmez votre mot de passe'
+                    ],
+                ],
+                'invalid_message' => 'Les mots de passe doivent correspondre',
             ])
         ;
     }
@@ -102,6 +140,9 @@ class RegisterFormType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Utilisateur::class,
+            'attr' => [
+                'novalidate' => 'novalidate'
+            ]
         ]);
     }
 }

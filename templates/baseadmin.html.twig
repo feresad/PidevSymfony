@@ -10,6 +10,48 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('css/StyleEvenement.css') }}">
+    <style>
+        .topbar .user {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .topbar .user a {
+            display: block;
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .topbar .user a::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .topbar .user a:hover::after {
+            opacity: 1;
+        }
+
+        .topbar .user img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
     {% endblock %}
 </head>
 <body>
@@ -39,8 +81,10 @@
                 </button>
                 <ul class="sub-menu">
                     <div>
+                        <li class="sub-header">Evenement</li>
                         <li><a href="{{ path('evenement_ajouter') }}">Ajouter un Evenement</a></li>
                         <li><a href="{{ path('evenement_list_admin') }}">Liste Evenements</a></li>
+                        <li class="sub-header">Categorie</li>
                         <li><a href="{{ path('categorie_ajouter') }}">Ajouter une Categorie</a></li>
                         <li><a href="{{ path('categorie_list_admin') }}">Liste Categories</a></li>
                     </div>
@@ -49,7 +93,7 @@
             <!-- Add the Gaming Dashboard link here -->
             <li>
                 <a href="{{ path('admin_games_dashboard') }}">
-                        <ion-icon name="game-controller-outline"></ion-icon>
+                    <ion-icon name="game-controller-outline"></ion-icon>
                     <span>Gaming Dashboard</span>
                 </a>
             </li>
@@ -71,28 +115,17 @@
                     </div>
                 </ul>
             </li>
+            <!-- Nouveau bouton pour Summary Dashboard -->
             <li>
-                <a href="">
-                    <ion-icon name="chatbubbles-outline"></ion-icon>
-                    <span>Messages</span>
+                <a href="{{ path('app_summary') }}">
+                    <ion-icon name="stats-chart-outline"></ion-icon>
+                    <span>Summary Dashboard</span>
                 </a>
             </li>
             <li>
-                <a href="">
-                    <ion-icon name="help-circle-outline"></ion-icon>
-                    <span>Help</span>
-                </a>
-            </li>
-            <li>
-                <a href="">
-                    <ion-icon name="settings-outline"></ion-icon>
-                    <span>Settings</span>
-                </a>
-            </li>
-            <li>
-                <a href="">
-                    <ion-icon name="lock-closed-outline"></ion-icon>
-                    <span>Password</span>
+                <a href="{{ path('admin_dashboard') }}">
+                    <ion-icon name="people"></ion-icon>
+                    <span>Liste Utilisateurs</span>
                 </a>
             </li>
             <li>
@@ -114,7 +147,15 @@
                 </label>
             </div>
             <div class="user">
-                <img src="{{ asset('images/customer01.jpg') }}" alt="">
+                {% if app.user %}
+                    <a href="{{ path('app_profile') }}" title="Mon Profil">
+                        {% if app.user.photo %}
+                            <img src="http://localhost/img/{{ app.user.photo }}" alt="{{ app.user.prenom }} {{ app.user.nom }}">
+                        {% else %}
+                            <img src="http://localhost/img/default-avatar.jpg" alt="Default Avatar">
+                        {% endif %}
+                    </a>
+                {% endif %}
             </div>
         </div>
 
@@ -126,10 +167,10 @@
     {% block javascripts %}
     <script>
         document.getElementById('logout-button').addEventListener('click', function (e) {
-e.preventDefault(); // prevent default anchor behavior
-localStorage.clear(); // clear localStorage
-window.location.href = '/logout'; // redirect to Symfony logout route
-});
+            e.preventDefault(); // prevent default anchor behavior
+            localStorage.clear(); // clear localStorage
+            window.location.href = '/logout'; // redirect to Symfony logout route
+        });
     </script>
     <script>
         function toggleSidebar() {

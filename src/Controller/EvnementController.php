@@ -6,6 +6,7 @@ use App\Entity\Evenement;
 use App\Form\EvenementType;
 
 use App\Repository\EvenementRepository;
+use App\Repository\ClientEvenementRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
@@ -13,29 +14,42 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Attribute\Route;
 #[Route("/evenement")]
 final class EvnementController extends AbstractController
 {
-    #[Route('/all',name: 'evenement_list')]
-    public function gettAll(EvenementRepository $repo, Request $request):Response{
-        $search = $request->query->get('search', '');
-        $sort = $request->query->get('sort', 'nom_asc');
-        $page = $request->query->getInt('page', 1);
-        $limit = 6;
-        $evenements = $repo->findBySearchAndSort($search, $sort, $page, $limit);
-        $totalEvenements = $repo->countBySearch($search);
-        $maxPages = ceil($totalEvenements / $limit);
+    #[Route('/all', name: 'evenement_list')]
+public function gettAll(EvenementRepository $repo, Request $request, ClientEvenementRepository $clientEvenementRepo): Response
+{
+    $search = $request->query->get('search', '');
+    $sort = $request->query->get('sort', 'nom_asc');
+    $page = $request->query->getInt('page', 1);
+    $limit = 6;
+    $evenements = $repo->findBySearchAndSort($search, $sort, $page, $limit);
+    $totalEvenements = $repo->countBySearch($search);
+    $maxPages = ceil($totalEvenements / $limit);
 
-        return $this->render('evenement/ListeEvenement.html.twig', [
-            'evenements' => $evenements,
-            'image_base_url' => $this->getParameter('image_base_url'),
-            'current_page' => $page,
-            'max_pages' => $maxPages,
-            'search' => $search,
-            'sort' => $sort,
-        ]);
+    $userReservations = [];
+    if ($this->getUser()) {
+        $reservations = $clientEvenementRepo->findBy(['client' => $this->getUser()]);
+        foreach ($reservations as $reservation) {
+            $userReservations[$reservation->getEvenement()->getId()] = true;
+        }
     }
+
+    return $this->render('evenement/ListeEvenement.html.twig', [
+        'evenements' => $evenements,
+        'image_base_url' => $this->getParameter('image_base_url'),
+        'current_page' => $page,
+        'max_pages' => $maxPages,
+        'search' => $search,
+        'sort' => $sort,
+        'userReservations' => $userReservations,
+        'now' => new \DateTime(),
+    ]);
+}
     #[Route('/add', name: 'evenement_ajouter')]
     public function ajouter(Request $request, EntityManagerInterface $entityManager): Response
     {
@@ -71,21 +85,57 @@ final class EvnementController extends AbstractController
         ]);
     }
     #[Route('/delete/{id}', name: 'evenement_supprimer')]
-    public function supprimer(int $id, EvenementRepository $repo, EntityManagerInterface $entityManager): Response
+    public function supprimer(int $id, EvenementRepository $repo, ClientEvenementRepository $clientEvenementRepo, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
     {
         $evenement = $repo->find($id);
-    
+
         if (!$evenement) {
             $this->addFlash('error', 'Événement non trouvé.');
             return $this->redirectToRoute('evenement_list');
         }
 
+        $now = new \DateTime();
+        $eventDate = $evenement->getDateEvent();
+        if ($eventDate > $now) {
+            $reservations = $clientEvenementRepo->findBy(['evenement' => $evenement]);
+
+            if (!empty($reservations)) {
+                foreach ($reservations as $reservation) {
+                    $user = $reservation->getClient();
+                    $userEmail = $user->getUserIdentifier();
+
+                    $email = (new Email())
+                        ->from('noreply@votredomaine.com')
+                        ->to($userEmail)
+                        ->subject('Annulation de l\'événement - ' . $evenement->getNomEvent())
+                        ->html($this->renderView('evenement/email_suppression_evenement.html.twig', [
+                            'user' => $user,
+                            'evenement' => $evenement,
+                            'reservation' => $reservation,
+                        ]));
+
+                
+                    $logoPath = $this->getParameter('kernel.project_dir') . '/assets/images/level.png';
+                    if (file_exists($logoPath)) {
+                        $email->embedFromPath($logoPath, 'logo');
+                    }
+
+                    try {
+                        $mailer->send($email);
+                    } catch (\Exception $e) {
+                        $this->addFlash('warning', 'Événement supprimé, mais l\'email à ' . $userEmail . ' n\'a pas pu être envoyé.');
+                    }
+                }
+            }
+        }
+
+        // Supprimer l'événement et toutes ses réservations associées
         $entityManager->remove($evenement);
         $entityManager->flush();
 
         $this->addFlash('success', 'Événement supprimé avec succès !');
         return $this->redirectToRoute('evenement_list_admin');
-}
+    }
 #[Route('/edit/{id}', name: 'evenement_modifier')]
     public function modifier(int $id, Request $request, EvenementRepository $repo, EntityManagerInterface $entityManager): Response
     {
@@ -104,14 +154,22 @@ final class EvnementController extends AbstractController
             $photoFile = $form->get('photoFile')->getData();
 
             if ($photoFile) {
-                $newFilename = uniqid().'.'.$photoFile->guessExtension();
+                $newFilename = uniqid() . '.' . $photoFile->guessExtension();
 
                 try {
-                    $image_base_url = $this->getParameter('image_base_url');
-                    $photoFile->move($image_base_url, $newFilename);
+                    $uploadDir = $this->getParameter('dossier_upload');
+
+                    if ($evenement->getPhotoEvent()) {
+                        $oldFile = $uploadDir . '/' . $evenement->getPhotoEvent();
+                        if (file_exists($oldFile)) {
+                            unlink($oldFile);
+                        }
+                    }
+
+                    $photoFile->move($uploadDir, $newFilename);
                     $evenement->setPhotoEvent($newFilename);
                 } catch (FileException $e) {
-                    $this->addFlash('error', 'Erreur lors de l\'upload du fichier.');
+                    $this->addFlash('error', 'Erreur lors de l\'upload du fichier : ' . $e->getMessage());
                     return $this->redirectToRoute('evenement_modifier', ['id' => $id]);
                 }
             }
@@ -175,12 +233,12 @@ final class EvnementController extends AbstractController
     public function getAll(EvenementRepository $repo, Request $request):Response{
         $search = $request->query->get('search', '');
         $sort = $request->query->get('sort', 'nom_asc');
-        $page = $request->query->getInt('page', 1); // Page actuelle, par défaut 1
-        $limit = 5; // Nombre d'événements par page
+        $page = $request->query->getInt('page', 1);
+        $limit = 5;
 
-        // Récupérer les événements paginés
+       
         $evenements = $repo->findBySearchAndSort($search, $sort, $page, $limit);
-        $totalEvenements = $repo->countBySearch($search); // Méthode à ajouter dans le repository
+        $totalEvenements = $repo->countBySearch($search);
         $maxPages = ceil($totalEvenements / $limit);
 
         return $this->render('evenement/ListeEvenementadmin.html.twig', [
@@ -206,6 +264,33 @@ final class EvnementController extends AbstractController
             'evenement' => $evenement,
             'image_base_url' => $this->getParameter('image_base_url'),
         ]);
+    }
+    #[Route('/calendar', name: 'evenement_calendar')]
+public function calendar(): Response
+{
+    return $this->render('evenement/calendar.html.twig');
+}
+#[Route('/load-events', name: 'evenement_load_events')]
+    public function loadEvents(Request $request, EvenementRepository $repo): Response
+    {
+        $start = new \DateTime($request->query->get('start'));
+        $end = new \DateTime($request->query->get('end'));
+
+        $evenements = $repo->findByDateRange($start, $end);
+        $events = [];
+
+        foreach ($evenements as $evenement) {
+            $events[] = [
+                'title' => $evenement->getNomEvent(),
+                'start' => $evenement->getDateEvent()->format('c'), // Format ISO 8601
+                'url' => $this->generateUrl('evenement_detailles', ['id' => $evenement->getId()]),
+                'backgroundColor' => '#3788d8',
+                'borderColor' => '#3788d8',
+                'textColor' => '#ffffff',
+            ];
+        }
+
+        return new Response(json_encode($events), 200, ['Content-Type' => 'application/json']);
     }
 }
 

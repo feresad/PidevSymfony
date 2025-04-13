@@ -9,36 +9,50 @@
 
 {% block body %}
 <div class="login-page">
-	
-	
 	<div class="login-container">
 		<h2 class="login-title">Connexion</h2>
 		<p class="login-subtitle">Commencez maintenant !</p>
-{% if userId %}
-	<p style="color: green;">[DEBUG] User ID: {{ userId }}</p>
-{% endif %}
+		{% if userId %}
+			<p style="color: green;">[DEBUG] User ID: {{ userId }}</p>
+		{% endif %}
+
 		{% if error %}
 			<div class="alert alert-danger">
 				{{ error.messageKey|trans(error.messageData, 'security') }}
 			</div>
 		{% endif %}
 
-		<form method="post" id="loginForm" onsubmit="handleLogin(event)">
-			<input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
-
+		{{ form_start(form, {'attr': {'id': 'loginForm', 'onsubmit': 'return validateForm(event)'}}) }}
 			<div class="form-group">
-				<label for="username">Email</label>
-				<input type="text" id="username" name="email" class="form-control" value="{{ last_username }}" required autofocus>
+				{{ form_label(form.email) }}
+				{{ form_widget(form.email, {
+					'attr': {
+						'class': 'form-control',
+						'value': last_username,
+						
+					}
+				}) }}
+				<div class="error-message" id="email-error">
+					{{ form_errors(form.email) }}
+				</div>
 			</div>
 
 			<div class="form-group">
-				<label for="password">Mot de passe</label>
-				<input type="password" id="password" name="password" class="form-control" required>
+				{{ form_label(form.password) }}
+				{{ form_widget(form.password, {
+					'attr': {
+						'class': 'form-control',
+						'required': true
+					}
+				}) }}
+				<div class="error-message" id="password-error">
+					{{ form_errors(form.password) }}
+				</div>
 			</div>
 
 			<div class="remember-me">
-				<input type="checkbox" id="remember_me" name="_remember_me">
-				<label for="remember_me">Se souvenir de moi</label>
+				{{ form_widget(form.remember_me) }}
+				{{ form_label(form.remember_me) }}
 			</div>
 
 			<button type="submit" class="btn-login">Se connecter</button>
@@ -48,7 +62,7 @@
 				<span class="separator">•</span>
 				<a href="{{ path('app_forgot_password') }}">Mot de passe oublié ?</a>
 			</div>
-		</form>
+		{{ form_end(form) }}
 	</div>
 </div>
 {% endblock %}
@@ -57,13 +71,49 @@
 	{{ parent() }}
 	<script src="{{ asset('js/userUtils.js') }}"></script>
 	<script>
-	function handleLogin(event) {
+	function validateForm(event) {
 		event.preventDefault();
-		const formData = new FormData(event.target);
+		const form = event.target;
+		const email = form.email.value;
+		const password = form.password.value;
+		let isValid = true;
 
+		// Clear previous errors
+		document.getElementById('email-error').textContent = '';
+		document.getElementById('password-error').textContent = '';
+
+		// Validate email
+		if (!email) {
+			document.getElementById('email-error').textContent = 'Veuillez entrer votre email';
+			isValid = false;
+		} else if (!isValidEmail(email)) {
+			document.getElementById('email-error').textContent = 'Veuillez entrer une adresse email valide';
+			isValid = false;
+		}
+
+		// Validate password
+		if (!password) {
+			document.getElementById('password-error').textContent = 'Veuillez entrer votre mot de passe';
+			isValid = false;
+		} else if (password.length < 6) {
+			document.getElementById('password-error').textContent = 'Le mot de passe doit contenir au moins 6 caractères';
+			isValid = false;
+		}
+
+		if (!isValid) {
+			// Focus on the first error field
+			if (!email) {
+				form.email.focus();
+			} else if (!password) {
+				form.password.focus();
+			}
+			return false;
+		}
+
+		// Submit form if validation passes
 		fetch('{{ path("app_login") }}', {
 			method: 'POST',
-			body: formData,
+			body: new FormData(form),
 			headers: {
 				'X-Requested-With': 'XMLHttpRequest'
 			}
@@ -92,6 +142,13 @@
 				document.querySelector('.login-container').insertBefore(errorDiv, document.querySelector('form'));
 			}
 		});
+
+		return false;
+	}
+
+	function isValidEmail(email) {
+		const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		return re.test(email);
 	}
 	</script>
 	<script>

@@ -2,46 +2,169 @@
 
 {% block title %}Ajouter une session{% endblock %}
 
-{% block stylesheets %}
-{{ parent() }}
-<style>
-    .form-control {
-        color: white !important;
-    }
-</style>
-{% endblock %}
-
 {% block body %}
-<div class="container py-5">
-    <h2 class="mb-0 text-center">Ajouter une nouvelle session</h2>
-    <div class="row justify-content-center mt-4">
-        <div class="col-md-8">
-            {{ form_start(form) }}
-            <div class="mb-3">
-                {{ form_label(form.game, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                {{ form_widget(form.game, {'attr': {'class': 'form-control form-control-lg', 'placeholder': 'Entrez le nom du jeu'}}) }}
-                {{ form_errors(form.game, {'attr': {'class': 'text-danger'}}) }}
-            </div>
-            <div class="mb-3">
-                {{ form_label(form.prix, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                {{ form_widget(form.prix, {'attr': {'class': 'form-control form-control-lg', 'placeholder': 'Entrez le prix'}}) }}
-                {{ form_errors(form.prix, {'attr': {'class': 'text-danger'}}) }}
-            </div>
-            <div class="mb-3">
-                {{ form_label(form.dureeSession, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                {{ form_widget(form.dureeSession, {'attr': {'class': 'form-control form-control-lg', 'placeholder': 'Entrez la durée'}}) }}
-                {{ form_errors(form.dureeSession, {'attr': {'class': 'text-danger'}}) }}
+<div class="nk-main">
+    <div class="container">
+        <div class="nk-gap-2"></div>
+        <div class="row vertical-gap">
+            <div class="col-lg-8 offset-lg-2">
+                <div class="nk-box-3 bg-dark-2 shadow-lg" style="border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1);">
+                    <div class="position-relative p-4">
+                        <h2 class="nk-title h3 text-center mb-4" style="color: #dd163b; text-transform: uppercase; letter-spacing: 2px;">Ajouter une session</h2>
+                        <div class="nk-gap-1"></div>
 
-            <div class="mb-3">
-                {{ form_label(form.image, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                {{ form_widget(form.image, {'attr': {'class': 'form-control form-control-lg'}}) }}
-                {{ form_errors(form.image, {'attr': {'class': 'text-danger'}}) }}
+                        {{ form_start(form, {'attr': {'class': 'nk-form', 'id': 'session-form'}}) }}
+                            <div class="row vertical-gap">
+                                <div class="col-12">
+                                    <div class="form-group" style="background: rgba(0, 0, 0, 0.3); padding: 20px; border-radius: 10px;">
+                                        {% for child in form.children %}
+                                            {% if child.vars.name != '_token' %}
+                                                <div class="field-container mb-3">
+                                                    {% if child.vars.name == 'image' %}
+                                                        {{ form_label(child, null, {'label_attr': {'class': 'text-light mb-2'}}) }}
+                                                        <div class="custom-file-upload">
+                                                            <label for="{{ child.vars.id }}" class="file-upload-label" style="
+                                                                display: block;
+                                                                padding: 15px;
+                                                                background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+                                                                border: 2px solid #dd163b;
+                                                                border-radius: 8px;
+                                                                cursor: pointer;
+                                                                text-align: center;
+                                                                transition: all 0.3s ease;
+                                                                color: #fff;
+                                                                position: relative;
+                                                                overflow: hidden;
+                                                            ">
+                                                                <i class="fa fa-cloud-upload" style="font-size: 24px; margin-bottom: 10px; color: #dd163b;"></i>
+                                                                <span style="display: block; font-size: 16px;">Choisir un fichier</span>
+                                                                <span class="file-name" style="display: block; font-size: 12px; color: #888;">Aucun fichier sélectionné</span>
+                                                            </label>
+                                                            {{ form_widget(child, {'attr': {
+                                                                'class': 'custom-file-input',
+                                                                'style': 'display: none;',
+                                                                'onchange': 'updateFileName(this)'
+                                                            }}) }}
+                                                        </div>
+                                                    {% else %}
+                                                        {{ form_label(child, null, {'label_attr': {'class': 'text-light mb-2'}}) }}
+                                                        {{ form_widget(child, {'attr': {'class': 'form-control custom-input'}}) }}
+                                                    {% endif %}
+                                                    <!-- Conteneur pour les erreurs -->
+                                                    <div class="error-message text-danger mt-1" id="error-{{ child.vars.id }}" style="font-size: 14px;"></div>
+                                                    <!-- Afficher les erreurs Symfony -->
+                                                    {{ form_errors(child) }}
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="nk-gap-1"></div>
+                            <div class="text-center">
+                                <button type="submit" class="nk-btn nk-btn-rounded nk-btn-color-main-1 btn-lg" style="transition: all 0.3s ease; transform: scale(1);" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                    <span><i class="fa fa-plus-circle mr-2"></i>Ajouter la session</span>
+                                </button>
+                                <div class="nk-gap-1"></div>
+                                <a href="{{ path('session_list') }}" class="nk-btn nk-btn-rounded nk-btn-color-white btn-lg" style="transition: all 0.3s ease; transform: scale(1);" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                    <span><i class="fa fa-arrow-left mr-2"></i>Retour à la liste</span>
+                                </a>
+                            </div>
+                        {{ form_end(form) }}
+
+                        <div class="nk-gap-2"></div>
+
+                        <script>
+                            function updateFileName(input) {
+                                var fileName = input.files[0] ? input.files[0].name : 'Aucun fichier sélectionné';
+                                input.parentElement.querySelector('.file-name').textContent = fileName;
+
+                                var label = input.parentElement.querySelector('.file-upload-label');
+                                if (input.files[0]) {
+                                    label.style.borderColor = '#00ff00';
+                                    label.style.background = 'linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%)';
+                                } else {
+                                    label.style.borderColor = '#dd163b';
+                                    label.style.background = 'linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%)';
+                                }
+                            }
+
+                            // Validation du formulaire
+                            document.getElementById('session-form').addEventListener('submit', function(event) {
+                                let isValid = true;
+                                let firstErrorElement = null;
+
+                                // Réinitialiser les messages d'erreur
+                                document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+
+                                // Valider le champ 'game'
+                                const gameInput = document.querySelector('input[name="session_game[game]"]');
+                                if (!gameInput.value.trim()) {
+                                    document.getElementById('error-' + gameInput.id).textContent = 'Le nom du jeu est requis.';
+                                    isValid = false;
+                                    if (!firstErrorElement) firstErrorElement = gameInput;
+                                }
+
+                                // Valider le champ 'prix'
+                                const prixInput = document.querySelector('input[name="session_game[prix]"]');
+                                const prixValue = parseFloat(prixInput.value);
+                                if (!prixInput.value || isNaN(prixValue) || prixValue <= 0) {
+                                    document.getElementById('error-' + prixInput.id).textContent = 'Le prix doit être un nombre positif.';
+                                    isValid = false;
+                                    if (!firstErrorElement) firstErrorElement = prixInput;
+                                } else if (!/^\d+(\.\d{1,2})?$/.test(prixInput.value)) {
+                                    document.getElementById('error-' + prixInput.id).textContent = 'Le prix doit avoir au maximum 2 décimales.';
+                                    isValid = false;
+                                    if (!firstErrorElement) firstErrorElement = prixInput;
+                                }
+
+                                // Valider le champ 'dureeSession'
+                                const dureeInput = document.querySelector('input[name="session_game[dureeSession]"]');
+                                const dureeValue = parseInt(dureeInput.value);
+                                if (!dureeInput.value || isNaN(dureeValue) || dureeValue < 30) {
+                                    document.getElementById('error-' + dureeInput.id).textContent = 'La durée doit être d\'au moins 30 minutes.';
+                                    isValid = false;
+                                    if (!firstErrorElement) firstErrorElement = dureeInput;
+                                } else if (dureeValue % 30 !== 0) {
+                                    document.getElementById('error-' + dureeInput.id).textContent = 'La durée doit être un multiple de 30 minutes.';
+                                    isValid = false;
+                                    if (!firstErrorElement) firstErrorElement = dureeInput;
+                                }
+
+                                // Valider le champ 'image'
+                                const imageInput = document.querySelector('input[name="session_game[image]"]');
+                                if (imageInput.files.length > 0) {
+                                    const file = imageInput.files[0];
+                                    const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
+                                    const maxSize = 2 * 1024 * 1024; // 2MB
+                                    if (!validTypes.includes(file.type)) {
+                                        document.getElementById('error-' + imageInput.id).textContent = 'L\'image doit être au format JPG, PNG ou GIF.';
+                                        isValid = false;
+                                        if (!firstErrorElement) firstErrorElement = imageInput;
+                                    } else if (file.size > maxSize) {
+                                        document.getElementById('error-' + imageInput.id).textContent = 'L\'image ne doit pas dépasser 2MB.';
+                                        isValid = false;
+                                        if (!firstErrorElement) firstErrorElement = imageInput;
+                                    }
+                                }
+
+                                // Empêcher la soumission si des erreurs sont détectées
+                                if (!isValid) {
+                                    event.preventDefault();
+                                    firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    firstErrorElement.focus();
+                                }
+                            });
+                        </script>
+                    </div>
+                </div>
             </div>
-            <div class="text-center">
-                <button type="submit" class="btn btn-primary btn-lg">Ajouter la session</button>
-            </div>
-            {{ form_end(form) }}
         </div>
+        <div class="nk-gap-2"></div>
     </div>
 </div>
+ <!-- Background de la page d'accueil -->
+    <img class="nk-page-background-top" src="{{ asset('images/bg-top.png') }}" alt="">
+    <img class="nk-page-background-bottom" src="{{ asset('images/bg-bottom.png') }}" alt="">
 {% endblock %}

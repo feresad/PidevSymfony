@@ -1,0 +1,126 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard Summary{% endblock %}
+
+{% block body %}
+<div class="nk-main">
+    <div class="nk-gap-2"></div>
+    <div class="container">
+        <div class="nk-gap-2"></div>
+
+        <h1 class="nk-title text-center">Dashboard Summary</h1>
+        <h3 class="nk-sub-title text-center mb-30">Vue d'ensemble de l'activité</h3>
+
+        <div class="nk-gap-2"></div>
+
+        <div class="row vertical-gap">
+            <!-- Total Reservations Card -->
+            <div class="col-md-4">
+                <div class="nk-box-2 bg-main-1 text-white text-center">
+                    <h5 class="nk-title">Total Reservations</h5>
+                    <h2>{{ totalReservations }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="row vertical-gap mt-4">
+            <!-- Active Customers Section -->
+            <div class="col-md-6">
+                <div class="nk-box-2 bg-dark-2">
+                    <h5 class="nk-title text-white">Most Active Customers</h5>
+                    <div class="nk-gap"></div>
+                    <div class="list-group">
+                        {% for customer in activeCustomers %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ customer.nickname }}
+                                <span class="nk-badge bg-main-1">{{ customer.reservationCount }} reservations</span>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info">No active customers found.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Coaches Section -->
+            <div class="col-md-6">
+                <div class="nk-box-2 bg-dark-2">
+                    <h5 class="nk-title text-white">Top Coaches</h5>
+                    <div class="nk-gap"></div>
+                    <div class="list-group">
+                        {% for coach in topCoaches %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ coach.nickname }}
+                                <span class="nk-badge bg-success">{{ coach.sessionCount }} sessions</span>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info">No top coaches found.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Weekly Revenue Chart -->
+        <div class="nk-gap-2"></div>
+        <div class="row">
+            <div class="col-12">
+                <div class="nk-box-2 bg-dark-2">
+                    <h5 class="nk-title text-white text-center">Weekly Revenue</h5>
+                    <div class="nk-gap"></div>
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="nk-gap-2"></div>
+</div>
+
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {{ weekLabels|raw }},
+            datasets: [{
+                label: 'Weekly Revenue',
+                data: {{ weeklyRevenue|raw }},
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                tension: 0.1,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    labels: { color: 'white' }
+                },
+                title: {
+                    display: true,
+                    text: 'Weekly Revenue Trend',
+                    color: 'white'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { color: 'white' },
+                    title: { display: true, text: 'Revenue', color: 'white' }
+                },
+                x: {
+                    ticks: { color: 'white' },
+                    title: { display: true, text: 'Week', color: 'white' }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

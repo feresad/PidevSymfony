@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\Session_gameRepository;
+use App\Entity\Utilisateur;
 
 #[ORM\Entity(repositoryClass: Session_gameRepository::class)]
 class Session_game
@@ -25,11 +26,14 @@ class Session_game
     #[ORM\Column(type: 'string', length: 255)]
     private string $game;
 
-    #[ORM\Column(type: 'integer', nullable: false)] // Non nullable
-    private int $coachId = 1; // Valeur statique par défaut
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Utilisateur $coach = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $imageName = null;
+
+    // --- Getters & Setters ---
 
     public function getId(): ?int { return $this->id; }
 
@@ -45,11 +49,9 @@ class Session_game
     public function getGame(): string { return $this->game; }
     public function setGame(string $game): self { $this->game = $game; return $this; }
 
-    public function getCoachId(): int { return $this->coachId; }
-    public function setCoachId(int $coachId): self { $this->coachId = $coachId; return $this; }
+    public function getCoach(): ?Utilisateur { return $this->coach; }
+    public function setCoach(?Utilisateur $coach): self { $this->coach = $coach; return $this; }
 
     public function getImageName(): ?string { return $this->imageName; }
     public function setImageName(?string $imageName): self { $this->imageName = $imageName; return $this; }
-
-    
 }

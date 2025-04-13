@@ -1,14 +1,410 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Mes réservations{% endblock %}
+{% block title %}Mes Réservations{% endblock %}
 
 {% block body %}
-    <h1>Mes réservations</h1>
-    <ul class="list-group">
-        {% for reservation in reservations %}
-            <li class="list-group-item">
-                {{ reservation.session.game }} - Réservé le {{ reservation.dateReservation|date('d/m/Y') }}
-            </li>
+<style>
+/* General container styles */
+.nk-main {
+    background: #14181c; /* Dark background for a modern look */
+    min-height: 100vh;
+    padding: 40px 0;
+}
+
+/* Typography */
+.nk-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 0.5rem;
+    text-align: center;
+    background: linear-gradient(to right, #dd163b, #ff5e62);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.nk-sub-title {
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: #a1a1a1;
+    text-transform: uppercase;
+    margin-bottom: 2.5rem;
+    text-align: center;
+}
+
+/* Card styles */
+.nk-product-cat-2 {
+    position: relative;
+    background: #1e252b; /* Slightly lighter dark background for contrast */
+    border-radius: 10px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Ensure cards are of equal height */
+}
+
+/* Hover effect */
+.nk-product-cat-2:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.5);
+}
+
+/* Image styles */
+.nk-product-image {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: 150px; /* Fixed height to match the blue-framed area */
+    display: flex;
+    justify-content: center; /* Center the image horizontally */
+    align-items: center; /* Center the image vertically */
+}
+
+.nk-product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.nk-product-cat-2:hover .nk-product-image img {
+    transform: scale(1.05);
+}
+
+/* Card content */
+.nk-product-cont {
+    padding: 15px;
+    background: #1e252b;
+    color: #fff;
+    flex: 1; /* Allow content to take remaining space */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Ensure buttons stay at the bottom */
+}
+
+.nk-product-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+.nk-product-price {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #dd163b;
+    margin-bottom: 10px;
+}
+
+.nk-product-duration, .nk-product-coach, .nk-product-date {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #a1a1a1;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+}
+
+.nk-product-duration i, .nk-product-coach i, .nk-product-date i {
+    color: #dd163b;
+}
+
+/* Button group */
+.button-group {
+    display: flex;
+    gap: 0.8rem;
+    margin-top: 1rem;
+    justify-content: space-between;
+}
+
+.cancel-btn, .pay-btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: 5px;
+    font-weight: 600;
+    text-align: center;
+    transition: all 0.3s ease;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+}
+
+.cancel-btn {
+    background: transparent;
+    border: 2px solid #dd163b;
+    color: #dd163b;
+}
+
+.cancel-btn:hover {
+    background: #dd163b !important;
+    color: #fff !important;
+    transform: translateY(-2px);
+}
+
+.pay-btn {
+    background: #28a745 !important;
+    color: #fff !important;
+    border: none;
+}
+
+.pay-btn:hover {
+    background: #218838 !important;
+    transform: translateY(-2px);
+}
+
+/* Alerts */
+.alert {
+    background: rgba(30, 37, 43, 0.9);
+    border: none;
+    color: #fff;
+    border-radius: 8px;
+    padding: 15px 20px;
+    margin-bottom: 25px;
+    font-size: 1rem;
+}
+
+.alert-success {
+    background: rgba(40, 167, 69, 0.2);
+    border-left: 5px solid #28a745;
+}
+
+.alert-danger {
+    background: rgba(221, 22, 59, 0.2);
+    border-left: 5px solid #dd163b;
+}
+
+.alert-info {
+    background: rgba(23, 162, 184, 0.2);
+    border-left: 5px solid #17a2b8;
+}
+
+/* Back button */
+.back-btn {
+    display: inline-block;
+    margin-top: 2rem;
+    padding: 12px 25px;
+    background: linear-gradient(90deg, #dd163b, #ff5e62);
+    color: #fff;
+    border-radius: 8px;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.back-btn:hover {
+    background: linear-gradient(90deg, #ff5e62, #dd163b);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Spacing */
+.nk-gap-2 {
+    height: 2rem;
+}
+
+/* Grid layout */
+.row-cols-1 .col {
+    margin-bottom: 20px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .nk-product-cont {
+        padding: 10px;
+    }
+
+    .nk-product-title {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .nk-title {
+        font-size: 2rem;
+    }
+
+    .nk-sub-title {
+        font-size: 1rem;
+    }
+
+    .button-group {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .cancel-btn, .pay-btn {
+        padding: 8px;
+    }
+}
+</style>
+
+<div class="nk-main">
+    <div class="nk-gap-2"></div>
+    <div class="container">
+        <div class="nk-gap-2"></div>
+        <h1 class="nk-title">Mes Réservations</h1>
+        <h3 class="nk-sub-title mb-30">Historique de vos réservations de coaching</h3>
+        <div class="nk-gap-2"></div>
+
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label == 'success' ? 'success' : 'danger' }} text-center" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
         {% endfor %}
-    </ul>
+        
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            {% for reservation in reservations %}
+                <div class="col">
+                    <div class="nk-product-cat-2">
+                        {% if reservation.session.imageName %}
+                            <div class="nk-product-image">
+                                <img src="{{ image_base_url ~ reservation.session.imageName }}" alt="{{ reservation.session.game }}">
+                            </div>
+                        {% endif %}
+                        <div class="nk-product-cont">
+                            <div>
+                                <h3 class="nk-product-title">{{ reservation.session.game }}</h3>
+                                <div class="nk-gap-1"></div>
+                                <div class="nk-product-price">{{ reservation.session.prix }} DT</div>
+                                <div class="nk-gap-1"></div>
+                                <div class="nk-product-duration">
+                                    <i class="fa fa-clock"></i>
+                                    <span>{{ reservation.session.dureeSession }}</span> min
+                                </div>
+                                <div class="nk-product-coach">
+                                    <i class="fa fa-user"></i>
+                                    Coach: {{ reservation.session.coach.nom }} {{ reservation.session.coach.prenom }}
+                                </div>
+                                <div class="nk-gap-1"></div>
+                                <div class="nk-product-date">
+                                    <i class="fa fa-calendar"></i>
+                                    Date: {{ reservation.dateReservation|date('d/m/Y') }}
+                                </div>
+                            </div>
+                            <div class="button-group">
+                                <a href="{{ path('reservation_cancel', {'id': reservation.id}) }}" 
+                                   class="nk-btn nk-btn-rounded nk-btn-color-dark-3 cancel-btn"
+                                   onclick="return confirm('Êtes-vous sûr de vouloir annuler cette réservation ?')">
+                                    <i class="fa fa-times"></i> Annuler
+                                </a>
+                                <a href="#" 
+                                   class="nk-btn nk-btn-rounded pay-btn"
+                                   onclick="initiatePayment({{ reservation.id }}, {{ reservation.session.prix }})">
+                                    <i class="fa fa-credit-card"></i> Payer
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="col-12">
+                    <div class="alert alert-info text-center">
+                        Vous n'avez pas encore de réservations.
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="nk-gap-2"></div>
+        <div class="text-center">
+            <a href="{{ path('session_client_list') }}" class="back-btn">
+                Retour aux sessions
+            </a>
+        </div>
+    </div>
+    <div class="nk-gap-2"></div>
+
+    {% include 'payment/stripe_form.html.twig' %}
+
+    <script src="https://js.stripe.com/v3/"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const stripe = Stripe('{{ stripe_public_key }}');
+        const elements = stripe.elements();
+
+        window.initiatePayment = function(reservationId, amount) {
+            console.log('Initiating payment for reservation ID:', reservationId, 'Amount:', amount);
+            
+            document.getElementById('reservation-id').value = reservationId;
+            document.getElementById('amount').value = amount;
+            
+            const modal = document.getElementById('paymentModal');
+            bootstrap.Modal.getOrCreateInstance(modal).show();
+
+            const cardElement = elements.create('card', {
+                style: {
+                    base: {
+                        color: '#ffffff',
+                        fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+                        fontSmoothing: 'antialiased',
+                        fontSize: '16px',
+                        '::placeholder': { color: '#aab7c4' }
+                    },
+                    invalid: {
+                        color: '#fa755a',
+                        iconColor: '#fa755a'
+                    }
+                }
+            });
+
+            cardElement.mount('#card-element');
+
+            cardElement.addEventListener('change', function(event) {
+                const displayError = document.getElementById('card-errors');
+                displayError.textContent = event.error ? event.error.message : '';
+            });
+
+            const form = document.getElementById('payment-form'); // Fixed typo here
+            form.addEventListener('submit', async function(event) {
+                event.preventDefault();
+
+                document.querySelector('#button-text').style.display = 'none';
+                document.querySelector('#spinner').classList.remove('d-none');
+
+                const {token, error} = await stripe.createToken(cardElement);
+
+                if (error) {
+                    document.getElementById('card-errors').textContent = error.message;
+                    document.querySelector('#button-text').style.display = 'block';
+                    document.querySelector('#spinner').classList.add('d-none');
+                    return;
+                }
+
+                const response = await fetch('{{ path('payment_process') }}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        token: token.id,
+                        reservation_id: reservationId,
+                        amount: amount
+                    })
+                });
+
+                const result = await response.json();
+
+                document.querySelector('#button-text').style.display = 'block';
+                document.querySelector('#spinner').classList.add('d-none');
+
+                if (result.success) {
+                    alert('Paiement réussi !');
+                    window.location.reload();
+                } else {
+                    document.getElementById('card-errors').textContent = result.error;
+                }
+            });
+        };
+    });
+    </script>
+</div>
+ <!-- Background de la page d'accueil -->
+    <img class="nk-page-background-top" src="{{ asset('images/bg-top.png') }}" alt="">
+    <img class="nk-page-background-bottom" src="{{ asset('images/bg-bottom.png') }}" alt="">
 {% endblock %}
