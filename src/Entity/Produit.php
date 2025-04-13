@@ -13,6 +13,7 @@ class Produit
     {
         $this->commandes = new ArrayCollection();
         $this->stocks = new ArrayCollection();
+        $this->reviews = new ArrayCollection(); // Initialize the reviews collection
     }
 
     #[ORM\Id]
@@ -46,6 +47,9 @@ class Produit
 
     #[ORM\OneToMany(targetEntity: Stock::class, mappedBy: "produit")]
     private Collection $stocks;
+
+    #[ORM\OneToMany(targetEntity: Review::class, mappedBy: "produit")]
+    private Collection $reviews; // Add the reviews relationship
 
     // Getters and Setters
 
@@ -145,5 +149,32 @@ class Produit
     public function getStocks(): Collection
     {
         return $this->stocks;
+    }
+
+    /**
+     * @return Collection<int, Review>
+     */
+    public function getReviews(): Collection
+    {
+        return $this->reviews;
+    }
+
+    public function addReview(Review $review): self
+    {
+        if (!$this->reviews->contains($review)) {
+            $this->reviews[] = $review;
+            $review->setProduit($this);
+        }
+        return $this;
+    }
+
+    public function removeReview(Review $review): self
+    {
+        if ($this->reviews->removeElement($review)) {
+            if ($review->getProduit() === $this) {
+                $review->setProduit(null);
+            }
+        }
+        return $this;
     }
 }

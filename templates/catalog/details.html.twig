@@ -1,0 +1,291 @@
+{% extends 'baseadmin.html.twig' %}
+
+{% block title %}Détails du produit : {{ product.produit.nomProduit }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Main title */
+        h1.product-title {
+            color: #47266E;
+            font-size: 24px;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        /* Card styling */
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .card-title {
+            color: #47266E;
+            font-size: 20px;
+            font-weight: 600;
+            padding: 20px;
+            margin: 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* Product details styling */
+        .details-list {
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            color: #47266E;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .detail-value {
+            color: #333;
+            text-align: right;
+            font-size: 16px;
+        }
+
+        .stock-value {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        /* Commands section */
+        .commands-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .commands-table th {
+            background: #f8f9fa;
+            color: #47266E;
+            font-weight: 600;
+            text-align: left;
+            padding: 12px 20px;
+        }
+
+        .commands-table td {
+            padding: 12px 20px;
+            border-top: 1px solid #f0f0f0;
+            color: #333;
+        }
+
+        .status-badge {
+            background: #28a745;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* Reviews section */
+        .review-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .review-item:last-child {
+            border-bottom: none;
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .review-author {
+            color: #47266E;
+            font-weight: 600;
+        }
+
+        .review-date {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .review-content {
+            color: #333;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* Section titles */
+        .section-title {
+            color: #47266E;
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0 0 15px 0;
+            padding: 0 20px;
+        }
+
+        /* Empty state messages */
+        .empty-message {
+            color: #666;
+            font-style: italic;
+            padding: 20px;
+            text-align: center;
+        }
+
+        /* Action buttons */
+        .action-buttons {
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: 500;
+            margin-right: 10px;
+        }
+
+        /* Product image styling */
+        .product-image-container {
+            padding: 20px;
+            text-align: center;
+            background: #f8f9fa;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .product-image {
+            max-width: 100%;
+            height: auto;
+            max-height: 300px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <h1 class="product-title">{{ product.produit.nomProduit }}</h1>
+
+        <div class="card">
+            {% if product.image %}
+                <div class="product-image-container">
+                    <img src="{{ image_base_url ~ product.image }}" 
+                         class="product-image" 
+                         alt="{{ product.produit.nomProduit }}">
+                </div>
+            {% endif %}
+            <h2 class="card-title">Informations du produit</h2>
+            <ul class="details-list">
+                <li class="detail-item">
+                    <span class="detail-label">Prix :</span>
+                    <span class="detail-value">{{ product.prixProduit }} TND</span>
+                </li>
+                <li class="detail-item">
+                    <span class="detail-label">Stock :</span>
+                    <span class="detail-value {% if product.quantity > 0 %}stock-value{% endif %}">
+                        {{ product.quantity }} unités
+                    </span>
+                </li>
+                <li class="detail-item">
+                    <span class="detail-label">Plateforme :</span>
+                    <span class="detail-value">{{ product.produit.platform ?? 'Non spécifié' }}</span>
+                </li>
+                <li class="detail-item">
+                    <span class="detail-label">Région :</span>
+                    <span class="detail-value">{{ product.produit.region ?? 'Non spécifié' }}</span>
+                </li>
+                <li class="detail-item">
+                    <span class="detail-label">Type :</span>
+                    <span class="detail-value">{{ product.produit.type ?? 'Non spécifié' }}</span>
+                </li>
+                <li class="detail-item">
+                    <span class="detail-label">Description :</span>
+                    <span class="detail-value">{{ product.produit.description }}</span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title">Liste des commandes ({{ customers|length }})</h2>
+            {% if customers is empty %}
+                <p class="empty-message">Aucune commande pour ce produit.</p>
+            {% else %}
+                <table class="commands-table">
+                    <thead>
+                        <tr>
+                            <th>Client</th>
+                            <th>Email</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for customer in customers %}
+                            <tr>
+                                <td>{{ customer.nom }} {{ customer.prenom }}</td>
+                                <td>{{ customer.email }}</td>
+                                <td><span class="status-badge">Terminé</span></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <h2 class="card-title">Avis clients ({{ reviews|length }})</h2>
+            {% if reviews is empty %}
+                <p class="empty-message">Aucun avis pour ce produit.</p>
+            {% else %}
+                <div class="reviews-list">
+                    {% for review in reviews %}
+                        <div class="review-item">
+                            <div class="review-header">
+                                <span class="review-author">{{ review.utilisateur.email }}</span>
+                                <span class="review-date">{{ review.createdAt|date('d/m/Y') }}</span>
+                            </div>
+                            <p class="review-content">{{ review.comment }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="action-buttons">
+           {# In your details.html.twig #}
+           <a href="{{ path('app_catalog_edit_produit', {'id': product.produit.id}) }}" class="btn btn-primary">
+            <i class="fas fa-edit"></i> Modifier le produit
+        </a>
+        <a href="{{ path('app_catalog_edit_stock', {'id': product.produit.id}) }}" class="btn btn-warning">
+            <i class="fas fa-box-open"></i> Modifier le stock
+        </a>
+            <form method="post" action="{{ path('app_stock_delete', {'id': product.id}) }}" 
+                  style="display: inline-block" 
+                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce produit?');">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ product.id) }}">
+                <button class="btn btn-outline-danger">
+                    <i class="fas fa-trash"></i> Supprimer
+                </button>
+            </form>
+            <a href="{{ path('app_catalog_index') }}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left"></i> Retour à la liste
+            </a>
+        </div>
+    </div>
+{% endblock %}

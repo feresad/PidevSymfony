@@ -1,40 +1,97 @@
-{% extends 'base.html.twig' %}
+{% extends 'baseadmin.html.twig' %}
 
 {% block title %}Liste des Commandes{% endblock %}
 
 {% block body %}
-<div class="container mt-5" style="background-color: #091221; color: white;">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card" style="background-color: #091221; border-color: #0236a5;">
-                <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #0236a5; color: white;">
-                    <h2 class="mb-0" style="font-size: 28px; text-transform: uppercase;">Liste des Commandes</h2>
-                    <a href="{{ path('app_commande_new') }}" class="btn" style="background-color: #fc0369; color: white;">Nouvelle Commande</a>
+    <div class="container-main mt-4 liste">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Liste des Commandes</h1>
+            <div class="d-flex align-items-center">
+                <div class="mr-3">
+                    <select name="sort" class="form-control" form="commandeFilterForm">
+                        <option value="date_asc" {{ sort|default('') == 'date_asc' ? 'selected' : '' }}>Date (Croissant)</option>
+                        <option value="date_desc" {{ sort|default('') == 'date_desc' ? 'selected' : '' }}>Date (Décroissant)</option>
+                        <option value="status_asc" {{ sort|default('') == 'status_asc' ? 'selected' : '' }}>Statut (A-Z)</option>
+                    </select>
                 </div>
-                <div class="card-body p-4">
-                    <table class="table" style="color: white; font-size: 18px;">
-                        <thead style="background-color: #0585c6;">
+                <div class="mr-3">
+                    <form action="{{ path('app_commande_index') }}" method="get" class="needs-validation" id="commandeFilterForm">
+                        <div class="input-group">
+                            <input type="text" name="search" class="form-control" placeholder="Rechercher une commande..." value="{{ search|default('') }}">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ path('app_commande_new') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Nouvelle Commande
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">
+                {{ message }}
+            </div>
+        {% endfor %}
+        
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        <div class="card-main">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="commandes-table">
+                        <thead class="table-primary">
                             <tr>
-                                <th>Client</th>
                                 <th>Produit</th>
+                                <th>Prix</th>
                                 <th>Statut</th>
+                                <th>Date</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                         {% for commande in commandes %}
                             <tr>
-                                <td style="background-color: #091221; border-color: #0236a5; color: white;">{{ commande.utilisateur.nickname }}</td>
-                                <td style="background-color: #091221; border-color: #0236a5; color: white;">{{ commande.produit.nomProduit }}</td>
-                                <td style="background-color: #091221; border-color: #0236a5; color: white;">{{ commande.status }}</td>
-                                <td style="background-color: #091221; border-color: #0236a5; color: white;">
-                                    <a href="{{ path('app_commande_show', {'id': commande.id}) }}" class="btn btn-sm" style="background-color: #0585c6; color: white;">Voir</a>
-                                    <a href="{{ path('app_commande_edit', {'id': commande.id}) }}" class="btn btn-sm" style="background-color: #fc0369; color: white;">Modifier</a>
+                                <td class="align-middle">{{ commande.produit.nomProduit }}</td>
+                                <td class="align-middle">
+                                    {% if commande.produit.stocks|length > 0 %}
+                                        {{ commande.produit.stocks[0].prixProduit|number_format(2, '.', ',') }} TND
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </td>
+                                <td class="align-middle">
+                                    <span class="badge {{ commande.status == 'terminé' ? 'bg-success' : (commande.status == 'pending_payment' ? 'bg-warning text-dark' : 'bg-info') }}">
+                                        {{ commande.status }}
+                                    </span>
+                                </td>
+                                <td class="align-middle">{{ commande.createdAt|date('d/m/Y H:i') }}</td>
+                                <td class="align-middle">
+                                    <div class="btn-group">
+                                        <a href="{{ path('app_commande_show', {'id': commande.id}) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i> Voir
+                                        </a>
+                                        <form method="post" action="{{ path('app_commande_delete', {'id': commande.id}) }}" style="display: inline-block" 
+                                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette commande?');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ commande.id) }}">
+                                            <button class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-trash"></i> Supprimer
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         {% else %}
                             <tr>
-                                <td colspan="4" style="background-color: #091221; border-color: #0236a5; color: white; text-align: center;">Aucune commande trouvée</td>
+                                <td colspan="5" class="text-center">Aucune commande trouvée</td>
                             </tr>
                         {% endfor %}
                         </tbody>
@@ -42,6 +99,90 @@
                 </div>
             </div>
         </div>
+
+        {% if max_pages|default(1) > 1 %}
+            <nav aria-label="Pagination des commandes" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item {{ current_page|default(1) == 1 ? 'disabled' : '' }}">
+                        <a class="page-link" href="{{ path('app_commande_index', { page: (current_page|default(1)) - 1, search: search|default(''), sort: sort|default('') }) }}">Précédent</a>
+                    </li>
+                    {% for i in 1..max_pages %}
+                        <li class="page-item {{ current_page|default(1) == i ? 'active' : '' }}">
+                            <a class="page-link" href="{{ path('app_commande_index', { page: i, search: search|default(''), sort: sort|default('') }) }}">{{ i }}</a>
+                        </li>
+                    {% endfor %}
+                    <li class="page-item {{ current_page|default(1) == max_pages ? 'disabled' : '' }}">
+                        <a class="page-link" href="{{ path('app_commande_index', { page: (current_page|default(1)) + 1, search: search|default(''), sort: sort|default('') }) }}">Suivant</a>
+                    </li>
+                </ul>
+            </nav>
+        {% endif %}
     </div>
-</div>
-{% endblock %} 
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        #commandes-table {
+            color: #000 !important;
+            background-color: #fff;
+        }
+        
+        #commandes-table th,
+        #commandes-table td {
+            color: #000 !important;
+            border-color: #dee2e6;
+        }
+        
+        #commandes-table thead {
+            background-color: #0d6efd;
+            color: white !important;
+        }
+        
+        #commandes-table thead th {
+            color: white !important;
+            font-weight: bold;
+        }
+        
+        #commandes-table tbody tr:hover {
+            background-color: rgba(13, 110, 253, 0.1);
+        }
+        
+        .card-main {
+            background-color: #fff;
+            border-radius: 0.5rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            overflow: hidden;
+        }
+        
+        .badge {
+            font-size: 0.85rem;
+            padding: 0.35em 0.65em;
+        }
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Force text color
+            $('#commandes-table tbody td').css('color', '#000');
+            
+            // Soumission du formulaire de tri
+            $('select[name="sort"]').on('change', function() {
+                $('#commandeFilterForm').submit();
+            });
+
+            // Gestion de la pagination avec jQuery
+            $('.page-link').on('click', function(e) {
+                e.preventDefault();
+                var url = $(this).attr('href');
+                if (url) {
+                    window.location.href = url;
+                }
+            });
+        });
+    </script>
+{% endblock %}

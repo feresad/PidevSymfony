@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Facture {{ commande.produit.nomProduit }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #dd163b;
+            padding-bottom: 20px;
+        }
+        .logo {
+            max-height: 80px;
+            max-width: 200px;
+            margin-right: 20px;
+        }
+        .header-content {
+            flex: 1;
+        }
+        .header-content h1 {
+            color: #dd163b;
+            font-size: 24px;
+            margin: 0 0 5px 0;
+        }
+        .header-content p {
+            margin: 0;
+            color: #666;
+        }
+        .invoice-details {
+            text-align: right;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+        }
+        .invoice-id {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #dd163b;
+        }
+        .company-info {
+            margin-bottom: 30px;
+        }
+        .company-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .customer-info {
+            margin: 40px 0 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #dd163b;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        table thead th {
+            background-color: #f5f5f5;
+            padding: 10px;
+            text-align: left;
+            border-bottom: 2px solid #ddd;
+        }
+        table tbody td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .totals {
+            width: 40%;
+            float: right;
+        }
+        .totals table {
+            width: 100%;
+        }
+        .totals table td {
+            padding: 5px;
+        }
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+        }
+        .item-image {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+        }
+        .clearfix:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="file:///C:/xampp/htdocs/img/logo.png" alt="LevelOp Logo" class="logo">
+        <div class="header-content">
+            <h1>FACTURE</h1>
+            <p>N° {{ commande.produit.nomProduit }} | Date: {{ date|date('d/m/Y') }}</p>
+        </div>
+    </div>
+    
+    <div class="invoice-details">
+        <div class="invoice-id">Référence commande: CMD-{{ commande.id }}</div>
+        <div>Mode de paiement: Carte bancaire</div>
+        <div>Date d'émission: {{ date|date('d/m/Y H:i') }}</div>
+    </div>
+    
+    <div class="clearfix">
+        <div class="company-info">
+            <div class="company-name">LevelOp</div>
+            <div>ESPRIT GHAZELA</div>
+            <div>Tél: +216 56 810 207</div>
+            <div>Email: levelopcorporation@gmail.com</div>
+        </div>
+    </div>
+    
+    <div class="customer-info">
+        <div class="section-title">FACTURER À</div>
+        <div>{{ user.prenom }} {{ user.nom }}</div>
+        <div>{{ user.email }}</div>
+        <div>Compte client: {{ user.id }}</div>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 10%">Image</th>
+                <th style="width: 45%">Description</th>
+                <th style="width: 15%">Prix unitaire</th>
+                <th style="width: 15%">Quantité</th>
+                <th style="width: 15%">Montant</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    {% if stock and stock.image %}
+                        <img src="{{ image_base_url }}/{{ stock.image }}" alt="{{ commande.produit.nomProduit }}" class="item-image">
+                    {% else %}
+                        No Image
+                    {% endif %}
+                </td>
+                <td>
+                    <strong>{{ commande.produit.nomProduit }}</strong><br>
+                    {{ commande.produit.description|length > 100 ? commande.produit.description|slice(0, 100) ~ '...' : commande.produit.description }}
+                </td>
+                <td>{{ stock ? stock.prixProduit : 'N/A' }} TND</td>
+                <td>1</td>
+                <td>{{ stock ? stock.prixProduit : 'N/A' }} TND</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div class="totals">
+        <table>
+            <tr>
+                <td>Sous-total:</td>
+                <td class="text-right">{{ stock ? stock.prixProduit : 'N/A' }} TND</td>
+            </tr>
+            <tr>
+                <td><strong>Total:</strong></td>
+                <td class="text-right"><strong>{{ stock ? stock.prixProduit : 'N/A' }} TND</strong></td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="clearfix"></div>
+</body>
+</html> 

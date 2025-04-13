@@ -1,62 +1,136 @@
 <?php
 
-namespace App\Form;
+namespace App\Repository;
 
 use App\Entity\Commande;
-use App\Entity\Produit;
-use App\Entity\Utilisateur;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
-use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\OptionsResolver\OptionsResolver;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Persistence\ManagerRegistry;
 
-class CommandeType extends AbstractType
+class CommandeRepository extends ServiceEntityRepository
 {
-    public function buildForm(FormBuilderInterface $builder, array $options): void
+    public function __construct(ManagerRegistry $registry)
     {
-        $builder
-            ->add('utilisateur', EntityType::class, [
-                'class' => Utilisateur::class,
-                'choice_label' => 'nickname',
-                'label' => 'Client',
-                'attr' => [
-                    'class' => 'form-control',
-                    'style' => 'background-color: #091221; color: white; border-color: #0236a5;'
-                ],
-                'required' => true
-            ])
-            ->add('produit', EntityType::class, [
-                'class' => Produit::class,
-                'choice_label' => 'nomProduit',
-                'label' => 'Produit',
-                'attr' => [
-                    'class' => 'form-control',
-                    'style' => 'background-color: #091221; color: white; border-color: #0236a5;'
-                ],
-                'required' => true
-            ])
-            ->add('status', ChoiceType::class, [
-                'choices' => [
-                    'En attente de paiement' => 'pending_payment',
-                    'Terminé' => 'terminé',
-                    'Annulé' => 'annulé'
-                ],
-                'label' => 'Statut',
-                'attr' => [
-                    'class' => 'form-control',
-                    'style' => 'background-color: #091221; color: white; border-color: #0236a5;'
-                ],
-                'required' => true
-            ])
-        ;
+        parent::__construct($registry, Commande::class);
     }
 
-    public function configureOptions(OptionsResolver $resolver): void
+    public function findCustomersByProductId(int $productId): array
     {
-        $resolver->setDefaults([
-            'data_class' => Commande::class,
-            'validation_groups' => ['Default'],
-        ]);
+        return $this->createQueryBuilder('c')
+            ->select('DISTINCT u.id, u.email, u.nom, u.prenom')
+            ->join('c.utilisateur', 'u')
+            ->join('c.produit', 'p')
+            ->where('p.id = :productId')
+            ->andWhere('c.status = :status')
+            ->setParameter('productId', $productId)
+            ->setParameter('status', 'terminé')
+            ->getQuery()
+            ->getResult();
     }
-} 
+
+    /**
+     * Find users with commands and their accumulated prices
+     */
+    public function findUserCommandSummaries(?string $search = null, ?string $sort = null): array
+    {
+        $qb = $this->createQueryBuilder('c')
+            ->select('u.id, u.nickname, u.email, u.nom, u.prenom, COUNT(c.id) as total_commands, SUM(s.prix_produit) as total_amount')
+            ->join('c.utilisateur', 'u')
+            ->join('c.produit', 'p')
+            ->join('p.stocks', 's')
+            ->groupBy('u.id')
+            ->orderBy('u.nickname', 'ASC');
+
+        // Add search filter if provided
+        if ($search) {
+            $qb->andWhere('u.nom LIKE :search OR u.prenom LIKE :search OR u.nickname LIKE :search OR u.email LIKE :search')
+               ->setParameter('search', '%' . $search . '%');
+        }
+
+        // Add sorting if provided
+        if ($sort) {
+            switch ($sort) {
+                case 'nickname_asc':
+                    $qb->orderBy('u.nickname', 'ASC');
+                    break;
+                case 'nickname_desc':
+                    $qb->orderBy('u.nickname', 'DESC');
+                    break;
+                case 'amount_asc':
+                    $qb->orderBy('total_amount', 'ASC');
+                    break;
+                case 'amount_desc':
+                    $qb->orderBy('total_amount', 'DESC');
+                    break;
+                case 'commands_asc':
+                    $qb->orderBy('total_commands', 'ASC');
+                    break;
+                case 'commands_desc':
+                    $qb->orderBy('total_commands', 'DESC');
+                    break;
+                default:
+                    $qb->orderBy('u.nickname', 'ASC');
+            }
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Count the total number of users with commands
+     */
+    public function countUsersWithCommands(?string $search = null): int
+    {
+        $qb = $this->createQueryBuilder('c')
+            ->select('COUNT(DISTINCT u.id)')
+            ->join('c.utilisateur', 'u');
+
+        // Add search filter if provided
+        if ($search) {
+            $qb->andWhere('u.nom LIKE :search OR u.prenom LIKE :search OR u.nickname LIKE :search OR u.email LIKE :search')
+               ->setParameter('search', '%' . $search . '%');
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * Get the order count and total price for a specific user and product
+     */
+    public function getUserProductOrderSummary(int $utilisateurId, int $produitId): array
+    {
+        $result = $this->createQueryBuilder('c')
+            ->select('COUNT(c.id) as order_count, SUM(s.prix_produit) as total_price')
+            ->join('c.utilisateur', 'u')
+            ->join('c.produit', 'p')
+            ->join('p.stocks', 's')
+            ->where('u.id = :utilisateurId')
+            ->andWhere('p.id = :produitId')
+            ->setParameter('utilisateurId', $utilisateurId)
+            ->setParameter('produitId', $produitId)
+            ->getQuery()
+            ->getSingleResult();
+
+        return [
+            'order_count' => (int) $result['order_count'],
+            'total_price' => $result['total_price'] ? (float) $result['total_price'] : 0.0,
+        ];
+    }
+
+    /**
+     * Get all users who ordered a specific product with their order summary
+     */
+    public function getUsersWhoOrderedProduct(int $produitId): array
+    {
+        return $this->createQueryBuilder('c')
+            ->select('u.id, u.nickname, u.email, u.nom, u.prenom, COUNT(c.id) as order_count, SUM(s.prix_produit) as total_price, MAX(c.status) as last_status')
+            ->join('c.utilisateur', 'u')
+            ->join('c.produit', 'p')
+            ->join('p.stocks', 's')
+            ->where('p.id = :produitId')
+            ->setParameter('produitId', $produitId)
+            ->groupBy('u.id')
+            ->orderBy('order_count', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+}

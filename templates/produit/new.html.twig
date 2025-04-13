@@ -1,85 +1,84 @@
-{% extends 'base.html.twig' %}
+{% extends 'baseadmin.html.twig' %}
 
 {% block title %}Ajouter un Produit{% endblock %}
 
 {% block body %}
-<div class="container mt-5" style="background-color: #091221; color: white;">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card" style="background-color: #091221; border-color: #0236a5;">
-                <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #0236a5; color: white;">
-                    <h2>Ajouter un Produit</h2>
-                </div>
-                <div class="card-body">
-                    {% if success_message is not null %}
-                        <div class="alert alert-success">{{ success_message }}</div>
-                    {% endif %}
+    <div class="container mt-4">
+        <h2 class="mb-4">Ajouter un Produit</h2>
 
-                    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
-                        <div class="form-group mb-3">
-                            {{ form_label(form.nom_produit, null, {'label_attr': {'style': 'color: white;'}}) }}
-                            {{ form_widget(form.nom_produit, {'attr': {'class': 'form-control', 'style': 'background-color: #091221; color: white; border-color: #0236a5;'}}) }}
-                            <div class="text-danger">
-                                {{ form_errors(form.nom_produit) }}
-                            </div>
-                        </div>
-                        
-                        <div class="form-group mb-3">
-                            {{ form_label(form.description, null, {'label_attr': {'style': 'color: white;'}}) }}
-                            {{ form_widget(form.description, {'attr': {'class': 'form-control', 'style': 'background-color: #091221; color: white; border-color: #0236a5;'}}) }}
-                            <div class="text-danger">
-                                {{ form_errors(form.description) }}
-                            </div>
-                        </div>
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">
+                {{ message }}
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger">
+                {{ message }}
+            </div>
+        {% endfor %}
 
-                        <div class="form-group mb-3">
-                            {{ form_label(form.score, null, {'label_attr': {'style': 'color: white;'}}) }}
-                            {{ form_widget(form.score, {'attr': {'class': 'form-control', 'style': 'background-color: #091221; color: white; border-color: #0236a5;'}}) }}
-                            <div class="text-danger">
-                                {{ form_errors(form.score) }}
-                            </div>
-                        </div>
+        {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+            {{ form_errors(form) }}
 
-                        <div class="form-group mb-3">
-                            {{ form_label(form.platform, null, {'label_attr': {'style': 'color: white;'}}) }}
-                            {{ form_widget(form.platform, {'attr': {'class': 'form-control', 'style': 'background-color: #091221; color: white; border-color: #0236a5;'}}) }}
-                            <div class="text-danger">
-                                {{ form_errors(form.platform) }}
-                            </div>
-                        </div>
-
-                        <div class="form-group mb-3">
-                            {{ form_label(form.type, null, {'label_attr': {'style': 'color: white;'}}) }}
-                            {{ form_widget(form.type, {'attr': {'class': 'form-control', 'style': 'background-color: #091221; color: white; border-color: #0236a5;'}}) }}
-                            <div class="text-danger">
-                                {{ form_errors(form.type) }}
-                            </div>
-                        </div>
-
-                        <div class="form-group mb-3">
-                            {{ form_label(form.region, null, {'label_attr': {'style': 'color: white;'}}) }}
-                            {{ form_widget(form.region, {'attr': {'class': 'form-control', 'style': 'background-color: #091221; color: white; border-color: #0236a5;'}}) }}
-                            <div class="text-danger">
-                                {{ form_errors(form.region) }}
-                            </div>
-                        </div>
-
-                        <div class="form-group mb-3">
-                            {{ form_label(form.activation_region, null, {'label_attr': {'style': 'color: white;'}}) }}
-                            {{ form_widget(form.activation_region, {'attr': {'class': 'form-control', 'style': 'background-color: #091221; color: white; border-color: #0236a5;'}}) }}
-                            <div class="text-danger">
-                                {{ form_errors(form.activation_region) }}
-                            </div>
-                        </div>
-
-                        <div class="d-flex justify-content-between">
-                            <button type="submit" class="btn btn-primary" style="background-color: #fc0369; border-color: #fc0369;">Enregistrer</button>
-                            <a href="{{ path('app_produit_index') }}" class="btn btn-secondary" style="background-color: #0585c6; border-color: #0585c6;">Retour à la liste</a>
-                        </div>
-                    {{ form_end(form) }}
+            <div class="mb-3">
+                {{ form_label(form.nom_produit, 'Nom du produit', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.nom_produit, {'attr': {'class': 'form-control', 'required': 'required', 'maxlength': '255'}}) }}
+                <div class="invalid-feedback">
+                    {{ form_errors(form.nom_produit) }}
                 </div>
             </div>
-        </div>
+
+            <div class="mb-3">
+                {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.description, {'attr': {'class': 'form-control', 'required': 'required'}}) }}
+                <div class="invalid-feedback">
+                    {{ form_errors(form.description) }}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                {{ form_label(form.score, 'Score', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.score, {'attr': {'class': 'form-control', 'required': 'required'}}) }}
+                <div class="invalid-feedback">
+                    {{ form_errors(form.score) }}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                {{ form_label(form.platform, 'Plateforme', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.platform, {'attr': {'class': 'form-control', 'required': 'required'}}) }}
+                <div class="invalid-feedback">
+                    {{ form_errors(form.platform) }}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                {{ form_label(form.type, 'Type', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.type, {'attr': {'class': 'form-control', 'required': 'required'}}) }}
+                <div class="invalid-feedback">
+                    {{ form_errors(form.type) }}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                {{ form_label(form.region, 'Région', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.region, {'attr': {'class': 'form-control', 'required': 'required'}}) }}
+                <div class="invalid-feedback">
+                    {{ form_errors(form.region) }}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                {{ form_label(form.activation_region, 'Région d\'activation', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.activation_region, {'attr': {'class': 'form-control', 'required': 'required'}}) }}
+                <div class="invalid-feedback">
+                    {{ form_errors(form.activation_region) }}
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-center gap-2 mt-3">
+                <button type="submit" class="btn btn-primary">Ajouter</button>
+            </div>
+        {{ form_end(form) }}
     </div>
-</div>
 {% endblock %}

@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -63,16 +62,12 @@
                 <ul class="sub-menu">
                     <div>
                         <li class="sub-header">Produits</li>
-                        <li><a href="{{ path('app_produit_new') }}" data-turbo="true">Ajouter un Produit</a></li>
-                        <li><a href="{{ path('app_produit_index') }}" data-turbo="true">Liste Produits</a></li>
+                        <li><a href="{{ path('app_catalog_index') }}" data-turbo="true">Catalogue Produits</a></li>
                         
                         <li class="sub-header">Commandes</li>
-                        <li><a href="{{ path('app_commande_new') }}" data-turbo="true">Nouvelle Commande</a></li>
-                        <li><a href="{{ path('app_commande_index') }}" data-turbo="true">Liste Commandes</a></li>
+                     <li><a href="{{ path('app_commande_index') }}" data-turbo="true">Liste Commandes</a></li>
                         
-                        <li class="sub-header">Stock</li>
-                        <li><a href="{{ path('app_stock_new') }}" data-turbo="true">Ajouter Stock</a></li>
-                        <li><a href="{{ path('app_stock_index') }}" data-turbo="true">Liste Stock</a></li>
+                      
                     </div>
                 </ul>
             </li>

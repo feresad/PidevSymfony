@@ -1073,3 +1073,54 @@ footer {
   border-color: #dc3545;
   box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
 }
+
+.nk-product-cat,
+.nk-product-cat-2,
+.nk-product-cat-3 {
+  padding: 10px;
+  margin-bottom: 15px;
+  background-color: rgba(35, 41, 48, 0.4);  /* Much more transparent background */
+  backdrop-filter: blur(8px);  /* Increased blur for better readability with more transparency */
+  border: 1px solid rgba(41, 49, 57, 0.3);  /* More transparent border */
+  border-radius: 4px;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.nk-product-cat:hover,
+.nk-product-cat-2:hover,
+.nk-product-cat-3:hover {
+  background-color: rgba(35, 41, 48, 0.6);  /* Slightly more opaque on hover, but still transparent */
+}
+
+.nk-product-cat .nk-product-image,
+.nk-product-cat-2 .nk-product-image,
+.nk-product-cat-3 .nk-product-image {
+  max-width: 180px;  /* Reduce image size */
+  height: auto;
+}
+
+.nk-product-cat .nk-product-cont,
+.nk-product-cat-2 .nk-product-cont,
+.nk-product-cat-3 .nk-product-cont {
+  padding: 10px;  /* Add padding inside the content area */
+}
+
+.nk-product-cat .nk-product-title,
+.nk-product-cat-2 .nk-product-title,
+.nk-product-cat-3 .nk-product-title {
+  font-size: 0.95rem;  /* Reduce title font size */
+  margin-bottom: 8px;
+}
+
+.nk-product-cat .nk-product-price,
+.nk-product-cat-2 .nk-product-price,
+.nk-product-cat-3 .nk-product-price {
+  font-size: 1.1rem;  /* Reduce price font size */
+  margin-top: 8px;
+}
+
+/* Add some spacing between product cards in grid */
+.col-md-6,
+.col-lg-6 {
+  padding: 10px;  /* Add padding to columns */
+}

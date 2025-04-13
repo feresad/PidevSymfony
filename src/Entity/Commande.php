@@ -12,12 +12,13 @@ class Commande
 {
     public function __construct()
     {
+        $this->createdAt = new \DateTimeImmutable(); // Set default value on creation
     }
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: "integer")]
-    private int $id;
+    private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: "commandes")]
     #[ORM\JoinColumn(name: 'utilisateur_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
@@ -31,12 +32,15 @@ class Commande
 
     #[ORM\Column(type: "string", length: 255)]
     #[Assert\NotBlank(message: "Le statut ne peut pas être vide")]
-    #[Assert\Choice(choices: ["pending_payment", "terminé", "annulé"], message: "Statut invalide")]
-    private string $status;
+    #[Assert\Choice(choices: ["pending_payment", "en attente", "terminé", "annulé", "échec"], message: "Statut invalide")]
+    private ?string $status = null;
+
+    #[ORM\Column(type: "datetime_immutable")]
+    private ?\DateTimeImmutable $createdAt = null;
 
     // Getters and Setters
 
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
@@ -63,7 +67,7 @@ class Commande
         return $this;
     }
 
-    public function getStatus(): string
+    public function getStatus(): ?string
     {
         return $this->status;
     }
@@ -71,6 +75,17 @@ class Commande
     public function setStatus(string $status): self
     {
         $this->status = $status;
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $createdAt): self
+    {
+        $this->createdAt = $createdAt;
         return $this;
     }
 }

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>LevelOP - Confirmation de votre achat</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #1A1A1A;
+            font-family: Arial, sans-serif;
+            color: #FFFFFF;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #2A2A2A;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid #fe0369;
+            box-shadow: 0 0 15px #fe0369;
+        }
+        .header {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(to right, #0a0f1e, #770d77);
+            border-bottom: 2px solid #fe0369;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #fe0369;
+            text-shadow: 0 0 5px #fe0369;
+        }
+        .content {
+            padding: 30px;
+            line-height: 1.6;
+        }
+        .content h2 {
+            color: #fe0369;
+            font-size: 24px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 5px #fe0369;
+        }
+        .content p {
+            font-size: 16px;
+            color: #a0a0a0;
+            margin: 10px 0;
+        }
+        .key-box {
+            background-color: #2A2A2A;
+            padding: 15px;
+            border-radius: 5px;
+            border: 2px solid #fe0369;
+            box-shadow: 0 0 10px #fe0369;
+            margin: 20px 0;
+            background: linear-gradient(to right, #0a0f1e, #770d77);
+        }
+        .key-box h1 {
+            color: #00ff88;
+            font-size: 28px;
+            margin: 0;
+            text-transform: uppercase;
+            text-shadow: 0 0 5px #00ff88;
+        }
+        .details ul {
+            list-style: none;
+            padding: 0;
+            color: #00ff88;
+            text-align: left;
+        }
+        .details ul li {
+            margin: 10px 0;
+        }
+        .details .highlight {
+            color: #00ff88;
+            text-shadow: 0 0 5px #00ff88;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid #fe0369;
+            font-size: 12px;
+            color: #888888;
+        }
+        @media only screen and (max-width: 600px) {
+            .container {
+                width: 100% !important;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>LevelOP</h1>
+    </div>
+    <div class="content">
+        <h2>Merci d'avoir activé votre {{ produit.nomProduit }} sur {{ produit.platform }} !</h2>
+        <p>Bonjour {{ commande.utilisateur.nickname | default(commande.utilisateur.email) }},</p>
+        <p>Votre activation de {{ produit.nomProduit }} a été réussie. Il est recommandé de conserver ces informations en lieu sûr. Elles peuvent servir de preuve d'achat.</p>
+
+        <div class="details">
+            <p>Détails de la commande :</p>
+            <ul>
+                <li>Numéro de commande : <span class="highlight">#{{ commande.id }}</span></li>
+                <li>Produit : <span class="highlight">{{ produit.nomProduit }}</span></li>
+                <li>Plateforme : <span class="highlight">{{ produit.platform }}</span></li>
+            </ul>
+        </div>
+        <p>Merci pour votre achat !</p>
+    </div>
+    <div class="footer">
+        <p>© 2025 LevelOP. Tous droits réservés. | <a href="#" style="color: #fe0369; text-shadow: 0 0 3px #fe0369;">Problème pour voir ce message ? Cliquez ici</a></p>
+        <p>Vous avez reçu cet email car vous avez effectué un achat sur LevelOP.</p>
+    </div>
+</div>
+</body>
+</html>

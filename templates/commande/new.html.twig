@@ -1,55 +1,213 @@
-{% extends 'base.html.twig' %}
+{% extends 'baseadmin.html.twig' %}
 
 {% block title %}Nouvelle Commande{% endblock %}
 
 {% block body %}
-<div class="container mt-5" style="background-color: #091221; color: white;">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card" style="background-color: #091221; border-color: #0236a5;">
-                <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #0236a5; color: white;">
-                    <h2 class="mb-0" style="font-size: 28px; text-transform: uppercase;">Nouvelle Commande</h2>
-                    <a href="{{ path('app_commande_index') }}" class="btn" style="background-color: #0585c6; color: white;">Retour à la liste</a>
-                </div>
-                <div class="card-body p-4">
-                    {{ form_start(form) }}
-                        {% if not form.vars.valid %}
-                            <div class="alert alert-danger">
-                                {{ form_errors(form) }}
-                            </div>
-                        {% endif %}
+    <div class="container-main mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="display-5 fw-bold">Nouvelle Commande</h2>
+            <a href="{{ path('app_commande_index') }}" class="btn btn-outline-secondary btn-back">
+                <i class="fas fa-arrow-left me-2"></i> Retour à la liste
+            </a>
+        </div>
 
-                        <div class="form-group mb-4">
-                            {{ form_label(form.utilisateur, 'Client', {'label_attr': {'style': 'color: white; font-weight: 600;'}}) }}
-                            {{ form_widget(form.utilisateur) }}
-                            <div class="text-danger">
-                                {{ form_errors(form.utilisateur) }}
-                            </div>
-                        </div>
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
 
-                        <div class="form-group mb-4">
-                            {{ form_label(form.produit, null, {'label_attr': {'style': 'color: white; font-weight: 600;'}}) }}
-                            {{ form_widget(form.produit) }}
-                            <div class="text-danger">
-                                {{ form_errors(form.produit) }}
-                            </div>
-                        </div>
+        <div class="card-main shadow-sm">
+            <div class="card-body p-4">
+                {{ form_start(form, {'attr': {'class': 'needs-validation'}}) }}
+                    {{ form_errors(form) }}
 
-                        <div class="form-group mb-4">
-                            {{ form_label(form.status, null, {'label_attr': {'style': 'color: white; font-weight: 600;'}}) }}
-                            {{ form_widget(form.status) }}
-                            <div class="text-danger">
-                                {{ form_errors(form.status) }}
-                            </div>
+                    <div class="mb-3">
+                        {{ form_label(form.utilisateur, 'Client', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.utilisateur, {'attr': {'class': 'form-control bg-white text-black', 'required': 'required'}}) }}
+                        <div class="text-danger">
+                            {{ form_errors(form.utilisateur) }}
                         </div>
+                    </div>
 
-                        <div class="d-flex justify-content-between mt-4">
-                            <button type="submit" class="btn" style="background-color: #fc0369; color: white;">Enregistrer</button>
+                    <div class="mb-3">
+                        {{ form_label(form.produit, 'Produit', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.produit, {'attr': {'class': 'form-control bg-white text-black', 'required': 'required'}}) }}
+                        <div class="text-danger">
+                            {{ form_errors(form.produit) }}
                         </div>
-                    {{ form_end(form) }}
-                </div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.status, 'Statut', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.status, {'attr': {'class': 'form-control bg-white text-black', 'required': 'required'}}) }}
+                        <div class="text-danger">
+                            {{ form_errors(form.status) }}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-center gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary btn-action">Enregistrer</button>
+                    </div>
+                {{ form_end(form) }}
             </div>
         </div>
     </div>
-</div>
-{% endblock %} 
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        /* General Container Styling */
+        .container-main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 15px;
+            color: #000 !important; /* Force all text in container to black */
+        }
+
+        /* Heading Styling */
+        h2.display-5 {
+            font-size: 2.25rem;
+            color: #000 !important; /* Force heading to black */
+            margin-bottom: 0;
+        }
+
+        /* Card Styling */
+        .card-main {
+            background-color: #fff;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .card-body {
+            padding: 2rem !important;
+            background-color: #fff;
+        }
+
+        /* Form and Input Styling */
+        .form-label {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #000 !important; /* Force label text to black */
+        }
+
+        .form-control {
+            font-size: 0.95rem;
+            border-radius: 8px;
+            border: 1px solid #ced4da;
+            color: #000 !important; /* Force input text to black */
+            background-color: #fff !important; /* Force input background to white */
+        }
+
+        .form-control:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+            background-color: #fff !important;
+            color: #000 !important;
+        }
+
+        .text-danger {
+            color: #dc3545;
+            font-size: 0.875rem;
+        }
+
+        /* Button Styling */
+        .btn-back,
+        .btn-action {
+            font-size: 0.95rem;
+            padding: 0.5rem 1.25rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-back {
+            border-color: #6c757d;
+            color: #6c757d;
+            background-color: #fff;
+        }
+
+        .btn-back:hover {
+            background-color: #6c757d;
+            color: #fff;
+            border-color: #6c757d;
+        }
+
+        .btn-primary {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background-color: #0b5ed7;
+            border-color: #0a58ca;
+        }
+
+        /* Alert Styling */
+        .alert {
+            border-radius: 8px;
+            font-size: 0.95rem;
+            padding: 1rem 1.5rem;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border-color: #c3e6cb;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-color: #f5c6cb;
+        }
+
+        /* Select Dropdown Styling */
+        select.form-control {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23000000' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 16px 12px;
+            padding-right: 2.5rem;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .container-main {
+                padding: 0 10px;
+            }
+
+            h2.display-5 {
+                font-size: 1.75rem;
+            }
+
+            .btn-back,
+            .btn-action {
+                font-size: 0.85rem;
+                padding: 0.4rem 1rem;
+            }
+
+            .d-flex.justify-content-center {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .d-flex.justify-content-center .btn {
+                width: 100%;
+            }
+        }
+    </style>
+{% endblock %}

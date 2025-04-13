@@ -1,46 +1,154 @@
-{% extends 'base.html.twig' %}
+{% extends 'baseadmin.html.twig' %}
 
 {% block title %}Détails de la Commande{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .order-container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 30px;
+            background-color: #fff;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        
+        .order-container h1 {
+            margin-bottom: 30px;
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        
+        .details-table tr {
+            border-bottom: 1px solid #eee;
+        }
+        
+        .details-table tr:last-child {
+            border-bottom: none;
+        }
+        
+        .details-table th {
+            width: 30%;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+        
+        .details-table td {
+            padding: 15px;
+            color: #444;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            color: white;
+            background-color: #28a745;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-left: auto;
+            padding: 8px 16px;
+            color: #666;
+            text-decoration: none;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        
+        .back-link:hover {
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        
+        .action-buttons {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-delete {
+            padding: 8px 16px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
-<div class="container mt-5" style="background-color: #091221; color: white;">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card" style="background-color: #091221; border-color: #0236a5;">
-                <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #0236a5; color: white;">
-                    <h2 class="mb-0" style="font-size: 28px; text-transform: uppercase;">Détails de la Commande</h2>
-                    <div class="action-buttons">
-                        <a href="{{ path('app_commande_index') }}" class="btn" style="background-color: #0585c6; color: white;">Retour à la liste</a>
-                        <a href="{{ path('app_commande_edit', {'id': commande.id}) }}" class="btn" style="background-color: #fc0369; color: white;">Modifier</a>
-                    </div>
-                </div>
-                <div class="card-body p-4">
-                    <table class="table" style="color: white; font-size: 18px;">
-                        <tbody>
-                            <tr>
-                                <th style="background-color: #0585c6; border-color: #0236a5; color: white; width: 200px;">Client</th>
-                                <td style="background-color: #091221; border-color: #0236a5; color: white;">{{ commande.utilisateur.nickname }}</td>
-                            </tr>
-                            <tr>
-                                <th style="background-color: #0585c6; border-color: #0236a5; color: white;">Produit</th>
-                                <td style="background-color: #091221; border-color: #0236a5; color: white;">{{ commande.produit.nomProduit }}</td>
-                            </tr>
-                            <tr>
-                                <th style="background-color: #0585c6; border-color: #0236a5; color: white;">Statut</th>
-                                <td style="background-color: #091221; border-color: #0236a5; color: white;">{{ commande.status }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    
-                    <div class="mt-4">
-                        <form method="post" action="{{ path('app_commande_delete', {'id': commande.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette commande?');" style="display: inline-block">
-                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ commande.id) }}">
-                            <button class="btn" style="background-color: #0236a5; color: white;">Supprimer</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
+    <div class="order-container">
+        <div class="header-flex">
+            <h1>Détails de la Commande</h1>
+            <a href="{{ path('app_commande_index') }}" class="back-link">
+                <i class="fas fa-arrow-left mr-2"></i> Retour à la liste
+            </a>
+        </div>
+        
+        <table class="details-table">
+            <tr>
+                <th>PRODUIT</th>
+                <td>{{ commande.produit.nomProduit }}</td>
+            </tr>
+            <tr>
+                <th>PRIX</th>
+                <td>{{ stock ? stock.prixProduit : 'N/A' }} TND</td>
+            </tr>
+            <tr>
+                <th>STATUT</th>
+                <td><span class="status-badge">{{ commande.status }}</span></td>
+            </tr>
+            <tr>
+                <th>DATE</th>
+                <td>{{ commande.createdAt|date('d/m/Y H:i') }}</td>
+            </tr>
+            <tr>
+                <th>NOM</th>
+                <td>{{ commande.utilisateur.prenom }} {{ commande.utilisateur.nom }}</td>
+            </tr>
+            <tr>
+                <th>EMAIL</th>
+                <td>{{ commande.utilisateur.email }}</td>
+            </tr>
+            <tr>
+                <th>TOTAL ACCUMULÉ</th>
+                <td>{{ total_price }} TND ({{ order_count }} commandes)</td>
+            </tr>
+        </table>
+        
+        <div class="action-buttons">
+            <form method="post" action="{{ path('app_commande_delete', {'id': commande.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette commande?');" style="display: inline-block;">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ commande.id) }}">
+                <button class="btn-delete">
+                    <i class="fas fa-trash-alt mr-2"></i> Supprimer
+                </button>
+            </form>
         </div>
     </div>
-</div>
-{% endblock %} 
+{% endblock %}

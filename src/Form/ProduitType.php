@@ -4,15 +4,12 @@ namespace App\Form;
 
 use App\Entity\Produit;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Validator\Constraints\Range;
+use Symfony\Component\Validator\Constraints\Length;
 
 class ProduitType extends AbstractType
 {
@@ -22,108 +19,90 @@ class ProduitType extends AbstractType
             ->add('nom_produit', TextType::class, [
                 'constraints' => [
                     new NotBlank([
-                        'message' => 'Veuillez entrer un nom de produit',
+                        'message' => 'Le nom du produit ne peut pas être vide.',
                     ]),
                     new Length([
-                        'min' => 3,
-                        'minMessage' => 'Le nom du produit doit contenir au moins {{ limit }} caractères',
                         'max' => 255,
-                        'maxMessage' => 'Le nom du produit ne peut pas dépasser {{ limit }} caractères',
+                        'maxMessage' => 'Le nom du produit ne doit pas dépasser {{ limit }} caractères.',
                     ]),
                 ],
                 'label' => 'Nom du produit',
-                'attr' => ['class' => 'form-control']
+                'attr' => ['class' => 'form-control', 'maxlength' => '255'],
             ])
             ->add('description', TextareaType::class, [
                 'constraints' => [
                     new NotBlank([
-                        'message' => 'Veuillez entrer une description',
+                        'message' => 'La description ne peut pas être vide.',
                     ]),
                     new Length([
-                        'min' => 10,
-                        'minMessage' => 'La description doit contenir au moins {{ limit }} caractères',
                         'max' => 1000,
-                        'maxMessage' => 'La description ne peut pas dépasser {{ limit }} caractères',
+                        'maxMessage' => 'La description ne doit pas dépasser {{ limit }} caractères.',
                     ]),
                 ],
                 'label' => 'Description',
-                'attr' => ['class' => 'form-control', 'rows' => 5]
-            ])
-            ->add('score', IntegerType::class, [
-                'constraints' => [
-                    new NotBlank([
-                        'message' => 'Veuillez entrer un score',
-                    ]),
-                    new Range([
-                        'min' => 0,
-                        'max' => 100,
-                        'notInRangeMessage' => 'Le score doit être entre {{ min }} et {{ max }}',
-                    ]),
-                ],
-                'label' => 'Score',
-                'attr' => ['class' => 'form-control']
+                'attr' => ['class' => 'form-control', 'rows' => '5'],
             ])
             ->add('platform', TextType::class, [
                 'constraints' => [
                     new NotBlank([
-                        'message' => 'Veuillez entrer une plateforme',
+                        'message' => 'La plateforme ne peut pas être vide.',
                     ]),
                     new Length([
-                        'min' => 2,
-                        'minMessage' => 'La plateforme doit contenir au moins {{ limit }} caractères',
-                        'max' => 50,
-                        'maxMessage' => 'La plateforme ne peut pas dépasser {{ limit }} caractères',
+                        'max' => 100,
+                        'maxMessage' => 'Le nom de la plateforme ne doit pas dépasser {{ limit }} caractères.',
                     ]),
                 ],
                 'label' => 'Plateforme',
-                'attr' => ['class' => 'form-control']
+                'attr' => ['class' => 'form-control'],
             ])
             ->add('type', TextType::class, [
                 'constraints' => [
                     new NotBlank([
-                        'message' => 'Veuillez entrer un type',
+                        'message' => 'Le type ne peut pas être vide.',
                     ]),
                     new Length([
-                        'min' => 2,
-                        'minMessage' => 'Le type doit contenir au moins {{ limit }} caractères',
-                        'max' => 50,
-                        'maxMessage' => 'Le type ne peut pas dépasser {{ limit }} caractères',
+                        'max' => 100,
+                        'maxMessage' => 'Le type ne doit pas dépasser {{ limit }} caractères.',
                     ]),
                 ],
                 'label' => 'Type',
-                'attr' => ['class' => 'form-control']
+                'attr' => ['class' => 'form-control'],
             ])
             ->add('region', TextType::class, [
                 'constraints' => [
                     new NotBlank([
-                        'message' => 'Veuillez entrer une région',
+                        'message' => 'La région ne peut pas être vide.',
                     ]),
                     new Length([
-                        'min' => 2,
-                        'minMessage' => 'La région doit contenir au moins {{ limit }} caractères',
-                        'max' => 50,
-                        'maxMessage' => 'La région ne peut pas dépasser {{ limit }} caractères',
+                        'max' => 100,
+                        'maxMessage' => 'La région ne doit pas dépasser {{ limit }} caractères.',
                     ]),
                 ],
                 'label' => 'Région',
-                'attr' => ['class' => 'form-control']
+                'attr' => ['class' => 'form-control'],
             ])
             ->add('activation_region', TextType::class, [
                 'constraints' => [
                     new NotBlank([
-                        'message' => 'Veuillez entrer une région d\'activation',
+                        'message' => 'La région d\'activation ne peut pas être vide.',
                     ]),
                     new Length([
-                        'min' => 2,
-                        'minMessage' => 'La région d\'activation doit contenir au moins {{ limit }} caractères',
-                        'max' => 50,
-                        'maxMessage' => 'La région d\'activation ne peut pas dépasser {{ limit }} caractères',
+                        'max' => 100,
+                        'maxMessage' => 'La région d\'activation ne doit pas dépasser {{ limit }} caractères.',
                     ]),
                 ],
                 'label' => 'Région d\'activation',
-                'attr' => ['class' => 'form-control']
+                'attr' => ['class' => 'form-control'],
             ])
-        ;
+            ->add('score', \Symfony\Component\Form\Extension\Core\Type\IntegerType::class, [
+                'constraints' => [
+                    new NotBlank([
+                        'message' => 'Le score ne peut pas être vide.',
+                    ]),
+                ],
+                'label' => 'Score',
+                'attr' => ['class' => 'form-control', 'min' => '0', 'max' => '100'],
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

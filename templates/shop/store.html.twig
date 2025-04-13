@@ -1,50 +1,89 @@
 {% extends 'base.html.twig' %}
-
 {% block title %}Boutique de Jeux{% endblock %}
-
 {% block stylesheets %}
 {{ parent() }}
 <style>
+    .nk-page-background-top,
+    .nk-page-background-bottom {
+        position: fixed;
+        left: 0;
+        width: 100%;
+        height: auto;
+        z-index: -1;
+        pointer-events: none;
+    }
+    .nk-page-background-top {
+        top: 0;
+        transform: translateY(-14%) translateX(-14%) scale(1.28);
+    }
+    .nk-page-background-bottom {
+        bottom: 0;
+        transform: translateY(14%) translateX(-14%) scale(1.28);
+    }
+    @media (max-width: 575px) {
+        .nk-page-background-top,
+        .nk-page-background-bottom {
+            display: none;
+        }
+    }
     .game-card {
-        background: #1c1e22;
         margin-bottom: 30px;
         height: 100%;
-        max-width: 400px; /* Limit maximum width */
+        max-width: 400px;
         margin-left: auto;
         margin-right: auto;
+        position: relative;
+        transition: transform 0.3s ease;
+        border-radius: 5px;
+        overflow: hidden;
+        background-color: #232930;
+        border: 1px solid #293139;
+    }
+    .game-card:hover {
+        transform: translateY(-5px);
+        border-color: #dd163b;
     }
     .game-image {
         width: 100%;
-        height: 200px; /* Reduced height from 250px */
+        height: 200px;
         object-fit: cover;
         object-position: center;
+        border-radius: 5px 5px 0 0;
+        transition: transform 0.3s ease;
     }
     .game-info {
-        padding: 15px; /* Reduced padding from 20px */
+        padding: 20px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
     .game-title {
         color: #fff;
-        font-size: 22px; /* Reduced from 28px */
+        font-size: 22px;
         margin-bottom: 8px;
         font-weight: bold;
+        text-align: center;
     }
     .game-description {
         color: #8f8f8f;
-        font-size: 13px; /* Reduced from 14px */
+        font-size: 13px;
         margin: 8px 0;
         line-height: 1.4;
-        max-height: 58px; /* Limit to roughly 3 lines of text */
+        max-height: 58px;
         overflow: hidden;
     }
     .game-price {
-        font-size: 20px; /* Reduced from 24px */
+        font-size: 20px;
         color: #fff;
         margin: 12px 0;
         font-weight: bold;
+        text-align: center;
     }
     .game-buttons {
         display: flex;
-        justify-content: center; /* Center the single button */
+        justify-content: center;
+        width: 100%;
     }
     .btn-details {
         background: #dd163b;
@@ -67,7 +106,6 @@
         padding: 0 40px;
     }
     .best-sellers {
-        background: #232930;
         padding: 40px 0;
         margin: 0;
         overflow: hidden;
@@ -97,32 +135,56 @@
         position: relative;
     }
     .carousel-cell {
-        width: calc(33.333% - 20px); /* Show 3 items with proper spacing */
+        width: calc(33.333% - 20px);
         margin: 0 10px;
-        min-width: 250px; /* Minimum width to maintain proper sizing */
+        min-width: 200px;
     }
     .game-card-carousel {
-        background: #1c1e22;
         overflow: hidden;
         display: flex;
         flex-direction: column;
         align-items: center;
-        padding: 15px;
-        border-radius: 3px;
-        transition: transform 0.3s ease;
-        width: 100%; /* Take full width of cell */
-        height: 100%; /* Take full height of cell */
+        padding: 10px;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+        width: 100%;
+        position: relative;
+        background-color: #232930;
+        border: 1px solid #293139;
     }
     .game-card-carousel:hover {
         transform: translateY(-5px);
+        border-color: #dd163b;
+    }
+    .game-card-carousel:hover::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(26, 30, 34, 0.3);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        z-index: 1;
+        border-radius: 5px;
+    }
+    .game-card-carousel:hover .game-info-carousel,
+    .game-card-carousel:hover .game-image-carousel {
+        position: relative;
+        z-index: 2;
     }
     .game-image-carousel {
         width: 100%;
-        height: 180px;
+        height: 140px;
         object-fit: cover;
         object-position: center;
-        margin-bottom: 15px;
+        margin-bottom: 10px;
         border-radius: 3px;
+    }
+    .game-card-carousel:hover .game-image-carousel {
+        transform: scale(1.05);
     }
     .game-info-carousel {
         text-align: center;
@@ -131,7 +193,7 @@
     }
     .game-title-carousel {
         color: #fff;
-        font-size: 13px;
+        font-size: 12px;
         margin: 0 0 5px;
         font-weight: 500;
         text-transform: uppercase;
@@ -140,9 +202,10 @@
     }
     .game-price-carousel {
         color: #dd163b;
-        font-size: 16px;
+        font-size: 14px;
         font-weight: bold;
         text-align: center;
+        margin-bottom: 5px;
     }
     /* Carousel Navigation */
     .flickity-prev-next-button {
@@ -179,21 +242,130 @@
         margin: 0;
         padding: 0 50px;
     }
-
     @media (max-width: 991px) {
         .carousel-cell {
-            width: 50%; /* Show 2 items on medium screens */
+            width: calc(50% - 20px);
         }
     }
-    
     @media (max-width: 576px) {
         .carousel-cell {
-            width: 100%; /* Show 1 item on mobile */
+            width: calc(100% - 20px);
+        }
+    }
+    /* Pagination Styles */
+    .nk-pagination {
+        display: flex;
+        justify-content: center;
+        margin-top: 30px;
+    }
+    .nk-pagination .page-item {
+        margin: 0 5px;
+    }
+    .nk-pagination .page-link {
+        background-color: rgba(35, 41, 48, 0.4);
+        border: 1px solid rgba(41, 49, 57, 0.3);
+        color: #fff;
+        padding: 8px 16px;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(8px);
+    }
+    .nk-pagination .page-link:hover {
+        background-color: rgba(221, 22, 59, 0.4);
+        border-color: #dd163b;
+        color: #fff;
+    }
+    .nk-pagination .page-item.active .page-link {
+        background-color: #dd163b;
+        border-color: #dd163b;
+        color: #fff;
+    }
+    .nk-pagination .page-item.disabled .page-link {
+        background-color: rgba(35, 41, 48, 0.2);
+        border-color: rgba(41, 49, 57, 0.2);
+        color: rgba(255, 255, 255, 0.5);
+        cursor: not-allowed;
+    }
+    /* Search and Sort Controls Styles */
+    .nk-search-form {
+        max-width: 300px;
+    }
+    .nk-search-form .form-control {
+        height: 38px;
+        background: rgba(26, 30, 34, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #fff;
+        padding: 5px 15px;
+        border-radius: 4px 0 0 4px;
+    }
+    .nk-search-form .nk-btn {
+        border-radius: 0 4px 4px 0;
+        padding: 7px 15px;
+        background-color: #dd163b;
+        border: none;
+    }
+    .nk-sort-dropdown {
+        margin-right: 15px;
+    }
+    .nk-sort-dropdown select {
+        height: 38px;
+        background: rgba(26, 30, 34, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #fff;
+        padding: 5px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        min-width: 180px;
+    }
+    .nk-sort-dropdown select:focus {
+        outline: none;
+        border-color: #dd163b;
+    }
+    .d-flex {
+        display: flex;
+    }
+    .justify-content-between {
+        justify-content: space-between;
+    }
+    .align-items-center {
+        align-items: center;
+    }
+    .mb-4 {
+        margin-bottom: 1.5rem;
+    }
+    .mr-3 {
+        margin-right: 1rem;
+    }
+    @media (max-width: 767px) {
+        .d-flex {
+            flex-direction: column;
+        }
+        .nk-search-form, .nk-sort-dropdown {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .nk-search-form {
+            max-width: 100%;
+        }
+    }
+    .nk-title {
+        font-size: 32px;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin: 0;
+        letter-spacing: 1px;
+    }
+    .nk-title .text-main-1 {
+        color: #dd163b;
+    }
+    @media (max-width: 767px) {
+        .nk-title {
+            font-size: 24px;
+            margin-bottom: 15px;
         }
     }
 </style>
 {% endblock %}
-
 {% block body %}
     <!-- START: Breadcrumbs -->
     <div class="nk-gap-1"></div>
@@ -206,15 +378,42 @@
     </div>
     <div class="nk-gap-1"></div>
     <!-- END: Breadcrumbs -->
-
     <div class="container">
+        <!-- START: Search and Sort Controls -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="nk-title"><span class="text-main-1"></span></h2>
+            <div class="d-flex align-items-center">
+                <div class="nk-search-form mr-3">
+                    <form id="productFilterForm" class="nk-form nk-form-style-1">
+                        <div class="input-group">
+                            <input type="text" name="search" id="liveSearchInput" class="form-control" placeholder="Rechercher un jeu..." value="{{ search is defined ? search : '' }}">
+                            <button type="button" class="nk-btn nk-btn-color-main-1" id="searchClearBtn" style="display: none; border-radius: 0;">
+                                <span class="fas fa-times"></span>
+                            </button>
+                            <button type="button" class="nk-btn nk-btn-color-main-1" style="border-radius: 0 4px 4px 0;">
+                                <span class="fas fa-search"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="nk-sort-dropdown">
+                    <select name="sort" class="form-control nk-sort-select" form="productFilterForm">
+                        <option value="default" {{ sort is defined and sort == 'default' ? 'selected' : '' }}>Sans Filtre</option>
+                        <option value="nom_asc" {{ sort is defined and sort == 'nom_asc' ? 'selected' : '' }}>Nom (A-Z)</option>
+                        <option value="nom_desc" {{ sort is defined and sort == 'nom_desc' ? 'selected' : '' }}>Nom (Z-A)</option>
+                        <option value="prix_asc" {{ sort is defined and sort == 'prix_asc' ? 'selected' : '' }}>Prix (Croissant)</option>
+                        <option value="prix_desc" {{ sort is defined and sort == 'prix_desc' ? 'selected' : '' }}>Prix (Décroissant)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <!-- END: Search and Sort Controls -->
         <!-- START: Best Sellers -->
         <div class="best-sellers">
             <div class="carousel-container">
                 <div class="best-sellers-title">
                     <h2><span class="text-main-1">TOP 10</span> BEST SELLERS</h2>
                 </div>
-                
                 <div class="nk-carousel" data-flickity='{ 
                     "cellAlign": "center", 
                     "contain": true, 
@@ -223,19 +422,24 @@
                     "prevNextButtons": true, 
                     "pageDots": false, 
                     "freeScroll": false,
-                    "groupCells": 3,
+                    "groupCells": false,
                     "draggable": true,
                     "adaptiveHeight": true
                 }'>
                     {% for product in popular_products %}
                         <div class="carousel-cell">
                             <div class="game-card-carousel">
-                                <a href="{{ path('app_store_product', {'id': product.id}) }}">
+                                <a href="{{ path('app_store_product', {'id': product.produit_id}) }}">
                                     <img class="game-image-carousel" src="{{ image_base_url }}/{{ product.image }}" alt="{{ product.nom_produit }}">
                                 </a>
                                 <div class="game-info-carousel">
                                     <h3 class="game-title-carousel">{{ product.nom_produit }}</h3>
-                                    <div class="game-price-carousel">{{ product.prix_produit|number_format(3, '.', ' ') }} DNT</div>
+                                    <div class="game-price-carousel">{{ product.prix_produit }} TND</div>
+                                    {% if product.quantity > 0 %}
+                                        <div style="color: #00ff00; font-size: 11px;">En Stock</div>
+                                    {% else %}
+                                        <div style="color: #dd163b; font-size: 11px; font-weight: bold;">Hors Stock</div>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -244,7 +448,6 @@
             </div>
         </div>
         <!-- END: Best Sellers -->
-
         <!-- START: Featured Games -->
         <div class="nk-gap-2"></div>
         <h3 class="nk-decorated-h-2"><span><span class="text-main-1">FEATURED</span> GAMES</span></h3>
@@ -256,12 +459,14 @@
                     <img class="game-image" src="{{ image_base_url }}/{{ product.image }}" alt="{{ product.nom_produit }}">
                     <div class="game-info">
                         <h3 class="game-title">{{ product.nom_produit }}</h3>
-                        <div class="game-description">
-                            {{ product.description }}
-                        </div>
-                        <div class="game-price">{{ product.prix_produit|number_format(0) }} DNT</div>
+                        <div class="game-price">{{ product.prix_produit }} TND</div>
+                        {% if product.quantity > 0 %}
+                            <div class="stock-status" style="color: #00ff00; font-size: 12px; margin-bottom: 10px;">En Stock</div>
+                        {% else %}
+                            <div class="stock-status" style="color: #dd163b; font-size: 12px; margin-bottom: 10px; font-weight: bold;">Hors Stock</div>
+                        {% endif %}
                         <div class="game-buttons">
-                            <a href="{{ path('app_store_product', {'id': product.id}) }}" class="btn-details">
+                            <a href="{{ path('app_store_product', {'id': product.produit_id}) }}" class="btn-details">
                                 VOIR LES DÉTAILS
                             </a>
                         </div>
@@ -275,42 +480,30 @@
             {% endfor %}
         </div>
         <!-- END: Featured Games -->
-
-        <!-- START: Most Popular -->
-        <div class="nk-gap-3"></div>
-        <h3 class="nk-decorated-h-2"><span><span class="text-main-1">Les Plus</span> Populaires</span></h3>
-        <div class="nk-gap"></div>
-        <div class="row">
-            {% for product in popular_products %}
-            <div class="col-md-6">
-                <div class="game-card">
-                    <img class="game-image" src="{{ image_base_url }}/{{ product.image }}" alt="{{ product.nom_produit }}">
-                    <div class="game-info">
-                        <h3 class="game-title">{{ product.nom_produit }}</h3>
-                        <div class="game-description">
-                            {{ product.description }}
-                        </div>
-                        <div class="game-price">{{ product.prix_produit|number_format(0) }} DNT</div>
-                        <div class="game-buttons">
-                            <a href="{{ path('app_store_product', {'id': product.id}) }}" class="btn-details">
-                                VOIR LES DÉTAILS
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% else %}
-            <div class="col-12">
-                <p class="text-center">Aucun jeu populaire n'est disponible pour le moment.</p>
-            </div>
-            {% endfor %}
-        </div>
-        <!-- END: Most Popular -->
-        
+        <!-- START: Pagination -->
+        {% if max_pages > 1 %}
+        <nav aria-label="Product pagination" class="nk-pagination">
+            <ul class="pagination">
+                <li class="page-item {{ current_page == 1 ? 'disabled' : '' }}">
+                    <a class="page-link" href="{{ path('app_store', { page: current_page - 1, search: search, sort: sort }) }}">Précédent</a>
+                </li>
+                {% for i in 1..max_pages %}
+                    <li class="page-item {{ current_page == i ? 'active' : '' }}">
+                        <a class="page-link" href="{{ path('app_store', { page: i, search: search, sort: sort }) }}">{{ i }}</a>
+                    </li>
+                {% endfor %}
+                <li class="page-item {{ current_page == max_pages ? 'disabled' : '' }}">
+                    <a class="page-link" href="{{ path('app_store', { page: current_page + 1, search: search, sort: sort }) }}">Suivant</a>
+                </li>
+            </ul>
+        </nav>
+        {% endif %}
+        <!-- END: Pagination -->
         <div class="nk-gap-3"></div>
     </div>
+    <img class="nk-page-background-top" src="{{ asset('images/bg-top.png') }}" alt="">
+    <img class="nk-page-background-bottom" src="{{ asset('images/bg-bottom.png') }}" alt="">
 {% endblock %}
-
 {% block javascripts %}
 {{ parent() }}
 <script>
@@ -323,9 +516,154 @@
             prevNextButtons: true,
             pageDots: false,
             freeScroll: false,
-            groupCells: 3,
+            groupCells: false,
             draggable: true,
             adaptiveHeight: true
+        });
+        // Soumission du formulaire de tri
+        $('.nk-sort-select').on('change', function() {
+            performSearch();
+        });
+        // Live search functionality
+        var searchTimer,
+            lastSearchQuery = "{{ search is defined ? search : '' }}";
+        // Show clear button if search field has a value
+        if ($('#liveSearchInput').val()) {
+            $('#searchClearBtn').show();
+        }
+        // Handle input in search field
+        $('#liveSearchInput').on('input', function() {
+            var searchQuery = $(this).val();
+            // Show/hide clear button based on input
+            if (searchQuery) {
+                $('#searchClearBtn').show();
+            } else {
+                $('#searchClearBtn').hide();
+            }
+            // Clear previous timeout
+            clearTimeout(searchTimer);
+            // Set a timeout to avoid sending too many requests while typing
+            searchTimer = setTimeout(function() {
+                if (searchQuery !== lastSearchQuery) {
+                    lastSearchQuery = searchQuery;
+                    performSearch();
+                }
+            }, 300); // 300ms delay after typing stops
+        });
+        // Clear search button functionality
+        $('#searchClearBtn').on('click', function() {
+            $('#liveSearchInput').val('');
+            $(this).hide();
+            performSearch();
+        });
+        // Function to perform search and update content
+        function performSearch() {
+            var searchQuery = $('#liveSearchInput').val(),
+                sortValue = $('.nk-sort-select').val();
+            // Show loading indicator
+            showLoading();
+            // Perform AJAX request
+            $.ajax({
+                "url": "{{ path('app_store') }}",
+                "type": "GET",
+                "data": {
+                    "search": searchQuery,
+                    "sort": sortValue,
+                    "ajax": 1
+                },
+                "success": function(response) {
+                    // Update the product list
+                    updateProductList(response);
+                    // Update URL without reloading page
+                    updateUrl(searchQuery, sortValue);
+                    // Hide loading indicator
+                    hideLoading();
+                },
+                "error": function() {
+                    // Hide loading indicator
+                    hideLoading();
+                    // Show error message
+                    alert('Une erreur s\'est produite lors de la recherche.');
+                }
+            });
+        }
+        // Function to update product list
+        function updateProductList(html) {
+            var $html = $(html);
+            // Extract the product row content
+            var $productRow = $html.find('.row:has(.game-card)');
+            $('.row:has(.game-card)').html($productRow.html());
+            // Extract and update pagination
+            var $pagination = $html.find('.nk-pagination');
+            $('.nk-pagination').replaceWith($pagination);
+        }
+        // Function to update URL without page reload
+        function updateUrl(search, sort) {
+            var url = new URL(window.location);
+            if (search) {
+                url.searchParams.set('search', search);
+            } else {
+                url.searchParams.delete('search');
+            }
+            if (sort) {
+                url.searchParams.set('sort', sort);
+            }
+            // Reset to page 1 when search/sort changes
+            url.searchParams.set('page', 1);
+            // Update the URL without reloading the page
+            window.history.pushState({}, '', url);
+        }
+        // Functions to show/hide loading indicator
+        function showLoading() {
+            // If no loading indicator exists, create one
+            if ($('#loadingOverlay').length === 0) {
+                $('body').append('<div id="loadingOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; justify-content: center; align-items: center;"><div class="spinner" style="width: 50px; height: 50px; border: 5px solid #dd163b; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div></div>');
+                // Add animation styles if not already present
+                if (!$('style#loadingAnimation').length) {
+                    $('head').append('<style id="loadingAnimation">@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>');
+                }
+            }
+            $('#loadingOverlay').fadeIn(200);
+        }
+        function hideLoading() {
+            $('#loadingOverlay').fadeOut(200);
+        }
+        // Enable AJAX pagination
+        $(document).on('click', '.nk-pagination .page-link', function(e) {
+            e.preventDefault();
+            var url = $(this).attr('href');
+            if (!url) return;
+            // Extract page number from URL
+            var urlObj = new URL(url, window.location.origin);
+            var page = urlObj.searchParams.get('page');
+            // Show loading indicator
+            showLoading();
+            // Perform AJAX request
+            $.ajax({
+                url: url,
+                type: 'GET',
+                data: {
+                    ajax: 1
+                },
+                success: function(response) {
+                    // Update the product list
+                    updateProductList(response);
+                    // Update URL without reloading page
+                    var currentUrl = new URL(window.location);
+                    currentUrl.searchParams.set('page', page);
+                    window.history.pushState({}, '', currentUrl);
+                    // Scroll to top of products
+                    $('html, body').animate({
+                        scrollTop: $('.nk-decorated-h-2').offset().top - 20
+                    }, 500);
+                    // Hide loading indicator
+                    hideLoading();
+                },
+                error: function() {
+                    hideLoading();
+                    alert('Une erreur s\'est produite lors du changement de page.');
+                }
+            });
         });
     });
 </script>
