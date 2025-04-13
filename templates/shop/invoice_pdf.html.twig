@@ -121,7 +121,7 @@
 </head>
 <body>
     <div class="header">
-        <img src="file:///C:/xampp/htdocs/img/logo.png" alt="LevelOp Logo" class="logo">
+        <img src="{{ asset('images/logo.png') }}" alt="LevelOp Logo" class="logo">
         <div class="header-content">
             <h1>FACTURE</h1>
             <p>N° {{ commande.produit.nomProduit }} | Date: {{ date|date('d/m/Y') }}</p>
@@ -144,10 +144,10 @@
     </div>
     
     <div class="customer-info">
-        <div class="section-title">FACTURER À</div>
+        <div class="section-title">Client</div>
         <div>{{ user.prenom }} {{ user.nom }}</div>
         <div>{{ user.email }}</div>
-        <div>Compte client: {{ user.id }}</div>
+        <div>{{ user.nickname }}</div>
     </div>
     
     <table>
@@ -182,10 +182,6 @@
     
     <div class="totals">
         <table>
-            <tr>
-                <td>Sous-total:</td>
-                <td class="text-right">{{ stock ? stock.prixProduit : 'N/A' }} TND</td>
-            </tr>
             <tr>
                 <td><strong>Total:</strong></td>
                 <td class="text-right"><strong>{{ stock ? stock.prixProduit : 'N/A' }} TND</strong></td>
