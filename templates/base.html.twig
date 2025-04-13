@@ -53,7 +53,24 @@
                 </ul>
                 <ul class="nk-contacts-icons">
                     <li><a href="#" data-bs-toggle="modal" data-bs-target="#modalSearch"><span class="fas fa-search"></span></a></li>
-                    <li><a href="#" data-bs-toggle="modal" data-bs-target="#modalLogin"><span class="fas fa-user"></span></a></li>
+                    {% if app.user %}
+                        <li>
+                            <a href="{{ path('app_profile') }}" title="Mon Profil">
+                                <span class="fas fa-user"></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" id="logout-button" title="Déconnexion">
+                                <span class="fas fa-sign-out-alt"></span>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li>
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#modalLogin">
+                                <span class="fas fa-user"></span>
+                            </a>
+                        </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
@@ -255,6 +272,13 @@
     
             // Toggle chatbot visibility
             chatbotToggler.addEventListener("click", () => document.body.classList.toggle("show-chatbot"));
+        </script>
+        <script>
+            document.getElementById('logout-button').addEventListener('click', function (e) {
+                e.preventDefault(); // prevent default anchor behavior
+                localStorage.clear(); // clear localStorage
+                window.location.href = '{{ path('app_logout') }}'; // redirect to Symfony logout route
+            });
         </script>
     {% endblock %}
 </body>

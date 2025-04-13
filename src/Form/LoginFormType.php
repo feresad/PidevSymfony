@@ -6,10 +6,12 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 class LoginFormType extends AbstractType
 {
@@ -17,14 +19,18 @@ class LoginFormType extends AbstractType
     {
         $builder
             ->add('email', TextType::class, [
-                'label' => "Nom d'utilisateur",
+                'label' => 'Email',
                 'attr' => [
-                    'placeholder' => "Votre nom d'utilisateur",
-                    'class' => 'form-control'
+                    'placeholder' => 'Votre email',
+                    'class' => 'form-control',
+                    'autocomplete' => 'email'
                 ],
                 'constraints' => [
                     new NotBlank([
-                        'message' => "Veuillez entrer votre nom d'utilisateur",
+                        'message' => 'Veuillez entrer votre email',
+                    ]),
+                    new Email([
+                        'message' => 'Veuillez entrer une adresse email valide',
                     ]),
                 ],
             ])
@@ -32,11 +38,16 @@ class LoginFormType extends AbstractType
                 'label' => 'Mot de passe',
                 'attr' => [
                     'placeholder' => 'Votre mot de passe',
-                    'class' => 'form-control'
+                    'class' => 'form-control',
+                    'autocomplete' => 'current-password'
                 ],
                 'constraints' => [
                     new NotBlank([
                         'message' => 'Veuillez entrer votre mot de passe',
+                    ]),
+                    new Length([
+                        'min' => 6,
+                        'minMessage' => 'Votre mot de passe doit contenir au moins {{ limit }} caractères',
                     ]),
                 ],
             ])
@@ -53,6 +64,9 @@ class LoginFormType extends AbstractType
             'csrf_protection' => true,
             'csrf_field_name' => '_csrf_token',
             'csrf_token_id'   => 'authenticate',
+            'attr' => [
+                'novalidate' => 'novalidate'
+            ]
         ]);
     }
 
