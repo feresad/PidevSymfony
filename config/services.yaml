@@ -9,6 +9,8 @@ parameters:
     sightengine_api_secret: '%env(SIGHTENGINE_API_SECRET)%'
     dossierUpload: 'C:\xampp\htdocs\img'
     gemini.api_key: 'AIzaSyCjjlK6kTJXy8Kevcl8xoO0KhvZesakw3g'
+    stripe.public_key: '%env(STRIPE_PUBLIC_KEY)%'
+    
 services:
     App\Controller\ForumController:
     App\Service\RedditService:
@@ -52,3 +54,6 @@ services:
     App\Service\GeminiFpsService:
         arguments:
             $apiKey: '%gemini.api_key%'
+    App\Controller\PaymentController:
+        arguments:
+            $logger: '@monolog.logger'

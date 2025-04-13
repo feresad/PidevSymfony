@@ -3,52 +3,324 @@
 {% block title %}Sessions disponibles{% endblock %}
 
 {% block body %}
-<div class="container py-5">
-    <div class="text-center mb-5">
-        <h1 class="display-4 text-primary">Sessions disponibles</h1>
-        <p class="lead text-muted">Réservez votre session de coaching</p>
-        <form method="get" class="mb-4">
+<style>
+.promo-session {
+    position: relative;
+    animation: promo-glow 2s infinite;
+}
+@keyframes promo-glow {
+    0% { box-shadow: 0 0 5px rgba(221, 22, 59, 0.5); }
+    50% { box-shadow: 0 0 20px rgba(221, 22, 59, 0.8); }
+    100% { box-shadow: 0 0 5px rgba(221, 22, 59, 0.5); }
+}
+.promo-session::before {
+    content: '🔥 PROMO';
+    position: absolute;
+    top: 10px;
+    right: -35px;
+    background: linear-gradient(45deg, #dd163b, #ff4d6d);
+    color: white;
+    padding: 8px 40px;
+    font-size: 0.9em;
+    z-index: 1;
+    font-weight: bold;
+    letter-spacing: 1px;
+    transform: rotate(45deg);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    animation: promo-ribbon 1s ease-in-out infinite;
+}
+@keyframes promo-ribbon {
+    0% { transform: rotate(45deg) scale(1); }
+    50% { transform: rotate(45deg) scale(1.05); }
+    100% { transform: rotate(45deg) scale(1); }
+}
+.session-carousel {
+    position: relative;
+    padding: 0 40px;
+    margin-bottom: 40px;
+}
+.session-carousel .nk-product-cat-2 {
+    margin: 0 15px;
+    background: rgba(0, 0, 0, 0.85);
+    border-radius: 15px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    width: 280px;
+    height: 420px;
+    flex-shrink: 0;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+.session-carousel .nk-product-cat-2:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+.session-carousel-container {
+    overflow: hidden;
+    padding: 20px 0;
+}
+.session-list {
+    display: flex;
+    transition: transform 0.3s ease;
+    gap: 30px;
+}
+.nk-product-image {
+    position: relative;
+    overflow: hidden;
+    height: 180px;
+    width: 100%;
+    border-radius: 15px 15px 0 0;
+    border-bottom: 2px solid rgba(221, 22, 59, 0.5);
+}
+.nk-product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: transform 0.3s ease;
+    display: block;
+}
+.nk-product-image:hover img {
+    transform: scale(1.05);
+}
+.nk-product-cont {
+    padding: 20px;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.7), rgba(0,0,0,0.9));
+    height: calc(100% - 180px);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.nk-product-title {
+    color: #fff;
+    font-size: 1.4em;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.nk-product-price {
+    font-size: 1.2em;
+    color: #dd163b;
+    font-weight: bold;
+    position: relative;
+    display: inline-block;
+}
+.promo-session .nk-product-price::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -5%;
+    width: 110%;
+    height: 2px;
+    background-color: rgba(255,255,255,0.5);
+    transform: rotate(-10deg);
+}
+.promo-session .nk-product-price::after {
+    position: absolute;
+    top: -15px;
+    right: -40px;
+    background: #ff4d6d;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    animation: price-tag 0.5s ease-in-out infinite alternate;
+}
+@keyframes price-tag {
+    from { transform: scale(1); }
+    to { transform: scale(1.1); }
+}
+.nk-product-rating {
+    display: flex;
+    align-items: center;
+    color: #aaa;
+    font-size: 0.9em;
+}
+.nk-product-rating i {
+    margin-right: 5px;
+    color: #dd163b;
+}
+.carousel-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 50px;
+    height: 50px;
+    background: rgba(221, 22, 59, 0.8);
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 10;
+    border-radius: 50%;
+    transition: background 0.3s ease;
+}
+.carousel-arrow:hover {
+    background: rgba(221, 22, 59, 1);
+}
+.carousel-prev {
+    left: 0;
+}
+.carousel-next {
+    right: 0;
+}
+.navigation-buttons {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    z-index: 1000;
+}
+.navigation-buttons .nk-btn {
+    padding: 15px 25px;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 15px rgba(221, 22, 59, 0.3);
+}
+.navigation-buttons .nk-btn:hover {
+    transform: translateX(-5px);
+    box-shadow: 0 6px 20px rgba(221, 22, 59, 0.5);
+}
+.navigation-buttons .nk-btn i {
+    font-size: 1.2em;
+}
+</style>
+
+<div class="nk-main">
+    <div class="nk-gap-2"></div>
+    <div class="container">
+        <div class="nk-gap-2"></div>
+        <h1 class="nk-title text-center">Sessions disponibles</h1>
+        <h3 class="nk-sub-title text-center mb-30">Réservez votre session de coaching</h3>
+        <form method="get" class="nk-form nk-form-style-1 mb-50">
             <div class="row justify-content-center">
                 <div class="col-md-6">
                     <div class="input-group">
-                        <input type="text" name="search" class="form-control" placeholder="Rechercher par nom du jeu..." value="{{ searchQuery|default('') }}">
-                        <button type="submit" class="btn btn-primary">Rechercher</button>
+                        <input type="text" name="search" class="form-control required" placeholder="Rechercher par nom du jeu..." value="{{ searchQuery|default('') }}">
+                        <button type="submit" class="nk-btn nk-btn-rounded nk-btn-color-main-1">Rechercher</button>
+                        <button type="button" id="sortPrice" class="nk-btn nk-btn-rounded nk-btn-color-main-1 ml-2">
+                            <i class="fas fa-sort"></i> Prix
+                        </button>
                     </div>
                 </div>
             </div>
         </form>
-    </div>
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-        {% for session in sessions %}
-            <div class="col">
-                <div class="card h-100 shadow-sm hover-shadow transition">
-                    {% if session.imageName %}
-                        <img src="{{ image_base_url ~  session.imageName }}" 
-                             class="card-img-top" 
-                             alt="{{ session.game }}" 
-                             style="height: 200px; object-fit: cover;">
-                    {% endif %}
-                    <div class="card-body">
-                        <h5 class="card-title text-primary">{{ session.game }}</h5>
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <span class="badge bg-success fs-6">{{ session.prix }} DT</span>
-                            <span class="text-muted">{{ session.dureeSession }}</span>
+
+        <div class="session-carousel">
+            <button class="carousel-arrow carousel-prev">&lt;</button>
+            <button class="carousel-arrow carousel-next">&gt;</button>
+            <div class="session-carousel-container">
+                <div class="session-list">
+                    {% for session in sessions %}
+                        <div class="nk-product-cat-2 {% if session.prix < 60 %}promo-session{% endif %}">
+                            {% if session.imageName %}
+                                <a class="nk-product-image" href="{{ path('reservation_add', {'sessionId': session.id}) }}">
+                                    <img src="{{ image_base_url ~ session.imageName }}" alt="{{ session.game }}">
+                                </a>
+                            {% endif %}
+                            <div class="nk-product-cont">
+                                <h3 class="nk-product-title h5">{{ session.game }}</h3>
+                                <div class="nk-gap-1"></div>
+                                <div class="nk-product-price">{{ session.prix }} DT</div>
+                                <div class="nk-gap-1"></div>
+                                <span class="nk-product-rating">
+                                    <i class="far fa-clock"></i> {{ session.dureeSession }} min
+                                </span>
+                                <div class="nk-gap-1"></div>
+                                <span class="nk-product-rating">
+                                    <span>Coach: {{ session.coach.nom }} {{ session.coach.prenom }}</span>
+                                </span>
+                                <div class="nk-gap-1"></div>
+                                {% if reservedSessions[session.id] %}
+                                    <button class="nk-btn nk-btn-rounded nk-btn-color-dark-3" disabled>Session déjà réservée</button>
+                                {% else %}
+                                    <a href="{{ path('reservation_add', {'sessionId': session.id}) }}" class="nk-btn nk-btn-rounded nk-btn-color-dark-3 nk-btn-hover-color-main-1">Réserver</a>
+                                {% endif %}
+                            </div>
                         </div>
-                        <a href="{{ path('reservation_add', {'sessionId': session.id}) }}" class="btn btn-primary w-100">Réserver</a>
-                    </div>
+                    {% endfor %}
                 </div>
             </div>
-        {% endfor %}
+        </div>
+
+        <div class="navigation-buttons">
+            {% if is_granted('ROLE_COACH') %}
+                <a href="{{ path('session_list') }}" class="nk-btn nk-btn-rounded nk-btn-color-main-1">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    Interface Coach
+                </a>
+            {% endif %}
+            <a href="{{ path('reservation_list') }}" class="nk-btn nk-btn-rounded nk-btn-color-main-1">
+                <i class="fas fa-calendar-check"></i>
+                Mes Réservations
+            </a>
+        </div>
     </div>
 </div>
 
-<style>
-.hover-shadow {
-    transition: all 0.3s ease;
-}
-.hover-shadow:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15) !important;
-}
-</style>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const container = document.querySelector('.session-carousel-container');
+    const list = document.querySelector('.session-list');
+    const items = document.querySelectorAll('.session-list .nk-product-cat-2');
+    const prevBtn = document.querySelector('.carousel-prev');
+    const nextBtn = document.querySelector('.carousel-next');
+    const sortBtn = document.querySelector('#sortPrice');
+    let isAscending = true;
+
+    let currentIndex = 0;
+    const itemWidth = items[0].offsetWidth + 30; // 30px for gap
+    const visibleItems = Math.floor(container.offsetWidth / itemWidth);
+
+    function updateCarousel() {
+        const translateX = -currentIndex * itemWidth;
+        list.style.transform = `translateX(${translateX}px)`;
+    }
+
+    function sortByPrice() {
+        const itemsArray = Array.from(items);
+        itemsArray.sort((a, b) => {
+            const priceA = parseFloat(a.querySelector('.nk-product-price').textContent);
+            const priceB = parseFloat(b.querySelector('.nk-product-price').textContent);
+            return isAscending ? priceA - priceB : priceB - priceA;
+        });
+
+        itemsArray.forEach(item => list.appendChild(item));
+        isAscending = !isAscending;
+        currentIndex = 0;
+        updateCarousel();
+
+        // Update sort button icon
+        const icon = sortBtn.querySelector('i');
+        icon.className = isAscending ? 'fas fa-sort-amount-down' : 'fas fa-sort-amount-up';
+    }
+
+    sortBtn.addEventListener('click', sortByPrice);
+
+    prevBtn.addEventListener('click', () => {
+        if (currentIndex > 0) {
+            currentIndex--;
+            updateCarousel();
+        }
+    });
+
+    nextBtn.addEventListener('click', () => {
+        if (currentIndex < items.length - visibleItems) {
+            currentIndex++;
+            updateCarousel();
+        }
+    });
+
+    window.addEventListener('resize', () => {
+        updateCarousel();
+    });
+});
+</script>
+   <!-- Background de la page d'accueil -->
+    <img class="nk-page-background-top" src="{{ asset('images/bg-top.png') }}" alt="">
+    <img class="nk-page-background-bottom" src="{{ asset('images/bg-bottom.png') }}" alt="">
 {% endblock %}
