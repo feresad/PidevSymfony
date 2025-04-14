@@ -90,14 +90,14 @@ final class CategorieEventController extends AbstractController
 
         if (!$categorie) {
             $this->addFlash('error', 'Catégorie non trouvée.');
-            return $this->redirectToRoute('categorie_list');
+            return $this->redirectToRoute('categorie_list_admin');
         }
 
         $entityManager->remove($categorie);
         $entityManager->flush();
 
         $this->addFlash('success', 'Catégorie supprimée avec succès !');
-        return $this->redirectToRoute('categorie_list');
+        return $this->redirectToRoute('categorie_list_admin');
     }
     #[Route('/admin/all',name: 'categorie_list_admin')]
     public function getAll(Categorie_eventRepository $repo):Response{

@@ -19,12 +19,12 @@ class GameFormType extends AbstractType
         $builder
             ->add('game_name', TextType::class, [
                 'label' => 'Game Name',
-                'required' => false, // Disable HTML5 validation
+                'required' => true,
             ])
             ->add('image_path', FileType::class, [
                 'label' => 'Game Image',
                 'required' => false,
-                'mapped' => false,
+                'mapped' => false, // Handle file upload manually
             ])
             ->add('game_type', ChoiceType::class, [
                 'label' => 'Game Type',
@@ -35,7 +35,7 @@ class GameFormType extends AbstractType
                     'Sports' => GameType::SPORTS,
                     'Other' => GameType::OTHER,
                 ],
-                'required' => false, // Disable HTML5 validation
+                'required' => true,
             ])
             ->add('submit', SubmitType::class, [
                 'label' => 'Save Game',
