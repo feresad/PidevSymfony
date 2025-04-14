@@ -2,6 +2,8 @@
 parameters:
     #uploads_directory: 'C:\xampp\htdocs\uploads'
     uploads_directory: 'C:\xampp\htdocs\img\games'
+    uploads_directory2: 'C:\xampp\htdocs\img'
+
     dossier_upload: 'C:\xampp\htdocs\img'
     image_base_url: 'http://localhost/img/'
     git_url: 'https://feresad.github.io/event-qr-code/'

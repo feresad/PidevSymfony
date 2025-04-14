@@ -56,67 +56,104 @@ class ForumController extends AbstractController
         $form = $this->createForm(TopicFormType::class, $question);
         $form->handleRequest($request);
     
-        if ($form->isSubmitted() && $form->isValid()) {
-            try {
-                $mediaFile = $form->get('media_file')->getData();
-                $mediaType = $form->get('media_type')->getData();
+        if ($form->isSubmitted()) {
+            $errors = [];
     
-                $this->logger->info('Form submitted with media file and type.', [
-                    'media_file_exists' => $mediaFile ? 'Yes' : 'No',
-                    'media_type' => $mediaType ? $mediaType->value : 'none',
-                ]);
+            // Extract form data
+            $title = $form->get('title')->getData();
+            $content = $form->get('content')->getData();
+            $mediaFile = $form->get('media_file')->getData();
+            $mediaType = $form->get('media_type')->getData();
+            $gameId = $form->get('game_id')->getData();
     
-                if ($mediaFile) {
-                    $mimeType = $mediaFile->getMimeType();
-                    $isImage = in_array($mimeType, ['image/jpeg', 'image/png', 'image/gif']);
-                    $isVideo = in_array($mimeType, ['video/mp4', 'video/mpeg', 'video/webm', 'video/quicktime', 'video/x-msvideo']);
+            // Validate title
+            if (empty($title)) {
+                $errors['title'] = 'The topic title cannot be blank.';
+            }
     
-                    if ($mediaType && $mediaType->value === 'image' && !$isImage) {
-                        $this->logger->error('Media type mismatch: Selected image, but file is not an image.', ['mime_type' => $mimeType]);
-                        throw new \Exception('Selected media type is "image," but the uploaded file is not an image.');
-                    }
+            // Validate content
+            if (empty($content)) {
+                $errors['content'] = 'The content cannot be blank.';
+            }
     
-                    if ($mediaType && $mediaType->value === 'video' && !$isVideo) {
-                        $this->logger->error('Media type mismatch: Selected video, but file is not a video.', ['mime_type' => $mimeType]);
-                        throw new \Exception('Selected media type is "video," but the uploaded file is not a video.');
-                    }
+            // Validate game_id
+            if (!$gameId) {
+                $errors['game_id'] = 'Please select a game.';
+            }
     
-                    $mediaFilename = uniqid() . '.' . $mediaFile->guessExtension();
-                    $uploadsDirectory = $this->getParameter('uploads_directory');
-    
-                    if (!is_dir($uploadsDirectory)) {
-                        mkdir($uploadsDirectory, 0777, true);
-                        $this->logger->info('Created uploads directory.', ['directory' => $uploadsDirectory]);
-                    }
-    
-                    $mediaFile->move($uploadsDirectory, $mediaFilename);
-                    $this->logger->info('Media file uploaded successfully.', [
-                        'filename' => $mediaFilename,
-                        'path' => $uploadsDirectory . '\\' . $mediaFilename,
-                    ]);
-                    $question->setMediaPath($mediaFilename);
-                    $question->setMediaType($mediaType);
+            // Validate media file and type
+            if ($mediaFile) {
+                if (!$mediaType) {
+                    $errors['media_type'] = 'Please select a media type if you are uploading a file.';
                 } else {
-                    $question->setMediaPath(null);
+                    $mimeType = $mediaFile->getMimeType();
+                    $allowedImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
+                    $allowedVideoTypes = ['video/mp4', 'video/mpeg', 'video/webm', 'video/quicktime', 'video/x-msvideo'];
+                    $maxFileSize = 30 * 1024 * 1024; // 30MB in bytes
+    
+                    // Validate file size
+                    if ($mediaFile->getSize() > $maxFileSize) {
+                        $errors['media_file'] = 'The file is too large. Maximum allowed size is 30MB.';
+                    }
+    
+                    // Validate media type consistency
+                    if ($mediaType->value === 'image' && !in_array($mimeType, $allowedImageTypes)) {
+                        $errors['media_file'] = 'Selected media type is "image," but the uploaded file is not an image.';
+                    } elseif ($mediaType->value === 'video' && !in_array($mimeType, $allowedVideoTypes)) {
+                        $errors['media_file'] = 'Selected media type is "video," but the uploaded file is not a video.';
+                    }
                 }
+            }
     
-                $question->setVotes(0);
-                $question->setCreatedAt(new \DateTime());
+            if (empty($errors)) {
+                try {
+                    if ($mediaFile) {
+                        $mediaFilename = uniqid() . '.' . $mediaFile->guessExtension();
+                        $uploadsDirectory = $this->getParameter('uploads_directory');
     
-                $entityManager->persist($question);
-                $entityManager->flush();
+                        if (!is_dir($uploadsDirectory)) {
+                            mkdir($uploadsDirectory, 0777, true);
+                            $this->logger->info('Created uploads directory.', ['directory' => $uploadsDirectory]);
+                        }
     
-                $this->addFlash('success', 'Topic created successfully!');
-                return $this->redirectToRoute('forum_topics');
-            } catch (\Exception $e) {
-                $this->logger->error('Error creating topic.', [
-                    'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString(),
-                ]);
-                $this->addFlash('error', 'An error occurred while creating the topic: ' . $e->getMessage());
+                        $mediaFile->move($uploadsDirectory, $mediaFilename);
+                        $this->logger->info('Media file uploaded successfully.', [
+                            'filename' => $mediaFilename,
+                            'path' => $uploadsDirectory . '\\' . $mediaFilename,
+                        ]);
+                        $question->setMediaPath($mediaFilename);
+                        $question->setMediaType($mediaType);
+                    } else {
+                        $question->setMediaPath(null);
+                    }
+    
+                    $question->setTitle($title);
+                    $question->setContent($content);
+                    $question->setGameId($gameId);
+                    $question->setVotes(0);
+                    $question->setCreatedAt(new \DateTime());
+    
+                    $entityManager->persist($question);
+                    $entityManager->flush();
+    
+                    $this->addFlash('success', 'Topic created successfully!');
+                    return $this->redirectToRoute('forum_topics');
+                } catch (\Exception $e) {
+                    $this->logger->error('Error creating topic.', [
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString(),
+                    ]);
+                    $this->addFlash('error', 'An error occurred while creating the topic: ' . $e->getMessage());
+                }
+            } else {
+                // Add errors to the flash messages or form
+                foreach ($errors as $field => $message) {
+                    $this->addFlash('error', $message);
+                }
             }
         }
     
+        // Rest of the method remains unchanged
         $sentimentMap = $request->getSession()->get('sentiment_map', [
             'positive' => ['👍', '😊', '😂', '❤️', '🎉', '😍', '👏', '🌟', '😎', '💪'],
             'negative' => ['👎', '😢', '😡', '💔', '😤', '😞', '🤬', '😣', '💢', '😠'],
@@ -124,7 +161,7 @@ class ForumController extends AbstractController
         ]);
     
         $page = $request->query->getInt('page', 1);
-        $limit = 10; 
+        $limit = 10;
         $threshold = -5;
     
         $totalQuestions = $questionsRepository->createQueryBuilder('q')
@@ -466,75 +503,107 @@ class ForumController extends AbstractController
             $this->addFlash('error', 'Topic not found.');
             return $this->redirectToRoute('forum_topics');
         }
-
+    
         /** @var Utilisateur|null $utilisateur */
         $utilisateur = $this->getUser();
         if (!$utilisateur || $question->getUtilisateurId()->getId() !== $utilisateur->getId()) {
             $this->addFlash('error', 'You are not authorized to update this topic.');
             return $this->redirectToRoute('forum_topics');
         }
-
+    
         $updateForm = $this->createForm(TopicFormType::class, $question);
         $updateForm->handleRequest($request);
-
-        if ($updateForm->isSubmitted() && $updateForm->isValid()) {
-            try {
-                $mediaFile = $updateForm->get('media_file')->getData();
-                $mediaType = $updateForm->get('media_type')->getData();
-
-                if ($mediaFile) {
+    
+        if ($updateForm->isSubmitted()) {
+            $errors = [];
+    
+            $title = $updateForm->get('title')->getData();
+            $content = $updateForm->get('content')->getData();
+            $mediaFile = $updateForm->get('media_file')->getData();
+            $mediaType = $updateForm->get('media_type')->getData();
+            $gameId = $updateForm->get('game_id')->getData();
+    
+            if (empty($title)) {
+                $errors['title'] = 'The topic title cannot be blank.';
+            }
+    
+            if (empty($content)) {
+                $errors['content'] = 'The content cannot be blank.';
+            }
+    
+            if (!$gameId) {
+                $errors['game_id'] = 'Please select a game.';
+            }
+    
+            if ($mediaFile) {
+                if (!$mediaType) {
+                    $errors['media_type'] = 'Please select a media type if you are uploading a file.';
+                } else {
                     $mimeType = $mediaFile->getMimeType();
-                    $isImage = in_array($mimeType, ['image/jpeg', 'image/png', 'image/gif']);
-                    $isVideo = in_array($mimeType, ['video/mp4', 'video/mpeg', 'video/webm', 'video/quicktime', 'video/x-msvideo']);
-
-                    if ($mediaType && $mediaType->value === 'image' && !$isImage) {
-                        $this->logger->error('Media type mismatch: Selected image, but file is not an image.', ['mime_type' => $mimeType]);
-                        throw new \Exception('Selected media type is "image," but the uploaded file is not an image.');
+                    $allowedImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
+                    $allowedVideoTypes = ['video/mp4', 'video/mpeg', 'video/webm', 'video/quicktime', 'video/x-msvideo'];
+                    $maxFileSize = 30 * 1024 * 1024; // 30MB in bytes
+    
+                    if ($mediaFile->getSize() > $maxFileSize) {
+                        $errors['media_file'] = 'The file is too large. Maximum allowed size is 30MB.';
                     }
-
-                    if ($mediaType && $mediaType->value === 'video' && !$isVideo) {
-                        $this->logger->error('Media type mismatch: Selected video, but file is not a video.', ['mime_type' => $mimeType]);
-                        throw new \Exception('Selected media type is "video," but the uploaded file is not a video.');
+    
+                    if ($mediaType->value === 'image' && !in_array($mimeType, $allowedImageTypes)) {
+                        $errors['media_file'] = 'Selected media type is "image," but the uploaded file is not an image.';
+                    } elseif ($mediaType->value === 'video' && !in_array($mimeType, $allowedVideoTypes)) {
+                        $errors['media_file'] = 'Selected media type is "video," but the uploaded file is not a video.';
                     }
-
-                    if ($question->getMediaPath()) {
-                        $oldMediaPath = $this->getParameter('uploads_directory') . '\\' . $question->getMediaPath();
-                        if (file_exists($oldMediaPath)) {
-                            unlink($oldMediaPath);
-                            $this->logger->info('Deleted old media file.', ['path' => $oldMediaPath]);
-                        }
-                    }
-
-                    $mediaFilename = uniqid() . '.' . $mediaFile->guessExtension();
-                    $uploadsDirectory = $this->getParameter('uploads_directory');
-
-                    $mediaFile->move($uploadsDirectory, $mediaFilename);
-                    $question->setMediaPath($mediaFilename);
-                    $question->setMediaType($mediaType);
-                } elseif ($mediaType === null || $mediaType->value === null) {
-                    if ($question->getMediaPath()) {
-                        $oldMediaPath = $this->getParameter('uploads_directory') . '\\' . $question->getMediaPath();
-                        if (file_exists($oldMediaPath)) {
-                            unlink($oldMediaPath);
-                            $this->logger->info('Deleted old media file due to media_type set to None.', ['path' => $oldMediaPath]);
-                        }
-                    }
-                    $question->setMediaPath(null);
-                    $question->setMediaType(null);
                 }
-
-                $entityManager->flush();
-                $this->addFlash('success', 'Topic updated successfully!');
-            } catch (\Exception $e) {
-                $this->logger->error('Error updating topic.', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-                $this->addFlash('error', 'An error occurred while updating the topic: ' . $e->getMessage());
+            }
+    
+            if (empty($errors)) {
+                try {
+                    if ($mediaFile) {
+                        if ($question->getMediaPath()) {
+                            $oldMediaPath = $this->getParameter('uploads_directory') . '\\' . $question->getMediaPath();
+                            if (file_exists($oldMediaPath)) {
+                                unlink($oldMediaPath);
+                                $this->logger->info('Deleted old media file.', ['path' => $oldMediaPath]);
+                            }
+                        }
+    
+                        $mediaFilename = uniqid() . '.' . $mediaFile->guessExtension();
+                        $uploadsDirectory = $this->getParameter('uploads_directory');
+    
+                        $mediaFile->move($uploadsDirectory, $mediaFilename);
+                        $question->setMediaPath($mediaFilename);
+                        $question->setMediaType($mediaType);
+                    } elseif ($mediaType === null || $mediaType->value === null) {
+                        if ($question->getMediaPath()) {
+                            $oldMediaPath = $this->getParameter('uploads_directory') . '\\' . $question->getMediaPath();
+                            if (file_exists($oldMediaPath)) {
+                                unlink($oldMediaPath);
+                                $this->logger->info('Deleted old media file due to media_type set to None.', ['path' => $oldMediaPath]);
+                            }
+                        }
+                        $question->setMediaPath(null);
+                        $question->setMediaType(null);
+                    }
+    
+                    $question->setTitle($title);
+                    $question->setContent($content);
+                    $question->setGameId($gameId);
+    
+                    $entityManager->flush();
+                    $this->addFlash('success', 'Topic updated successfully!');
+                } catch (\Exception $e) {
+                    $this->logger->error('Error updating topic.', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+                    $this->addFlash('error', 'An error occurred while updating the topic: ' . $e->getMessage());
+                }
+            } else {
+                foreach ($errors as $field => $message) {
+                    $this->addFlash('error', $message);
+                }
             }
         }
-
+    
         return $this->redirectToRoute('forum_topics');
     }
-
-   
     #[Route('/ajax/vote', name: 'ajax_vote_action', methods: ['POST'])]
     public function ajaxVoteAction(Request $request, EntityManagerInterface $entityManager, QuestionsRepository $questionsRepository): JsonResponse
     {
