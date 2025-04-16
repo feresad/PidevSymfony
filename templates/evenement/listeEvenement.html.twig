@@ -2,13 +2,23 @@
 
 {% block title %}Liste des Événements{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .nk-btn-primary {
+            background-color: #dd163b !important;
+            color: white !important;
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
     <div class="nk-page-content">
-        <div class="container mt-4 nk-event-list">
+        <div class="container mt-4 nk-content-area">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1>Liste des Événements</h1>
+                <h1 id="content-title">Liste des Événements</h1>
                 <div class="d-flex align-items-center">
-                    <div class="nk-sort-dropdown">
+                    <div class="nk-sort-dropdown" id="sort-dropdown">
                         <select name="sort" class="form-control nk-sort-select" form="eventFilterForm">
                             <option value="nom_asc" {{ sort == 'nom_asc' ? 'selected' : '' }}>Nom (A-Z)</option>
                             <option value="nom_desc" {{ sort == 'nom_desc' ? 'selected' : '' }}>Nom (Z-A)</option>
@@ -16,20 +26,23 @@
                             <option value="date_desc" {{ sort == 'date_desc' ? 'selected' : '' }}>Date (Plus récente)</option>
                             <option value="lieu_asc" {{ sort == 'lieu_asc' ? 'selected' : '' }}>Lieu (A-Z)</option>
                             <option value="lieu_desc" {{ sort == 'lieu_desc' ? 'selected' : '' }}>Lieu (Z-A)</option>
+                            <option value="reservations_desc" {{ sort == 'reservations_desc' ? 'selected' : '' }}>Réservations (Plus au moins)</option>
                         </select>
                     </div>
 
                     <div class="nk-search-form mr-3">
                         <form action="{{ path('evenement_list') }}" method="get" class="nk-form nk-form-style-1" id="eventFilterForm">
                             <div class="input-group">
-                                <input type="text" name="search" class="form-control" placeholder="Rechercher un événement..." value="{{ search }}">
+                                <input type="text" name="search" class="form-control" placeholder="Rechercher un événement ou catégorie..." value="{{ search }}">
                                 <button type="submit" class="nk-btn nk-btn-color-main-1">
                                     <span class="fas fa-search"></span>
                                 </button>
                             </div>
                         </form>
                     </div>
-                    <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-white"><a href="{{ path('categorie_list')}}" style="color:white;">Categorie</a></button>
+                    <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-white toggle-content">
+                        <span>Categorie</span>
+                    </button>
                 </div>
             </div>
 
@@ -44,122 +57,107 @@
                 </div>
             {% endfor %}
 
-            <div class="row">
-                {% for evenement in evenements %}
-                    <div class="col-md-4 mb-4">
-                        <div class="nk-event-card h-100">
-                            <div class="nk-event-img">
-                                <img src="{{ image_base_url ~ evenement.photoEvent }}" alt="{{ evenement.nomEvent }}">
-                            </div>
-                            <div class="card-body">
-                                <h5 class="card-title">{{ evenement.nomEvent }}</h5>
-                                <p class="card-text">
-                                    <i class="fas fa-calendar"></i> {{ evenement.dateEvent ? evenement.dateEvent|date('d/m/Y H:i') : '' }}
-                                </p>
-                                <p class="card-text">
-                                    <i class="fas fa-map-marker-alt"></i> {{ evenement.lieuEvent }}
-                                </p>
-                                <p class="card-text">
-                                    <i class="fas fa-layer-group"></i> Catégorie : {{ evenement.categorie ? evenement.categorie.nom : 'Non spécifiée' }}
-                                </p>
-                                <p class="card-text">
-                                    <i class="fas fa-users"></i> Places restantes : {{ evenement.maxPlacesEvent }}
-                                </p>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div class="btn-group">
-                                        <a href="{{ path('evenement_detailles', {id: evenement.id}) }}" class="nk-btn nk-btn-outline-primary">
-                                            <i class="fas fa-eye"></i> Voir
-                                        </a>
-                                    </div>
+            <div id="dynamic-content" data-evenement-url="{{ path('evenement_list') }}" data-categorie-url="{{ path('categorie_list') }}">
+                <div class="row">
+                    {% for evenement in evenements %}
+                        <div class="col-md-4 mb-4">
+                            <div class="nk-event-card h-100">
+                                <div class="nk-event-img">
+                                    <img src="{{ image_base_url ~ evenement.photoEvent }}" alt="{{ evenement.nomEvent }}">
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ evenement.nomEvent }}</h5>
+                                    <p class="card-text">
+                                        <i class="fas fa-calendar"></i> {{ evenement.dateEvent ? evenement.dateEvent|date('d/m/Y H:i') : '' }}
+                                    </p>
+                                    <p class="card-text">
+                                        <i class="fas fa-map-marker-alt"></i> {{ evenement.lieuEvent }}
+                                    </p>
+                                    <p class="card-text">
+                                        <i class="fas fa-layer-group"></i> Catégorie : {{ evenement.categorie ? evenement.categorie.nom : 'Non spécifiée' }}
+                                    </p>
+                                    <p class="card-text">
+                                        <i class="fas fa-check"></i> Nombre des Reservations : {{ reservationCounts[evenement.id]|default(0) }}
+                                    </p>
+                                    <p class="card-text">
+                                        <i class="fas fa-users"></i> Places restantes : {{ evenement.maxPlacesEvent }}
+                                    </p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="btn-group">
+                                            <a href="{{ path('evenement_detailles', {id: evenement.id}) }}" class="nk-btn nk-btn-outline-primary">
+                                                <i class="fas fa-eye"></i> Voir
+                                            </a>
+                                        </div>
 
-                                    {% if app.user %}
-                                        {% if evenement.dateEvent <= now %}
-                                            <span class="badge badge-secondary" style="font-size: 14px;">Événement passé</span>
-                                        {% elseif evenement.dateEvent <= now|date_modify('+24 hours') %}
-                                            <span class="badge badge-secondary" style="font-size: 14px;">Réservations closes</span>
-                                        {% else %}
-                                            {% if userReservations[evenement.id] is defined %}
+                                        {% if app.user %}
+                                            {% if evenement.dateEvent <= now %}
+                                                <span class="badge badge-secondary" style="font-size: 14px;">Événement passé</span>
+                                            {% elseif evenement.dateEvent <= now|date_modify('+24 hours') %}
+                                                <span class="badge badge-secondary" style="font-size: 14px;">Réservations closes</span>
+                                            {% else %}
+                                                {% if userReservations[evenement.id] is defined %}
                                                 <form action="{{ path('evenement_annuler_reservation', {id: evenement.id}) }}" method="post" class="d-inline">
                                                     <button type="submit" class="nk-btn nk-btn-primary" onclick="return confirm('Êtes-vous sûr de vouloir annuler la réservation ?');">
                                                         <i class="fas fa-times"></i> Annuler
                                                     </button>
                                                 </form>
-                                            {% else %}
-                                                <form action="{{ path('reserver_evenement', {id: evenement.id}) }}" method="post" class="d-inline">
-                                                    <button type="submit" class="nk-btn nk-btn-primary">
-                                                        <i class="fas fa-ticket-alt"></i> Réserver
-                                                    </button>
-                                                </form>
+                                                {% else %}
+                                                {% if evenement.maxPlacesEvent > 0 %}
+                                                    <form action="{{ path('reserver_evenement', {id: evenement.id}) }}" method="post" class="d-inline">
+                                                        <button type="submit" class="nk-btn nk-btn-primary">
+                                                            <i class="fas fa-ticket-alt"></i> Réserver
+                                                        </button>
+                                                    </form>
+                                                {% endif %}
+                                                {% endif %}
                                             {% endif %}
+                                        {% else %}
+                                            <a href="{{ path('app_login_page') }}" class="nk-btn nk-btn-primary">
+                                                <i class="fas fa-sign-in-alt"></i> Connectez-vous pour réserver
+                                            </a>
                                         {% endif %}
-                                    {% else %}
-                                        <a href="{{ path('app_login_page') }}" class="nk-btn nk-btn-primary">
-                                            <i class="fas fa-sign-in-alt"></i> Connectez-vous pour réserver
-                                        </a>
-                                    {% endif %}
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                {% else %}
-                    <div class="col-12">
-                        <div class="alert alert-info">
-                            Aucun événement n'a été trouvé.
+                    {% else %}
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                Aucun événement n'a été trouvé.
+                            </div>
                         </div>
-                    </div>
-                {% endfor %}
-            </div>
+                    {% endfor %}
+                </div>
 
-            <!-- Pagination -->
-            {% if max_pages > 1 %}
-                <nav aria-label="Pagination des événements" class="mt-4">
-                    <ul class="pagination justify-content-center">
-                        <li class="page-item {{ current_page == 1 ? 'disabled' : '' }}">
-                            <a class="page-link" href="{{ path('evenement_list', { page: current_page - 1, search: search, sort: sort }) }}">Précédent</a>
-                        </li>
-                        {% for i in 1..max_pages %}
-                            <li class="page-item {{ current_page == i ? 'active' : '' }}">
-                                <a class="page-link" href="{{ path('evenement_list', { page: i, search: search, sort: sort }) }}">{{ i }}</a>
+                <!-- Pagination -->
+                {% if max_pages > 1 %}
+                    <nav aria-label="Pagination des événements" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item {{ current_page == 1 ? 'disabled' : '' }}">
+                                <a class="page-link" href="{{ path('evenement_list', { page: current_page - 1, search: search, sort: sort }) }}">Précédent</a>
                             </li>
-                        {% endfor %}
-                        <li class="page-item {{ current_page == max_pages ? 'disabled' : '' }}">
-                            <a class="page-link" href="{{ path('evenement_list', { page: current_page + 1, search: search, sort: sort }) }}">Suivant</a>
-                        </li>
-                    </ul>
-                </nav>
-            {% endif %}
+                            {% for i in 1..max_pages %}
+                                <li class="page-item {{ current_page == i ? 'active' : '' }}">
+                                    <a class="page-link" href="{{ path('evenement_list', { page: i, search: search, sort: sort }) }}">{{ i }}</a>
+                                </li>
+                            {% endfor %}
+                            <li class="page-item {{ current_page == max_pages ? 'disabled' : '' }}">
+                                <a class="page-link" href="{{ path('evenement_list', { page: current_page + 1, search: search, sort: sort }) }}">Suivant</a>
+                            </li>
+                        </ul>
+                    </nav>
+                {% endif %}
+            </div>
         </div>
-    </div>
 
-    <!-- Ajout des images de fond -->
-    <img class="nk-page-background-top" src="{{ asset('images/bg-top.png') }}" alt="">
-    <img class="nk-page-background-bottom" src="{{ asset('images/bg-bottom.png') }}" alt="">
+        <!-- Background images -->
+        <img class="nk-page-background-top" src="{{ asset('images/bg-top.png') }}" alt="">
+        <img class="nk-page-background-bottom" src="{{ asset('images/bg-bottom.png') }}" alt="">
+    </div>
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            // Soumission du formulaire de tri
-            $('.nk-sort-select').on('change', function() {
-                $('#eventFilterForm').submit();
-            });
-
-            // Gestion de la pagination avec jQuery (optionnel : chargement AJAX)
-            $('.page-link').on('click', function(e) {
-                e.preventDefault();
-                var url = $(this).attr('href');
-                if (url) {
-                    window.location.href = url; // Redirection classique
-                    // Pour une version AJAX, décommentez ci-dessous et adaptez :
-                    /*
-                    $.get(url, function(data) {
-                        $('.nk-event-list').html($(data).find('.nk-event-list').html());
-                    });
-                    */
-                }
-            });
-        });
-    </script>
+    <script src="{{ asset('js/Evenement.js') }}"></script>
 {% endblock %}

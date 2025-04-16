@@ -16,10 +16,20 @@ use Symfony\Component\Routing\Attribute\Route;
 final class CategorieEventController extends AbstractController
 {
     #[Route('/all',name: 'categorie_list')]
-    public function gettAll(Categorie_eventRepository $repo):Response{
-        $CategorieEvent = $repo->findAll();
+    public function gettAll(Categorie_eventRepository $repo,Request $request):Response{
+        $search = $request->query->get('search', '');
+        $page = $request->query->getInt('page', 1);
+        $limit = 9;
+
+        $categories = $repo->findBySearch($search, $page, $limit);
+        $totalCategories = $repo->countBySearch($search);
+        $maxPages = max(1, ceil($totalCategories / $limit));
+
         return $this->render('categorie_event/listeCategorieEvent.html.twig', [
-            "CategorieEvent"=>$CategorieEvent,
+            'CategorieEvent' => $categories,
+            'current_page' => $page,
+            'max_pages' => $maxPages,
+            'search' => $search,
         ]);
     }
     #[Route('/add', name: 'categorie_ajouter')]

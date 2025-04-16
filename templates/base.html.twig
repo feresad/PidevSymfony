@@ -190,72 +190,68 @@
     {% block body %}{% endblock %}
 
     {% block footer %}
-        <footer class="nk-footer">
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-5">
-                        <img src="{{ asset('images/level.png') }}" alt="Level OP" width="199" class="nk-footer-logo">
-                        <p>Level OP est Votre source incontournable pour tout ce qui concerne le gaming.</p>
-                    </div>
-                    <div class="col-lg-2">
-                        <h4 class="nk-footer-title">Sections</h4>
-                        <ul class="nk-footer-links">
-                            <li><a href="{{ path('app_home') }}">Accueil</a></li>
-                            <li><a href="{{ path('forum_topics') }}">Forum</a></li>
-                            <li><a href="{{ path('evenement_list') }}">Evenement</a></li>
-                            <li><a href="{{ path('app_store') }}">Boutique</a></li>
-                            <li><a href="{{ path('session_client_list') }}">Coach</a></li>
-                        </ul>
-                    </div>
-                    <div class="col-lg-2">
-                        <h4 class="nk-footer-title">Useful Links</h4>
-                        <ul class="nk-footer-links">
-                            <li><a href="#">Terms of Use</a></li>
-                            <li><a href="#">Privacy Policy</a></li>
-                            <li><a href="#">Support</a></li>
-                        </ul>
-                    </div>
-                    <div class="col-lg-3">
-                        <h4 class="nk-footer-title">Newsletter</h4>
-                        <form>
-                            <div class="input-group">
-                                <input type="email" class="form-control required" placeholder="Enter your email">
-                                <button class="nk-btn nk-btn-rounded nk-btn-color-white nk-btn-hover-color-main-1">
-                                    <span class="icon"><i class="fas fa-paper-plane"></i></span>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="text-center">
-                    <p>© 2025 Level OP. Tous droits réservés.</p>
-                </div>
-            </div>
-
-            <!-- Chatbot Toggler -->
-            <button class="chatbot-toggler">
-                <span class="fas fa-comment"></span>
-                <span class="fas fa-times"></span>
-            </button>
-
-            <!-- Chatbot Structure -->
-            <div class="chatbot">
-                <header>
-                    <h2>Chatbot</h2>
-                </header>
-                <ul class="chatbox" id="chatbot-messages">
-                    <li class="chat incoming">
-                        <span class="fa-solid fa-robot"></span>
-                        <p>Hi there!<br>How can I assist you today?</p>
-                    </li>
+<footer class="nk-footer nk-footer-modern">
+    <div class="container">
+        <div class="row g-4">
+            <!-- Logo & Description -->
+            <div class="col-lg-6 col-md-6">
+                <a href="{{ path('app_home') }}" class="nk-footer-logo-link">
+                    <img src="{{ asset('images/level.png') }}" alt="Level OP" class="nk-footer-logo">
+                </a>
+                <p class="nk-footer-description">
+                    Level OP est votre hub incontournable pour le gaming, les esports et la communauté. Rejoignez-nous pour des expériences épiques !
+                </p>
+                <ul class="nk-social-links">
+                    <li><a class="nk-social-facebook" href="#" title="Facebook"><span class="fa-brands fa-facebook fa-beat-fade"></span></a></li>
+                    <li><a class="nk-social-twitter" href="#" title="Twitter"><span class="fa-brands fa-twitter fa-beat-fade"></span></a></li>
+                    <li><a class="nk-social-instagram" href="#" title="Instagram"><span class="fa-brands fa-instagram fa-beat-fade"></span></a></li>
+                    <li><a class="nk-social-whatsapp" href="#" title="WhatsApp"><span class="fa-brands fa-whatsapp fa-beat-fade"></span></a></li>
                 </ul>
-                <div class="chat-input">
-                    <textarea placeholder="Enter a message..." spellcheck="false" required></textarea>
-                    <span id="send-btn" class="fas fa-paper-plane"></span>
-                </div>
             </div>
-        </footer>
-    {% endblock %}
+
+            <!-- Navigation Links -->
+            <div class="col-lg-6 col-md-6">
+                <h4 class="nk-footer-title">Sections</h4>
+                <ul class="nk-footer-links">
+                    <li><a href="{{ path('app_home') }}">Accueil</a></li>
+                    <li><a href="{{ path('forum_topics') }}">Forum</a></li>
+                    <li><a href="{{ path('evenement_list') }}">Événements</a></li>
+                    <li><a href="{{ path('app_store') }}">Boutique</a></li>
+                    <li><a href="{{ path('session_client_list') }}">Coach</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Copyright -->
+        <div class="nk-footer-bottom">
+            <p>© {{ 'now'|date('Y') }} Level OP. Tous droits réservés.</p>
+        </div>
+    </div>
+
+    <!-- Chatbot Toggler -->
+    <button class="chatbot-toggler">
+        <span class="fas fa-comment"></span>
+        <span class="fas fa-times"></span>
+    </button>
+
+    <!-- Chatbot Structure -->
+    <div class="chatbot">
+        <header>
+            <h2>Chatbot</h2>
+        </header>
+        <ul class="chatbox" id="chatbot-messages">
+            <li class="chat incoming">
+                <span class="fa-solid fa-robot"></span>
+                <p>Salut !<br>Comment puis-je vous aider aujourd'hui ?</p>
+            </li>
+        </ul>
+        <div class="chat-input">
+            <textarea placeholder="Tapez votre message..." spellcheck="false" required></textarea>
+            <span id="send-btn" class="fas fa-paper-plane"></span>
+        </div>
+    </div>
+</footer>
+{% endblock %}
     
 
     {% block javascripts %}
@@ -375,7 +371,7 @@
 
                 function fetchNotifications() {
                     $.ajax({
-                        url: '{{ path('api_notifications') }}',
+                        url: "{ path('api_notifications') }}",
                         method: 'GET',
                         success: function(response) {
                             if (response.success) {
@@ -420,7 +416,7 @@
 
                     if (notificationId) {
                         $.ajax({
-                            url: '{{ path('api_notifications_read', {'id': 'ID'}) }}'.replace('ID', notificationId),
+                            url: "{{ path('api_notifications_read', {'id': 'ID'}) }}".replace('ID', notificationId),
                             method: 'POST',
                             success: function(response) {
                                 if (response.success) {
@@ -448,7 +444,7 @@
             document.getElementById('logout-button').addEventListener('click', function (e) {
                 e.preventDefault(); // prevent default anchor behavior
                 localStorage.clear(); // clear localStorage
-                window.location.href = '{{ path('app_logout') }}'; // redirect to Symfony logout route
+                window.location.href = "{{ path('app_logout') }}"; // redirect to Symfony logout route
             });
         </script>
     {% endblock %}
