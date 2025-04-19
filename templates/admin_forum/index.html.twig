@@ -1,0 +1,1357 @@
+{% extends 'baseadmin.html.twig' %}
+
+{% block title %}Admin Forum{% endblock %}
+
+{% block body %}
+<div class="container">
+    <h2 class="mt-4 mb-4">Admin Forum Management</h2>
+
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-8">
+            <div class="search">
+                <label>
+                    <input type="text" id="topicSearch" class="form-control" placeholder="Search topics by game, author, title, or content...">
+                    <ion-icon name="search-outline"></ion-icon>
+                </label>
+            </div>
+        </div>
+        <div class="col-md-4 text-end">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newTopicModal">
+                Create New Topic
+            </button>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Trending on r/gaming</h5>
+        </div>
+        <div class="card-body">
+            <ul class="list-unstyled">
+                {% for post in trendingPosts %}
+                    <li class="mb-2">
+                        <a href="{{ post.url }}" target="_blank" class="text-decoration-none">
+                            - {{ post.title|length > 60 ? post.title|slice(0, 60) ~ '...' : post.title }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="forum-topics">
+        {% if topics|length > 0 %}
+            {% for topic in topics %}
+                <div class="card mb-3 topic-card"
+                     data-game="{{ topic.gameImage ? topic.gameImage|replace({'img/games/': ''}) : 'No game' }}"
+                     data-author="{{ topic.startedBy }}"
+                     data-title="{{ topic.title|lower }}"
+                     data-content="{{ topic.content ? topic.content|lower : '' }}">
+                    <div class="card-body d-flex align-items-start">
+                        <div class="vote-section me-4 text-center">
+                            <button class="vote-btn upvote-btn voting-button upvote" data-id="{{ topic.id }}" data-type="question" data-vote-type="UP">
+                                <ion-icon name="arrow-up-outline"></ion-icon>
+                            </button>
+                            <span class="vote-count d-block my-1">{{ topic.votes|default(0) }}</span>
+                            <button class="vote-btn downvote-btn voting-button downvote" data-id="{{ topic.id }}" data-type="question" data-vote-type="DOWN">
+                                <ion-icon name="arrow-down-outline"></ion-icon>
+                            </button>
+                        </div>
+                        <div class="content-section flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <h5 class="card-title mb-1">
+                                    <a href="{{ path('forum_single_topic', { id: topic.id }) }}" class="text-decoration-none">{{ topic.title }}</a>
+                                </h5>
+                            </div>
+                            {% if topic.content is defined and topic.content %}
+                                <p class="card-text">
+                                    {{ topic.content|slice(0, 150) }}
+                                    {% if topic.content|length > 150 %}...{% endif %}
+                                </p>
+                            {% endif %}
+                            {% if topic.image is defined and topic.image %}
+                                <div class="mt-2">
+                                    <img src="http://localhost/img/games/{{ topic.image }}" alt="Topic Image" class="img-fluid rounded topic-media">
+                                </div>
+                            {% endif %}
+                            {% if topic.video is defined and topic.video %}
+                                <div class="mt-2">
+                                    <video controls class="rounded topic-media">
+                                        <source src="http://localhost/img/games/{{ topic.video }}" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                </div>
+                            {% endif %}
+                            <div class="reactions mt-2 d-flex align-items-center">
+                                <div class="reaction-display me-3" data-id="{{ topic.id }}" data-type="question">
+                                    {% for emoji, count in topic.reactionCounts|default([]) %}
+                                        <span class="reaction-item" data-emoji="{{ emoji }}">{{ emoji }} {{ count }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="actions mt-3 d-flex gap-2">
+                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#updateTopicModal-{{ topic.id }}">
+                                    Edit
+                                </button>
+                                <button type="button" class="btn btn-sm btn-danger delete-topic-btn" data-id="{{ topic.id }}" data-title="{{ topic.title }}">
+                                    Delete
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary share-topic-btn" data-id="{{ topic.id }}">
+                                    <ion-icon name="share-social-outline"></ion-icon>
+                                </button>
+                                <div class="reaction-wrapper">
+                                    <button class="btn btn-sm btn-outline-secondary reaction-icon" data-id="{{ topic.id }}" data-type="question">
+                                        <ion-icon name="happy-outline"></ion-icon>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="activity-section text-center">
+                            {% if topic.gameImage is defined and topic.gameImage %}
+                                <img src="http://localhost/img/games/{{ topic.gameImage }}" alt="Game Image" class="rounded-circle mb-2" style="width: 50px; height: 50px;">
+                            {% else %}
+                                <img src="{{ asset('assets/images/default-game.jpg') }}" alt="Default Game Image" class="rounded-circle mb-2" style="width: 50px; height: 50px;">
+                            {% endif %}
+                            <div class="small">{{ topic.postCount }} posts</div>
+                            <div class="small">Last by <a href="#">{{ topic.lastActivityUser }}</a></div>
+                            <div class="small text-muted">{{ topic.lastActivityDate }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Update Topic Modal -->
+                <div class="modal fade floating-modal" id="updateTopicModal-{{ topic.id }}" tabindex="-1" aria-labelledby="updateTopicModalLabel-{{ topic.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="updateTopicModalLabel-{{ topic.id }}">Update Topic</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                {{ form_start(topic.updateForm, {'attr': {'class': 'profanity-check-form'}}) }}
+                                    <div class="mb-3">
+                                        {{ form_label(topic.updateForm.title, null, {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(topic.updateForm.title, {'attr': {'class': 'form-control'}}) }}
+                                        {{ form_errors(topic.updateForm.title) }}
+                                    </div>
+                                    <div class="mb-3">
+                                        {{ form_label(topic.updateForm.content, null, {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(topic.updateForm.content, {'attr': {'class': 'form-control'}}) }}
+                                        {{ form_errors(topic.updateForm.content) }}
+                                    </div>
+                                    <div class="mb-3">
+                                        {{ form_label(topic.updateForm.media_type, null, {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(topic.updateForm.media_type, {'attr': {'class': 'form-control'}}) }}
+                                        {{ form_errors(topic.updateForm.media_type) }}
+                                    </div>
+                                    <div class="mb-3">
+                                        {{ form_label(topic.updateForm.media_file, null, {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(topic.updateForm.media_file, {'attr': {'class': 'form-control'}}) }}
+                                        {{ form_errors(topic.updateForm.media_file) }}
+                                    </div>
+                                    <div class="mb-3">
+                                        {{ form_label(topic.updateForm.game_id, null, {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(topic.updateForm.game_id, {'attr': {'class': 'form-control'}}) }}
+                                        {{ form_errors(topic.updateForm.game_id) }}
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Emotes</label>
+                                        <div class="emotes-options d-flex gap-2">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('😊', 'update_topic_form_{{ topic.id }}_content')">😊</button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('😂', 'update_topic_form_{{ topic.id }}_content')">😂</button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('❤️', 'update_topic_form_{{ topic.id }}_content')">❤️</button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('👍', 'update_topic_form_{{ topic.id }}_content')">👍</button>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        {{ form_widget(topic.updateForm.submit, {'attr': {'class': 'btn btn-primary'}}) }}
+                                    </div>
+                                {{ form_end(topic.updateForm) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-info text-center" id="no-topics-alert" style="display: none;">
+                No topics found on this page.
+            </div>
+        {% endif %}
+    </div>
+
+    {% if topics|length > 0 %}
+        <div class="row mt-4">
+            <div class="col-md-12 text-center">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item {{ pagination.currentPage == 1 ? 'disabled' : '' }}">
+                            <a class="page-link" href="{{ path('forum_admin', {'page': pagination.currentPage - 1}) }}">
+                                <ion-icon name="chevron-back-outline"></ion-icon>
+                            </a>
+                        </li>
+                        {% if pagination.currentPage > 3 %}
+                            <li class="page-item"><a class="page-link" href="{{ path('forum_admin', {'page': 1}) }}">1</a></li>
+                            {% if pagination.currentPage > 4 %}
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                            {% endif %}
+                        {% endif %}
+                        {% for i in max(1, pagination.currentPage - 2)..min(pagination.totalPages, pagination.currentPage + 2) %}
+                            <li class="page-item {{ pagination.currentPage == i ? 'active' : '' }}">
+                                <a class="page-link" href="{{ path('forum_admin', {'page': i}) }}">{{ i }}</a>
+                            </li>
+                        {% endfor %}
+                        {% if pagination.currentPage < pagination.totalPages - 2 %}
+                            {% if pagination.currentPage < pagination.totalPages - 3 %}
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                            {% endif %}
+                            <li class="page-item"><a class="page-link" href="{{ path('forum_admin', {'page': pagination.totalPages}) }}">{{ pagination.totalPages }}</a></li>
+                        {% endif %}
+                        <li class="page-item {{ pagination.currentPage == pagination.totalPages ? 'disabled' : '' }}">
+                            <a class="page-link" href="{{ path('forum_admin', {'page': pagination.currentPage + 1}) }}">
+                                <ion-icon name="chevron-forward-outline"></ion-icon>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                <div class="text-muted small">
+                    Showing {{ (pagination.currentPage - 1) * pagination.itemsPerPage + 1 }}-{{ min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems) }}
+                    of {{ pagination.totalItems }} topics
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- New Topic Modal -->
+    <div class="modal fade floating-modal" id="newTopicModal" tabindex="-1" aria-labelledby="newTopicModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newTopicModalLabel">Create New Topic</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    {{ form_start(newTopicForm, {'attr': {'class': 'profanity-check-form'}}) }}
+                        <div class="mb-3">
+                            {{ form_label(newTopicForm.title, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(newTopicForm.title, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(newTopicForm.title) }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form_label(newTopicForm.content, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(newTopicForm.content, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(newTopicForm.content) }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form_label(newTopicForm.media_type, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(newTopicForm.media_type, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(newTopicForm.media_type) }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form_label(newTopicForm.media_file, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(newTopicForm.media_file, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(newTopicForm.media_file) }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form_label(newTopicForm.game_id, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(newTopicForm.game_id, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(newTopicForm.game_id) }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Emotes</label>
+                            <div class="emotes-options d-flex gap-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('😊', 'topic_form_content')">😊</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('😂', 'topic_form_content')">😂</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('❤️', 'topic_form_content')">❤️</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('👍', 'topic_form_content')">👍</button>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            {{ form_widget(newTopicForm.submit, {'attr': {'class': 'btn btn-primary'}}) }}
+                        </div>
+                    {{ form_end(newTopicForm) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            background: #f8f9fa;
+        }
+
+        .container {
+            padding: 20px;
+            max-width: 1400px;
+        }
+
+        .forum-topics {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        .topic-card {
+            background: #ffffff;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .topic-card:hover {
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .card-body {
+            padding: 1.5rem;
+            background: #ffffff;
+            display: flex;
+            align-items: stretch;
+        }
+
+        .vote-section {
+            width: 48px;
+            flex-shrink: 0;
+            padding: 0.5rem 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-right: 1.5rem;
+        }
+
+        .vote-btn {
+            background: none;
+            border: none;
+            padding: 6px;
+            cursor: pointer;
+            transition: transform 0.2s ease, color 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .vote-btn ion-icon {
+            font-size: 1.3rem;
+            color: #adb5bd;
+        }
+
+        .vote-btn:hover ion-icon {
+            color: #007bff;
+            transform: scale(1.15);
+        }
+
+        .vote-btn.voted ion-icon {
+            color: #007bff;
+        }
+
+        .vote-count {
+            font-size: 1rem;
+            color: #495057;
+            font-weight: 600;
+            margin: 0.25rem 0;
+        }
+
+        .content-section {
+            flex: 1;
+            padding: 0 1.5rem;
+            overflow: hidden;
+        }
+
+        .card-title {
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            font-weight: 800;
+            line-height: 1.4;
+            color: #121212;
+        }
+
+        .card-title a {
+            color: #121212;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .card-title a:hover {
+            color: #007bff;
+        }
+
+        .card-text {
+            color: #333;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 1.25rem;
+            letter-spacing: 0.02em;
+        }
+
+        .topic-media {
+            width: 100%;
+            max-width: 800px;
+            min-width: 500px;
+            aspect-ratio: 16 / 9;
+            object-fit: cover;
+            display: block;
+        }
+
+        .reactions {
+            gap: 12px;
+            margin-top: 1rem;
+        }
+
+        .reaction-display {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .reaction-item {
+            background-color: #f1f3f5;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.2s ease;
+        }
+
+        .reaction-item:hover {
+            background-color: #e9ecef;
+        }
+
+        .reaction-wrapper {
+            position: relative;
+        }
+
+        .reaction-icon {
+            border-radius: 8px;
+            transition: background-color 0.2s ease;
+        }
+
+        .reaction-icon ion-icon {
+            font-size: 1.1rem;
+        }
+
+        .reaction-icon:hover {
+            background-color: #f1f3f5;
+        }
+
+        .emoji-picker-container {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            padding: 12px;
+            border-radius: 8px;
+            max-width: 220px;
+            max-height: 240px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .emoji-section {
+            margin-bottom: 12px;
+        }
+
+        .emoji-section h4 {
+            color: #6c757d;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .emoji-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+
+        .emoji-option {
+            cursor: pointer;
+            font-size: 1.3rem;
+            padding: 5px;
+            text-align: center;
+            border-radius: 4px;
+            transition: background-color 0.2s ease;
+        }
+
+        .emoji-option:hover {
+            background-color: #007bff;
+            color: #ffffff;
+        }
+
+        .activity-section {
+            width: 150px;
+            flex-shrink: 0;
+            text-align: center;
+            padding: 0.5rem 1rem;
+            margin-left: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .activity-section img {
+            object-fit: cover;
+            border: 1px solid #dee2e6;
+            margin-bottom: 0.75rem;
+        }
+
+        .activity-section .small {
+            color: #6c757d;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+        }
+
+        .activity-section .small a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .activity-section .small a:hover {
+            text-decoration: underline;
+        }
+
+        .actions {
+            gap: 8px;
+            margin-top: 1.5rem;
+            align-items: center;
+        }
+
+        .btn-sm {
+            font-size: 0.85rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: 8px;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+            border-color: #c82333;
+            transform: translateY(-1px);
+        }
+
+        .btn-outline-secondary {
+            color: #6c757d;
+            border-color: #6c757d;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .btn-outline-secondary:hover {
+            background-color: #f1f3f5;
+            color: #495057;
+            transform: translateY(-1px);
+        }
+
+        .pagination .page-link {
+            color: #495057;
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin: 0 3px;
+            transition: background-color 0.2s ease;
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: #007bff;
+            border-color: #007bff;
+            color: #ffffff;
+        }
+
+        .pagination .page-item.disabled .page-link {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .card-header {
+            background-color: #ffffff;
+            color: #1a1a1a;
+            border-bottom: 1px solid #dee2e6;
+            padding: 1rem 1.5rem;
+        }
+
+        /* Floating Modal Styles */
+        .modal.floating-modal {
+            background: none;
+        }
+
+        .modal.floating-modal .modal-dialog {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            margin: 0;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .modal.floating-modal .modal-content {
+            background-color: #ffffff;
+            color: #1a1a1a;
+            border: 1px solid #dee2e6;
+            border-radius: 12px;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal.floating-modal .modal-header {
+            border-bottom: none;
+            padding: 1rem 1.5rem;
+        }
+
+        .modal.floating-modal .modal-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #1a1a1a;
+        }
+
+        .modal.floating-modal .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal.floating-modal .modal-footer {
+            border-top: none;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .modal.floating-modal .btn-close {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: #6c757d;
+            opacity: 1;
+        }
+
+        .modal.floating-modal .btn-close:hover {
+            color: #1a1a1a;
+        }
+
+        .modal-content {
+            background-color: #ffffff;
+            color: #1a1a1a;
+            border: 1px solid #dee2e6;
+            border-radius: 12px;
+        }
+
+        .modal-header, .modal-footer {
+            border-color: #dee2e6;
+        }
+
+        .form-control, .form-select {
+            background-color: #ffffff;
+            color: #1a1a1a;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: #ffffff;
+            color: #1a1a1a;
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+        }
+
+        .text-muted a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .text-muted a:hover {
+            text-decoration: underline;
+        }
+
+        .modal {
+            display: none;
+        }
+
+        .modal.show {
+            display: block;
+        }
+
+        .modal:not(.floating-modal) .modal-dialog {
+            margin: 1.75rem auto;
+        }
+
+        .modal:not(.floating-modal) .modal-header {
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .modal:not(.floating-modal) .modal-footer {
+            border-top: 1px solid #dee2e6;
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                max-width: 1000px;
+            }
+
+            .topic-card {
+                max-width: 800px;
+            }
+
+            .topic-media {
+                max-width: 600px;
+                min-width: 400px;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .container {
+                max-width: 800px;
+            }
+
+            .topic-card {
+                max-width: 650px;
+            }
+
+            .activity-section {
+                width: 120px;
+                margin-left: 1.5rem;
+            }
+
+            .content-section {
+                padding: 0 1rem;
+            }
+
+            .card-title {
+                font-size: 1.3rem;
+            }
+
+            .card-text {
+                font-size: 1rem;
+            }
+
+            .topic-media {
+                max-width: 500px;
+                min-width: 350px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                max-width: 600px;
+            }
+
+            .topic-card {
+                max-width: 100%;
+            }
+
+            .card-body {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .vote-section {
+                flex-direction: row;
+                width: 100%;
+                justify-content: flex-start;
+                margin-bottom: 1.5rem;
+                margin-right: 0;
+            }
+
+            .vote-btn {
+                margin: 0 0.75rem;
+            }
+
+            .content-section {
+                padding: 0;
+                width: 100%;
+            }
+
+            .activity-section {
+                width: 100%;
+                margin-left: 0;
+                margin-top: 1.5rem;
+                text-align: left;
+                flex-direction: row;
+                align-items: center;
+                gap: 1rem;
+                padding: 0;
+            }
+
+            .activity-section img {
+                margin-bottom: 0;
+            }
+
+            .activity-section .small {
+                white-space: normal;
+            }
+
+            .card-title {
+                margin-bottom: 0.75rem;
+                font-size: 1.2rem;
+            }
+
+            .card-text {
+                margin-bottom: 1rem;
+                font-size: 0.95rem;
+            }
+
+            .reactions {
+                margin-top: 0.75rem;
+            }
+
+            .actions {
+                margin-top: 1rem;
+            }
+
+            .topic-media {
+                max-width: 100%;
+                min-width: 100%;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .container {
+                padding: 15px;
+                max-width: 100%;
+            }
+
+            .topic-card {
+                max-width: 100%;
+            }
+
+            .card-body {
+                padding: 1rem;
+            }
+
+            .card-title {
+                font-size: 1.1rem;
+            }
+
+            .card-text {
+                font-size: 0.9rem;
+            }
+
+            .topic-media {
+                max-width: 100%;
+                min-width: 100%;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function addEmote(emote, fieldId) {
+            const contentField = document.querySelector('#' + fieldId);
+            if (contentField) {
+                contentField.value += emote;
+            }
+        }
+
+        $(document).ready(function() {
+            let sentimentMap = {
+                positive: [],
+                negative: [],
+                neutral: []
+            };
+
+            if ($('.topic-card').length === 0) {
+                $('#no-topics-alert').show();
+            }
+
+            function debounce(func, wait) {
+                let timeout;
+                return function(...args) {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => func.apply(this, args), wait);
+                };
+            }
+
+            function loadEmojis() {
+                return $.ajax({
+                    url: 'https://emoji-api.com/emojis?access_key=22b221fd734cfd73f62238bc32fa072f636bc63b',
+                    method: 'GET',
+                    cache: true
+                }).then(emojis => {
+                    const positiveGroups = ['smileys-emotion', 'people-body', 'activities', 'food-drink'];
+                    const neutralGroups = ['travel-places', 'objects', 'animals-nature'];
+
+                    emojis.forEach(emoji => {
+                        const group = emoji.group;
+                        const name = emoji.slug.toLowerCase();
+
+                        if (positiveGroups.includes(group) || name.includes('smile') || name.includes('happy') || name.includes('love') || name.includes('laugh') || name.includes('party') || name.includes('cool')) {
+                            if (sentimentMap.positive.length < 20) sentimentMap.positive.push(emoji.character);
+                        }
+                        else if (group === 'smileys-emotion' && (name.includes('sad') || name.includes('cry') || name.includes('angry') || name.includes('mad') || name.includes('frown') || name.includes('disappoint') || name.includes('frustrated') || name.includes('broken') || name.includes('rage') || name.includes('pout'))) {
+                            if (sentimentMap.negative.length < 20) sentimentMap.negative.push(emoji.character);
+                        }
+                        else if (neutralGroups.includes(group) || name.includes('think') || name.includes('shrug') || name.includes('face') || name.includes('neutral') || name.includes('roll')) {
+                            if (sentimentMap.neutral.length < 20) sentimentMap.neutral.push(emoji.character);
+                        }
+                    });
+
+                    if (sentimentMap.positive.length < 10) sentimentMap.positive = ['👍', '😊', '😂', '❤️', '🎉', '😍', '👏', '🌟', '😎', '💪'];
+                    if (sentimentMap.negative.length < 10) sentimentMap.negative = ['👎', '😢', '😡', '💔', '😤', '😞', '🤬', '😣', '💢', '😠'];
+                    if (sentimentMap.neutral.length < 10) sentimentMap.neutral = ['🤔', '😐', '🙂', '👀', '🤷', '😶', '🤝', '🙄', '😴', '🤓'];
+
+                    $.ajax({
+                        url: '{{ path('api_update_sentiment_map') }}',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ sentimentMap: sentimentMap }),
+                        success: function(response) {
+                            if (!response.success) console.error('Failed to sync sentiment map:', response.message);
+                        },
+                        error: function() {
+                            console.error('Failed to sync sentiment map with backend');
+                        }
+                    });
+                }).catch(() => {
+                    sentimentMap = {
+                        positive: ['👍', '😊', '😂', '❤️', '🎉', '😍', '👏', '🌟', '😎', '💪'],
+                        negative: ['👎', '😢', '😡', '💔', '😤', '😞', '🤬', '😣', '💢', '😠'],
+                        neutral: ['🤔', '😐', '🙂', '👀', '🤷', '😶', '🤝', '🙄', '😴', '🤓']
+                    };
+                });
+            }
+
+            function fetchReactions(id, type, $display) {
+                $.ajax({
+                    url: '{{ path('react_action') }}',
+                    method: 'POST',
+                    data: { id: id, type: type, action: 'fetch' },
+                    success: function(response) {
+                        if (response.success) {
+                            updateReactionDisplay($display, response.reactionCounts || {});
+                        } else {
+                            console.error('Failed to fetch reactions:', response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('AJAX error fetching reactions:', status, error);
+                    }
+                });
+            }
+
+            function updateReactionDisplay($display, reactionCounts) {
+                let reactionHtml = '';
+                for (const [emoji, count] of Object.entries(reactionCounts)) {
+                    reactionHtml += `<span class="reaction-item" data-emoji="${emoji}">${emoji} ${count}</span>`;
+                }
+                $display.html(reactionHtml);
+            }
+
+            function initializeReactions() {
+                $('.reaction-display').each(function() {
+                    const $display = $(this);
+                    const id = $display.data('id');
+                    const type = $display.data('type');
+                    if ($display.children().length === 0) {
+                        fetchReactions(id, type, $display);
+                    }
+                });
+            }
+
+            const showEmojiPicker = debounce(function($icon, id, type) {
+                if (sentimentMap.positive.length === 0) return;
+
+                $('.emoji-picker-container').remove();
+
+                let pickerHtml = '<div class="emoji-picker-container">';
+                
+                pickerHtml += '<div class="emoji-section"><h4>Positive</h4><div class="emoji-grid">';
+                sentimentMap.positive.forEach(emoji => {
+                    pickerHtml += `<span class="emoji-option" data-emoji="${emoji}" data-id="${id}" data-type="${type}">${emoji}</span>`;
+                });
+                pickerHtml += '</div></div>';
+
+                pickerHtml += '<div class="emoji-section"><h4>Negative</h4><div class="emoji-grid">';
+                sentimentMap.negative.forEach(emoji => {
+                    pickerHtml += `<span class="emoji-option" data-emoji="${emoji}" data-id="${id}" data-type="${type}">${emoji}</span>`;
+                });
+                pickerHtml += '</div></div>';
+
+                pickerHtml += '<div class="emoji-section"><h4>Neutral</h4><div class="emoji-grid">';
+                sentimentMap.neutral.forEach(emoji => {
+                    pickerHtml += `<span class="emoji-option" data-emoji="${emoji}" data-id="${id}" data-type="${type}">${emoji}</span>`;
+                });
+                pickerHtml += '</div></div>';
+
+                pickerHtml += '</div>';
+
+                $('body').append(pickerHtml);
+                const $newPicker = $('.emoji-picker-container');
+
+                const iconOffset = $icon.offset();
+                const iconHeight = $icon.outerHeight();
+                const viewportHeight = $(window).height();
+                const pickerHeight = $newPicker.outerHeight();
+                let topPosition = iconOffset.top + iconHeight;
+                if (topPosition + pickerHeight > viewportHeight) {
+                    topPosition = iconOffset.top - pickerHeight;
+                }
+                $newPicker.css({
+                    top: topPosition,
+                    left: iconOffset.left
+                }).fadeIn(100);
+
+                $newPicker.data('reaction-wrapper', $icon.closest('.reaction-wrapper'));
+            }, 200);
+
+            loadEmojis().then(() => {
+                initializeReactions();
+
+                $(document).on('mouseenter', '.reaction-icon', function() {
+                    const $icon = $(this);
+                    const id = $icon.data('id');
+                    const type = $icon.data('type');
+                    showEmojiPicker($icon, id, type);
+                });
+
+                $(document).on('mouseenter', '.emoji-picker-container', function() {
+                    $(this).stop().fadeIn(100);
+                });
+
+                $(document).on('mouseleave', '.reaction-wrapper', function(e) {
+                    const $wrapper = $(this);
+                    const $picker = $('.emoji-picker-container');
+                    const relatedTarget = $(e.relatedTarget);
+
+                    if ($picker.length && (relatedTarget.is($picker) || relatedTarget.closest('.emoji-picker-container').length)) {
+                        return;
+                    }
+
+                    if ($picker.data('reaction-wrapper')?.is($wrapper)) {
+                        $picker.fadeOut(100, function() {
+                            $(this).remove();
+                        });
+                    }
+                });
+
+                $(document).on('mouseleave', '.emoji-picker-container', function(e) {
+                    const $picker = $(this);
+                    const $wrapper = $picker.data('reaction-wrapper');
+                    const relatedTarget = $(e.relatedTarget);
+
+                    if ($wrapper && (relatedTarget.is($wrapper) || relatedTarget.closest('.reaction-wrapper').length)) {
+                        return;
+                    }
+
+                    $picker.fadeOut(100, function() {
+                        $(this).remove();
+                    });
+                });
+
+                $(document).on('click', '.emoji-option', function() {
+                    const $emoji = $(this);
+                    const emoji = $emoji.data('emoji');
+                    const id = $emoji.data('id');
+                    const type = $emoji.data('type');
+                    const $display = $(`.reaction-display[data-id="${id}"]`);
+                    const $picker = $('.emoji-picker-container');
+
+                    $.ajax({
+                        url: '{{ path('react_action') }}',
+                        method: 'POST',
+                        data: { id: id, type: type, emoji: emoji, action: 'react' },
+                        success: function(response) {
+                            if (response.success) {
+                                updateReactionDisplay($display, response.reactionCounts);
+                                $picker.fadeOut(100, function() {
+                                    $(this).remove();
+                                });
+                            } else {
+                                Swal.fire({
+                                    title: 'Error',
+                                    text: response.message,
+                                    icon: 'error',
+                                    background: '#fff',
+                                    color: '#212529',
+                                    confirmButtonColor: '#007bff'
+                                });
+                            }
+                        },
+                        error: function() {
+                            Swal.fire({
+                                title: 'Error',
+                                text: 'Failed to save reaction',
+                                icon: 'error',
+                                background: '#fff',
+                                color: '#212529',
+                                confirmButtonColor: '#007bff'
+                            });
+                        }
+                    });
+                });
+            });
+
+            $('#topicSearch').on('input', function() {
+                const searchTerm = $(this).val().toLowerCase().trim();
+                $('.topic-card').each(function() {
+                    const $topic = $(this);
+                    const game = $topic.data('game').toLowerCase();
+                    const author = $topic.data('author').toLowerCase();
+                    const title = $topic.data('title').toLowerCase();
+                    const content = $topic.data('content').toLowerCase();
+
+                    const matches = (
+                        game.includes(searchTerm) ||
+                        author.includes(searchTerm) ||
+                        title.includes(searchTerm) ||
+                        content.includes(searchTerm)
+                    );
+
+                    $topic.toggle(matches);
+
+                    if ($('.topic-card:visible').length === 0) {
+                        $('#no-topics-alert').show();
+                    } else {
+                        $('#no-topics-alert').hide();
+                    }
+                });
+            });
+
+            $(document).on('click', '.vote-btn', function(e) {
+                e.preventDefault();
+                const $btn = $(this);
+                const id = $btn.data('id');
+                const type = $btn.data('type');
+                const voteType = $btn.data('vote-type');
+                const $voteSection = $btn.closest('.vote-section');
+                const $voteCount = $voteSection.find('.vote-count');
+
+                $.ajax({
+                    url: '{{ path('ajax_vote_action') }}',
+                    method: 'POST',
+                    data: { id: id, type: type, vote_type: voteType },
+                    success: function(response) {
+                        if (response.success) {
+                            $voteCount.text(response.votes);
+                            $btn.addClass('voted');
+                        } else {
+                            Swal.fire({
+                                title: 'Voting Error',
+                                text: response.message,
+                                icon: 'error',
+                                background: '#fff',
+                                color: '#212529',
+                                confirmButtonColor: '#007bff'
+                            });
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({
+                            title: 'Voting Error',
+                            text: 'An error occurred while voting. Please try again.',
+                            icon: 'error',
+                            background: '#fff',
+                            color: '#212529',
+                            confirmButtonColor: '#007bff'
+                        });
+                    }
+                });
+            });
+
+            $(document).on('click', '.share-topic-btn', function(e) {
+                e.preventDefault();
+                const $btn = $(this);
+                const topicId = $btn.data('id');
+
+                Swal.fire({
+                    title: 'Share Topic',
+                    html: `
+                        <p>Share this topic on your favorite platform:</p>
+                        <div class="share-options" style="display: flex; flex-direction: column; gap: 10px;">
+                            <button class="swal2-confirm swal2-styled share-link facebook-share" data-id="${topicId}" style="background-color: #3b5998; color: white; padding: 10px; border-radius: 8px;">
+                                <i class="fab fa-facebook-f me-2"></i> Facebook
+                            </button>
+                            <button class="swal2-confirm swal2-styled share-link reddit-share" data-id="${topicId}" style="background-color: #ff4500; color: white; padding: 10px; border-radius: 8px;">
+                                <i class="fab fa-reddit-alien me-2"></i> Reddit
+                            </button>
+                            <button class="swal2-confirm swal2-styled share-link twitter-share" data-id="${topicId}" style="background-color: #1da1f2; color: white; padding: 10px; border-radius: 8px;">
+                                <i class="fab fa-twitter me-2"></i> Twitter
+                            </button>
+                        </div>
+                    `,
+                    showCancelButton: true,
+                    cancelButtonText: 'Close',
+                    showConfirmButton: false,
+                    background: '#fff',
+                    color: '#212529',
+                    cancelButtonColor: '#6c757d'
+                });
+            });
+
+            $(document).on('click', '.share-link', function(e) {
+                e.preventDefault();
+                const $link = $(this);
+                const topicId = $link.data('id');
+                const platform = $link.hasClass('facebook-share') ? 'facebook' :
+                                $link.hasClass('twitter-share') ? 'twitter' :
+                                $link.hasClass('reddit-share') ? 'reddit' : null;
+
+                if (!platform) return;
+
+                $.ajax({
+                    url: '{{ path('api_share_topic') }}',
+                    method: 'GET',
+                    data: { id: topicId },
+                    success: function(response) {
+                        if (response.success) {
+                            const shareUrl = encodeURIComponent(response.url);
+                            const title = response.title || '';
+                            const content = response.content || '';
+                            const shareText = encodeURIComponent(`${title}: \n${content}`);
+                            let platformUrl;
+
+                            switch (platform) {
+                                case 'facebook':
+                                    platformUrl = `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}&e=${shareText}`;
+                                    break;
+                                case 'twitter':
+                                    platformUrl = `https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareText}`;
+                                    break;
+                                case 'reddit':
+                                    platformUrl = `https://www.reddit.com/submit?url=${shareUrl}&title=${shareText}`;
+                                    break;
+                            }
+
+                            if (platformUrl) {
+                                window.open(platformUrl, '_blank', 'width=600,height=400');
+                                Swal.close();
+                            }
+                        } else {
+                            Swal.fire({
+                                title: 'Error',
+                                text: response.message || 'Failed to fetch share data.',
+                                icon: 'error',
+                                background: '#fff',
+                                color: '#212529',
+                                confirmButtonColor: '#007bff'
+                            });
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'An error occurred while preparing to share.',
+                            icon: 'error',
+                            background: '#fff',
+                            color: '#212529',
+                            confirmButtonColor: '#007bff'
+                        });
+                    }
+                });
+            });
+
+            $(document).on('click', '.delete-topic-btn', function(e) {
+                e.preventDefault();
+                const $btn = $(this);
+                const topicId = $btn.data('id');
+                const topicTitle = $btn.data('title');
+                const deleteUrl = '{{ path('admin_forum_delete_topic', { id: 'PLACEHOLDER' }) }}'.replace('PLACEHOLDER', topicId);
+
+                Swal.fire({
+                    title: 'Delete Topic',
+                    html: `Are you sure you want to delete the topic "<strong>${topicTitle}</strong>"? This action cannot be undone.`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Delete',
+                    cancelButtonText: 'Cancel',
+                    background: '#fff',
+                    color: '#212529'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = deleteUrl;
+                    }
+                });
+            });
+
+            $(document).on('submit', '.profanity-check-form', function(e) {
+                e.preventDefault();
+                const $form = $(this);
+                const title = $form.find('input[name*="[title]"]').val() || '';
+                const content = $form.find('textarea[name*="[content]"]').val() || '';
+                const combinedContent = title + ' ' + content;
+
+                const $submitButton = $form.find('button[type="submit"]');
+                $submitButton.prop('disabled', true);
+
+                $.ajax({
+                    url: '{{ path('api_check_profanity') }}',
+                    method: 'POST',
+                    data: { content: combinedContent },
+                    success: function(response) {
+                        if (response.isProfane) {
+                            const profanityList = response.details ? response.details.map(m => m['text']).join(', ') : '';
+                            Swal.fire({
+                                title: 'Inappropriate Content Detected',
+                                html: 'Your topic contains inappropriate language. Please revise it.<br><strong>Detected:</strong> ' + (profanityList || 'N/A'),
+                                icon: 'warning',
+                                background: '#fff',
+                                color: '#212529',
+                                confirmButtonColor: '#007bff'
+                            }).then(() => {
+                                $submitButton.prop('disabled', false);
+                            });
+                        } else {
+                            $form.off('submit');
+                            $form[0].submit();
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Error checking profanity. Please try again.',
+                            icon: 'error',
+                            background: '#fff',
+                            color: '#212529',
+                            confirmButtonColor: '#007bff'
+                        }).then(() => {
+                            $submitButton.prop('disabled', false);
+                        });
+                    }
+                });
+            });
+
+            $('.floating-modal').on('show.bs.modal', function () {
+                $('.modal-backdrop').remove();
+            });
+        });
+    </script>
+{% endblock %}
