@@ -22,6 +22,7 @@ services:
             $session: '@session'
             $params: '%kernel.parameters%'
             $logger: '@monolog.logger'
+            $router: '@router'
     
     _defaults:
         autowire: true
