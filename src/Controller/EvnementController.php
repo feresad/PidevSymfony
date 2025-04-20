@@ -27,7 +27,7 @@ public function gettAll(EvenementRepository $repo, Request $request, ClientEvene
     $search = $request->query->get('search', '');
     $sort = $request->query->get('sort', 'nom_asc');
     $page = $request->query->getInt('page', 1);
-    $limit = 6;
+    $limit = 3;
     $evenements = $repo->findBySearchAndSort($search, $sort, $page, $limit);
     $totalEvenements = $repo->countBySearch($search);
     $maxPages = ceil($totalEvenements / $limit);
@@ -269,7 +269,7 @@ public function gettAll(EvenementRepository $repo, Request $request, ClientEvene
         $search = $request->query->get('search', '');
         $sort = $request->query->get('sort', 'nom_asc');
         $page = $request->query->getInt('page', 1);
-        $limit = 5;
+        $limit = 3;
 
        
         $evenements = $repo->findBySearchAndSort($search, $sort, $page, $limit);

@@ -43,7 +43,7 @@ body {
   position: fixed;
   top: 0;
   left: 0;
-  transition: width 300ms ease-in-out;
+  transition: width 300ms ease-in-out, padding 300ms ease-in-out;
   overflow-y: auto;
   overflow-x: hidden;
   text-wrap: nowrap;
@@ -53,6 +53,8 @@ body {
 #sidebar.close {
   padding: 5px;
   width: 60px;
+  /* Ensure sub-menus are hidden when closed */
+  --submenu-display: none;
 }
 
 #sidebar ul {
@@ -63,11 +65,24 @@ body {
   display: flex;
   justify-content: flex-end;
   margin-bottom: 16px;
+  align-items: center;
+  position: relative;
 }
 
 #sidebar > ul > li:first-child .logo {
   font-weight: 600;
   color: var(--white);
+  transition: opacity 300ms ease-in-out;
+}
+
+#sidebar.close > ul > li:first-child .logo {
+  opacity: 0;
+  width: 0;
+}
+
+#sidebar.close > ul > li:first-child img {
+  width: 40px;
+  transition: width 300ms ease-in-out;
 }
 
 #sidebar ul li.active a {
@@ -88,6 +103,7 @@ body {
   display: flex;
   align-items: center;
   gap: 1em;
+  transition: background-color 200ms ease, color 200ms ease;
 }
 
 .dropdown-btn {
@@ -102,12 +118,19 @@ body {
 #sidebar ion-icon {
   flex-shrink: 0;
   color: var(--white);
-  font-size: 24px; /* Match the size of the previous SVGs */
+  font-size: 24px;
 }
 
 #sidebar a span,
 #sidebar .dropdown-btn span {
   flex-grow: 1;
+  transition: opacity 300ms ease-in-out;
+}
+
+#sidebar.close a span,
+#sidebar.close .dropdown-btn span {
+  opacity: 0;
+  width: 0;
 }
 
 #sidebar a:hover,
@@ -121,11 +144,24 @@ body {
   color: var(--blue);
 }
 
+#sidebar.close a,
+#sidebar.close .dropdown-btn {
+  justify-content: center;
+  padding: 0.85em 0;
+}
+
+#sidebar.close a:hover,
+#sidebar.close .dropdown-btn:hover {
+  background-color: var(--white);
+  transform: scale(1.1);
+}
+
 #sidebar .sub-menu {
   display: grid;
   grid-template-rows: 0fr;
-  transition: 300ms ease-in-out;
+  transition: grid-template-rows 300ms ease-in-out;
   background-color: var(--blue);
+  display: var(--submenu-display, grid);
 }
 
 #sidebar .sub-menu > div {
@@ -141,7 +177,11 @@ body {
 }
 
 .rotate .dropdown-icon {
-  transform: rotate(180deg); /* Rotate the chevron icon when submenu is open */
+  transform: rotate(180deg);
+}
+
+#sidebar.close .dropdown-btn .dropdown-icon {
+  display: none;
 }
 
 #sidebar .sub-menu a {
@@ -170,7 +210,7 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 24px; /* Match the size of the previous SVGs */
+  font-size: 24px;
 }
 
 #toggle-btn .open-icon {
@@ -504,6 +544,7 @@ body {
   #sidebar.close {
     width: 250px;
     left: 0;
+    --submenu-display: grid;
   }
   .main {
     width: 100%;
@@ -553,6 +594,7 @@ body {
   #sidebar.close {
     width: 100%;
     left: 0;
+    --submenu-display: none;
   }
   #sidebar > ul {
     padding: 0;

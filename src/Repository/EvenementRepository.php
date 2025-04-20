@@ -91,4 +91,21 @@ class EvenementRepository extends ServiceEntityRepository
         ->getQuery()
         ->getSingleScalarResult();
 }
+/**
+     * Récupère les événements récents à partir d'une date donnée.
+     *
+     * @param \DateTime $date
+     * @param int $limit
+     * @return Evenement[]
+     */
+    public function findRecentEvents(\DateTime $date, int $limit): array
+    {
+        return $this->createQueryBuilder('e')
+            ->where('e.dateEvent >= :today')
+            ->setParameter('today', $date->format('Y-m-d'))
+            ->orderBy('e.dateEvent', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }

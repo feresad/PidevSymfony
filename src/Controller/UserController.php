@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Role;
 use App\Entity\Utilisateur;
 use App\Form\LoginFormType;
+use App\Repository\EvenementRepository;
 use App\Repository\UtilisateurRepository;
 use SebastianBergmann\Environment\Console;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -77,7 +78,7 @@ class UserController extends AbstractController
     }
 
     #[Route('/', name: 'app_home')]
-    public function home(): Response
+    public function home(EvenementRepository $repo): Response
     {
         /** @var Utilisateur $user */
         $user = $this->getUser();
@@ -89,9 +90,14 @@ class UserController extends AbstractController
         if (in_array('ROLE_ADMIN', $user->getRoles())) {
             return $this->render('home/indexadmin.html.twig');
         }
+        $today = new \DateTime();
+        $recentEvenements = $repo->findRecentEvents($today, 4);
+
 
         return $this->render('home/index.html.twig', [
-            'user' => $user
+            'user' => $user,
+            'recentEvenements' => $recentEvenements,
+            'image_base_url' => $this->getParameter('image_base_url'),
         ]);
     }
 }

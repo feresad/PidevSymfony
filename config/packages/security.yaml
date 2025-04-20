@@ -42,7 +42,7 @@ security:
     - { path: ^/verifier-code, roles: PUBLIC_ACCESS }
     - { path: ^/profile, roles: PUBLIC_ACCESS }
     - { path: ^/check-otp, roles: PUBLIC_ACCESS }
-    - { path: ^/reset-password, roles: PUBLIC_ACCESS } # Optional, if you use it
+    - { path: ^/reset-password, roles: PUBLIC_ACCESS }
     - { path: ^/admin, roles: ROLE_ADMIN }
     - { path: ^/coach, roles: ROLE_COACH }
     - { path: ^/home, roles: [ROLE_CLIENT, ROLE_ADMIN, ROLE_COACH] }
