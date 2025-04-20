@@ -1,0 +1,52 @@
+<div class="modal fade floating-modal" id="updateQuestionModal-{{ question.id }}" tabindex="-1" aria-labelledby="updateQuestionModalLabel-{{ question.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateQuestionModalLabel-{{ question.id }}">Update Question</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                {{ form_start(question.updateForm, {'attr': {'class': 'profanity-check-form'}}) }}
+                    <div class="mb-3">
+                        {{ form_label(question.updateForm.title, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(question.updateForm.title, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(question.updateForm.title) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_label(question.updateForm.content, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(question.updateForm.content, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(question.updateForm.content) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_label(question.updateForm.media_type, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(question.updateForm.media_type, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(question.updateForm.media_type) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_label(question.updateForm.media_file, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(question.updateForm.media_file, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(question.updateForm.media_file) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_label(question.updateForm.game_id, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(question.updateForm.game_id, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(question.updateForm.game_id) }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Emotes</label>
+                        <div class="emotes-options d-flex gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('😊', 'topic_form_{{ question.id }}_content')">😊</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('😂', 'topic_form_{{ question.id }}_content')">😂</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('❤️', 'topic_form_{{ question.id }}_content')">❤️</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('👍', 'topic_form_{{ question.id }}_content')">👍</button>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        {{ form_widget(question.updateForm.submit, {'attr': {'class': 'btn btn-primary'}}) }}
+                    </div>
+                {{ form_end(question.updateForm) }}
+            </div>
+        </div>
+    </div>
+</div>
