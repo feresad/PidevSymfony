@@ -43,11 +43,14 @@
                         </div>
                     </div>
                     <div class="actions mt-3 d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-secondary reply-btn" data-id="0" data-question-id="{{ question.id }}">
+                            <ion-icon name="return-down-forward-outline"></ion-icon> Repondre
+                        </button>
                         <button type="button" class="btn btn-sm btn-primary edit-question-btn" data-id="{{ question.id }}">
-                            Edit
+                            Modif
                         </button>
                         <button type="button" class="btn btn-sm btn-danger delete-question-btn" data-id="{{ question.id }}" data-title="{{ question.title }}">
-                            Delete
+                            Supp
                         </button>
                         <button class="btn btn-sm btn-outline-secondary share-question-btn" data-id="{{ question.id }}">
                             <ion-icon name="share-social-outline"></ion-icon>
@@ -57,6 +60,27 @@
                                 <ion-icon name="happy-outline"></ion-icon>
                             </button>
                         </div>
+                    </div>
+                    <!-- Reply Form Container for Question -->
+                    <div id="reply-form-0" class="reply-form mt-3" style="display: none;">
+                        <form class="profanity-check-form" action="{{ path('admin_comments_create', {'id': question.id}) }}" method="POST">
+                            <input type="hidden" name="comment_form[parent_commentaire_id]" value="0">
+                            <div class="mb-3">
+                                <label for="reply_content_0" class="form-label">Reply</label>
+                                <textarea id="reply_content_0" name="comment_form[contenu]" class="form-control" rows="3" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Emotes</label>
+                                <div class="emotes-options d-flex gap-2">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('😊', 'reply_content_0')">😊</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('😂', 'reply_content_0')">😂</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('❤️', 'reply_content_0')">❤️</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('👍', 'reply_content_0')">👍</button>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Soumettre</button>
+                            <button type="button" class="btn btn-secondary cancel-reply-btn" data-id="0">Cancel</button>
+                        </form>
                     </div>
                 </div>
                 <div class="activity-section text-center">
@@ -76,7 +100,7 @@
 
         <!-- Comments Section -->
         <div class="comments-section mt-4">
-            <h4>Comments</h4>
+            <h4>Commentaires</h4>
             <div class="comment-form mb-4">
                 {{ form_start(comment_form, {'attr': {'class': 'profanity-check-form'}}) }}
                     <div class="mb-3">
@@ -93,7 +117,7 @@
                             <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('👍', 'comment_form_contenu')">👍</button>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">Submit Comment</button>
+                    <button type="submit" class="btn btn-primary">Soumettre</button>
                 {{ form_end(comment_form) }}
             </div>
 
@@ -107,7 +131,7 @@
                         } %}
                     {% endfor %}
                 {% else %}
-                    <div class="alert alert-info">No comments yet.</div>
+                    <div class="alert alert-info">Aucun commentaire pour l'instant.</div>
                 {% endif %}
             </div>
 
@@ -170,7 +194,7 @@
 
         .container {
             padding: 20px;
-            max-width: 1400px;
+            max-width: 1200px;
         }
 
         .question-card, .comment-card {
@@ -411,14 +435,14 @@
         }
 
         .btn-danger {
-            background-color: #dc3545;
-            border-color: #dc3545;
+            background-color: #fe0369;
+            border-color: #fe0369;
             transition: background-color 0.2s ease, transform 0.2s ease;
         }
 
         .btn-danger:hover {
-            background-color: #c82333;
-            border-color: #c82333;
+            background-color:rgb(184, 0, 73);
+            border-color: #fe0369;
             transform: translateY(-1px);
         }
 
@@ -460,7 +484,8 @@
         }
 
         .comment-card {
-            margin-left: calc(20px * {{ level|default(0) }});
+            margin-left: calc(20px * var(--level, 0));
+            transition: all 0.3s ease;
         }
 
         .comment-content {
@@ -475,6 +500,29 @@
             padding: 1rem;
             border-radius: 8px;
             border: 1px solid #dee2e6;
+        }
+
+        .toggle-replies-btn {
+            background: none;
+            border: none;
+            color: #007bff;
+            cursor: pointer;
+            font-size: 0.9rem;
+            padding: 0;
+            margin-right: 10px;
+        }
+
+        .toggle-replies-btn:hover {
+            text-decoration: underline;
+        }
+
+        .child-comments {
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .child-comments.show {
+            display: block;
         }
 
         .floating-modal {
@@ -553,11 +601,9 @@
             .container {
                 max-width: 1000px;
             }
-
             .question-card, .comment-card {
                 max-width: 800px;
             }
-
             .topic-media {
                 max-width: 600px;
                 min-width: 400px;
@@ -568,20 +614,16 @@
             .container {
                 max-width: 800px;
             }
-
             .question-card, .comment-card {
                 max-width: 650px;
             }
-
             .activity-section {
                 width: 120px;
                 margin-left: 1.5rem;
             }
-
             .content-section {
                 padding: 0 1rem;
             }
-
             .topic-media {
                 max-width: 500px;
                 min-width: 350px;
@@ -592,16 +634,13 @@
             .container {
                 max-width: 600px;
             }
-
             .question-card, .comment-card {
                 max-width: 100%;
             }
-
             .card-body {
                 flex-direction: column;
                 align-items: flex-start;
             }
-
             .vote-section {
                 flex-direction: row;
                 width: 100%;
@@ -609,16 +648,13 @@
                 margin-bottom: 1.5rem;
                 margin-right: 0;
             }
-
             .vote-btn {
                 margin: 0 0.75rem;
             }
-
             .content-section {
                 padding: 0;
                 width: 100%;
             }
-
             .activity-section {
                 width: 100%;
                 margin-left: 0;
@@ -629,11 +665,9 @@
                 gap: 1rem;
                 padding: 0;
             }
-
             .activity-section img {
                 margin-bottom: 0;
             }
-
             .topic-media {
                 max-width: 100%;
                 min-width: 100%;
@@ -645,20 +679,16 @@
                 padding: 15px;
                 max-width: 100%;
             }
-
             .question-card, .comment-card {
                 max-width: 100%;
             }
-
             .card-body {
                 padding: 1rem;
             }
-
             .topic-media {
                 max-width: 100%;
                 min-width: 100%;
             }
-
             .floating-modal {
                 position: fixed;
                 top: 50%;
@@ -666,7 +696,6 @@
                 transform: translate(-50%, -50%);
                 z-index: 1050;
             }
-
             .modal-backdrop {
                 position: fixed;
                 top: 0;
@@ -1107,20 +1136,35 @@
                             url: deleteUrl,
                             method: 'GET',
                             success: function(response) {
-                                refreshComments();
-                                Swal.fire({
-                                    title: 'Success',
-                                    text: 'Comment deleted successfully!',
-                                    icon: 'success',
-                                    background: '#fff',
-                                    color: '#212529',
-                                    confirmButtonColor: '#007bff'
-                                });
+                                if (response.success) {
+                                    $(`.comment-card[data-comment-id="${commentId}"]`).remove();
+                                    Swal.fire({
+                                        title: 'Success',
+                                        text: 'Comment deleted successfully!',
+                                        icon: 'success',
+                                        background: '#fff',
+                                        color: '#212529',
+                                        confirmButtonColor: '#007bff'
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        title: 'Error',
+                                        text: response.message || 'Failed to delete comment.',
+                                        icon: 'error',
+                                        background: '#fff',
+                                        color: '#212529',
+                                        confirmButtonColor: '#007bff'
+                                    });
+                                }
                             },
-                            error: function() {
+                            error: function(xhr) {
+                                let errorMessage = 'An error occurred while deleting the comment.';
+                                if (xhr.responseJSON && xhr.responseJSON.message) {
+                                    errorMessage = xhr.responseJSON.message;
+                                }
                                 Swal.fire({
                                     title: 'Error',
-                                    text: 'An error occurred while deleting the comment.',
+                                    text: errorMessage,
                                     icon: 'error',
                                     background: '#fff',
                                     color: '#212529',
@@ -1180,6 +1224,10 @@
                     success: function(response) {
                         if (response.success) {
                             $(`#update-form-container-${commentId}`).html(response.html).show();
+                            const $textarea = $(`#update-form-container-${commentId} textarea`);
+                            let content = $textarea.val();
+                            content = content.replace(/<\/?[^>]+(>|$)/g, "");
+                            $textarea.val(content);
                         } else {
                             Swal.fire({
                                 title: 'Error',
@@ -1219,10 +1267,7 @@
                 const $btn = $(this);
                 const commentId = $btn.data('id');
                 
-                // Hide all other reply forms
                 $('.reply-form').not(`#reply-form-${commentId}`).hide();
-                
-                // Toggle the reply form for this comment
                 $(`#reply-form-${commentId}`).toggle();
             });
 
@@ -1230,6 +1275,17 @@
                 e.preventDefault();
                 const commentId = $(this).data('id');
                 $(`#reply-form-${commentId}`).hide();
+            });
+
+            $(document).on('click', '.toggle-replies-btn', function(e) {
+                e.preventDefault();
+                const $btn = $(this);
+                const commentId = $btn.data('id');
+                const $childComments = $(`#child-comments-${commentId}`);
+                const isHidden = !$childComments.hasClass('show');
+
+                $childComments.toggleClass('show');
+                $btn.text(isHidden ? 'Hide Replies' : 'Show Replies');
             });
 
             function refreshComments() {
@@ -1245,7 +1301,7 @@
                         } else {
                             Swal.fire({
                                 title: 'Error',
-                                text: 'Failed to refresh comments.',
+                                text: response.message || 'Failed to refresh comments.',
                                 icon: 'error',
                                 background: '#fff',
                                 color: '#212529',
@@ -1253,10 +1309,14 @@
                             });
                         }
                     },
-                    error: function() {
+                    error: function(xhr) {
+                        let errorMessage = 'An error occurred while refreshing comments.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
+                        }
                         Swal.fire({
                             title: 'Error',
-                            text: 'An error occurred while refreshing comments.',
+                            text: errorMessage,
                             icon: 'error',
                             background: '#fff',
                             color: '#212529',
@@ -1278,7 +1338,7 @@
                         } else {
                             Swal.fire({
                                 title: 'Error',
-                                text: 'Failed to refresh question.',
+                                text: response.message || 'Failed to refresh question.',
                                 icon: 'error',
                                 background: '#fff',
                                 color: '#212529',
@@ -1299,6 +1359,95 @@
                 });
             }
 
+            function appendComment(comment, level, parentId) {
+                const commentHtml = `
+                    <div class="card mb-3 comment-card" style="--level: ${level};" data-comment-id="${comment.id}">
+                        <div class="card-body d-flex align-items-start">
+                            <div class="vote-section me-4 text-center">
+                                <button class="vote-btn upvote-btn voting-button upvote" data-id="${comment.id}" data-type="comment" data-vote-type="UP">
+                                    <ion-icon name="arrow-up-outline"></ion-icon>
+                                </button>
+                                <span class="vote-count d-block my-1">${comment.votes}</span>
+                                <button class="vote-btn downvote-btn voting-button downvote" data-id="${comment.id}" data-type="comment" data-vote-type="DOWN">
+                                    <ion-icon name="arrow-down-outline"></ion-icon>
+                                </button>
+                            </div>
+                            <div class="content-section flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <span class="fw-bold">${comment.utilisateurId.nickname || 'Unknown'}</span>
+                                        <span class="text-muted small"> • ${comment.createdAt}</span>
+                                    </div>
+                                </div>
+                                <p class="comment-content">${comment.content}</p>
+                                <div class="reactions mt-2 d-flex align-items-center">
+                                    <div class="reaction-display me-3" data-id="${comment.id}" data-type="comment">
+                                        ${Object.entries(comment.reactionCounts).map(([emoji, count]) => `<span class="reaction-item" data-emoji="${emoji}">${emoji} ${count}</span>`).join('')}
+                                    </div>
+                                </div>
+                                <div class="actions mt-3 d-flex gap-2 align-items-center">
+                                    <button class="btn btn-sm btn-outline-secondary reply-btn" data-id="${comment.id}" data-question-id="{{ question.id }}">
+                                        <ion-icon name="return-down-forward-outline"></ion-icon> Reply
+                                    </button>
+                                    <button class="btn btn-sm btn-primary edit-comment-btn" data-id="${comment.id}">
+                                        Edit
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-danger delete-comment-btn" data-id="${comment.id}">
+                                        Delete
+                                    </button>
+                                    <div class="reaction-wrapper">
+                                        <button class="btn btn-sm btn-outline-secondary reaction-icon" data-id="${comment.id}" data-type="comment">
+                                            <ion-icon name="happy-outline"></ion-icon>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="reply-form-${comment.id}" class="reply-form mt-3" style="display: none;">
+                                    <form class="profanity-check-form" action="{{ path('admin_comments_create', {'id': question.id}) }}" method="POST">
+                                        <input type="hidden" name="comment_form[parent_commentaire_id]" value="${comment.id}">
+                                        <div class="mb-3">
+                                            <label for="reply_content_${comment.id}" class="form-label">Reply</label>
+                                            <textarea id="reply_content_${comment.id}" name="comment_form[contenu]" class="form-control" rows="3" required></textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Emotes</label>
+                                            <div class="emotes-options d-flex gap-2">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('😊', 'reply_content_${comment.id}')">😊</button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('😂', 'reply_content_${comment.id}')">😂</button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('❤️', 'reply_content_${comment.id}')">❤️</button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('👍', 'reply_content_${comment.id}')">👍</button>
+                                            </div>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Submit Reply</button>
+                                        <button type="button" class="btn btn-secondary cancel-reply-btn" data-id="${comment.id}">Cancel</button>
+                                    </form>
+                                </div>
+                                <div id="update-form-container-${comment.id}" class="update-form mt-3" style="display: none;"></div>
+                                <div id="child-comments-${comment.id}" class="child-comments"></div>
+                            </div>
+                            <div class="activity-section text-center">
+                                <img src="${comment.utilisateurId.photo || '{{ asset('images/one-piece-monkey-d-luffy.gif') }}'}" alt="User Image" class="rounded-circle mb-2" style="width: 40px; height: 40px;">
+                                <div class="small">${comment.utilisateurId.nickname || 'Unknown'}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                if (parentId === 0) {
+                    $('#comments-container').prepend(commentHtml);
+                } else {
+                    let $childComments = $(`#child-comments-${parentId}`);
+                    if (!$childComments.length) {
+                        $(`#reply-form-${parentId}`).after(`<div id="child-comments-${parentId}" class="child-comments show"></div>`);
+                        $childComments = $(`#child-comments-${parentId}`);
+                        const $toggleBtn = $(`<button class="toggle-replies-btn" data-id="${parentId}">Hide Replies</button>`);
+                        $(`#reply-form-${parentId}`).before($toggleBtn);
+                    }
+                    $childComments.append(commentHtml);
+                    $childComments.addClass('show');
+                }
+                initializeReactions();
+            }
+
             $(document).on('submit', '.profanity-check-form', function(e) {
                 e.preventDefault();
                 const $form = $(this);
@@ -1306,8 +1455,6 @@
                 const title = $form.find('input[name*="[title]"]').val() || '';
                 const content = $textarea.val() || '';
                 const combinedContent = title + ' ' + content;
-
-                console.log('Textarea value:', content); // Debug the textarea content
 
                 const $submitButton = $form.find('button[type="submit"]');
                 $submitButton.prop('disabled', true);
@@ -1333,16 +1480,7 @@
                         } else {
                             const formAction = $form.attr('action');
                             const formData = new FormData($form[0]);
-
-                            // Ensure the textarea value is included
                             formData.set('comment_form[contenu]', content);
-
-                            // Log the form data for debugging
-                            const formDataEntries = {};
-                            for (let pair of formData.entries()) {
-                                formDataEntries[pair[0]] = pair[1];
-                            }
-                            console.log('Form data being sent:', formDataEntries);
 
                             const isUpdateQuestionForm = formAction.includes('forum_update_topic');
                             const isCommentForm = formAction.includes('admin_comments_create');
@@ -1362,8 +1500,6 @@
                                 contentType: false,
                                 xhrFields: { withCredentials: true },
                                 success: function(response) {
-                                    console.log('Form submission response:', response); // Debug the response
-
                                     if (response.success) {
                                         Swal.fire({
                                             title: 'Success',
@@ -1377,7 +1513,7 @@
                                         if (isUpdateQuestionForm) {
                                             $form.closest('.modal').modal('hide');
                                             refreshQuestion();
-                                        } else if (isCommentForm) {
+                                        } else if (isCommentForm || isReplyForm) {
                                             $form.find('textarea[name*="[contenu]"]').val('');
                                             const parentCommentId = $form.find('input[name="comment_form[parent_commentaire_id]"]').val();
                                             const $replyForm = $form.closest('.reply-form');
@@ -1385,119 +1521,11 @@
                                                 $replyForm.hide();
                                             }
 
-                                            console.log('Adding comment with parent ID:', parentCommentId); // Debug parent comment ID
-                                            console.log('Response comment data:', response.comment); // Debug comment data
-                                            console.log('Level:', response.level); // Debug level
-
-                                            const comment = response.comment;
-                                            const level = response.level || 0; // Default to 0 if level is undefined
-                                            const photoSrc = comment.utilisateurId.photo || '{{ asset('images/one-piece-monkey-d-luffy.gif') }}';
-                                            const createdAt = comment.createdAt || new Date().toLocaleString(); // Fallback to current time if createdAt is missing
-                                            const newCommentHtml = `
-                                                <div class="card mb-3 comment-card" style="margin-left: ${level * 20}px;" data-comment-id="${comment.id}">
-                                                    <div class="card-body d-flex align-items-start">
-                                                        <div class="vote-section me-4 text-center">
-                                                            <button class="vote-btn upvote-btn voting-button upvote" data-id="${comment.id}" data-type="comment" data-vote-type="UP">
-                                                                <ion-icon name="arrow-up-outline"></ion-icon>
-                                                            </button>
-                                                            <span class="vote-count d-block my-1">${comment.votes || 0}</span>
-                                                            <button class="vote-btn downvote-btn voting-button downvote" data-id="${comment.id}" data-type="comment" data-vote-type="DOWN">
-                                                                <ion-icon name="arrow-down-outline"></ion-icon>
-                                                            </button>
-                                                        </div>
-                                                        <div class="content-section flex-grow-1">
-                                                            <div class="d-flex justify-content-between align-items-start">
-                                                                <div>
-                                                                    <span class="fw-bold">${comment.utilisateurId.nickname || 'Unknown'}</span>
-                                                                    <span class="text-muted small"> • ${createdAt}</span>
-                                                                </div>
-                                                            </div>
-                                                            <p class="comment-content">${comment.content || ''}</p>
-                                                            <div class="reactions mt-2 d-flex align-items-center">
-                                                                <div class="reaction-display me-3" data-id="${comment.id}" data-type="comment">
-                                                                    <!-- Reactions will be populated by initializeReactions() -->
-                                                                </div>
-                                                            </div>
-                                                            <div class="actions mt-3 d-flex gap-2">
-                                                                <button class="btn btn-sm btn-outline-secondary reply-btn" data-id="${comment.id}" data-question-id="{{ question.id }}">
-                                                                    <ion-icon name="return-down-forward-outline"></ion-icon> Reply
-                                                                </button>
-                                                                <button class="btn btn-sm btn-primary edit-comment-btn" data-id="${comment.id}">
-                                                                    Edit
-                                                                </button>
-                                                                <button type="button" class="btn btn-sm btn-danger delete-comment-btn" data-id="${comment.id}">
-                                                                    Delete
-                                                                </button>
-                                                                <div class="reaction-wrapper">
-                                                                    <button class="btn btn-sm btn-outline-secondary reaction-icon" data-id="${comment.id}" data-type="comment">
-                                                                        <ion-icon name="happy-outline"></ion-icon>
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                            <div id="reply-form-${comment.id}" class="reply-form mt-3" style="display: none;">
-                                                                <form class="profanity-check-form" action="{{ path('admin_comments_create', {'id': question.id}) }}" method="POST">
-                                                                    <input type="hidden" name="comment_form[parent_commentaire_id]" value="${comment.id}">
-                                                                    <div class="mb-3">
-                                                                        <label for="reply_content_${comment.id}" class="form-label">Reply</label>
-                                                                        <textarea id="reply_content_${comment.id}" name="comment_form[contenu]" class="form-control" rows="3" required></textarea>
-                                                                    </div>
-                                                                    <div class="mb-3">
-                                                                        <label class="form-label">Emotes</label>
-                                                                        <div class="emotes-options d-flex gap-2">
-                                                                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('😊', 'reply_content_${comment.id}')">😊</button>
-                                                                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('😂', 'reply_content_${comment.id}')">😂</button>
-                                                                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('❤️', 'reply_content_${comment.id}')">❤️</button>
-                                                                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('👍', 'reply_content_${comment.id}')">👍</button>
-                                                                        </div>
-                                                                    </div>
-                                                                    <button type="submit" class="btn btn-primary">Submit Reply</button>
-                                                                    <button type="button" class="btn btn-secondary cancel-reply-btn" data-id="${comment.id}">Cancel</button>
-                                                                </form>
-                                                            </div>
-                                                            <div id="update-form-container-${comment.id}" class="update-form mt-3" style="display: none;"></div>
-                                                        </div>
-                                                        <div class="activity-section text-center">
-                                                            <img src="${photoSrc}" alt="User Image" class="rounded-circle mb-2" style="width: 40px; height: 40px;">
-                                                            <div class="small">${comment.utilisateurId.nickname || 'Unknown'}</div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            `;
-
-                                            const $commentsContainer = $('#comments-container');
-                                            if (parentCommentId) {
-                                                // Reply comment
-                                                const $parentComment = $(`.comment-card[data-comment-id="${parentCommentId}"]`);
-                                                console.log('Parent comment found:', $parentComment.length > 0 ? 'Yes' : 'No'); // Debug if parent comment is found
-
-                                                if ($parentComment.length) {
-                                                    // Append the new comment as a child
-                                                    const $lastChild = $parentComment.find('> .comment-card:last');
-                                                    if ($lastChild.length) {
-                                                        console.log('Appending after last child comment'); // Debug append position
-                                                        $lastChild.after(newCommentHtml);
-                                                    } else {
-                                                        console.log('Appending directly to parent comment'); // Debug append position
-                                                        $parentComment.append(newCommentHtml);
-                                                    }
-                                                } else {
-                                                    console.error('Parent comment not found in DOM for ID:', parentCommentId);
-                                                    // Fallback: append to comments container
-                                                    console.log('Falling back to comments container'); // Debug fallback
-                                                    $commentsContainer.append(newCommentHtml);
-                                                }
+                                            if (isReplyForm && parentCommentId != '0') {
+                                                appendComment(response.comment, response.level + 1, parentCommentId);
                                             } else {
-                                                // Top-level comment
-                                                console.log('Adding top-level comment to comments container'); // Debug top-level comment
-                                                const $noCommentsAlert = $commentsContainer.find('.alert-info');
-                                                if ($noCommentsAlert.length) {
-                                                    console.log('Removing no comments alert'); // Debug alert removal
-                                                    $noCommentsAlert.remove();
-                                                }
-                                                $commentsContainer.prepend(newCommentHtml);
+                                                appendComment(response.comment, 0, 0);
                                             }
-
-                                            initializeReactions();
                                         } else if (isUpdateCommentForm) {
                                             $(`#update-form-container-${$form.find('input[name*="[id]"]').val() || $form.data('comment-id')}`).hide().empty();
                                             refreshComments();

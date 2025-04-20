@@ -7,6 +7,7 @@ use App\Entity\Utilisateur;
 use App\Entity\Commentaire;
 use App\Entity\QuestionReactions;
 use App\Entity\CommentaireReactions;
+use App\Entity\QuestionVotes;
 use App\Form\TopicFormType;
 use App\Form\CommentFormType;
 use App\Repository\QuestionsRepository;
@@ -264,6 +265,11 @@ class ForumController extends AbstractController
             ],
         ]);
     }
+
+
+
+
+    
     #[Route('/forum/topic/{id}', name: 'forum_single_topic', methods: ['GET', 'POST'])]
     public function singleTopic(
         int $id,
@@ -597,6 +603,7 @@ class ForumController extends AbstractController
     
         return $this->redirectToRoute('forum_topics');
     }
+
     #[Route('/ajax/vote', name: 'ajax_vote_action', methods: ['POST'])]
     public function ajaxVoteAction(Request $request, EntityManagerInterface $entityManager, QuestionsRepository $questionsRepository): JsonResponse
     {
@@ -616,21 +623,72 @@ class ForumController extends AbstractController
                 return new JsonResponse(['success' => false, 'message' => 'Question not found.'], 404);
             }
 
-            $currentVotes = $entity->getVotes() ?? 0;
-            if ($voteType === 'UP') {
-                $entity->setVotes($currentVotes + 1);
-            } elseif ($voteType === 'DOWN') {
-                $entity->setVotes($currentVotes - 1);
-            } else {
+            // Check if the user has already voted
+            $voteRepository = $entityManager->getRepository(QuestionVotes::class);
+            $existingVote = $voteRepository->findOneBy([
+                'question_id' => $entity,
+                'user_id' => $utilisateur,
+            ]);
+
+            $hasUpvoted = $existingVote && $existingVote->getVoteType()->value === 'UP';
+            $hasDownvoted = $existingVote && $existingVote->getVoteType()->value === 'DOWN';
+
+            // Validate vote type
+            if (!in_array($voteType, ['UP', 'DOWN'])) {
                 return new JsonResponse(['success' => false, 'message' => 'Invalid vote type.'], 400);
+            }
+
+            // Check if the user is trying to repeat the same vote
+            if ($voteType === 'UP' && $hasUpvoted) {
+                return new JsonResponse(['success' => false, 'message' => 'You have already upvoted this topic.'], 403);
+            }
+            if ($voteType === 'DOWN' && $hasDownvoted) {
+                return new JsonResponse(['success' => false, 'message' => 'You have already downvoted this topic.'], 403);
+            }
+
+            $currentVotes = $entity->getVotes() ?? 0;
+
+            if ($existingVote) {
+                // User has voted before, so they are switching or adding the opposite vote
+                if ($voteType === 'UP' && $hasDownvoted) {
+                    // Switch from downvote to upvote
+                    $existingVote->setVoteType(\App\Enum\VoteType::from('UP'));
+                    $entity->setVotes($currentVotes + 1); // Remove downvote (-1) and add upvote (+1)
+                } elseif ($voteType === 'DOWN' && $hasUpvoted) {
+                    // Switch from upvote to downvote
+                    $existingVote->setVoteType(\App\Enum\VoteType::from('DOWN'));
+                    $entity->setVotes($currentVotes - 1); // Remove upvote (+1) and add downvote (-1)
+                }
+            } else {
+                // First vote for this user on this question
+                $newVote = new QuestionVotes();
+                $newVote->setQuestionId($entity);
+                $newVote->setUserId($utilisateur);
+                $newVote->setVoteType(\App\Enum\VoteType::from($voteType));
+
+                if ($voteType === 'UP') {
+                    $entity->setVotes($currentVotes + 1);
+                } elseif ($voteType === 'DOWN') {
+                    $entity->setVotes($currentVotes - 1);
+                }
+
+                $entityManager->persist($newVote);
             }
 
             $entityManager->persist($entity);
             $entityManager->flush();
 
+            // Fetch updated voting status
+            $updatedVote = $voteRepository->findOneBy([
+                'question_id' => $entity,
+                'user_id' => $utilisateur,
+            ]);
+
             return new JsonResponse([
                 'success' => true,
                 'votes' => $entity->getVotes(),
+                'hasUpvoted' => $updatedVote && $updatedVote->getVoteType()->value === 'UP',
+                'hasDownvoted' => $updatedVote && $updatedVote->getVoteType()->value === 'DOWN',
             ]);
         } elseif ($type === 'comment') {
             $entity = $entityManager->getRepository(Commentaire::class)->find($id);
@@ -658,7 +716,42 @@ class ForumController extends AbstractController
 
         return new JsonResponse(['success' => false, 'message' => 'Invalid type.'], 400);
     }
-
+    #[Route('/ajax/fetch-user-votes', name: 'ajax_fetch_user_votes', methods: ['POST'])]
+    public function ajaxFetchUserVotes(Request $request, EntityManagerInterface $entityManager): JsonResponse
+    {
+        /** @var Utilisateur|null $utilisateur */
+        $utilisateur = $this->getUser();
+        if (!$utilisateur) {
+            return new JsonResponse(['success' => false, 'message' => 'You must be logged in to fetch votes.'], 401);
+        }
+    
+        $topicIds = $request->request->get('topicIds', []);
+        if (!is_array($topicIds) || empty($topicIds)) {
+            return new JsonResponse(['success' => false, 'message' => 'No topic IDs provided.'], 400);
+        }
+    
+        $voteRepository = $entityManager->getRepository(QuestionVotes::class);
+        $qb = $voteRepository->createQueryBuilder('v')
+            ->select('v')
+            ->where('v.user_id = :user')
+            ->andWhere('v.question_id IN (:topicIds)')
+            ->setParameter('user', $utilisateur)
+            ->setParameter('topicIds', $topicIds);
+    
+        $votes = $qb->getQuery()->getResult();
+    
+        $voteData = array_map(function (QuestionVotes $vote) {
+            return [
+                'topicId' => $vote->getQuestionId()->getQuestionId(),
+                'voteType' => $vote->getVoteType()->value,
+            ];
+        }, $votes);
+    
+        return new JsonResponse([
+            'success' => true,
+            'votes' => $voteData,
+        ]);
+    }
     #[Route('/api/share/topic', name: 'api_share_topic', methods: ['GET'])]
     public function shareTopic(Request $request, QuestionsRepository $questionsRepository): JsonResponse
     {

@@ -91,10 +91,10 @@
                             </div>
                             <div class="actions mt-3 d-flex gap-2">
                                 <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#updateTopicModal-{{ topic.id }}">
-                                    Edit
+                                    Modifier
                                 </button>
                                 <button type="button" class="btn btn-sm btn-danger delete-topic-btn" data-id="{{ topic.id }}" data-title="{{ topic.title }}">
-                                    Delete
+                                    supprimer
                                 </button>
                                 <button class="btn btn-sm btn-outline-secondary share-topic-btn" data-id="{{ topic.id }}">
                                     <ion-icon name="share-social-outline"></ion-icon>
@@ -553,14 +553,14 @@
         }
 
         .btn-danger {
-            background-color: #dc3545;
-            border-color: #dc3545;
+            background-color: #fe0369;
+            border-color: #fe0369;
             transition: background-color 0.2s ease, transform 0.2s ease;
         }
 
         .btn-danger:hover {
-            background-color: #c82333;
-            border-color: #c82333;
+            background-color:rgb(180, 0, 72);
+            border-color: rgb(180, 0, 72);
             transform: translateY(-1px);
         }
 
@@ -1289,7 +1289,7 @@
                     html: `Are you sure you want to delete the topic "<strong>${topicTitle}</strong>"? This action cannot be undone.`,
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#dc3545',
+                    confirmButtonColor: '#fe0369',
                     cancelButtonColor: '#6c757d',
                     confirmButtonText: 'Delete',
                     cancelButtonText: 'Cancel',
