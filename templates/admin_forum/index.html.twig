@@ -60,7 +60,7 @@
                         <div class="content-section flex-grow-1">
                             <div class="d-flex justify-content-between align-items-start">
                                 <h5 class="card-title mb-1">
-                                    <a href="{{ path('forum_single_topic', { id: topic.id }) }}" class="text-decoration-none">{{ topic.title }}</a>
+                                    <a href="{{ path('admin_comments', { id: topic.id }) }}" class="text-decoration-none">{{ topic.title }}</a>
                                 </h5>
                             </div>
                             {% if topic.content is defined and topic.content %}

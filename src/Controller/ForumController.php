@@ -71,17 +71,14 @@ class ForumController extends AbstractController
                 $errors['title'] = 'The topic title cannot be blank.';
             }
     
-            // Validate content
             if (empty($content)) {
                 $errors['content'] = 'The content cannot be blank.';
             }
     
-            // Validate game_id
             if (!$gameId) {
                 $errors['game_id'] = 'Please select a game.';
             }
     
-            // Validate media file and type
             if ($mediaFile) {
                 if (!$mediaType) {
                     $errors['media_type'] = 'Please select a media type if you are uploading a file.';
@@ -89,14 +86,12 @@ class ForumController extends AbstractController
                     $mimeType = $mediaFile->getMimeType();
                     $allowedImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
                     $allowedVideoTypes = ['video/mp4', 'video/mpeg', 'video/webm', 'video/quicktime', 'video/x-msvideo'];
-                    $maxFileSize = 30 * 1024 * 1024; // 30MB in bytes
+                    $maxFileSize = 30 * 1024 * 1024; 
     
-                    // Validate file size
                     if ($mediaFile->getSize() > $maxFileSize) {
                         $errors['media_file'] = 'The file is too large. Maximum allowed size is 30MB.';
                     }
     
-                    // Validate media type consistency
                     if ($mediaType->value === 'image' && !in_array($mimeType, $allowedImageTypes)) {
                         $errors['media_file'] = 'Selected media type is "image," but the uploaded file is not an image.';
                     } elseif ($mediaType->value === 'video' && !in_array($mimeType, $allowedVideoTypes)) {
@@ -146,14 +141,12 @@ class ForumController extends AbstractController
                     $this->addFlash('error', 'An error occurred while creating the topic: ' . $e->getMessage());
                 }
             } else {
-                // Add errors to the flash messages or form
                 foreach ($errors as $field => $message) {
                     $this->addFlash('error', $message);
                 }
             }
         }
     
-        // Rest of the method remains unchanged
         $sentimentMap = $request->getSession()->get('sentiment_map', [
             'positive' => ['👍', '😊', '😂', '❤️', '🎉', '😍', '👏', '🌟', '😎', '💪'],
             'negative' => ['👎', '😢', '😡', '💔', '😤', '😞', '🤬', '😣', '💢', '😠'],

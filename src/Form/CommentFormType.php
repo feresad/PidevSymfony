@@ -15,7 +15,7 @@ class CommentFormType extends AbstractType
         $builder
             ->add('contenu', TextareaType::class, [
                 'label' => false,
-                'required' => false, // Disable HTML5 validation
+                'required' => false, 
                 'attr' => ['rows' => 10, 'class' => 'nk-summernote'],
             ]);
     }
@@ -24,6 +24,7 @@ class CommentFormType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Commentaire::class,
+            'csrf_protection' => false, 
         ]);
     }
 }
