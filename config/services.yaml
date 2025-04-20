@@ -14,6 +14,7 @@ parameters:
     stripe_secret_key: '%env(STRIPE_SECRET_KEY)%'
     stripe_public_key: '%env(STRIPE_PUBLIC_KEY)%'
     stripe.public_key: '%env(STRIPE_PUBLIC_KEY)%'
+    imgbb_api_key: '%env(IMGBB_API_KEY)%'
     
 services:
     App\Controller\ForumController:
@@ -62,3 +63,10 @@ services:
     App\Controller\PaymentController:
         arguments:
             $logger: '@monolog.logger'
+    App\EventSubscriber\CalendarSubscriber:
+        arguments:
+            $evenementRepository: '@App\Repository\EvenementRepository'
+            $clientEvenementRepository: '@App\Repository\ClientEvenementRepository'
+            $security: '@security.helper'
+        tags:
+            - { name: kernel.event_subscriber }

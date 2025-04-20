@@ -11,6 +11,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -26,17 +27,21 @@ public function gettAll(EvenementRepository $repo, Request $request, ClientEvene
     $search = $request->query->get('search', '');
     $sort = $request->query->get('sort', 'nom_asc');
     $page = $request->query->getInt('page', 1);
-    $limit = 6;
+    $limit = 3;
     $evenements = $repo->findBySearchAndSort($search, $sort, $page, $limit);
     $totalEvenements = $repo->countBySearch($search);
     $maxPages = ceil($totalEvenements / $limit);
 
     $userReservations = [];
+    $reservationCounts = [];
     if ($this->getUser()) {
         $reservations = $clientEvenementRepo->findBy(['client' => $this->getUser()]);
         foreach ($reservations as $reservation) {
             $userReservations[$reservation->getEvenement()->getId()] = true;
         }
+    }
+    foreach ($evenements as $evenement) {
+        $reservationCounts[$evenement->getId()] = $repo->getReservationCountForEvent($evenement->getId());
     }
 
     return $this->render('evenement/ListeEvenement.html.twig', [
@@ -48,6 +53,7 @@ public function gettAll(EvenementRepository $repo, Request $request, ClientEvene
         'sort' => $sort,
         'userReservations' => $userReservations,
         'now' => new \DateTime(),
+        'reservationCounts' => $reservationCounts,
     ]);
 }
     #[Route('/add', name: 'evenement_ajouter')]
@@ -210,16 +216,45 @@ public function gettAll(EvenementRepository $repo, Request $request, ClientEvene
             $this->addFlash('error', 'Événement non trouvé.');
             return $this->redirectToRoute('evenement_list');
         }
-    
+
         $baseUrl = $this->getParameter('git_url');
-        $url = $baseUrl . '?' .
-        http_build_query([
+        $imageUrl = '';
+
+        // Si une image existe, la téléverser sur ImgBB
+        if ($evenement->getPhotoEvent()) {
+            $imagePath = 'C:/xampp/htdocs/img/' . $evenement->getPhotoEvent();
+            if (file_exists($imagePath)) {
+                try {
+                    $client = HttpClient::create();
+                    $response = $client->request('POST', 'https://api.imgbb.com/1/upload', [
+                        'body' => [
+                            'key' => $this->getParameter('imgbb_api_key'), // Utiliser la clé API depuis les paramètres
+                            'image' => base64_encode(file_get_contents($imagePath)), // Encoder l'image en base64
+                        ],
+                    ]);
+
+                    $data = $response->toArray();
+                    if (isset($data['data']['url'])) {
+                        $imageUrl = $data['data']['url']; // URL de l'image hébergée
+                    } else {
+                        $this->addFlash('warning', 'Erreur lors du téléversement de l\'image sur ImgBB.');
+                    }
+                } catch (\Exception $e) {
+                    $this->addFlash('warning', 'Erreur lors du téléversement de l\'image : ' . $e->getMessage());
+                }
+            }
+        }
+
+        // Construire l'URL pour le QR code
+        $url = $baseUrl . '?' . http_build_query([
             'id' => $evenement->getId(),
             'nom' => $evenement->getNomEvent(),
             'date' => $evenement->getDateEvent()->format('Y-m-d H:i'),
             'lieu' => $evenement->getLieuEvent(),
             'places' => $evenement->getMaxPlacesEvent(),
+            'image' => $imageUrl,
         ]);
+
         $qrCode = new QrCode($url);
         $writer = new PngWriter();
         $result = $writer->write($qrCode);
@@ -234,7 +269,7 @@ public function gettAll(EvenementRepository $repo, Request $request, ClientEvene
         $search = $request->query->get('search', '');
         $sort = $request->query->get('sort', 'nom_asc');
         $page = $request->query->getInt('page', 1);
-        $limit = 5;
+        $limit = 3;
 
        
         $evenements = $repo->findBySearchAndSort($search, $sort, $page, $limit);
@@ -271,26 +306,43 @@ public function calendar(): Response
     return $this->render('evenement/calendar.html.twig');
 }
 #[Route('/load-events', name: 'evenement_load_events')]
-    public function loadEvents(Request $request, EvenementRepository $repo): Response
-    {
-        $start = new \DateTime($request->query->get('start'));
-        $end = new \DateTime($request->query->get('end'));
+public function loadEvents(Request $request, EvenementRepository $repo, ClientEvenementRepository $clientEvenementRepo): Response
+{
+    $start = new \DateTime($request->query->get('start'));
+    $end = new \DateTime($request->query->get('end'));
 
-        $evenements = $repo->findByDateRange($start, $end);
-        $events = [];
+    $evenements = $repo->findByDateRange($start, $end);
+    $events = [];
 
-        foreach ($evenements as $evenement) {
-            $events[] = [
-                'title' => $evenement->getNomEvent(),
-                'start' => $evenement->getDateEvent()->format('c'), // Format ISO 8601
-                'url' => $this->generateUrl('evenement_detailles', ['id' => $evenement->getId()]),
-                'backgroundColor' => '#3788d8',
-                'borderColor' => '#3788d8',
-                'textColor' => '#ffffff',
-            ];
+    // Récupérer l'utilisateur connecté
+    $user = $this->getUser();
+    $userReservations = [];
+    if ($user) {
+        $reservations = $clientEvenementRepo->findBy(['client' => $user]);
+        foreach ($reservations as $reservation) {
+            $userReservations[$reservation->getEvenement()->getId()] = true;
         }
-
-        return new Response(json_encode($events), 200, ['Content-Type' => 'application/json']);
     }
+
+    foreach ($evenements as $evenement) {
+        $dateDebut = $evenement->getDateEvent();
+        // Calculer la date de fin : date de début + 2 heures
+        $dateFin = clone $dateDebut;
+        $dateFin->modify('+2 hours');
+
+        $isReserved = $user && isset($userReservations[$evenement->getId()]);
+        $events[] = [
+           'title' => $evenement->getNomEvent(),
+            'start' => $dateDebut->format('c'),
+            'end' => $dateFin->format('c'),
+            'url' => $this->generateUrl('evenement_detailles', ['id' => $evenement->getId()]),
+            'backgroundColor' => $isReserved ? ' #5cb85c' : ' #3788d8',
+            'borderColor' => $isReserved ? ' #5cb85c' : ' #3788d8',
+            'textColor' => '#ffffff',
+        ];
+    }
+
+    return new Response(json_encode($events), 200, ['Content-Type' => 'application/json']);
+}
 }
 

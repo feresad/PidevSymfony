@@ -184,12 +184,13 @@
                                         </a>
                                     </span>
                                     <span class="nk-forum-action-btn">
-                                        <form action="{{ path('comment_delete', {'id': comment.id}) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this comment?');">
-                                            <input type="hidden" name="_token" value="{{ csrf_token('delete_comment_' ~ comment.id) }}">
-                                            <button type="submit" class="nk-anchor">
-                                                <span class="fa fa-trash"></span> Sup
-                                            </button>
-                                        </form>
+                                        <button type="button" class="nk-anchor delete-comment-btn" 
+                                                data-comment-id="{{ comment.id }}" 
+                                                data-comment-content="{{ comment.content|length > 50 ? comment.content|slice(0, 50) ~ '...' : comment.content }}"
+                                                data-delete-url="{{ path('comment_delete', {'id': comment.id}) }}"
+                                                data-csrf-token="{{ csrf_token('delete_comment_' ~ comment.id) }}">
+                                            <span class="fa fa-trash"></span> Sup
+                                        </button>
                                     </span>
                                 {% endif %}
                                 <span class="nk-forum-action-btn spam-btn" data-id="{{ comment.id }}" data-type="comment" data-user-id="{{ comment.utilisateurId.id }}">
@@ -209,7 +210,6 @@
                     {% endif %}
                 {% endfor %}
             {% endmacro %}
-
             {% if comments|length > 0 %}
                 {{ _self.render_comments(comments) }}
             {% else %}
@@ -293,8 +293,7 @@
         }
 
         .nk-forum-container {
-                background: rgba(10, 31, 40, 1) !important; 
-
+            background: rgba(10, 31, 40, 1) !important; 
             position: relative;
             z-index: 1; 
         }
@@ -343,6 +342,7 @@
         .nk-forum-action-btn button.nk-anchor { display: inline-flex; align-items: center; color: #d1d5db; font-size: 0.9rem; text-decoration: none; transition: color 0.3s ease; background: none; border: none; padding: 0; cursor: pointer; }
         .nk-forum-action-btn button.nk-anchor:hover { color: #0585e6; }
         .vote-icon { width: 20px; height: 20px; }
+        .vote-btn.voted { opacity: 0.5; cursor: not-allowed; }
         .low-quality-label { color: #ff6f61; font-size: 0.8rem; font-style: italic; margin-top: 5px; display: block; }
         .sentiment-badge {
             margin-top: 5px;
@@ -576,21 +576,179 @@
             color: white !important;
         }
 
-.nk-forum.nk-forum-topic {
-    background: rgba(10, 31, 40, 0.5) !important; 
-    backdrop-filter: blur(8px); 
-    -webkit-backdrop-filter: blur(8px);
-    border-radius: 15px; 
-    padding: 15px; 
-    border: 1px solid rgba(100, 30, 57, 0.2); 
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2); 
-}
+        .nk-forum.nk-forum-topic {
+            background: rgba(10, 31, 40, 0.5) !important; 
+            backdrop-filter: blur(8px); 
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 15px; 
+            padding: 15px; 
+            border: 1px solid rgba(100, 30, 57, 0.2); 
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2); 
+        }
 
-@supports not (backdrop-filter: blur(8px)) {
-    .nk-forum.nk-forum-topic {
-        background: rgba(10, 20, 40, 0.8); 
-    }
-}
+        @supports not (backdrop-filter: blur(8px)) {
+            .nk-forum.nk-forum-topic {
+                background: rgba(10, 20, 40, 0.8); 
+            }
+        }
+
+        .modal.fade {
+            z-index: 1055 !important;
+        }
+
+        .modal-backdrop {
+            z-index: 1050 !important;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background: rgba(35, 41, 48, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            color: #d1d5db;
+        }
+
+        .modal-header {
+            border-bottom: none;
+            padding: 15px 20px;
+        }
+
+        .modal-title {
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .btn-close {
+            filter: invert(1);
+        }
+
+        .modal-body {
+            padding: 20px;
+            color: #d1d5db;
+        }
+
+        .modal-body strong {
+            color: #fff;
+        }
+
+        .modal-footer {
+            border-top: none;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .cancel-btn {
+            background-color: #404854;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 16px;
+            text-transform: uppercase;
+            transition: transform 0.2s ease;
+        }
+
+        .cancel-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .submit-btn {
+            background-color: #fe0369;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 16px;
+            text-transform: uppercase;
+            transition: transform 0.2s ease;
+        }
+
+        .submit-btn:hover {
+            transform: scale(1.05);
+            background-color: #b40148;
+        }
+
+        .note-editor .note-toolbar {
+            background: rgba(50, 60, 80, 0.95) !important; 
+            border-bottom: 2px solid #fe0369 !important; 
+            padding: 8px !important; 
+            border-radius: 5px 5px 0 0 !important; 
+        }
+
+        .note-editor .note-toolbar .note-btn-group .note-btn {
+            background: rgba(70, 80, 100, 0.8) !important; 
+            color: #ffffff !important; 
+            border: 1px solid rgba(255, 255, 255, 0.2) !important; 
+            margin: 2px !important; 
+            transition: background 0.3s ease, transform 0.2s ease !important;
+        }
+
+        .note-editor .note-toolbar .note-btn-group .note-btn:hover {
+            background: #fe0369 !important; 
+            color: #ffffff !important;
+            transform: scale(1.05) !important; 
+        }
+
+        .note-editor .note-toolbar .note-btn-group .note-btn.active {
+            background: #0585e6 !important; 
+            color: #ffffff !important;
+        }
+
+        .note-editor .note-toolbar .note-dropdown-menu {
+            background: rgba(35, 41, 48, 0.95) !important; 
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            color: #d1d5db !important;
+        }
+
+        .note-editor .note-toolbar .note-dropdown-menu a {
+            color: #d1d5db !important;
+        }
+
+        .note-editor .note-toolbar .note-dropdown-menu a:hover {
+            background: #fe0369 !important;
+            color: #ffffff !important;
+        }
+
+        .note-editor .note-editable {
+            background: rgba(20, 40, 80, 0.5) !important; 
+            color: #ffffff !important;
+            border: 1px solid rgba(255, 0, 98, 0.5) !important;
+            border-radius: 0 0 5px 5px !important;
+        }
+
+        .cancel-reply {
+            background: #404854 !important; 
+            color: #ffffff !important;
+            border: 1px solid #fe0369 !important; 
+            border-radius: 5px !important;
+            padding: 8px 16px !important;
+            text-transform: uppercase !important;
+            transition: background 0.3s ease, transform 0.2s ease !important;
+        }
+
+        .cancel-reply:hover {
+            background: #fe0369 !important; 
+            color: #ffffff !important;
+            transform: scale(1.05) !important; 
+        }
+
+        .cancel-update {
+            background: #404854 !important; 
+            color: #ffffff !important;
+            border: 1px solid #fe0369 !important; 
+            border-radius: 5px !important;
+            padding: 8px 16px !important;
+            text-transform: uppercase !important;
+            transition: background 0.3s ease, transform 0.2s ease !important;
+        }
+
+        .cancel-update:hover {
+            background: #fe0369 !important; 
+            color: #ffffff !important;
+            transform: scale(1.05) !important; 
+        }
     </style>
 {% endblock %}
 
@@ -632,7 +790,7 @@
                             if (sentimentMap.positive.length < 20) sentimentMap.positive.push(emoji.character);
                         }
                         else if (group === 'smileys-emotion' && (name.includes('sad') || name.includes('cry') || name.includes('angry') || name.includes('mad') || name.includes('frown') || name.includes('disappoint') || name.includes('frustrated') || name.includes('broken') || name.includes('rage') || name.includes('pout'))) {
-                            if (sentimentMap.negative.length < 20) sentimentMap.negative.push(emoji.character);
+                            if (sentimentMap.neutral.length < 20) sentimentMap.neutral.push(emoji.character);
                         }
                         else if (neutralGroups.includes(group) || name.includes('think') || name.includes('shrug') || name.includes('face') || name.includes('neutral') || name.includes('roll')) {
                             if (sentimentMap.neutral.length < 20) sentimentMap.neutral.push(emoji.character);
@@ -746,6 +904,78 @@
 
                 $newPicker.data('reaction-wrapper', $icon.closest('.reaction-wrapper'));
             }, 200);
+
+            function fetchUserVotes() {
+                const topicIds = [];
+                $('.question-card').each(function() {
+                    const topicId = $(this).data('id');
+                    if (topicId) topicIds.push(topicId);
+                });
+
+                if (topicIds.length === 0) return;
+
+                $.ajax({
+                    url: '{{ path('ajax_fetch_user_votes') }}',
+                    method: 'POST',
+                    data: { topicIds: topicIds },
+                    success: function(response) {
+                        if (response.success) {
+                            response.votes.forEach(vote => {
+                                const $card = $(`.question-card[data-id="${vote.topicId}"]`);
+                                const $upvoteBtn = $card.find('.upvote-btn');
+                                const $downvoteBtn = $card.find('.downvote-btn');
+
+                                if (vote.voteType === 'UP') {
+                                    $upvoteBtn.addClass('voted');
+                                } else if (vote.voteType === 'DOWN') {
+                                    $downvoteBtn.addClass('voted');
+                                }
+                            });
+                        } else {
+                            console.error('Failed to fetch user votes:', response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('AJAX error fetching user votes:', status, error);
+                    }
+                });
+            }
+
+            function fetchUserCommentVotes() {
+                const commentIds = [];
+                $('.comment-card').each(function() {
+                    const commentId = $(this).data('id');
+                    if (commentId) commentIds.push(commentId);
+                });
+
+                if (commentIds.length === 0) return;
+
+                $.ajax({
+                    url: '{{ path('ajax_fetch_user_comment_votes') }}',
+                    method: 'POST',
+                    data: { commentIds: commentIds },
+                    success: function(response) {
+                        if (response.success) {
+                            response.votes.forEach(vote => {
+                                const $card = $(`.comment-card[data-id="${vote.commentId}"]`);
+                                const $upvoteBtn = $card.find('.upvote-btn');
+                                const $downvoteBtn = $card.find('.downvote-btn');
+
+                                if (vote.voteType === 'UP') {
+                                    $upvoteBtn.addClass('voted');
+                                } else if (vote.voteType === 'DOWN') {
+                                    $downvoteBtn.addClass('voted');
+                                }
+                            });
+                        } else {
+                            console.error('Failed to fetch user comment votes:', response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('AJAX error fetching user comment votes:', status, error);
+                    }
+                });
+            }
 
             loadEmojis().then(() => {
                 initializeReactions();
@@ -875,7 +1105,7 @@
                         </div>
                         <input type="hidden" name="type" value="${type}">
                         <input type="hidden" name="parent_id" value="${parentId}">
-                        <button type="submit" class="nk-btn nk-btn-rounded nk-btn-color-white">Submit Reply</button>
+                        <button type="submit" class="nk-btn nk-btn-rounded nk-btn-color-white">Repondre</button>
                         <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-dark cancel-reply">Cancel</button>
                     </form>
                 `;
@@ -898,58 +1128,55 @@
                 $(this).closest('.reply-form-container').hide();
             });
 
-          $(document).on('click', '.update-btn', function(e) {
-    e.preventDefault();
-    const $btn = $(this);
-    const commentId = $btn.data('id');
-    const $card = $btn.closest('li');
-    const $updateContainer = $card.find('.update-form-container').first();
-    
-    // Get the current content, stripping any HTML mention spans
-    let currentContent = $card.find('.nk-forum-topic-content p').clone();
-    currentContent.find('.mention').remove();
-    currentContent = currentContent.text().trim();
+            $(document).on('click', '.update-btn', function(e) {
+                e.preventDefault();
+                const $btn = $(this);
+                const commentId = $btn.data('id');
+                const $card = $btn.closest('li');
+                const $updateContainer = $card.find('.update-form-container').first();
+                
+                let currentContent = $card.find('.nk-forum-topic-content p').clone();
+                currentContent.find('.mention').remove();
+                currentContent = currentContent.text().trim();
 
-    // Hide other forms
-    $('.reply-form-container').hide();
-    $('.update-form-container').hide();
+                $('.reply-form-container').hide();
+                $('.update-form-container').hide();
 
-    if ($updateContainer.is(':visible')) {
-        $updateContainer.hide();
-        return;
-    }
+                if ($updateContainer.is(':visible')) {
+                    $updateContainer.hide();
+                    return;
+                }
 
-    let updateFormHtml = `
-        <div class="nk-gap-1"></div>
-        <form action="{{ path('comment_update', {'id': 'COMMENT_ID'}) }}" method="POST" class="profanity-check-form">
-            <div class="mb-3">
-                {{ contenu_field|raw }}
-                {{ form_rest|raw }}
-            </div>
-            <button type="submit" class="nk-btn nk-btn-rounded nk-btn-color-white">Update Comment</button>
-            <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-dark cancel-update">Cancel</button>
-        </form>
-    `;
+                let updateFormHtml = `
+                    <div class="nk-gap-1"></div>
+                    <form action="{{ path('comment_update', {'id': 'COMMENT_ID'}) }}" method="POST" class="profanity-check-form">
+                        <div class="mb-3">
+                            {{ contenu_field|raw }}
+                            {{ form_rest|raw }}
+                        </div>
+                        <button type="submit" class="nk-btn nk-btn-rounded nk-btn-color-white">Modifier</button>
+                        <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-dark cancel-update">Cancel</button>
+                    </form>
+                `;
 
-    const finalFormHtml = updateFormHtml.replace('COMMENT_ID', commentId);
-    $updateContainer.html(finalFormHtml).show();
+                const finalFormHtml = updateFormHtml.replace('COMMENT_ID', commentId);
+                $updateContainer.html(finalFormHtml).show();
 
-    const $summernote = $updateContainer.find('.nk-summernote');
-    $summernote.summernote({
-        height: 200,
-        toolbar: [
-            ['style', ['bold', 'italic', 'underline', 'clear']],
-            ['font', ['fontsize']],
-            ['para', ['ul', 'ol', 'paragraph']],
-            ['misc', ['codeview']]
-        ],
-        fontSizes: ['8', '9', '10', '11', '12', '14', '16', '18', '20', '22', '24', '28', '30', '36', '48', '64'],
-        placeholder: 'Update your comment here...'
-    });
+                const $summernote = $updateContainer.find('.nk-summernote');
+                $summernote.summernote({
+                    height: 200,
+                    toolbar: [
+                        ['style', ['bold', 'italic', 'underline', 'clear']],
+                        ['font', ['fontsize']],
+                        ['para', ['ul', 'ol', 'paragraph']],
+                        ['misc', ['codeview']]
+                    ],
+                    fontSizes: ['8', '9', '10', '11', '12', '14', '16', '18', '20', '22', '24', '28', '30', '36', '48', '64'],
+                    placeholder: 'Update your comment here...'
+                });
 
-    // Set the current content in Summernote
-    $summernote.summernote('code', currentContent);
-});
+                $summernote.summernote('code', currentContent);
+            });
 
             $(document).on('click', '.cancel-update', function() {
                 $(this).closest('.update-form-container').hide();
@@ -963,15 +1190,28 @@
                 const voteType = $btn.data('vote-type');
                 const $voteSection = $btn.closest('.nk-forum-vote-section');
                 const $voteCount = $voteSection.find('.vote-count');
+                const $otherBtn = $voteSection.find(`.vote-btn[data-vote-type="${voteType === 'UP' ? 'DOWN' : 'UP'}"]`);
+
+                const voteUrl = type === 'question' ? '{{ path('ajax_vote_action') }}' : '{{ path('ajax_vote_comment_action') }}';
 
                 $.ajax({
-                    url: '{{ path('ajax_vote_action') }}',
+                    url: voteUrl,
                     method: 'POST',
                     data: { id: id, type: type, vote_type: voteType },
                     success: function(response) {
                         if (response.success) {
                             $voteCount.text(response.votes);
-                            $btn.addClass('voted');
+
+                            if (response.hasUpvoted) {
+                                $voteSection.find('.upvote-btn').addClass('voted');
+                                $voteSection.find('.downvote-btn').removeClass('voted');
+                            } else if (response.hasDownvoted) {
+                                $voteSection.find('.downvote-btn').addClass('voted');
+                                $voteSection.find('.upvote-btn').removeClass('voted');
+                            } else {
+                                $voteSection.find('.upvote-btn').removeClass('voted');
+                                $voteSection.find('.downvote-btn').removeClass('voted');
+                            }
                         } else {
                             Swal.fire({
                                 title: 'Voting Error',
@@ -1147,6 +1387,70 @@
                     $('.report-modal, .report-modal-backdrop').remove();
                 });
             });
+
+            $(document).on('click', '.delete-comment-btn', function(e) {
+                e.preventDefault();
+                const $btn = $(this);
+                const commentId = $btn.data('comment-id');
+                const commentContent = $btn.data('comment-content');
+                const deleteUrl = $btn.data('delete-url');
+                const csrfToken = $btn.data('csrf-token');
+
+                Swal.fire({
+                    title: 'SUPPRIMER LE SUJET',
+                    html: `Êtes-vous sûr de vouloir supprimer le sujet ? "<strong>${commentContent}</strong>"? Cette action ne peut pas être annulée.`,
+                    showCancelButton: true,
+                    confirmButtonText: 'Supprimer',
+                    cancelButtonText: 'Cancel',
+                    background: 'rgba(35, 41, 48, 0.95)',
+                    color: '#d1d5db',
+                    confirmButtonColor: '#fe0369',
+                    cancelButtonColor: '#404854',
+                    customClass: {
+                        popup: 'nk-gaming-swal',
+                        title: 'nk-gaming-swal-title',
+                        content: 'nk-gaming-swal-content',
+                        confirmButton: 'swal2-confirm',
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: deleteUrl,
+                            method: 'POST',
+                            data: {
+                                _token: csrfToken
+                            },
+                            success: function(response) {
+                                $(`li[data-id="${commentId}"]`).remove();
+                                Swal.fire({
+                                    title: 'Succès',
+                                    text: 'Commentaire supprimé avec succès !',
+                                    icon: 'success',
+                                    background: '#1c2526',
+                                    color: '#d1d5db',
+                                    confirmButtonColor: '#fe0369'
+                                });
+                            },
+                            error: function(xhr, status, error) {
+                                console.error('Deletion error:', status, error);
+                                Swal.fire({
+                                    title: 'Error',
+                                    text: 'Failed to delete the comment. Please try again.',
+                                    imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
+                                    imageWidth: 100,
+                                    imageHeight: 100,
+                                    background: '#1c2526',
+                                    color: '#d1d5db',
+                                    confirmButtonColor: '#fe0369'
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+
+            fetchUserVotes();
+            fetchUserCommentVotes();
         });
     </script>
 {% endblock %}
