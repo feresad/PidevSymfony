@@ -14,8 +14,6 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\File;
-use Symfony\Component\Validator\Constraints\NotBlank;
 
 class TopicFormType extends AbstractType
 {
@@ -24,12 +22,12 @@ class TopicFormType extends AbstractType
         $builder
             ->add('title', TextType::class, [
                 'label' => 'Topic Title',
-                'required' => true,
+                'required' => false, 
                 'attr' => ['placeholder' => 'Enter topic title'],
             ])
             ->add('content', TextareaType::class, [
                 'label' => false,
-                'required' => true,
+                'required' => false,
                 'attr' => ['rows' => 5, 'placeholder' => "What's on your mind?"],
             ])
             ->add('media_type', ChoiceType::class, [
@@ -41,41 +39,18 @@ class TopicFormType extends AbstractType
                 ],
                 'required' => false,
                 'attr' => ['placeholder' => 'e.g., image or video'],
-                'constraints' => [
-                    new NotBlank([
-                        'message' => 'Please select a media type if you are uploading a file.',
-                        'groups' => ['with_file'],
-                    ]),
-                ],
             ])
             ->add('media_file', FileType::class, [
                 'label' => 'Upload Media (Image, GIF, or Video)',
                 'required' => false,
                 'mapped' => false,
-                'constraints' => [
-                    new File([
-                        'maxSize' => '30m',
-                        'mimeTypes' => [
-                            'image/jpeg',
-                            'image/png',
-                            'image/gif',
-                            'video/mp4',
-                            'video/mpeg',
-                            'video/webm',
-                            'video/quicktime',
-                            'video/x-msvideo',
-                        ],
-                        'mimeTypesMessage' => 'Please upload a valid image (JPEG/PNG/GIF) or video (MP4, MPEG, WebM, MOV, AVI).',
-                        'maxSizeMessage' => 'The file is too large. Maximum allowed size is 30MB.',
-                    ]),
-                ],
                 'attr' => ['class' => 'form-control-file'],
             ])
             ->add('game_id', EntityType::class, [
                 'class' => Games::class,
                 'choice_label' => 'gameName',
                 'label' => 'Game',
-                'required' => true,
+                'required' => false,
                 'attr' => ['class' => 'form-control'],
             ])
             ->add('submit', SubmitType::class, [
@@ -88,16 +63,6 @@ class TopicFormType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Questions::class,
-            'validation_groups' => function (\Symfony\Component\Form\FormInterface $form) {
-                $data = $form->getData();
-                $mediaFile = $form->get('media_file')->getData();
-
-                if ($mediaFile) {
-                    return ['Default', 'with_file'];
-                }
-
-                return ['Default'];
-            },
         ]);
     }
 }

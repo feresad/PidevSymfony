@@ -5,6 +5,118 @@
 {% block stylesheets %}
 	{{ parent() }}
 	<link rel="stylesheet" href="{{ asset('css/login.css') }}">
+	<style>
+		.btn-register {
+			background-color: #4CAF50;
+			color: white;
+			padding: 10px 20px;
+			border: none;
+			border-radius: 4px;
+			cursor: pointer;
+			font-size: 16px;
+			transition: background-color 0.3s ease;
+		}
+
+		.btn-register:hover {
+			background-color: #45a049;
+		}
+
+		.login-footer {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 15px;
+			margin-top: 20px;
+		}
+
+		.buttons-container {
+			width: 100%;
+		}
+
+		.forgot-password {
+			margin-top: 5px;
+		}
+
+		.forgot-password a {
+			color: #94a3b8;
+			text-decoration: none;
+			font-size: 0.9rem;
+			transition: color 0.2s;
+		}
+
+		.forgot-password a:hover {
+			color: #6366f1;
+		}
+
+		.google-signin-btn {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background-color: white;
+			color: #757575;
+			padding: 10px 20px;
+			border: 1px solid #ddd;
+			border-radius: 4px;
+			cursor: pointer;
+			font-size: 16px;
+			margin-top: 15px;
+			transition: background-color 0.3s ease;
+		}
+
+		.google-signin-btn:hover {
+			background-color: #f5f5f5;
+		}
+
+		.google-icon {
+			margin-right: 10px;
+			width: 18px;
+			height: 18px;
+		}
+
+		.divider {
+			display: flex;
+			align-items: center;
+			text-align: center;
+			margin: 20px 0;
+		}
+
+		.divider::before,
+		.divider::after {
+			content: '';
+			flex: 1;
+			border-bottom: 1px solid #ddd;
+		}
+
+		.divider span {
+			padding: 0 10px;
+			color: #757575;
+			font-size: 14px;
+		}
+
+		.alert-ban {
+			background-color: #dc3545;
+			color: white;
+			padding: 15px;
+			border-radius: 4px;
+			margin-bottom: 20px;
+			text-align: center;
+		}
+
+		.alert-ban .ban-title {
+			font-size: 1.2em;
+			font-weight: bold;
+			margin-bottom: 10px;
+		}
+
+		.alert-ban .ban-message {
+			font-size: 1em;
+		}
+
+		.disabled-form {
+			opacity: 0.6;
+			pointer-events: none;
+		}
+	</style>
 {% endblock %}
 
 {% block body %}
@@ -16,53 +128,86 @@
 			<p style="color: green;">[DEBUG] User ID: {{ userId }}</p>
 		{% endif %}
 
-		{% if error %}
-			<div class="alert alert-danger">
-				{{ error.messageKey|trans(error.messageData, 'security') }}
+		{% if app.user and app.user.isBanned() %}
+			<div class="alert-ban">
+				<div class="ban-title">Compte Banni</div>
+				<div class="ban-message">{{ app.user.getBanMessage() }}</div>
 			</div>
+			<script>
+				// Clear local storage and redirect to logout
+				localStorage.clear();
+				setTimeout(() => {
+					window.location.href = '{{ path('app_logout') }}';
+				}, 5000); // Redirect after 5 seconds
+			</script>
+		{% else %}
+			{% if error %}
+				<div class="alert alert-danger">
+					{% if error.messageKey == 'Account is banned' %}
+						<div class="ban-title">Compte Banni</div>
+						<div class="ban-message">{{ error.messageData.banMessage }}</div>
+					{% else %}
+						{{ error.messageKey|trans(error.messageData, 'security') }}
+					{% endif %}
+				</div>
+			{% endif %}
+
+			<a href="{{ path('connect_google') }}" class="google-signin-btn">
+				<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="google-icon">
+				Continuer avec Google
+			</a>
+
+			<div class="divider">
+				<span>ou</span>
+			</div>
+
+			{{ form_start(form, {'attr': {'id': 'loginForm', 'onsubmit': 'return validateForm(event)'}}) }}
+				<div class="form-group">
+					{{ form_label(form.email) }}
+					{{ form_widget(form.email, {
+						'attr': {
+							'class': 'form-control',
+							'value': last_username,
+							
+						}
+					}) }}
+					<div class="error-message" id="email-error">
+						{{ form_errors(form.email) }}
+					</div>
+				</div>
+
+				<div class="form-group">
+					{{ form_label(form.password) }}
+					{{ form_widget(form.password, {
+						'attr': {
+							'class': 'form-control',
+							'required': true
+						}
+					}) }}
+					<div class="error-message" id="password-error">
+						{{ form_errors(form.password) }}
+					</div>
+				</div>
+
+				<div class="remember-me">
+					{{ form_widget(form.remember_me) }}
+					{{ form_label(form.remember_me) }}
+				</div>
+
+				<button type="submit" class="btn-login">Se connecter</button>
+
+				<div class="login-footer">
+					<div class="buttons-container">
+						<button onclick="window.location.href='{{ path('app_register') }}'" class="btn-login">
+							Crée un compte
+						</button>
+					</div>
+					<div class="forgot-password">
+						<a href="{{ path('app_forgot_password') }}">Mot de passe oublié ?</a>
+					</div>
+				</div>
+			{{ form_end(form) }}
 		{% endif %}
-
-		{{ form_start(form, {'attr': {'id': 'loginForm', 'onsubmit': 'return validateForm(event)'}}) }}
-			<div class="form-group">
-				{{ form_label(form.email) }}
-				{{ form_widget(form.email, {
-					'attr': {
-						'class': 'form-control',
-						'value': last_username,
-						
-					}
-				}) }}
-				<div class="error-message" id="email-error">
-					{{ form_errors(form.email) }}
-				</div>
-			</div>
-
-			<div class="form-group">
-				{{ form_label(form.password) }}
-				{{ form_widget(form.password, {
-					'attr': {
-						'class': 'form-control',
-						'required': true
-					}
-				}) }}
-				<div class="error-message" id="password-error">
-					{{ form_errors(form.password) }}
-				</div>
-			</div>
-
-			<div class="remember-me">
-				{{ form_widget(form.remember_me) }}
-				{{ form_label(form.remember_me) }}
-			</div>
-
-			<button type="submit" class="btn-login">Se connecter</button>
-
-			<div class="login-footer">
-				<a href="{{ path('app_register') }}">Crée un compte</a>
-				<span class="separator">•</span>
-				<a href="{{ path('app_forgot_password') }}">Mot de passe oublié ?</a>
-			</div>
-		{{ form_end(form) }}
 	</div>
 </div>
 {% endblock %}
@@ -70,86 +215,163 @@
 {% block javascripts %}
 	{{ parent() }}
 	<script src="{{ asset('js/userUtils.js') }}"></script>
+	<script src="https://accounts.google.com/gsi/client" async defer></script>
 	<script>
-	function validateForm(event) {
-		event.preventDefault();
-		const form = event.target;
-		const email = form.email.value;
-		const password = form.password.value;
-		let isValid = true;
+		function handleGoogleSignIn() {
+			const client = google.accounts.oauth2.initTokenClient({
+				client_id: '{{ app.request.server.get("OAUTH_GOOGLE_CLIENT_ID") }}',
+				scope: 'email profile',
+				callback: async (response) => {
+					if (response.access_token) {
+						try {
+							const userInfo = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+								headers: {
+									'Authorization': `Bearer ${response.access_token}`
+								}
+							}).then(res => res.json());
 
-		// Clear previous errors
-		document.getElementById('email-error').textContent = '';
-		document.getElementById('password-error').textContent = '';
+							// Send the user info to your backend
+							const loginResponse = await fetch('{{ path("app_google_login") }}', {
+								method: 'POST',
+								headers: {
+									'Content-Type': 'application/json',
+									'X-Requested-With': 'XMLHttpRequest'
+								},
+								body: JSON.stringify({
+									email: userInfo.email,
+									name: userInfo.name,
+									picture: userInfo.picture,
+									googleId: userInfo.sub
+								})
+							});
 
-		// Validate email
-		if (!email) {
-			document.getElementById('email-error').textContent = 'Veuillez entrer votre email';
-			isValid = false;
-		} else if (!isValidEmail(email)) {
-			document.getElementById('email-error').textContent = 'Veuillez entrer une adresse email valide';
-			isValid = false;
+							if (loginResponse.ok) {
+								const data = await loginResponse.json();
+								localStorage.setItem('userId', data.id);
+								localStorage.setItem('userEmail', data.email);
+								localStorage.setItem('userRole', data.role);
+								window.location.href = '{{ path("app_home") }}';
+							} else {
+								throw new Error('Google login failed');
+							}
+						} catch (error) {
+							console.error('Error:', error);
+							const errorDiv = document.createElement('div');
+							errorDiv.className = 'alert alert-danger';
+							errorDiv.textContent = 'Une erreur est survenue lors de la connexion avec Google';
+							
+							const existingError = document.querySelector('.alert-danger');
+							if (existingError) {
+								existingError.replaceWith(errorDiv);
+							} else {
+								document.querySelector('.login-container').insertBefore(errorDiv, document.querySelector('form'));
+							}
+						}
+					}
+				}
+			});
+			client.requestAccessToken();
 		}
 
-		// Validate password
-		if (!password) {
-			document.getElementById('password-error').textContent = 'Veuillez entrer votre mot de passe';
-			isValid = false;
-		} else if (password.length < 6) {
-			document.getElementById('password-error').textContent = 'Le mot de passe doit contenir au moins 6 caractères';
-			isValid = false;
-		}
+		async function validateForm(event) {
+			event.preventDefault();
+			const form = event.target;
+			const email = form.email.value;
+			const password = form.password.value;
+			let isValid = true;
 
-		if (!isValid) {
-			// Focus on the first error field
+			// Clear previous errors
+			document.getElementById('email-error').textContent = '';
+			document.getElementById('password-error').textContent = '';
+
+			// Validate email
 			if (!email) {
-				form.email.focus();
-			} else if (!password) {
-				form.password.focus();
+				document.getElementById('email-error').textContent = 'Veuillez entrer votre email';
+				isValid = false;
+			} else if (!isValidEmail(email)) {
+				document.getElementById('email-error').textContent = 'Veuillez entrer une adresse email valide';
+				isValid = false;
 			}
+
+			// Validate password
+			if (!password) {
+				document.getElementById('password-error').textContent = 'Veuillez entrer votre mot de passe';
+				isValid = false;
+			} else if (password.length < 6) {
+				document.getElementById('password-error').textContent = 'Le mot de passe doit contenir au moins 6 caractères';
+				isValid = false;
+			}
+
+			if (!isValid) {
+				// Focus on the first error field
+				if (!email) {
+					form.email.focus();
+				} else if (!password) {
+					form.password.focus();
+				}
+				return false;
+			}
+
+			// Submit form if validation passes
+			try {
+				const response = await fetch('{{ path("app_login") }}', {
+					method: 'POST',
+					body: new FormData(form),
+					headers: {
+						'X-Requested-With': 'XMLHttpRequest'
+					}
+				});
+
+				const data = await response.json();
+
+				if (!response.ok) {
+					throw data;
+				}
+
+				if (data.banned) {
+					const errorDiv = document.createElement('div');
+					errorDiv.className = 'alert-ban';
+					errorDiv.innerHTML = `
+						<div class="ban-title">Compte Banni</div>
+						<div class="ban-message">${data.banMessage}</div>
+					`;
+					
+					const existingError = document.querySelector('.alert-ban, .alert-danger');
+					if (existingError) {
+						existingError.replaceWith(errorDiv);
+					} else {
+						document.querySelector('.login-container').insertBefore(errorDiv, document.querySelector('form'));
+					}
+
+					// Disable the form
+					form.classList.add('disabled-form');
+					return false;
+				}
+
+				localStorage.setItem('userId', data.id);
+				localStorage.setItem('userEmail', data.email);
+				localStorage.setItem('userRole', data.role);
+				window.location.href = '{{ path("app_home") }}';
+			} catch (error) {
+				const errorDiv = document.createElement('div');
+				errorDiv.className = 'alert alert-danger';
+				errorDiv.textContent = error.error || 'Une erreur est survenue lors de la connexion';
+				
+				const existingError = document.querySelector('.alert-danger');
+				if (existingError) {
+					existingError.replaceWith(errorDiv);
+				} else {
+					document.querySelector('.login-container').insertBefore(errorDiv, document.querySelector('form'));
+				}
+			}
+
 			return false;
 		}
 
-		// Submit form if validation passes
-		fetch('{{ path("app_login") }}', {
-			method: 'POST',
-			body: new FormData(form),
-			headers: {
-				'X-Requested-With': 'XMLHttpRequest'
-			}
-		})
-		.then(response => {
-			if (!response.ok) {
-				return response.json().then(err => { throw err; });
-			}
-			return response.json();
-		})
-		.then(data => {
-			localStorage.setItem('userId', data.id);
-			localStorage.setItem('userEmail', data.email);
-			localStorage.setItem('userRole', data.role);
-			window.location.href = '{{ path("app_home") }}';
-		})
-		.catch(error => {
-			const errorDiv = document.createElement('div');
-			errorDiv.className = 'alert alert-danger';
-			errorDiv.textContent = error.error || 'Une erreur est survenue lors de la connexion';
-			
-			const existingError = document.querySelector('.alert-danger');
-			if (existingError) {
-				existingError.replaceWith(errorDiv);
-			} else {
-				document.querySelector('.login-container').insertBefore(errorDiv, document.querySelector('form'));
-			}
-		});
-
-		return false;
-	}
-
-	function isValidEmail(email) {
-		const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-		return re.test(email);
-	}
+		function isValidEmail(email) {
+			const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+			return re.test(email);
+		}
 	</script>
 	<script>
 	const userId = {{ userId|json_encode|raw }};

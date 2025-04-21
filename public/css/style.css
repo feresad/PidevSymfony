@@ -1,0 +1,52 @@
+/* SweetAlert styling to match the image */
+.nk-gaming-swal {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    font-family: 'Montserrat', sans-serif;
+    z-index: 1055 !important;
+}
+
+.nk-gaming-swal-title {
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.nk-gaming-swal-content {
+    color: #d1d5db;
+}
+
+.nk-gaming-swal-content strong {
+    color: #fff;
+}
+
+.swal2-confirm {
+    background-color: #fe0369 !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 5px !important;
+    padding: 8px 16px !important;
+    text-transform: uppercase !important;
+    transition: transform 0.2s ease !important;
+}
+
+.swal2-confirm:hover {
+    transform: scale(1.05) !important;
+    background-color: #b40148 !important;
+}
+
+.swal2-cancel {
+    background-color: #404854 !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 5px !important;
+    padding: 8px 16px !important;
+    text-transform: uppercase !important;
+    transition: transform 0.2s ease !important;
+}
+
+.swal2-cancel:hover {
+    transform: scale(1.05) !important;
+}

@@ -16,10 +16,20 @@ use Symfony\Component\Routing\Attribute\Route;
 final class CategorieEventController extends AbstractController
 {
     #[Route('/all',name: 'categorie_list')]
-    public function gettAll(Categorie_eventRepository $repo):Response{
-        $CategorieEvent = $repo->findAll();
+    public function gettAll(Categorie_eventRepository $repo,Request $request):Response{
+        $search = $request->query->get('search', '');
+        $page = $request->query->getInt('page', 1);
+        $limit = 9;
+
+        $categories = $repo->findBySearch($search, $page, $limit);
+        $totalCategories = $repo->countBySearch($search);
+        $maxPages = max(1, ceil($totalCategories / $limit));
+
         return $this->render('categorie_event/listeCategorieEvent.html.twig', [
-            "CategorieEvent"=>$CategorieEvent,
+            'CategorieEvent' => $categories,
+            'current_page' => $page,
+            'max_pages' => $maxPages,
+            'search' => $search,
         ]);
     }
     #[Route('/add', name: 'categorie_ajouter')]
@@ -90,14 +100,14 @@ final class CategorieEventController extends AbstractController
 
         if (!$categorie) {
             $this->addFlash('error', 'Catégorie non trouvée.');
-            return $this->redirectToRoute('categorie_list');
+            return $this->redirectToRoute('categorie_list_admin');
         }
 
         $entityManager->remove($categorie);
         $entityManager->flush();
 
         $this->addFlash('success', 'Catégorie supprimée avec succès !');
-        return $this->redirectToRoute('categorie_list');
+        return $this->redirectToRoute('categorie_list_admin');
     }
     #[Route('/admin/all',name: 'categorie_list_admin')]
     public function getAll(Categorie_eventRepository $repo):Response{
