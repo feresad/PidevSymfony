@@ -64,7 +64,7 @@ class GoogleAuthenticator extends OAuth2Authenticator
                     $names = explode(' ', $googleUser->getName());
                     $user->setNom($names[0] ?? '');
                     $user->setPrenom($names[1] ?? '');
-                    $user->setNickname($email);
+                    $user->setNickname($names[0] ?? '');
                     $user->setNumero(0);
                     $user->setMotPasse(bin2hex(random_bytes(16)));
                     $user->setRole(Role::CLIENT);
