@@ -2,15 +2,15 @@
 
 namespace App\Repository;
 
-use App\Entity\Commentaire_reactions;
+use App\Entity\CommentaireReactions;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-class Commentaire_reactionsRepository extends ServiceEntityRepository
+class CommentaireReactionsRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Commentaire_reactions::class);
+        parent::__construct($registry, CommentaireReactions::class);
     }
 
     // Add custom methods as needed

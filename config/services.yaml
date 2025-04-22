@@ -61,3 +61,6 @@ services:
     App\Controller\PaymentController:
         arguments:
             $logger: '@monolog.logger'
+    App\Controller\ForumStatsController:
+        arguments:
+            $logger: '@logger'
