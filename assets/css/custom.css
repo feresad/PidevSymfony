@@ -1352,3 +1352,24 @@ header h2 {
       margin-top: 20px;
   }
 }
+.nk-btn-primary {
+  background-color: #dd163b !important;
+  color: white !important;
+}
+.category-carousel {
+  margin-bottom: 2rem;
+}
+.category-item {
+  text-align: center;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.category-item:hover {
+  background-color: #f8f9fa;
+}
+.category-item.active {
+  background-color: #dd163b;
+  color: white;
+  border-radius: 5px;
+}

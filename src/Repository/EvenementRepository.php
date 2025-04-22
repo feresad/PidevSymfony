@@ -13,7 +13,7 @@ class EvenementRepository extends ServiceEntityRepository
         parent::__construct($registry, Evenement::class);
     }
 
-    public function findBySearchAndSort(?string $search, string $sort, int $page = 1, int $limit = 9): array
+    public function findBySearchAndSort(?string $search, string $sort, int $page = 1, int $limit = 9,?int $categoryId): array
 {
     $queryBuilder = $this->createQueryBuilder('e')
         ->leftJoin('App\Entity\ClientEvenement', 'ce', 'WITH', 'ce.evenement = e.id')
@@ -23,9 +23,17 @@ class EvenementRepository extends ServiceEntityRepository
         $queryBuilder->andWhere('e.nomEvent LIKE :search OR e.lieuEvent LIKE :search')
                      ->setParameter('search', '%' . $search . '%');
     }
+    if ($categoryId) {
+        $queryBuilder->andWhere('e.categorie = :categoryId')
+                     ->setParameter('categoryId', $categoryId);
+    }
 
     // Gestion du tri
     switch ($sort) {
+        case 'reservations_desc':
+            $queryBuilder->addSelect('COUNT(ce.evenement) as HIDDEN reservation_count')
+                         ->orderBy('reservation_count', 'DESC');
+            break;
         case 'nom_asc':
             $queryBuilder->orderBy('e.nomEvent', 'ASC');
             break;
@@ -44,12 +52,9 @@ class EvenementRepository extends ServiceEntityRepository
         case 'lieu_desc':
             $queryBuilder->orderBy('e.lieuEvent', 'DESC');
             break;
-        case 'reservations_desc': // Tri par nombre de réservations
-            $queryBuilder->addSelect('COUNT(ce.evenement) as HIDDEN reservation_count')
-                         ->orderBy('reservation_count', 'DESC');
-            break;
         default:
-            $queryBuilder->orderBy('e.nomEvent', 'ASC');
+            $queryBuilder->addSelect('COUNT(ce.evenement) as HIDDEN reservation_count')
+            ->orderBy('reservation_count', 'DESC');
     }
 
     // Pagination
