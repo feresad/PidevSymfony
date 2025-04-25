@@ -16,12 +16,14 @@ parameters:
     stripe.public_key: '%env(STRIPE_PUBLIC_KEY)%'
     
 services:
+    App\Service\TopicSubscriptionService:
     App\Controller\ForumController:
     App\Service\RedditService:
         arguments:
             $session: '@session'
             $params: '%kernel.parameters%'
             $logger: '@monolog.logger'
+            $entityManager: '@doctrine.orm.entity_manager'
     
     _defaults:
         autowire: true

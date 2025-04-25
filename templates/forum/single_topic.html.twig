@@ -83,6 +83,15 @@
                         </div>
                     </div>
                     <div class="nk-forum-topic-footer-right">
+                        {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+                            <button id="subscribe-btn" class="nk-btn nk-btn-rounded nk-btn-color-white" data-topic-id="{{ question.id }}">
+                                {% if is_subscribed|default(false) %}
+                                    Se désabonner
+                                {% else %}
+                                    Suivre
+                                {% endif %}
+                            </button>
+                        {% endif %}
                         {% if question.gameImage %}
                             <div class="nk-forum-game-image">
                                 <img src="http://localhost/img/games/{{ question.gameImage }}" alt="Game Image" style="max-width: 50px; margin-right: 15px;">
@@ -370,6 +379,22 @@
         .mention:hover {
             color: #0056b3;
             text-decoration: underline;
+        }
+        #subscribe-btn {
+            background: #0585e6;
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.2s ease, background 0.3s ease;
+        }
+        #subscribe-btn:hover {
+            background: #fe0369;
+            transform: scale(1.05);
+        }
+        #subscribe-btn.subscribed {
+            background: #404854;
+        }
+        #subscribe-btn.subscribed:hover {
+            background: #ff6f61;
         }
 
         /* Glassmorphism for Cards with Adjusted Dark Blue Hue */
@@ -976,6 +1001,60 @@
                     }
                 });
             }
+
+            // Subscription handling
+            function updateSubscribeButton(isSubscribed) {
+                const $btn = $('#subscribe-btn');
+                $btn.text(isSubscribed ? 'Se désabonner' : 'Suivre');
+                $btn.toggleClass('subscribed', isSubscribed);
+            }
+
+            {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+                $('#subscribe-btn').on('click', function() {
+                    const topicId = $(this).data('topic-id');
+                    const isSubscribed = $(this).hasClass('subscribed');
+                    const url = isSubscribed ? '{{ path('ajax_unsubscribe_topic', {'id': '__ID__'}) }}'.replace('__ID__', topicId)
+                                             : '{{ path('ajax_subscribe_topic', {'id': '__ID__'}) }}'.replace('__ID__', topicId);
+
+                    $.ajax({
+                        url: url,
+                        method: 'POST',
+                        headers: {'X-Requested-With': 'XMLHttpRequest'},
+                        success: function(response) {
+                            if (response.success) {
+                                updateSubscribeButton(response.isSubscribed);
+                                Swal.fire({
+                                    title: 'Succès',
+                                    text: response.message,
+                                    icon: 'success',
+                                    background: '#1c2526',
+                                    color: '#d1d5db',
+                                    confirmButtonColor: '#fe0369'
+                                });
+                            } else {
+                                Swal.fire({
+                                    title: 'Erreur',
+                                    text: response.message,
+                                    icon: 'error',
+                                    background: '#1c2526',
+                                    color: '#d1d5db',
+                                    confirmButtonColor: '#ff6f61'
+                                });
+                            }
+                        },
+                        error: function() {
+                            Swal.fire({
+                                title: 'Erreur',
+                                text: 'Une erreur est survenue lors de la mise à jour de l\'abonnement.',
+                                icon: 'error',
+                                background: '#1c2526',
+                                color: '#d1d5db',
+                                confirmButtonColor: '#ff6f61'
+                            });
+                        }
+                    });
+                });
+            {% endif %}
 
             loadEmojis().then(() => {
                 initializeReactions();

@@ -15,6 +15,7 @@ use App\Form\CommentFormType;
 use App\Repository\QuestionsRepository;
 use App\Repository\UtilisateurRepository;
 use App\Repository\NotificationRepository;
+use App\Service\TopicSubscriptionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -50,7 +51,8 @@ class CommentController extends AbstractController
         Request $request,
         QuestionsRepository $questionsRepository,
         UtilisateurRepository $utilisateurRepository,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        TopicSubscriptionService $subscriptionService
     ): Response {
         $question = $questionsRepository->find($id);
         if (!$question) {
@@ -121,6 +123,9 @@ class CommentController extends AbstractController
                         $notification->setLink($this->generateUrl('forum_single_topic', ['id' => $question->getQuestionId()]) . '#comment-' . $comment->getCommentaireId());
                         $entityManager->flush();
                     }
+
+                    // Notify subscribers of the new comment
+                    $subscriptionService->notifySubscribers($question, $comment, $utilisateur);
 
                     $this->addFlash('success', 'Commentaire ajouté avec succès !');
                 } catch (\Exception $e) {

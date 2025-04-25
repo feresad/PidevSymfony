@@ -14,6 +14,7 @@ use App\Repository\QuestionsRepository;
 use App\Repository\UtilisateurRepository;
 use App\Repository\CommentaireRepository;
 use App\Service\RedditService;
+use App\Service\TopicSubscriptionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,10 +26,12 @@ use Psr\Log\LoggerInterface;
 class ForumController extends AbstractController
 {
     private $logger;
+    private $subscriptionService;
 
-    public function __construct(LoggerInterface $logger)
+    public function __construct(LoggerInterface $logger, TopicSubscriptionService $subscriptionService)
     {
         $this->logger = $logger;
+        $this->subscriptionService = $subscriptionService;
     }
 
     #[Route('/forum', name: 'forum_index')]
@@ -266,10 +269,6 @@ class ForumController extends AbstractController
         ]);
     }
 
-
-
-
-    
     #[Route('/forum/topic/{id}', name: 'forum_single_topic', methods: ['GET', 'POST'])]
     public function singleTopic(
         int $id,
@@ -423,11 +422,16 @@ class ForumController extends AbstractController
             'itemsPerPage' => $itemsPerPage,
         ];
     
+        /** @var Utilisateur|null $user */
+        $user = $this->getUser();
+        $isSubscribed = $user ? $this->subscriptionService->isSubscribed($user, $question) : false;
+
         return $this->render('forum/single_topic.html.twig', [
             'question' => $questionData,
             'comments' => $commentData,
             'comment_form' => $commentForm->createView(),
             'pagination' => $pagination,
+            'is_subscribed' => $isSubscribed,
         ]);
     }
 
@@ -716,6 +720,7 @@ class ForumController extends AbstractController
 
         return new JsonResponse(['success' => false, 'message' => 'Invalid type.'], 400);
     }
+
     #[Route('/ajax/fetch-user-votes', name: 'ajax_fetch_user_votes', methods: ['POST'])]
     public function ajaxFetchUserVotes(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
@@ -752,6 +757,7 @@ class ForumController extends AbstractController
             'votes' => $voteData,
         ]);
     }
+
     #[Route('/api/share/topic', name: 'api_share_topic', methods: ['GET'])]
     public function shareTopic(Request $request, QuestionsRepository $questionsRepository): JsonResponse
     {
