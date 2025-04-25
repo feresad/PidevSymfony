@@ -15,6 +15,7 @@
         "endroid/qr-code": "^6.0",
         "endroid/qrcode": "^6.0",
         "knplabs/knp-paginator-bundle": "^6.8",
+        "knplabs/knp-snappy-bundle": "^1.10",
         "knpuniversity/oauth2-client-bundle": "^2.18",
         "league/oauth2-google": "^4.0",
         "php-flasher/flasher-symfony": "^1.15",
