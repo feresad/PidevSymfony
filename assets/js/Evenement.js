@@ -2,13 +2,11 @@
 $(document).ready(function() {
     var isShowingEvents = true;
     var evenementUrl = $('#dynamic-content').data('evenement-url');
-    var categorieUrl = $('#dynamic-content').data('categorie-url'); // Correction ici
+    var categorieUrl = $('#dynamic-content').data('categorie-url');
 
-    // Vérification des URLs pour débogage
     console.log('Evenement URL:', evenementUrl);
     console.log('Categorie URL:', categorieUrl);
 
-    // Fonction pour mettre à jour le formulaire de recherche
     function updateSearchForm(isEvents) {
         var $form = $('#eventFilterForm');
         var $input = $form.find('input[name="search"]');
@@ -25,15 +23,12 @@ $(document).ready(function() {
         }
     }
 
-    // Initialiser le formulaire pour les événements
     updateSearchForm(true);
 
-    // Gérer le clic sur le bouton de bascule (Catégorie/Événement)
     $('.toggle-content').on('click', function() {
         var button = $(this);
 
         if (isShowingEvents) {
-            // Charger les catégories
             $.ajax({
                 url: categorieUrl,
                 method: 'GET',
@@ -54,7 +49,6 @@ $(document).ready(function() {
                 }
             });
         } else {
-            // Charger les événements
             $.ajax({
                 url: evenementUrl,
                 method: 'GET',
@@ -68,6 +62,8 @@ $(document).ready(function() {
                     button.find('span').text('Categorie');
                     isShowingEvents = true;
                     updateSearchForm(true);
+                    // Reinitialize slick carousel
+                    $('.category-carousel').slick('refresh');
                 },
                 error: function(xhr, status, error) {
                     console.error('Erreur AJAX (Événements):', status, error, xhr.responseText);
@@ -77,7 +73,6 @@ $(document).ready(function() {
         }
     });
 
-    // Gérer la soumission du formulaire de recherche
     $('#eventFilterForm').on('submit', function(e) {
         e.preventDefault();
         var $form = $(this);
@@ -94,6 +89,8 @@ $(document).ready(function() {
                     ? $data.find('#dynamic-content').html() 
                     : $data.html();
                 $('#dynamic-content').html(content);
+                // Reinitialize slick carousel
+                $('.category-carousel').slick('refresh');
             },
             error: function(xhr, status, error) {
                 console.error('Erreur AJAX (Recherche):', status, error, xhr.responseText);
@@ -102,14 +99,12 @@ $(document).ready(function() {
         });
     });
 
-    // Soumettre le formulaire lorsque le tri change
     $('.nk-sort-select').on('change', function() {
         if (isShowingEvents) {
             $('#eventFilterForm').submit();
         }
     });
 
-    // Gérer les clics sur les liens de pagination
     $(document).on('click', '.page-link', function(e) {
         e.preventDefault();
         var url = $(this).attr('href');
@@ -123,6 +118,8 @@ $(document).ready(function() {
                         ? $data.find('#dynamic-content').html() 
                         : $data.html();
                     $('#dynamic-content').html(content);
+                    // Reinitialize slick carousel
+                    $('.category-carousel').slick('refresh');
                 },
                 error: function(xhr, status, error) {
                     console.error('Erreur AJAX (Pagination):', status, error, xhr.responseText);
@@ -130,5 +127,54 @@ $(document).ready(function() {
                 }
             });
         }
+    });
+});
+$(document).ready(function() {
+    // Compter le nombre de catégories
+    var categoryCount = $('.category-item').length; // +1 pour "Toutes les catégories"
+
+    // Configuration du carrousel Slick
+    $('.category-carousel').slick({
+        slidesToShow: 5,
+        slidesToScroll: 1,
+        arrows: categoryCount > 4, // Affiche les flèches si plus de 4 catégories
+        dots: false,
+        prevArrow: '<button type="button" class="slick-prev"><i class="fas fa-chevron-left"></i></button>',
+        nextArrow: '<button type="button" class="slick-next"><i class="fas fa-chevron-right"></i></button>',
+        responsive: [
+            {
+                breakpoint: 992,
+                settings: {
+                    slidesToShow: 3,
+                    arrows: categoryCount > 3
+                }
+            },
+            {
+                breakpoint: 768,
+                settings: {
+                    slidesToShow: 2,
+                    arrows: categoryCount > 2
+                }
+            },
+            {
+                breakpoint: 576,
+                settings: {
+                    slidesToShow: 1,
+                    arrows: categoryCount > 1
+                }
+            }
+        ]
+    });
+
+    // Handle category click
+    $('.category-item').on('click', function() {
+        $('.category-item').removeClass('active');
+        $(this).addClass('active');
+        
+        var categoryId = $(this).data('category-id');
+        $('#category-input').val(categoryId);
+        
+        // Trigger form submission
+        $('#eventFilterForm').submit();
     });
 });

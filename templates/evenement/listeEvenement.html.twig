@@ -2,19 +2,10 @@
 
 {% block title %}Liste des Événements{% endblock %}
 
-{% block stylesheets %}
-    {{ parent() }}
-    <style>
-        .nk-btn-primary {
-            background-color: #dd163b !important;
-            color: white !important;
-        }
-    </style>
-{% endblock %}
-
 {% block body %}
     <div class="nk-page-content">
         <div class="container mt-4 nk-content-area">
+            <!-- Category Carousel -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1 id="content-title">Liste des Événements</h1>
                 <div class="d-flex align-items-center">
@@ -26,36 +17,34 @@
                             <option value="date_desc" {{ sort == 'date_desc' ? 'selected' : '' }}>Date (Plus récente)</option>
                             <option value="lieu_asc" {{ sort == 'lieu_asc' ? 'selected' : '' }}>Lieu (A-Z)</option>
                             <option value="lieu_desc" {{ sort == 'lieu_desc' ? 'selected' : '' }}>Lieu (Z-A)</option>
-                            <option value="reservations_desc" {{ sort == 'reservations_desc' ? 'selected' : '' }}>Réservations (Plus au moins)</option>
-                        </select>
+                            </select>
                     </div>
 
                     <div class="nk-search-form mr-3">
                         <form action="{{ path('evenement_list') }}" method="get" class="nk-form nk-form-style-1" id="eventFilterForm">
                             <div class="input-group">
                                 <input type="text" name="search" class="form-control" placeholder="Rechercher un événement ou catégorie..." value="{{ search }}">
+                                <input type="hidden" name="category" id="category-input" value="{{ selected_category }}">
                                 <button type="submit" class="nk-btn nk-btn-color-main-1">
                                     <span class="fas fa-search"></span>
                                 </button>
                             </div>
                         </form>
                     </div>
-                    <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-white toggle-content">
-                        <span>Categorie</span>
-                    </button>
                 </div>
             </div>
-
-            {% for message in app.flashes('success') %}
-                <div class="alert alert-success">
-                    {{ message }}
+        
+            <div class="category-carousel">
+                <div class="category-item {{ selected_category == 0 ? 'active' : '' }}" data-category-id="0">
+                    Toutes les catégories
                 </div>
-            {% endfor %}
-            {% for message in app.flashes('error') %}
-                <div class="alert alert-danger">
-                    {{ message }}
-                </div>
-            {% endfor %}
+                {% for category in categories %}
+                    <div class="category-item {{ selected_category == category.id ? 'active' : '' }}" 
+                         data-category-id="{{ category.id }}">
+                        {{ category.nom }}
+                    </div>
+                {% endfor %}
+            </div>
 
             <div id="dynamic-content" data-evenement-url="{{ path('evenement_list') }}" data-categorie-url="{{ path('categorie_list') }}">
                 <div class="row">
@@ -129,20 +118,19 @@
                     {% endfor %}
                 </div>
 
-                <!-- Pagination -->
                 {% if max_pages > 1 %}
                     <nav aria-label="Pagination des événements" class="mt-4">
                         <ul class="pagination justify-content-center">
                             <li class="page-item {{ current_page == 1 ? 'disabled' : '' }}">
-                                <a class="page-link" href="{{ path('evenement_list', { page: current_page - 1, search: search, sort: sort }) }}">Précédent</a>
+                                <a class="page-link" href="{{ path('evenement_list', { page: current_page - 1, search: search, sort: sort, category: selected_category }) }}">Précédent</a>
                             </li>
                             {% for i in 1..max_pages %}
                                 <li class="page-item {{ current_page == i ? 'active' : '' }}">
-                                    <a class="page-link" href="{{ path('evenement_list', { page: i, search: search, sort: sort }) }}">{{ i }}</a>
+                                    <a class="page-link" href="{{ path('evenement_list', { page: i, search: search, sort: sort, category: selected_category }) }}">{{ i }}</a>
                                 </li>
                             {% endfor %}
                             <li class="page-item {{ current_page == max_pages ? 'disabled' : '' }}">
-                                <a class="page-link" href="{{ path('evenement_list', { page: current_page + 1, search: search, sort: sort }) }}">Suivant</a>
+                                <a class="page-link" href="{{ path('evenement_list', { page: current_page + 1, search: search, sort: sort, category: selected_category }) }}">Suivant</a>
                             </li>
                         </ul>
                     </nav>
@@ -150,7 +138,6 @@
             </div>
         </div>
 
-        <!-- Background images -->
         <img class="nk-page-background-top" src="{{ asset('images/bg-top.png') }}" alt="">
         <img class="nk-page-background-bottom" src="{{ asset('images/bg-bottom.png') }}" alt="">
     </div>
@@ -159,5 +146,6 @@
 {% block javascripts %}
     {{ parent() }}
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
     <script src="{{ asset('js/Evenement.js') }}"></script>
 {% endblock %}

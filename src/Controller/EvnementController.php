@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Evenement;
 use App\Form\EvenementType;
-
+use App\Repository\Categorie_eventRepository;
 use App\Repository\EvenementRepository;
 use App\Repository\ClientEvenementRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -22,15 +22,19 @@ use Symfony\Component\Routing\Attribute\Route;
 final class EvnementController extends AbstractController
 {
     #[Route('/all', name: 'evenement_list')]
-public function gettAll(EvenementRepository $repo, Request $request, ClientEvenementRepository $clientEvenementRepo): Response
+public function gettAll(EvenementRepository $repo, Request $request, 
+                        ClientEvenementRepository $clientEvenementRepo,
+                        Categorie_eventRepository $categoryRepo): Response
 {
     $search = $request->query->get('search', '');
-    $sort = $request->query->get('sort', 'nom_asc');
+    $sort = $request->query->get('sort', 'reservations_desc');
+    $categoryId = $request->query->getInt('category', 0);
     $page = $request->query->getInt('page', 1);
     $limit = 3;
-    $evenements = $repo->findBySearchAndSort($search, $sort, $page, $limit);
+    $evenements = $repo->findBySearchAndSort($search, $sort, $page, $limit,$categoryId ?: null);
     $totalEvenements = $repo->countBySearch($search);
     $maxPages = ceil($totalEvenements / $limit);
+    $categories = $categoryRepo->findAll();
 
     $userReservations = [];
     $reservationCounts = [];
@@ -54,6 +58,8 @@ public function gettAll(EvenementRepository $repo, Request $request, ClientEvene
         'userReservations' => $userReservations,
         'now' => new \DateTime(),
         'reservationCounts' => $reservationCounts,
+        'categories' => $categories,
+        'selected_category' => $categoryId,
     ]);
 }
     #[Route('/add', name: 'evenement_ajouter')]
@@ -268,11 +274,12 @@ public function gettAll(EvenementRepository $repo, Request $request, ClientEvene
     public function getAll(EvenementRepository $repo, Request $request):Response{
         $search = $request->query->get('search', '');
         $sort = $request->query->get('sort', 'nom_asc');
+        $categoryId = $request->query->getInt('category', 0);
         $page = $request->query->getInt('page', 1);
         $limit = 3;
 
        
-        $evenements = $repo->findBySearchAndSort($search, $sort, $page, $limit);
+        $evenements = $repo->findBySearchAndSort($search, $sort, $page, $limit,$categoryId ?: null);
         $totalEvenements = $repo->countBySearch($search);
         $maxPages = ceil($totalEvenements / $limit);
 
