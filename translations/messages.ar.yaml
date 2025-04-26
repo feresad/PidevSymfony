@@ -1,0 +1,221 @@
+# Page and Navigation
+page:
+  title: "Level OP | title"
+nav:
+  home: "الرئيسية"
+  forum: "المنتدى"
+  main_game_discussions: "مناقشات الألعاب الرئيسية"
+
+# Forum Section
+forum:
+  topic_title: "الموضوع: title"
+  user_role:
+    regular: "عضو عادي"
+    com: "مشرف المجتمع"
+  user_avatar_alt: "صورة المستخدم لـ nickname"
+  posted_on: "نُشر في"
+  topics:
+    title: "مناقشات المنتدى"
+  breadcrumbs:
+    home: "الرئيسية"
+    forum: "المنتدى"
+    discussions: "المناقشات"
+  search:
+    placeholder: "ابحث في المواضيع حسب اللعبة، المؤلف، العنوان، أو المحتوى..."
+  button:
+    trivia: "العب معنا"
+    new_topic: "موضوع جديد"
+  trending:
+    title: " Reddit الرائج على "
+  topic:
+    started_by: " date في author بدأ بواسطة "
+    posts: "count منشورات"
+    last_activity: "user آخر نشاط بواسطة "
+    no_topics: "لم يتم العثور على مواضيع."
+  pagination:
+    prev: "السابق"
+    next: "التالي"
+    ellipsis: "..."
+    showing: "عرض start إلى end من total موضوع"
+    showing_comments: "total إجمالي من end إلى start عرض التعليقات من "
+  modal:
+    new_topic:
+      title: "إنشاء موضوع جديد"
+    share:
+      title: "مشاركة الموضوع"
+      body: "شارك هذا الموضوع على منصتك المفضلة:"
+      close: "إغلاق"
+    update_topic:
+      title: "تحديث الموضوع"
+    delete_topic:
+      title: "حذف الموضوع"
+      body: "هل أنت متأكد أنك تريد حذف الموضوع 'title'؟ لا يمكن التراجع عن هذا الإجراء."
+      cancel: "إلغاء"
+      delete: "حذف"
+    form:
+      title: "العنوان"
+      content: "المحتوى"
+      media_type: "نوع الوسائط"
+      media_file: "ملف الوسائط"
+      game_id: "اللعبة"
+      emotes: "إضافة رموز تعبيرية"
+      submit: "إرسال"
+  member_since: "عضو منذ"
+  attachment: "مرفق"
+  topic_media: "وسائط الموضوع"
+  video_unsupported: "متصفحك لا يدعم علامة الفيديو."
+  upvote: "تصويت لصالح"
+  downvote: "تصويت ضد"
+  react: "تفاعل"
+  subscribe: "اشتراك"
+  unsubscribe: "إلغاء الاشتراك"
+  game_image: "صورة اللعبة"
+  default_game_image: "صورة اللعبة الافتراضية"
+  reply: "رد"
+  spam: "تبليغ"
+  edit: "تعديل"
+  delete: "حذف"
+  low_quality_label: "جودة منخفضة (الأصوات: votes)"
+  hide_replies: "إخفاء الردود (count)"
+  show_replies: "إظهار الردود (count)"
+  no_comments: "لم يتم العثور على تعليقات في هذه الصفحة."
+  reactions:
+    positive: "إيجابي"
+    negative: "سلبي"
+    neutral: "محايد"
+  reply_placeholder: "اكتب ردك هنا..."
+  update_placeholder: "قم بتحديث تعليقك هنا..."
+  voting_error: "خطأ في التصويت"
+  error_voting: "حدث خطأ أثناء التصويت. يرجى المحاولة مرة أخرى."
+  inappropriate_content: "تم اكتشاف محتوى غير لائق"
+  revise_content: "تعليقك يحتوي على لغة غير لائقة. يرجى مراجعته."
+  detected: "تم الكشف عنه"
+  error_checking_profanity: "خطأ أثناء التحقق من الألفاظ البذيئة. يرجى المحاولة مرة أخرى."
+  invalid_user_id: "معرف مستخدم غير صالح للإبلاغ."
+  error_subscription_update: "حدث خطأ أثناء تحديث حالة الاشتراك."
+  report: "الإبلاغ عن المحتوى"
+  select_reason: "اختر سببًا"
+  reason:
+    minor_involved: "متورط قاصر"
+    harassment: "مضايقة أو تنمر"
+    suicide_self_harm: "انتحار أو إيذاء النفس"
+    violent_content: "محتوى عنيف أو صريح"
+    restricted_items: "بيع عناصر مقيدة"
+    adult_content: "محتوى للبالغين"
+    scam_false_info: "احتيال أو معلومات كاذبة"
+    unwanted_content: "محتوى غير مرغوب فيه أو بريد عشوائي"
+  additional_details: "تفاصيل إضافية (اختياري)"
+  report_submitted: "شكرًا لك! تم تقديم بلاغك."
+  error_submitting_report: "حدث خطأ أثناء تقديم بلاغك."
+  delete_comment_title: "حذف التعليق"
+  delete_comment_confirm: "هل أنت متأكد أنك تريد حذف التعليق"
+  delete_warning: "لا يمكن التراجع عن هذا الإجراء."
+  comment_deleted: "تم حذف التعليق بنجاح."
+  error_deleting_comment: "حدث خطأ أثناء حذف التعليق."
+  alert:
+    success: "نجاح"
+    error: "خطأ"
+    ok: "موافق"
+    vote_error: "حدث خطأ أثناء التصويت."
+    share_error: "حدث خطأ أثناء مشاركة الموضوع."
+    reaction_error: "حدث خطأ أثناء إضافة رد فعلك."
+
+# Trivia Section
+trivia:
+  page_title: "Level OP | أسئلة  عن الألعاب"
+  breadcrumb_title: "أسئلة  عن الألعاب"
+  challenge_title: "تحدي الأسئلة  عن الألعاب"
+  challenge_description: "اختبر معرفتك بألعاب الفيديو مع هذه الأسئلة الصعبة!"
+  question_label: "السؤال number"
+  prev_button: "السابق"
+  next_button: "التالي"
+  finish_button: "إنهاء"
+  correct_feedback: "صحيح! أحسنت!"
+  incorrect_feedback: "غير صحيح. الإجابة الصحيحة كانت: correctAnswer"
+  error_title: "خطأ"
+  error_message: "حدث خطأ أثناء التحقق من إجابتك."
+  quiz_finished_title: "انتهى الاختبار!"
+  score_message: "لقد سجلت score من أصل total!"
+  confirm_button_text: "العودة إلى المنتدى"
+  low_score_message: "أوه لا! يمكنك أن تفعل أفضل من ذلك. استمر في التدرب!"
+  medium_score_message: "ليس سيئًا! لديك مستوى جيد، ولكن لا يزال هناك مجال للتحسين."
+  high_score_message: "أداء رائع! أنت تقريبًا خبير في الألعاب!"
+  perfect_score_message: "مذهل! أنت سيد ألعاب حقيقي! تهانينا!"
+
+# Report Form
+report:
+  form:
+    reason: "الإبلاغ"
+    title: "الإبلاغ عن المحتوى"
+    select_reason: "اختر سببًا"
+    reason_spam: "بريد عشوائي"
+    reason_inappropriate: "محتوى غير لائق"
+    reason_offensive: "سلوك مسيء"
+    reason_other: "أخرى"
+    details: "قدم تفاصيل حول المشكلة"
+    submit: "تقديم التقرير"
+    cancel: "إلغاء"
+    self_report: "لا يمكنك الإبلاغ عن محتواك الخاص."
+    success: "تم تقديم التقرير بنجاح."
+    error: "حدث خطأ أثناء تقديم التقرير."
+
+# General
+general:
+  success: "نجاح"
+  error: "خطأ"
+  ok: "موافق"
+  cancel: "إلغاء"
+  server_error: "حدث خطأ في الخادم."
+  unknown_user: "غير معروف"
+  date_not_set: "غير محدد"
+
+# Flash Messages
+flash:
+  login_required: "يجب عليك تسجيل الدخول لتنفيذ هذا الإجراء."
+  topic_not_found: "لم يتم العثور على الموضوع."
+  topic_created: "تم إنشاء الموضوع بنجاح!"
+  error_creating_topic: "خطأ أثناء إنشاء الموضوع: error"
+  topic_deleted: "تم حذف الموضوع بنجاح!"
+  error_deleting_topic: "خطأ أثناء حذف الموضوع: error"
+  unauthorized_delete: "غير مصرح لك بحذف هذا الموضوع."
+  topic_updated: "تم تحديث الموضوع بنجاح!"
+  error_updating_topic: "خطأ أثناء تحديث الموضوع: error"
+  unauthorized_update: "غير مصرح لك بتحديث هذا الموضوع."
+
+# Form Errors
+form:
+  error:
+    title_blank: "لا يمكن أن يكون العنوان فارغًا."
+    content_blank: "لا يمكن أن يكون المحتوى فارغًا."
+    game_required: "يجب اختيار لعبة."
+    media_type_required: "نوع الوسائط مطلوب عند رفع ملف."
+    file_too_large: "الملف كبير جدًا. الحد الأقصى للحجم هو 30 ميغابايت."
+    invalid_image: "تنسيق الصورة غير صالح. التنسيقات المسموح بها: JPEG، PNG، GIF."
+    invalid_video: "تنسيق الفيديو غير صالح. التنسيقات المسموح بها: MP4، MPEG، WebM، QuickTime، AVI."
+
+# API Responses
+api:
+  error:
+    login_required: "يجب عليك تسجيل الدخول لتنفيذ هذا الإجراء."
+    invalid_sentiment_map: "تم تقديم خريطة مشاعر غير صالحة."
+    question_not_found: "لم يتم العثور على السؤال."
+    comment_not_found: "لم يتم العثور على التعليق."
+    invalid_vote_type: "نوع التصويت غير صالح."
+    already_upvoted: "لقد قمت بالفعل بالتصويت لصالح هذا السؤال."
+    already_downvoted: "لقد قمت بالفعل بالتصويت ضد هذا السؤال."
+    invalid_type: "تم تحديد نوع غير صالح."
+    no_topic_ids: "لم يتم تقديم معرفات المواضيع."
+    topic_id_required: "معرف الموضوع مطلوب."
+    topic_not_found: "لم يتم العثور على الموضوع."
+  sentiment_map_updated: "تم تحديث خريطة المشاعر بنجاح."
+
+# Log Messages
+log:
+  created_uploads_directory: "تم إنشاء دليل الرفع."
+  media_file_uploaded: "تم رفع ملف الوسائط بنجاح."
+  deleted_media_file: "تم حذف ملف الوسائط."
+  deleted_old_media_file: "تم حذف ملف الوسائط القديم."
+  deleted_old_media_file_no_type: "تم حذف ملف الوسائط القديم بسبب تعيين نوع الوسائط إلى لا شيء."
+  error_creating_topic: "خطأ أثناء إنشاء الموضوع."
+  error_deleting_topic: "خطأ أثناء حذف الموضوع."
+  error_updating_topic: "خطأ أثناء تحديث الموضوع."

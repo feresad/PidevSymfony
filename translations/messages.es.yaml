@@ -1,0 +1,219 @@
+# Page and Navigation
+page:
+  title: "Level OP | %{title}"
+nav:
+  home: "Inicio"
+  forum: "Foro"
+  main_game_discussions: "Discusiones principales de juegos"
+
+# Forum Section
+forum:
+  topics:
+    title: "Discusiones del Foro"
+  breadcrumbs:
+    home: "Inicio"
+    forum: "Foro"
+    discussions: "Discusiones"
+  search:
+    placeholder: "Buscar temas por juego, autor, título o contenido..."
+  button:
+    trivia: "Trivia"
+    new_topic: "Nuevo Tema"
+  trending:
+    title: "Tendencias en Reddit"
+  topic:
+    started_by: "Iniciado por {author} el {date}"
+    posts: "{count} publicaciones"
+    last_activity: "Última actividad por {user}"
+    no_topics: "No se encontraron temas."
+  pagination:
+    showing: "Mostrando de {start} a {end} de {total} temas"
+  modal:
+    new_topic:
+      title: "Crear Nuevo Tema"
+    share:
+      title: "Compartir Tema"
+      body: "Comparte este tema en tu plataforma favorita:"
+      close: "Cerrar"
+    update_topic:
+      title: "Actualizar Tema"
+    delete_topic:
+      title: "Eliminar Tema"
+      body: "¿Estás seguro de que deseas eliminar el tema '{title}'? Esta acción no se puede deshacer."
+      cancel: "Cancelar"
+      delete: "Eliminar"
+    form:
+      title: "Título"
+      content: "Contenido"
+      media_type: "Tipo de Medio"
+      media_file: "Archivo de Medio"
+      game_id: "Juego"
+      emotes: "Agregar Emotes"
+      submit: "Enviar"
+  member_since: "Miembro desde"
+  attachment: "Adjunto"
+  topic_media: "Medios del tema"
+  video_unsupported: "Tu navegador no soporta la etiqueta de video."
+  upvote: "Votar a favor"
+  downvote: "Votar en contra"
+  react: "Reaccionar"
+  subscribe: "Suscribirse"
+  unsubscribe: "Desuscribirse"
+  game_image: "Imagen del juego"
+  default_game_image: "Imagen de juego predeterminada"
+  reply: "Responder"
+  spam: "Spam"
+  edit: "Editar"
+  delete: "Eliminar"
+  low_quality_label: "Baja calidad (Votos: %{votes})"
+  hide_replies: "Ocultar respuestas (%{count})"
+  show_replies: "Mostrar respuestas (%{count})"
+  no_comments: "No se encontraron comentarios en esta página."
+  showing_comments: "Mostrando %{start}-%{end} de %{total} comentarios"
+  reactions:
+    positive: "Positivo"
+    negative: "Negativo"
+    neutral: "Neutral"
+  reply_placeholder: "Escribe tu respuesta aquí..."
+  update_placeholder: "Actualiza tu comentario aquí..."
+  voting_error: "Error de votación"
+  error_voting: "Ocurrió un error al votar. Por favor, intenta de nuevo."
+  inappropriate_content: "Contenido inapropiado detectado"
+  revise_content: "Tu comentario contiene lenguaje inapropiado. Por favor, revísalo."
+  detected: "Detectado"
+  error_checking_profanity: "Error al verificar lenguaje ofensivo. Por favor, intenta de nuevo."
+  invalid_user_id: "ID de usuario inválido para reportar."
+  error_subscription_update: "Ocurrió un error al actualizar el estado de la suscripción."
+  report: "Reportar contenido"
+  select_reason: "Selecciona una razón"
+  reason:
+    minor_involved: "Menor involucrado"
+    harassment: "Acoso o intimidación"
+    suicide_self_harm: "Suicidio o autolesión"
+    violent_content: "Contenido violento o gráfico"
+    restricted_items: "Venta de artículos restringidos"
+    adult_content: "Contenido para adultos"
+    scam_false_info: "Estafa o información falsa"
+    unwanted_content: "Contenido no deseado o spam"
+  additional_details: "Detalles adicionales (opcional)"
+  report_submitted: "¡Gracias! Tu reporte ha sido enviado."
+  error_submitting_report: "Ocurrió un error al enviar tu reporte."
+  delete_comment_title: "Eliminar comentario"
+  delete_comment_confirm: "¿Estás seguro de que deseas eliminar el comentario"
+  delete_warning: "Esta acción no puede deshacerse."
+  comment_deleted: "Comentario eliminado con éxito."
+  error_deleting_comment: "Ocurrió un error al eliminar el comentario."
+  alert:
+    success: "Éxito"
+    error: "Error"
+    ok: "OK"
+    vote_error: "Ocurrió un error al votar."
+    share_error: "Ocurrió un error al compartir el tema."
+    reaction_error: "Ocurrió un error al agregar tu reacción."
+
+# Trivia Section
+trivia:
+  page_title: "Level OP | Trivia de Juegos"
+  breadcrumb_title: "Trivia de Juegos"
+  challenge_title: "Desafío de Trivia de Juegos"
+  challenge_description: "¡Pon a prueba tus conocimientos sobre videojuegos con estas preguntas complicadas!"
+  question_label: "Pregunta %number%"
+  prev_button: "Anterior"
+  next_button: "Siguiente"
+  finish_button: "Terminar"
+  correct_feedback: "¡Correcto! ¡Bien hecho!"
+  incorrect_feedback: "Incorrecto. La respuesta correcta era: %correctAnswer%"
+  error_title: "Error"
+  error_message: "Ocurrió un error al validar tu respuesta."
+  quiz_finished_title: "¡Quiz Terminado!"
+  score_message: "¡Obtuviste una puntuación de %score% de %total%!"
+  confirm_button_text: "Volver al Foro"
+  low_score_message: "¡Oh no! Puedes hacerlo mejor. ¡Sigue practicando!"
+  medium_score_message: "¡No está mal! Tienes un buen nivel, pero aún hay margen para mejorar."
+  high_score_message: "¡Gran actuación! ¡Estás casi en nivel experto en juegos!"
+  perfect_score_message: "¡Increíble! ¡Eres un verdadero maestro de los juegos! ¡Felicidades!"
+
+# Report Form
+report:
+  form:
+    reason: "Reportar"
+    title: "Reportar Contenido"
+    select_reason: "Selecciona una razón"
+    reason_spam: "Spam"
+    reason_inappropriate: "Contenido Inapropiado"
+    reason_offensive: "Comportamiento Ofensivo"
+    reason_other: "Otro"
+    details: "Proporciona detalles sobre el problema"
+    submit: "Enviar Reporte"
+    cancel: "Cancelar"
+    self_report: "No puedes reportar tu propio contenido."
+    success: "Reporte enviado con éxito."
+    error: "Ocurrió un error al enviar el reporte."
+
+# General
+general:
+  success: "Éxito"
+  error: "Error"
+  ok: "Aceptar"
+  cancel: "Cancelar"
+  server_error: "Ocurrió un error en el servidor."
+  unknown_user: "Desconocido"
+  date_not_set: "No establecido"
+
+# Flash Messages
+flash:
+  login_required: "Debes estar conectado para realizar esta acción."
+  topic_not_found: "Tema no encontrado."
+  topic_created: "¡Tema creado con éxito!"
+  error_creating_topic: "Error al crear el tema: %error%"
+  topic_deleted: "¡Tema eliminado con éxito!"
+  error_deleting_topic: "Error al eliminar el tema: %error%"
+  unauthorized_delete: "No estás autorizado para eliminar este tema."
+  topic_updated: "¡Tema actualizado con éxito!"
+  error_updating_topic: "Error al actualizar el tema: %error%"
+  unauthorized_update: "No estás autorizado para actualizar este tema."
+
+# Form Errors
+form:
+  error:
+    title_blank: "El título no puede estar vacío."
+    content_blank: "El contenido no puede estar vacío."
+    game_required: "Debe seleccionarse un juego."
+    media_type_required: "El tipo de medio es requerido al subir un archivo."
+    file_too_large: "El archivo es demasiado grande. Tamaño máximo: 30MB."
+    invalid_image: "Formato de imagen inválido. Formatos permitidos: JPEG, PNG, GIF."
+    invalid_video: "Formato de video inválido. Formatos permitidos: MP4, MPEG, WebM, QuickTime, AVI."
+
+# API Responses
+api:
+  error:
+    login_required: "Debes estar conectado para realizar esta acción."
+    invalid_sentiment_map: "Mapa de sentimientos inválido proporcionado."
+    question_not_found: "Pregunta no encontrada."
+    comment_not_found: "Comentario no encontrado."
+    invalid_vote_type: "Tipo de voto inválido."
+    already_upvoted: "Ya has votado a favor de esta pregunta."
+    already_downvoted: "Ya has votado en contra de esta pregunta."
+    invalid_type: "Tipo inválido especificado."
+    no_topic_ids: "No se proporcionaron IDs de temas."
+    topic_id_required: "El ID del tema es requerido."
+    topic_not_found: "Tema no encontrado."
+  sentiment_map_updated: "Mapa de sentimientos actualizado con éxito."
+
+# Log Messages
+log:
+  created_uploads_directory: "Directorio de subidas creado."
+  media_file_uploaded: "Archivo multimedia subido con éxito."
+  deleted_media_file: "Archivo multimedia eliminado."
+  deleted_old_media_file: "Archivo multimedia antiguo eliminado."
+  deleted_old_media_file_no_type: "Archivo multimedia antiguo eliminado debido a que el tipo de medio se estableció en Ninguno."
+  error_creating_topic: "Error al crear el tema."
+  error_deleting_topic: "Error al eliminar el tema."
+  error_updating_topic: "Error al actualizar el tema."
+  forum:
+  pagination:
+    prev: "Anterior"
+    next: "Siguiente"
+    ellipsis: "..."
+    showing_comments: "Mostrando %start% a %end% de %total% comentarios"
+    

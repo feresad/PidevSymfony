@@ -12,3 +12,10 @@ api_forum_stats:
     path: /api/forum/stats
     controller: App\Controller\ForumStatsController::getStats
     methods: GET
+set_locale:
+    path: /set-locale
+    controller: App\Controller\LocaleController::setLocale
+    methods: [POST]
+lexik_translation:
+    resource: "@LexikTranslationBundle/Resources/config/routing.yml"
+    prefix: /admin/translations
