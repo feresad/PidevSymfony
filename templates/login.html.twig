@@ -4,212 +4,251 @@
 
 {% block stylesheets %}
 	{{ parent() }}
-	<link rel="stylesheet" href="{{ asset('css/login.css') }}">
 	<style>
-		.btn-register {
-			background-color: #4CAF50;
+		body {
+			margin: 0;
+			padding: 0;
+			min-height: 100vh;
+			background: url('http://localhost/img/teemo.jpeg') no-repeat center center fixed;
+			background-size: cover;
+			font-family: 'Arial', sans-serif;
 			color: white;
-			padding: 10px 20px;
-			border: none;
-			border-radius: 4px;
-			cursor: pointer;
-			font-size: 16px;
-			transition: background-color 0.3s ease;
 		}
 
-		.btn-register:hover {
-			background-color: #45a049;
+		.login-page {
+			position: relative;
+			width: 100%;
+			min-height: 100vh;
+			display: flex;
+			
 		}
 
-		.login-footer {
+		.left-section {
+			flex: 1;
+			padding: 40px;
+		}
+
+		.right-section {
+			width: 450px;
+			background: rgba(0, 0, 0, 0.4);
+			padding: 40px;
 			display: flex;
 			flex-direction: column;
-			align-items: center;
-			gap: 15px;
-			margin-top: 20px;
+			justify-content: center;
 		}
 
-		.buttons-container {
+		.welcome-text {
+			font-size: 4rem;
+			font-weight: bold;
+			margin-top: 100px;
+			margin-left: 40px;
+		}
+
+		.connexion-title {
+			font-size: 2.5rem;
+			font-weight: bold;
+			margin-bottom: 10px;
+			color: white;
+		}
+
+		.subtitle {
+			color: #888;
+			margin-bottom: 30px;
+		}
+
+		.form-group {
+			margin-bottom: 20px;
+		}
+
+		.form-control {
 			width: 100%;
+			padding: 12px;
+			background: rgba(255, 255, 255, 0.1);
+			border: 1px solid rgba(255, 255, 255, 0.2);
+			border-radius: 4px;
+			color: white;
+			font-size: 1rem;
 		}
 
-		.forgot-password {
-			margin-top: 5px;
+		.form-control::placeholder {
+			color: #888;
 		}
 
-		.forgot-password a {
-			color: #94a3b8;
+		.remember-me {
+			display: flex;
+			align-items: center;
+			margin-bottom: 20px;
+			color: #888;
+		}
+
+		.remember-me input[type="checkbox"] {
+			margin-right: 10px;
+		}
+
+		.btn-connect, .btn-google, .btn-create {
+			width: 100%;
+			padding: 12px;
+			border: none;
+			border-radius: 4px;
+			font-size: 1rem;
+			font-weight: 600;
+			cursor: pointer;
+			margin-bottom: 15px;
+			text-align: center;
 			text-decoration: none;
-			font-size: 0.9rem;
-			transition: color 0.2s;
+			display: inline-block;
 		}
 
-		.forgot-password a:hover {
-			color: #6366f1;
+		.btn-connect {
+			background: #007bff;
+			color: white;
 		}
 
-		.google-signin-btn {
+		.btn-connect:hover {
+			background: rgb(74, 103, 209);
+		}
+
+		.btn-google {
+			background: white;
+			color: #333;
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			background-color: white;
-			color: #757575;
-			padding: 10px 20px;
-			border: 1px solid #ddd;
-			border-radius: 4px;
-			cursor: pointer;
-			font-size: 16px;
-			margin-top: 15px;
-			transition: background-color 0.3s ease;
 		}
 
-		.google-signin-btn:hover {
-			background-color: #f5f5f5;
+		.btn-google:hover {
+			background: #f5f5f5;
+		}
+
+		.btn-create {
+			background: #007bff;
+			color: white;
+			width: 100%;
+			display: block;
+		}
+
+		.btn-create:hover {
+			background: rgb(74, 103, 209);
+		}
+
+		.forgot-password {
+			text-align: center;
+			margin-top: 30px;
+		}
+
+		.forgot-password a {
+			color: #888;
+			text-decoration: none;
+			font-size: 0.9rem;
+		}
+
+		.forgot-password a:hover {
+			color: white;
 		}
 
 		.google-icon {
+			width: 20px;
+			height: 20px;
 			margin-right: 10px;
-			width: 18px;
-			height: 18px;
 		}
 
-		.divider {
-			display: flex;
-			align-items: center;
-			text-align: center;
-			margin: 20px 0;
-		}
-
-		.divider::before,
-		.divider::after {
-			content: '';
-			flex: 1;
-			border-bottom: 1px solid #ddd;
-		}
-
-		.divider span {
-			padding: 0 10px;
-			color: #757575;
-			font-size: 14px;
-		}
-
-		.alert-ban {
-			background-color: #dc3545;
-			color: white;
-			padding: 15px;
-			border-radius: 4px;
-			margin-bottom: 20px;
-			text-align: center;
-		}
-
-		.alert-ban .ban-title {
-			font-size: 1.2em;
-			font-weight: bold;
-			margin-bottom: 10px;
-		}
-
-		.alert-ban .ban-message {
-			font-size: 1em;
-		}
-
-		.disabled-form {
-			opacity: 0.6;
-			pointer-events: none;
+		.error-message {
+			color: #ff7675;
+			font-size: 0.875rem;
+			margin-top: 5px;
 		}
 	</style>
 {% endblock %}
 
 {% block body %}
-<div class="login-page">
-	<div class="login-container">
-		<h2 class="login-title">Connexion</h2>
-		<p class="login-subtitle">Commencez maintenant !</p>
-		{% if userId %}
-			<p style="color: green;">[DEBUG] User ID: {{ userId }}</p>
-		{% endif %}
+	<div class="login-page">
+		<div class="left-section">
+			<div class="welcome-text">Bienvenue !</div>
+		</div>
+		
+		<div class="right-section">
+			<h1 class="connexion-title">CONNEXION</h1>
+			<p class="subtitle">Commencez maintenant !</p>
 
-		{% if app.user and app.user.isBanned() %}
-			<div class="alert-ban">
-				<div class="ban-title">Compte Banni</div>
-				<div class="ban-message">{{ app.user.getBanMessage() }}</div>
-			</div>
-			<script>
-				// Clear local storage and redirect to logout
-				localStorage.clear();
-				setTimeout(() => {
-					window.location.href = '{{ path('app_logout') }}';
-				}, 5000); // Redirect after 5 seconds
-			</script>
-		{% else %}
 			{% if error %}
-				<div class="alert alert-danger">
-					{% if error.messageKey == 'Account is banned' %}
-						<div class="ban-title">Compte Banni</div>
-						<div class="ban-message">{{ error.messageData.banMessage }}</div>
-					{% else %}
-						{{ error.messageKey|trans(error.messageData, 'security') }}
-					{% endif %}
+				<div class="error-message">
+					{{ error.messageKey|trans(error.messageData, 'security') }}
 				</div>
 			{% endif %}
 
-			<a href="{{ path('connect_google') }}" class="google-signin-btn">
-				<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="google-icon">
-				Continuer avec Google
-			</a>
+			{% if userId %}
+				<p style="color: green;">[DEBUG] User ID: {{ userId }}</p>
+			{% endif %}
 
-			<div class="divider">
-				<span>ou</span>
-			</div>
-
-			{{ form_start(form, {'attr': {'id': 'loginForm', 'onsubmit': 'return validateForm(event)'}}) }}
-				<div class="form-group">
-					{{ form_label(form.email) }}
-					{{ form_widget(form.email, {
-						'attr': {
-							'class': 'form-control',
-							'value': last_username,
-							
-						}
-					}) }}
-					<div class="error-message" id="email-error">
-						{{ form_errors(form.email) }}
-					</div>
+			{% if app.user and app.user.isBanned() %}
+				<div class="alert-ban">
+					<div class="ban-title">Compte Banni</div>
+					<div class="ban-message">{{ app.user.getBanMessage() }}</div>
 				</div>
-
-				<div class="form-group">
-					{{ form_label(form.password) }}
-					{{ form_widget(form.password, {
-						'attr': {
-							'class': 'form-control',
-							'required': true
-						}
-					}) }}
-					<div class="error-message" id="password-error">
-						{{ form_errors(form.password) }}
+				<script>
+					// Clear local storage and redirect to logout
+					localStorage.clear();
+					setTimeout(() => {
+						window.location.href = '{{ path('app_logout') }}';
+					}, 5000); // Redirect after 5 seconds
+				</script>
+			{% else %}
+				{% if error %}
+					<div class="alert alert-danger">
+						{% if error.messageKey == 'Account is banned' %}
+							<div class="ban-title">Compte Banni</div>
+							<div class="ban-message">{{ error.messageData.banMessage }}</div>
+						{% else %}
+							{{ error.messageKey|trans(error.messageData, 'security') }}
+						{% endif %}
 					</div>
-				</div>
+				{% endif %}
 
-				<div class="remember-me">
-					{{ form_widget(form.remember_me) }}
-					{{ form_label(form.remember_me) }}
-				</div>
-
-				<button type="submit" class="btn-login">Se connecter</button>
-
-				<div class="login-footer">
-					<div class="buttons-container">
-						<button onclick="window.location.href='{{ path('app_register') }}'" class="btn-login">
-							Crée un compte
-						</button>
+				{{ form_start(form, {'attr': {'id': 'loginForm', 'onsubmit': 'return validateForm(event)'}}) }}
+					<div class="form-group">
+						{{ form_widget(form.email, {
+							'attr': {
+								'class': 'form-control',
+								'placeholder': 'Nom d\'utilisateur',
+								'value': last_username
+							}
+						}) }}
+						<div class="error-message" id="email-error"></div>
 					</div>
+
+					<div class="form-group">
+						{{ form_widget(form.password, {
+							'attr': {
+								'class': 'form-control',
+								'placeholder': 'Mot de passe'
+							}
+						}) }}
+						<div class="error-message" id="password-error"></div>
+					</div>
+
+					<div class="remember-me">
+						{{ form_widget(form.remember_me) }}
+						{{ form_label(form.remember_me) }}
+					</div>
+
+					<button type="submit" class="btn-connect">Se connecter</button>
+
+					<a href="{{ path('connect_google') }}" class="btn-google">
+						<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="google-icon">
+						Continuer avec Google
+					</a>
+
+					<a href="{{ path('app_register') }}" class="btn-create">
+						Créer un compte
+					</a>
+
 					<div class="forgot-password">
 						<a href="{{ path('app_forgot_password') }}">Mot de passe oublié ?</a>
 					</div>
-				</div>
-			{{ form_end(form) }}
-		{% endif %}
+				{{ form_end(form) }}
+			{% endif %}
+		</div>
 	</div>
-</div>
 {% endblock %}
 
 {% block javascripts %}
