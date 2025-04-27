@@ -59,7 +59,7 @@
     <nav id="sidebar">
         <ul>
             <li>
-                <span class="logo">Level OP</span>
+                <img src="{{ asset('/images/level.png')}}" alt="" width="100">
                 <button onclick="toggleSidebar()" id="toggle-btn">
                     <!-- Icon for sidebar open (chevron-left) -->
                     <ion-icon class="toggle-icon open-icon" name="chevron-back-outline"></ion-icon>
@@ -109,6 +109,7 @@
                         <li><a href="{{ path('app_catalog_index') }}" data-turbo="true">Catalogue Produits</a></li>
                         <li class="sub-header">Commandes</li>
                         <li><a href="{{ path('app_commande_index') }}" data-turbo="true">Liste Commandes</a></li>
+                        <li><a href="{{ path('app_commande_stats') }}" data-turbo="true">Statistiques Commandes</a></li>
                     </div>
                 </ul>
             </li>
@@ -125,6 +126,14 @@
                     <span>Liste Utilisateurs</span>
                 </a>
             </li>
+
+            <li>
+                <a href="{{ path('app_coach_applications') }}">
+                    <ion-icon name="people"></ion-icon>
+                    <span>Demandes</span>
+                </a>
+            </li>
+            
             <!-- Updated navigation item for Admin Forum -->
             <li>
                 <a href="{{ path('forum_admin') }}">

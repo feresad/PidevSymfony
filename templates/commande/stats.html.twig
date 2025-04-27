@@ -1,0 +1,429 @@
+{% extends 'baseadmin.html.twig' %}
+
+{% block title %}Statistiques des Commandes{% endblock %}
+
+{% block body %}
+    <div class="container-main mt-4 liste">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Statistiques des Commandes</h1>
+            <div class="d-flex align-items-center">
+                <div class="mr-3">
+                    <a href="{{ path('app_commande_stats_pdf', {'year': year|default("now"|date("Y"))}) }}" class="btn btn-danger btn-lg" style="font-weight: bold; font-size: 16px; margin-right: 15px;">
+                        <i class="fas fa-file-pdf"></i> EXPORTER PDF
+                    </a>
+                </div>
+                <div class="mr-3">
+                    <form action="{{ path('app_commande_stats') }}" method="get" class="needs-validation" id="statFilterForm">
+                        <div class="input-group">
+                            <select name="year" class="form-control">
+                                {% for y in range(2023, "now"|date("Y")) %}
+                                    <option value="{{ y }}" {{ year|default("now"|date("Y")) == y ? 'selected' : '' }}>{{ y }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-filter"></i> Filtrer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Section -->
+        <div class="export-section">
+            <p><strong>Téléchargez les statistiques complètes en PDF pour {{ year|default("now"|date("Y")) }}</strong></p>
+            <div class="export-button-container">
+                <a href="{{ path('app_commande_stats_pdf', {'year': year|default("now"|date("Y"))}) }}" class="btn btn-danger btn-export-pdf">
+                    <i class="fas fa-file-pdf export-icon"></i> EXPORTER EN PDF
+                </a>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- Revenue and Orders Overview -->
+            <div class="col-md-6 mb-4">
+                <div class="card-main">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Revenu Total</h5>
+                    </div>
+                    <div class="card-body p-4 text-center">
+                        <h2 class="display-4">{{ total_revenue|number_format(2, '.', ',') }} TND</h2>
+                        <p class="text-muted">Revenu total pour {{ year|default("now"|date("Y")) }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="card-main">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">Nombre Total de Commandes</h5>
+                    </div>
+                    <div class="card-body p-4 text-center">
+                        <h2 class="display-4">{{ total_orders }}</h2>
+                        <p class="text-muted">Commandes pour {{ year|default("now"|date("Y")) }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Most Sold Products -->
+        <div class="card-main mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Top Produits les Plus Vendus en {{ year|default("now"|date("Y")) }}</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="products-table">
+                        <thead class="table-primary">
+                            <tr>
+                                <th>Rang</th>
+                                <th>Produit</th>
+                                <th>Quantité Vendue</th>
+                                <th>Revenu Total</th>
+                                <th>Prix Moyen</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for product in top_products %}
+                            <tr>
+                                <td class="align-middle">{{ loop.index }}</td>
+                                <td class="align-middle">{{ product.name }}</td>
+                                <td class="align-middle">{{ product.quantity }}</td>
+                                <td class="align-middle">{{ product.revenue|number_format(2, '.', ',') }} TND</td>
+                                <td class="align-middle">{{ product.avg_price|number_format(2, '.', ',') }} TND</td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center">Aucun produit vendu</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Revenue by Month Chart -->
+        <div class="card-main mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Aperçu des Revenus par Mois</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="revenueChart" width="400" height="200"
+                    data-labels="{{ monthly_data|map(month => month.month_name)|json_encode() }}"
+                    data-values="{{ monthly_data|map(month => month.revenue)|json_encode() }}">
+                </canvas>
+            </div>
+        </div>
+        
+        <!-- Product Quantity Distribution -->
+        <div class="card-main mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Distribution des Ventes par Produit</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="productChart" width="400" height="300"
+                    data-labels="{{ top_products|map(product => product.name)|json_encode() }}"
+                    data-values="{{ top_products|map(product => product.quantity)|json_encode() }}">
+                </canvas>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        /* Global text color settings */
+        .container-main, 
+        .card-body, 
+        .table, 
+        h1, h2, h3, h4, h5, h6, 
+        p, 
+        .list-group-item,
+        .text-muted,
+        label,
+        .form-control,
+        option,
+        select,
+        input,
+        button {
+            color: #000 !important;
+        }
+        
+        /* Override for button text that should remain white */
+        .btn-primary, 
+        .btn-info, 
+        .btn-success,
+        .btn-danger,
+        .btn-warning,
+        .btn-secondary {
+            color: #fff !important;
+        }
+        
+        /* Table specific styles */
+        #products-table,
+        .table-sm {
+            color: #000 !important;
+            background-color: #fff;
+        }
+        
+        #products-table th,
+        #products-table td,
+        .table-sm th,
+        .table-sm td {
+            color: #000 !important;
+            border-color: #dee2e6;
+        }
+        
+        /* Keep header text white for contrast */
+        .card-header {
+            color: white !important;
+        }
+        
+        .card-header h5 {
+            color: white !important;
+        }
+        
+        #products-table thead {
+            background-color: #0d6efd;
+        }
+        
+        #products-table thead th {
+            color: white !important;
+            font-weight: bold;
+        }
+        
+        #products-table tbody tr:hover {
+            background-color: rgba(13, 110, 253, 0.1);
+        }
+        
+        .card-main {
+            background-color: #fff;
+            border-radius: 0.5rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-header {
+            padding: 0.75rem 1.25rem;
+            border-bottom: 1px solid rgba(0,0,0,.125);
+        }
+        
+        .display-4 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            line-height: 1.2;
+            color: #000 !important;
+        }
+        
+        /* PDF Export Button */
+        .export-section {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            text-align: center;
+            border: 1px solid #dee2e6;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .export-section p {
+            font-size: 1.1rem;
+            margin-bottom: 0;
+            color: #495057 !important;
+            flex: 1;
+            text-align: left;
+            padding-left: 10px;
+        }
+        
+        .export-button-container {
+            flex: 0 0 auto;
+            padding-right: 10px;
+        }
+        
+        .btn-export-pdf {
+            font-size: 1.1rem;
+            font-weight: bold;
+            padding: 12px 25px;
+            background-color: #dc3545;
+            border: none;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(220, 53, 69, 0.2);
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        
+        .btn-export-pdf:hover {
+            background-color: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(220, 53, 69, 0.3);
+        }
+        
+        .export-icon {
+            margin-right: 10px;
+            font-size: 1.2rem;
+            vertical-align: middle;
+        }
+        
+        @media (max-width: 768px) {
+            .export-section {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .export-section p {
+                margin-bottom: 15px;
+                text-align: center;
+                padding-left: 0;
+            }
+            
+            .export-button-container {
+                padding-right: 0;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Force text color for all table cells
+            $('.table tbody td').css('color', '#000');
+            $('.table th').each(function() {
+                if (!$(this).closest('thead').hasClass('table-primary')) {
+                    $(this).css('color', '#000');
+                }
+            });
+            
+            // Initialize revenue chart
+            var revenueCanvas = document.getElementById('revenueChart');
+            var revenueCtx = revenueCanvas.getContext('2d');
+            
+            // Get data from data attributes
+            var revenueLabels = JSON.parse(revenueCanvas.getAttribute('data-labels') || '[]');
+            var revenueData = JSON.parse(revenueCanvas.getAttribute('data-values') || '[]');
+            
+            new Chart(revenueCtx, {
+                type: 'bar',
+                data: {
+                    labels: revenueLabels,
+                    datasets: [{
+                        label: 'Revenu Mensuel (TND)',
+                        data: revenueData,
+                        backgroundColor: 'rgba(13, 110, 253, 0.5)',
+                        borderColor: 'rgba(13, 110, 253, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#000',
+                                callback: function(value) {
+                                    return value + ' TND';
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#000'
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                color: '#000'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.raw + ' TND';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Initialize products chart
+            var productCanvas = document.getElementById('productChart');
+            var productCtx = productCanvas.getContext('2d');
+            
+            // Get data from data attributes
+            var productLabels = JSON.parse(productCanvas.getAttribute('data-labels') || '[]');
+            var productData = JSON.parse(productCanvas.getAttribute('data-values') || '[]');
+            
+            // Generate colors for the pie chart
+            var backgroundColors = [];
+            var borderColors = [];
+            
+            for (var i = 0; i < productLabels.length; i++) {
+                var hue = (i * 37) % 360; // Generate different hues
+                backgroundColors.push('hsla(' + hue + ', 70%, 60%, 0.7)');
+                borderColors.push('hsla(' + hue + ', 70%, 50%, 1)');
+            }
+            
+            new Chart(productCtx, {
+                type: 'pie',
+                data: {
+                    labels: productLabels,
+                    datasets: [{
+                        data: productData,
+                        backgroundColor: backgroundColors,
+                        borderColor: borderColors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                color: '#000',
+                                font: {
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    var label = context.label || '';
+                                    var value = context.raw || 0;
+                                    var total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    var percentage = Math.round((value / total) * 100);
+                                    return label + ': ' + value + ' (' + percentage + '%)';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+{% endblock %} 

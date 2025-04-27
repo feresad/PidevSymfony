@@ -67,7 +67,7 @@ forum:
   upvote: "Upvote"
   downvote: "Downvote"
   react: "React"
-  subscribe: "Subscribe"
+  follow: "Subscribe"
   unsubscribe: "Unsubscribe"
   game_image: "Game Image"
   default_game_image: "Default Game Image"

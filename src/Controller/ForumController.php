@@ -429,6 +429,7 @@ class ForumController extends AbstractController
         /** @var Utilisateur|null $user */
         $user = $this->getUser();
         $isSubscribed = $user ? $this->subscriptionService->isSubscribed($user, $question) : false;
+        $subscribeButtonLabel = $isSubscribed ? $this->translator->trans('forum.unsubscribe') : $this->translator->trans('forum.follow');
 
         return $this->render('forum/single_topic.html.twig', [
             'question' => $questionData,
@@ -436,6 +437,7 @@ class ForumController extends AbstractController
             'comment_form' => $commentForm->createView(),
             'pagination' => $pagination,
             'is_subscribed' => $isSubscribed,
+            'subscribe_button_label' => $subscribeButtonLabel,
         ]);
     }
 
@@ -796,17 +798,83 @@ class ForumController extends AbstractController
     }
 
     #[Route('/switch-language/{locale}', name: 'switch_language', methods: ['GET'])]
-public function switchLanguage(string $locale, Request $request, SessionInterface $session): Response
-{
-    // Update the list of allowed locales to include 'ar'
-    if (!in_array($locale, ['en', 'fr', 'es', 'ar'])) {
-        $locale = 'en'; // Fallback to English
+    public function switchLanguage(string $locale, Request $request, SessionInterface $session): Response
+    {
+        // Update the list of allowed locales to include 'ar'
+        if (!in_array($locale, ['en', 'fr', 'es', 'ar'])) {
+            $locale = 'en'; // Fallback to English
+        }
+
+        $session->set('_locale', $locale);
+        $request->setLocale($locale);
+
+        $referer = $request->headers->get('referer');
+        return $this->redirect($referer ?: $this->generateUrl('forum_index'));
     }
 
-    $session->set('_locale', $locale);
-    $request->setLocale($locale);
+    #[Route('/ajax/subscribe-topic/{id}', name: 'ajax_subscribe_topic', methods: ['POST'])]
+    public function ajaxSubscribeTopic(int $id, QuestionsRepository $questionsRepository): JsonResponse
+    {
+        /** @var Utilisateur|null $user */
+        $user = $this->getUser();
+        if (!$user) {
+            return new JsonResponse(['success' => false, 'message' => $this->translator->trans('api.error.login_required')], 401);
+        }
 
-    $referer = $request->headers->get('referer');
-    return $this->redirect($referer ?: $this->generateUrl('forum_index'));
-}
+        $question = $questionsRepository->find($id);
+        if (!$question) {
+            return new JsonResponse(['success' => false, 'message' => $this->translator->trans('api.error.question_not_found')], 404);
+        }
+
+        try {
+            $this->subscriptionService->subscribe($user, $question);
+            return new JsonResponse([
+                'success' => true,
+                'isSubscribed' => true,
+                'message' => $this->translator->trans('flash.subscribed_successfully')
+            ]);
+        } catch (\Exception $e) {
+            $this->logger->error($this->translator->trans('log.error_subscribing_topic'), [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return new JsonResponse([
+                'success' => false,
+                'message' => $this->translator->trans('flash.error_subscribing_topic', ['%error%' => $e->getMessage()])
+            ], 500);
+        }
+    }
+
+    #[Route('/ajax/unsubscribe-topic/{id}', name: 'ajax_unsubscribe_topic', methods: ['POST'])]
+    public function ajaxUnsubscribeTopic(int $id, QuestionsRepository $questionsRepository): JsonResponse
+    {
+        /** @var Utilisateur|null $user */
+        $user = $this->getUser();
+        if (!$user) {
+            return new JsonResponse(['success' => false, 'message' => $this->translator->trans('api.error.login_required')], 401);
+        }
+
+        $question = $questionsRepository->find($id);
+        if (!$question) {
+            return new JsonResponse(['success' => false, 'message' => $this->translator->trans('api.error.question_not_found')], 404);
+        }
+
+        try {
+            $this->subscriptionService->unsubscribe($user, $question);
+            return new JsonResponse([
+                'success' => true,
+                'isSubscribed' => false,
+                'message' => $this->translator->trans('flash.unsubscribed_successfully')
+            ]);
+        } catch (\Exception $e) {
+            $this->logger->error($this->translator->trans('log.error_unsubscribing_topic'), [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return new JsonResponse([
+                'success' => false,
+                'message' => $this->translator->trans('flash.error_unsubscribing_topic', ['%error%' => $e->getMessage()])
+            ], 500);
+        }
+    }
 }
