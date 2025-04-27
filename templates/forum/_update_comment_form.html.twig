@@ -1,20 +1,20 @@
-<div class="comment-form mb-4">
-    {{ form_start(comment.updateForm, {'attr': {'class': 'profanity-check-form', 'data-comment-id': comment.id}}) }}
+<div class="update-form-container">
+    {{ form_start(comment.updateForm, {'attr': {'class': 'profanity-check-form'}}) }}
         <div class="mb-3">
             {{ form_label(comment.updateForm.contenu, 'Update Comment', {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(comment.updateForm.contenu, {'attr': {'class': 'form-control', 'rows': '4'}}) }}
+            {{ form_widget(comment.updateForm.contenu, {'attr': {'class': 'form-control', 'rows': '3'}}) }}
             {{ form_errors(comment.updateForm.contenu) }}
         </div>
         <div class="mb-3">
             <label class="form-label">Emotes</label>
             <div class="emotes-options d-flex gap-2">
-                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('😊', 'comment_update_form_{{ comment.id }}_contenu')">😊</button>
-                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('😂', 'comment_update_form_{{ comment.id }}_contenu')">😂</button>
-                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('❤️', 'comment_update_form_{{ comment.id }}_contenu')">❤️</button>
-                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('👍', 'comment_update_form_{{ comment.id }}_contenu')">👍</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('😊', 'comment_form_contenu')">😊</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('😂', 'comment_form_contenu')">😂</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('❤️', 'comment_form_contenu')">❤️</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('👍', 'comment_form_contenu')">👍</button>
             </div>
         </div>
-        <button type="submit" class="btn btn-primary">Modif</button>
+        <button type="submit" class="btn btn-primary">Update</button>
         <button type="button" class="btn btn-secondary cancel-update-btn" data-id="{{ comment.id }}">Cancel</button>
     {{ form_end(comment.updateForm) }}
 </div>

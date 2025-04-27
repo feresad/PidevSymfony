@@ -15,6 +15,7 @@ use App\Form\CommentFormType;
 use App\Repository\QuestionsRepository;
 use App\Repository\UtilisateurRepository;
 use App\Repository\NotificationRepository;
+use App\Service\TopicSubscriptionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -50,7 +51,8 @@ class CommentController extends AbstractController
         Request $request,
         QuestionsRepository $questionsRepository,
         UtilisateurRepository $utilisateurRepository,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        TopicSubscriptionService $subscriptionService
     ): Response {
         $question = $questionsRepository->find($id);
         if (!$question) {
@@ -121,6 +123,9 @@ class CommentController extends AbstractController
                         $notification->setLink($this->generateUrl('forum_single_topic', ['id' => $question->getQuestionId()]) . '#comment-' . $comment->getCommentaireId());
                         $entityManager->flush();
                     }
+
+                    // Notify subscribers of the new comment
+                    $subscriptionService->notifySubscribers($question, $comment, $utilisateur);
 
                     $this->addFlash('success', 'Commentaire ajouté avec succès !');
                 } catch (\Exception $e) {
@@ -627,34 +632,40 @@ class CommentController extends AbstractController
     }
 
     #[Route('/api/notifications', name: 'api_notifications', methods: ['GET'])]
-    public function getNotifications(NotificationRepository $notificationRepository): JsonResponse
-    {
-        /** @var Utilisateur|null $utilisateur */
-        $utilisateur = $this->getUser();
-        if (!$utilisateur) {
-            return new JsonResponse(['success' => false, 'message' => 'You must be logged in.'], 401);
-        }
-
-        try {
-            $notifications = $notificationRepository->findUnreadByUser($utilisateur->getId());
-            $data = array_map(function (Notification $notification) {
-                return [
-                    'id' => $notification->getId(),
-                    'message' => $notification->getMessage(),
-                    'link' => $notification->getLink(),
-                    'createdAt' => $notification->getCreatedAt()->format('Y-m-d H:i:s'),
-                ];
-            }, $notifications);
-
-            return new JsonResponse(['success' => true, 'notifications' => $data]);
-        } catch (\Exception $e) {
-            $this->logger->error('Error fetching notifications', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            return new JsonResponse(['success' => false, 'message' => 'Error fetching notifications'], 500);
-        }
+public function getNotifications(NotificationRepository $notificationRepository, LoggerInterface $logger): JsonResponse
+{
+    /** @var Utilisateur|null $utilisateur */
+    $utilisateur = $this->getUser();
+    if (!$utilisateur) {
+        $logger->warning('Unauthenticated access to /api/notifications');
+        return new JsonResponse(['success' => false, 'message' => 'You must be logged in.'], 401);
     }
+
+    try {
+        $logger->info('Fetching unread notifications for user', ['userId' => $utilisateur->getId()]);
+        $notifications = $notificationRepository->findUnreadByUser($utilisateur->getId());
+        $logger->info('Found notifications', ['count' => count($notifications)]);
+
+        $data = array_map(function (Notification $notification) use ($logger) {
+            $logger->debug('Processing notification', ['id' => $notification->getId()]);
+            return [
+                'id' => $notification->getId(),
+                'message' => $notification->getMessage(),
+                'link' => $notification->getLink(),
+                'createdAt' => $notification->getCreatedAt()->format('Y-m-d H:i:s'),
+            ];
+        }, $notifications);
+
+        return new JsonResponse(['success' => true, 'notifications' => $data]);
+    } catch (\Exception $e) {
+        $logger->error('Error fetching notifications', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+            'userId' => $utilisateur->getId()
+        ]);
+        return new JsonResponse(['success' => false, 'message' => 'Error fetching notifications: ' . $e->getMessage()], 500);
+    }
+}
 
     #[Route('/api/notifications/read/{id}', name: 'api_notifications_read', methods: ['POST'])]
     public function markNotificationRead(int $id, EntityManagerInterface $entityManager): JsonResponse
@@ -675,4 +686,39 @@ class CommentController extends AbstractController
 
         return new JsonResponse(['success' => true, 'message' => 'Notification marked as read']);
     }
+    #[Route('/api/notifications/read-all', name: 'api_notifications_mark_all_read', methods: ['POST'])]
+public function markAllNotificationsAsRead(NotificationRepository $notificationRepository, LoggerInterface $logger): JsonResponse
+{
+    /** @var Utilisateur|null $utilisateur */
+    $utilisateur = $this->getUser();
+    if (!$utilisateur) {
+        $logger->warning('Unauthenticated access to /api/notifications/read-all');
+        return new JsonResponse(['success' => false, 'message' => 'You must be logged in.'], 401);
+    }
+
+    try {
+        $logger->info('Marking all notifications as read for user', ['userId' => $utilisateur->getId()]);
+
+        $qb = $notificationRepository->createQueryBuilder('n')
+            ->update()
+            ->set('n.isRead', ':isRead')
+            ->where('n.user = :userId')
+            ->andWhere('n.isRead = :isReadFalse')
+            ->setParameter('isRead', true)
+            ->setParameter('isReadFalse', false)
+            ->setParameter('userId', $utilisateur->getId());
+
+        $affectedRows = $qb->getQuery()->execute();
+        $logger->info('Updated notifications', ['affectedRows' => $affectedRows]);
+
+        return new JsonResponse(['success' => true, 'message' => sprintf('Marked %d notifications as read', $affectedRows)]);
+    } catch (\Exception $e) {
+        $logger->error('Error marking all notifications as read', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+            'userId' => $utilisateur->getId()
+        ]);
+        return new JsonResponse(['success' => false, 'message' => 'Error marking all notifications as read: ' . $e->getMessage()], 500);
+    }
+}
 }

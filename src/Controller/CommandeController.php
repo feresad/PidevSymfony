@@ -94,6 +94,244 @@ class CommandeController extends AbstractController
         ]);
     }
 
+    #[Route('/stats', name: 'app_commande_stats', methods: ['GET'])]
+    public function stats(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $year = $request->query->get('year', date('Y'));
+        
+        // Create date range for the selected year
+        $startDate = new \DateTime($year . '-01-01 00:00:00');
+        $endDate = new \DateTime($year . '-12-31 23:59:59');
+        
+        // Get all commandes for the selected year
+        $commandesQuery = $entityManager->createQuery(
+            'SELECT c, p, s
+             FROM App\Entity\Commande c
+             JOIN c.produit p
+             JOIN p.stocks s
+             WHERE c.createdAt >= :startDate AND c.createdAt <= :endDate
+             ORDER BY c.createdAt ASC'
+        )
+        ->setParameter('startDate', $startDate)
+        ->setParameter('endDate', $endDate);
+        
+        $commandes = $commandesQuery->getResult();
+        
+        // Process data manually in PHP
+        $monthlyData = [];
+        $productData = [];
+        $totalRevenue = 0;
+        $totalOrders = 0;
+        
+        $monthNames = [
+            1 => 'Janvier', 2 => 'Février', 3 => 'Mars', 4 => 'Avril',
+            5 => 'Mai', 6 => 'Juin', 7 => 'Juillet', 8 => 'Août',
+            9 => 'Septembre', 10 => 'Octobre', 11 => 'Novembre', 12 => 'Décembre'
+        ];
+        
+        // Initialize months
+        for ($i = 1; $i <= 12; $i++) {
+            $monthlyData[$i] = [
+                'month_name' => $monthNames[$i],
+                'order_count' => 0,
+                'revenue' => 0,
+            ];
+        }
+        
+        // Process each commande
+        foreach ($commandes as $commande) {
+            $month = (int)$commande->getCreatedAt()->format('n');
+            $price = 0;
+            
+            // Get price from stock
+            if ($commande->getProduit() && $commande->getProduit()->getStocks() && !$commande->getProduit()->getStocks()->isEmpty()) {
+                $stock = $commande->getProduit()->getStocks()->first();
+                if ($stock) {
+                    $price = $stock->getPrixProduit();
+                }
+            }
+            
+            // Update monthly data
+            $monthlyData[$month]['order_count']++;
+            $monthlyData[$month]['revenue'] += $price;
+            
+            // Update total counts
+            $totalRevenue += $price;
+            $totalOrders++;
+            
+            // Update product data
+            $productName = $commande->getProduit() ? $commande->getProduit()->getNomProduit() : 'Inconnu';
+            if (!isset($productData[$productName])) {
+                $productData[$productName] = [
+                    'name' => $productName,
+                    'quantity' => 0,
+                    'revenue' => 0,
+                    'prices' => [], // To calculate average
+                ];
+            }
+            
+            $productData[$productName]['quantity']++;
+            $productData[$productName]['revenue'] += $price;
+            $productData[$productName]['prices'][] = $price;
+        }
+        
+        // Clean up data for view
+        $formattedMonthlyData = array_values($monthlyData);
+        
+        // Process product data
+        $formattedProductData = [];
+        foreach ($productData as $data) {
+            $avgPrice = count($data['prices']) > 0 ? array_sum($data['prices']) / count($data['prices']) : 0;
+            $formattedProductData[] = [
+                'name' => $data['name'],
+                'quantity' => $data['quantity'],
+                'revenue' => $data['revenue'],
+                'avg_price' => $avgPrice,
+            ];
+        }
+        
+        // Sort products by quantity sold (descending)
+        usort($formattedProductData, function($a, $b) {
+            return $b['quantity'] - $a['quantity'];
+        });
+        
+        // Limit to top 10 products
+        $topProducts = array_slice($formattedProductData, 0, 10);
+        
+        return $this->render('commande/stats.html.twig', [
+            'monthly_data' => $formattedMonthlyData,
+            'top_products' => $topProducts,
+            'total_revenue' => $totalRevenue,
+            'total_orders' => $totalOrders,
+            'year' => $year,
+        ]);
+    }
+
+    #[Route('/stats/pdf', name: 'app_commande_stats_pdf', methods: ['GET'])]
+    public function statsPdf(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $year = $request->query->get('year', date('Y'));
+        
+        // Create date range for the selected year
+        $startDate = new \DateTime($year . '-01-01 00:00:00');
+        $endDate = new \DateTime($year . '-12-31 23:59:59');
+        
+        // Get all commandes for the selected year
+        $commandesQuery = $entityManager->createQuery(
+            'SELECT c, p, s
+             FROM App\Entity\Commande c
+             JOIN c.produit p
+             JOIN p.stocks s
+             WHERE c.createdAt >= :startDate AND c.createdAt <= :endDate
+             ORDER BY c.createdAt ASC'
+        )
+        ->setParameter('startDate', $startDate)
+        ->setParameter('endDate', $endDate);
+        
+        $commandes = $commandesQuery->getResult();
+        
+        // Process data manually in PHP
+        $monthlyData = [];
+        $productData = [];
+        $totalRevenue = 0;
+        $totalOrders = 0;
+        
+        $monthNames = [
+            1 => 'Janvier', 2 => 'Février', 3 => 'Mars', 4 => 'Avril',
+            5 => 'Mai', 6 => 'Juin', 7 => 'Juillet', 8 => 'Août',
+            9 => 'Septembre', 10 => 'Octobre', 11 => 'Novembre', 12 => 'Décembre'
+        ];
+        
+        // Initialize months
+        for ($i = 1; $i <= 12; $i++) {
+            $monthlyData[$i] = [
+                'month_name' => $monthNames[$i],
+                'order_count' => 0,
+                'revenue' => 0,
+            ];
+        }
+        
+        // Process each commande
+        foreach ($commandes as $commande) {
+            $month = (int)$commande->getCreatedAt()->format('n');
+            $price = 0;
+            
+            // Get price from stock
+            if ($commande->getProduit() && $commande->getProduit()->getStocks() && !$commande->getProduit()->getStocks()->isEmpty()) {
+                $stock = $commande->getProduit()->getStocks()->first();
+                if ($stock) {
+                    $price = $stock->getPrixProduit();
+                }
+            }
+            
+            // Update monthly data
+            $monthlyData[$month]['order_count']++;
+            $monthlyData[$month]['revenue'] += $price;
+            
+            // Update total counts
+            $totalRevenue += $price;
+            $totalOrders++;
+            
+            // Update product data
+            $productName = $commande->getProduit() ? $commande->getProduit()->getNomProduit() : 'Inconnu';
+            if (!isset($productData[$productName])) {
+                $productData[$productName] = [
+                    'name' => $productName,
+                    'quantity' => 0,
+                    'revenue' => 0,
+                    'prices' => [], // To calculate average
+                ];
+            }
+            
+            $productData[$productName]['quantity']++;
+            $productData[$productName]['revenue'] += $price;
+            $productData[$productName]['prices'][] = $price;
+        }
+        
+        // Clean up data for view
+        $formattedMonthlyData = array_values($monthlyData);
+        
+        // Process product data
+        $formattedProductData = [];
+        foreach ($productData as $data) {
+            $avgPrice = count($data['prices']) > 0 ? array_sum($data['prices']) / count($data['prices']) : 0;
+            $formattedProductData[] = [
+                'name' => $data['name'],
+                'quantity' => $data['quantity'],
+                'revenue' => $data['revenue'],
+                'avg_price' => $avgPrice,
+            ];
+        }
+        
+        // Sort products by quantity sold (descending)
+        usort($formattedProductData, function($a, $b) {
+            return $b['quantity'] - $a['quantity'];
+        });
+        
+        // Limit to top 10 products
+        $topProducts = array_slice($formattedProductData, 0, 10);
+        
+        // Generate PDF
+        $html = $this->renderView('commande/stats_pdf.html.twig', [
+            'monthly_data' => $formattedMonthlyData,
+            'top_products' => $topProducts,
+            'total_revenue' => $totalRevenue,
+            'total_orders' => $totalOrders,
+            'year' => $year,
+        ]);
+        
+        $dompdf = new \Dompdf\Dompdf();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+        
+        $response = new Response($dompdf->output());
+        $response->headers->set('Content-Type', 'application/pdf');
+        $response->headers->set('Content-Disposition', 'attachment;filename=statistiques_commandes_' . $year . '.pdf');
+        
+        return $response;
+    }
+
     #[Route('/{id}', name: 'app_commande_show', methods: ['GET'])]
     public function show(Commande $commande, CommandeRepository $commandeRepository): Response
     {

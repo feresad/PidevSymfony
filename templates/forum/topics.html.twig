@@ -1,17 +1,39 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}GoodGames | Main Game Discussions{% endblock %}
+{% block title %}{{ 'page.title'|trans({'%title%': 'nav.main_game_discussions'|trans}) }}{% endblock %}
 
 {% block body %}
     <div class="nk-gap-1"></div>
     <div class="container">
-        <ul class="nk-breadcrumbs">
-            <li><a href="{{ path('app_home') }}" class="ds-ds">Home</a></li>
-            <li><span class="fa fa-angle-right"></span></li>
-            <li><a href="{{ path('forum_index') }}" class="ds-ds">Forum</a></li>
-            <li><span class="fa fa-angle-right"></span></li>
-            <li><span class="ds-ds">>Discussions principales</span></li>
-        </ul>
+        <!-- Header Section with Breadcrumbs and Language Switcher -->
+        <div class="header-section d-flex justify-content-between align-items-center mb-2">
+            <ul class="nk-breadcrumbs m-0">
+                <li><a href="{{ path('app_home') }}" class="ds-ds">{{ 'nav.home'|trans }}</a></li>
+                <li><span class="fa fa-angle-right"></span></li>
+                <li><a href="{{ path('forum_index') }}" class="ds-ds">{{ 'nav.forum'|trans }}</a></li>
+                <li><span class="fa fa-angle-right"></span></li>
+                <li><span class="ds-ds">{{ 'nav.main_game_discussions'|trans }}</span></li>
+            </ul>
+            <!-- Language Switcher -->
+            <div class="language-switcher">
+                <div class="dropdown">
+                    <button class="nk-btn nk-btn-rounded nk-btn-color-white dropdown-toggle" 
+        type="button" 
+        id="languageDropdown" 
+        data-bs-toggle="dropdown" 
+        aria-expanded="false" 
+        aria-label="{{ 'select_language'|trans }}">
+    <span class="fa fa-globe me-1"></span> {{ app.request.locale|upper }}
+</button>
+<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+    <li><a class="dropdown-item" href="{{ path('switch_language', {'locale': 'en'}) }}" aria-label="{{ 'english'|trans }}">🇬🇧 {{ 'english'|trans }}</a></li>
+    <li><a class="dropdown-item" href="{{ path('switch_language', {'locale': 'fr'}) }}" aria-label="{{ 'french'|trans }}">🇫🇷 {{ 'french'|trans }}</a></li>
+    <li><a class="dropdown-item" href="{{ path('switch_language', {'locale': 'es'}) }}" aria-label="{{ 'spanish'|trans }}">🇪🇸 {{ 'spanish'|trans }}</a></li>
+    <li><a class="dropdown-item" href="{{ path('switch_language', {'locale': 'ar'}) }}" aria-label="{{ 'arabic'|trans }}">🇸🇦 {{ 'arabic'|trans }}</a></li>
+</ul>
+                </div>
+            </div>
+        </div>
     </div>
     <div class="nk-gap-1"></div>
 
@@ -19,13 +41,13 @@
         <div class="row mb-4 align-items-center">
             <div class="col-md-8">
                 <div class="nk-forum-search">
-                    <input type="text" id="topicSearch" class="form-control" placeholder="Search topics by game, author, title, or content...">
+                    <input type="text" id="topicSearch" class="form-control" placeholder="{{ 'forum.search.placeholder'|trans }}">
                 </div>
             </div>
             <div class="col-md-4 text-end">
-                <a href="{{ path('forum_trivia') }}" class="nk-btn nk-btn-rounded nk-btn-color-main-2 me-2">Jouer Trivia</a>
+                <a href="{{ path('forum_trivia') }}" class="nk-btn nk-btn-rounded nk-btn-color-main-2 me-2">{{ 'forum.button.trivia'|trans }}</a>
                 <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-white" data-bs-toggle="modal" data-bs-target="#newTopicModal">
-                    Nouveau sujet
+                    {{ 'forum.button.new_topic'|trans }}
                 </button>
             </div>
         </div>
@@ -33,7 +55,7 @@
         <div class="nk-forum-trending mb-3">
             <div class="nk-forum-trending-header">
                 <img src="{{ asset('images/reddit-icon.png') }}" alt="Reddit" class="nk-forum-trending-icon">
-                <span>Trending sur r/gaming</span>
+                <span>{{ 'forum.trending.title'|trans }}</span>
             </div>
             <ul class="nk-forum-trending-list">
                 {% for post in trendingPosts %}
@@ -56,17 +78,17 @@
                          data-content="{{ topic.content ? topic.content|lower : '' }}">
                         <div class="nk-forum-vote-section">
                             <button class="vote-btn upvote-btn voting-button upvote" data-id="{{ topic.id }}" data-type="question" data-vote-type="UP" data-fallback="↑">
-                                <img src="{{ asset('images/uppvote-emoji.png') }}" alt="Upvote" class="vote-icon">
+                                <img src="{{ asset('images/uppvote-emoji.png') }}" alt="{{ 'forum.upvote'|trans }}" class="vote-icon">
                             </button>
                             <span class="vote-count">{{ topic.votes|default(0) }}</span>
                             <button class="vote-btn downvote-btn voting-button downvote" data-id="{{ topic.id }}" data-type="question" data-vote-type="DOWN" data-fallback="↓">
-                                <img src="{{ asset('images/doownvote-emoji.png') }}" alt="Downvote" class="vote-icon">
+                                <img src="{{ asset('images/doownvote-emoji.png') }}" alt="{{ 'forum.downvote'|trans }}" class="vote-icon">
                             </button>
                         </div>
                         <div class="nk-forum-title">
                             <h3><a href="{{ path('forum_single_topic', { id: topic.id }) }}">{{ topic.title }}</a></h3>
                             <div class="nk-forum-title-sub">
-                                Lancé par <a href="#">{{ topic.startedBy }}</a> le {{ topic.startedOn }}
+                                {{ 'forum.topic.started_by'|trans({'author': topic.startedBy, 'date': topic.startedOn}) }}
                                 <span class="sentiment-badge sentiment-{{ topic.sentiment }}">{{ topic.sentiment|capitalize }}</span>
                             </div>
                             {% if topic.content is defined and topic.content %}
@@ -79,14 +101,14 @@
                             {% endif %}
                             {% if topic.image is defined and topic.image %}
                                 <div class="nk-forum-title-image mt-8">
-                                    <img src="http://localhost/img/games/{{ topic.image }}" alt="Topic Image" style="max-width: 200px;">
+                                    <img src="http://localhost/img/games/{{ topic.image }}" alt="{{ 'forum.topic_media'|trans }}" style="max-width: 200px;">
                                 </div>
                             {% endif %}
                             {% if topic.video is defined and topic.video %}
                                 <div class="nk-forum-title-video mt-8">
                                     <video width="400" height="300" controls>
                                         <source src="http://localhost/img/games/{{ topic.video }}" type="video/mp4">
-                                        Your browser does not support the video tag.
+                                        {{ 'forum.video_unsupported'|trans }}
                                     </video>
                                 </div>
                             {% endif %}
@@ -100,40 +122,40 @@
                             <div class="nk-forum-actions mt-8">
                                 {% if app.user and app.user.id == topic.startedById %}
                                     <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-main-1" data-bs-toggle="modal" data-bs-target="#updateTopicModal-{{ topic.id }}">
-                                        Modifier
+                                        {{ 'forum.edit'|trans }}
                                     </button>
                                     <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-danger" data-bs-toggle="modal" data-bs-target="#deleteTopicModal-{{ topic.id }}">
-                                        Supprimer
+                                        {{ 'forum.delete'|trans }}
                                     </button>
                                 {% endif %}
                                 <span class="share-btn" data-id="{{ topic.id }}" data-bs-toggle="modal" data-bs-target="#shareModal-{{ topic.id }}">
-                                    <img src="{{ asset('images/share_icon.png') }}" alt="Share" class="share-icon">
+                                    <img src="{{ asset('images/share_icon.png') }}" alt="{{ 'forum.share'|trans }}" class="share-icon">
                                 </span>
                                 <div class="reaction-wrapper">
-                                    <img src="{{ asset('images/meme_icon.png') }}" alt="React" class="reaction-icon" data-id="{{ topic.id }}" data-type="question">
+                                    <img src="{{ asset('images/meme_icon.png') }}" alt="{{ 'forum.react'|trans }}" class="reaction-icon" data-id="{{ topic.id }}" data-type="question">
                                 </div>
-                                <span class="spam-btn"  data-id="{{ topic.id }}" data-type="question" data-user-id="{{ topic.startedById }}">
+                                <span class="spam-btn" data-id="{{ topic.id }}" data-type="question" data-user-id="{{ topic.startedById }}">
                                     <a href="#" class="nk-anchor">
-                                        <span class="fa fa-flag"></span> Spam
+                                        <span class="fa fa-flag"></span> {{ 'forum.spam'|trans }}
                                     </a>
                                 </span>
                             </div>
                         </div>
                         <div class="nk-forum-count">
-                            {{ topic.postCount }} posts
+                            {{ 'forum.topic.posts'|trans({'count': topic.postCount}) }}
                         </div>
                         <div class="nk-forum-activity">
                             {% if topic.gameImage is defined and topic.gameImage %}
                                 <div class="nk-forum-game-image mb-2">
-                                    <img src="http://localhost/img/games/{{ topic.gameImage }}" alt="Game Image" class="game-image">
+                                    <img src="http://localhost/img/games/{{ topic.gameImage }}" alt="{{ 'forum.game_image'|trans }}" class="game-image">
                                 </div>
                             {% else %}
                                 <div class="nk-forum-game-image mb-2">
-                                    <img src="{{ asset('assets/images/default-game.jpg') }}" alt="Default Game Image" class="game-image">
+                                    <img src="{{ asset('assets/images/default-game.jpg') }}" alt="{{ 'forum.default_game_image'|trans }}" class="game-image">
                                 </div>
                             {% endif %}
                             <div class="nk-forum-activity-title" title="{{ topic.lastActivityUser }}">
-                                Dernier par <a href="#">{{ topic.lastActivityUser }}</a>
+                                {{ 'forum.topic.last_activity'|trans({'user': topic.lastActivityUser}) }}
                             </div>
                             <div class="nk-forum-activity-date">
                                 {{ topic.lastActivityDate }}
@@ -146,11 +168,11 @@
                         <div class="modal-dialog">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h5 class="modal-title" id="shareModalLabel-{{ topic.id }}">Share Topic</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    <h5 class="modal-title" id="shareModalLabel-{{ topic.id }}">{{ 'forum.modal.share.title'|trans }}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ 'general.close'|trans }}"></button>
                                 </div>
                                 <div class="modal-body">
-                                    <p>Share this topic on your favorite platform:</p>
+                                    <p>{{ 'forum.modal.share.body'|trans }}</p>
                                     <div class="share-options">
                                         <a href="#" class="share-link facebook-share" data-id="{{ topic.id }}" target="_blank">
                                             <i class="fab fa-facebook-f"></i> Facebook
@@ -164,7 +186,7 @@
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ 'forum.modal.share.close'|trans }}</button>
                                 </div>
                             </div>
                         </div>
@@ -176,38 +198,38 @@
                             <div class="modal-dialog">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <h5 class="modal-title" id="updateTopicModalLabel-{{ topic.id }}">Update Topic</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        <h5 class="modal-title" id="updateTopicModalLabel-{{ topic.id }}">{{ 'forum.modal.update_topic.title'|trans }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ 'general.close'|trans }}"></button>
                                     </div>
                                     <div class="modal-body">
                                         {{ form_start(topic.updateForm, {'attr': {'class': 'profanity-check-form'}}) }}
                                             <div class="mb-3">
-                                                {{ form_label(topic.updateForm.title, null, {'label_attr': {'class': 'form-label'}}) }}
+                                                {{ form_label(topic.updateForm.title, 'forum.modal.form.title'|trans, {'label_attr': {'class': 'form-label'}}) }}
                                                 {{ form_widget(topic.updateForm.title, {'attr': {'class': 'form-control'}}) }}
                                                 {{ form_errors(topic.updateForm.title) }}
                                             </div>
                                             <div class="mb-3">
-                                                {{ form_label(topic.updateForm.content, null, {'label_attr': {'class': 'form-label'}}) }}
+                                                {{ form_label(topic.updateForm.content, 'forum.modal.form.content'|trans, {'label_attr': {'class': 'form-label'}}) }}
                                                 {{ form_widget(topic.updateForm.content, {'attr': {'class': 'form-control'}}) }}
                                                 {{ form_errors(topic.updateForm.content) }}
                                             </div>
                                             <div class="mb-3">
-                                                {{ form_label(topic.updateForm.media_type, null, {'label_attr': {'class': 'form-label'}}) }}
+                                                {{ form_label(topic.updateForm.media_type, 'forum.modal.form.media_type'|trans, {'label_attr': {'class': 'form-label'}}) }}
                                                 {{ form_widget(topic.updateForm.media_type, {'attr': {'class': 'form-control'}}) }}
                                                 {{ form_errors(topic.updateForm.media_type) }}
                                             </div>
                                             <div class="mb-3">
-                                                {{ form_label(topic.updateForm.media_file, null, {'label_attr': {'class': 'form-label'}}) }}
+                                                {{ form_label(topic.updateForm.media_file, 'forum.modal.form.media_file'|trans, {'label_attr': {'class': 'form-label'}}) }}
                                                 {{ form_widget(topic.updateForm.media_file, {'attr': {'class': 'form-control-file'}}) }}
                                                 {{ form_errors(topic.updateForm.media_file) }}
                                             </div>
                                             <div class="mb-3">
-                                                {{ form_label(topic.updateForm.game_id, null, {'label_attr': {'class': 'form-label'}}) }}
+                                                {{ form_label(topic.updateForm.game_id, 'forum.modal.form.game_id'|trans, {'label_attr': {'class': 'form-label'}}) }}
                                                 {{ form_widget(topic.updateForm.game_id, {'attr': {'class': 'form-control'}}) }}
                                                 {{ form_errors(topic.updateForm.game_id) }}
                                             </div>
                                             <div class="mb-3">
-                                                <label class="form-label">Emotes</label>
+                                                <label class="form-label">{{ 'forum.modal.form.emotes'|trans }}</label>
                                                 <div class="emotes-options">
                                                     <button type="button" class="btn btn-emote" onclick="addEmote('😊', 'update_topic_form_{{ topic.id }}_content')">😊</button>
                                                     <button type="button" class="btn btn-emote" onclick="addEmote('😂', 'update_topic_form_{{ topic.id }}_content')">😂</button>
@@ -216,8 +238,8 @@
                                                 </div>
                                             </div>
                                             <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                                {{ form_widget(topic.updateForm.submit, {'attr': {'class': 'btn btn-primary'}}) }}
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ 'general.close'|trans }}</button>
+                                                {{ form_widget(topic.updateForm.submit, {'attr': {'class': 'btn btn-primary', 'label': 'forum.modal.form.submit'|trans}}) }}
                                             </div>
                                         {{ form_end(topic.updateForm) }}
                                     </div>
@@ -230,15 +252,15 @@
                             <div class="modal-dialog">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <h5 class="modal-title" id="deleteTopicModalLabel-{{ topic.id }}">Supprimer le sujet</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        <h5 class="modal-title" id="deleteTopicModalLabel-{{ topic.id }}">{{ 'forum.modal.delete_topic.title'|trans }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ 'general.close'|trans }}"></button>
                                     </div>
                                     <div class="modal-body">
-                                        Êtes-vous sûr de vouloir supprimer le sujet ? "<strong>{{ topic.title }}</strong>"? This action cannot be undone.
+                                        {{ 'forum.modal.delete_topic.body'|trans({'title': topic.title})|raw }}
                                     </div>
                                     <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                        <a href="{{ path('forum_delete_topic', { id: topic.id }) }}" class="btn btn-danger">Supprimer</a>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ 'forum.modal.delete_topic.cancel'|trans }}</button>
+                                        <a href="{{ path('forum_delete_topic', { id: topic.id }) }}" class="btn btn-danger">{{ 'forum.modal.delete_topic.delete'|trans }}</a>
                                     </div>
                                 </div>
                             </div>
@@ -247,7 +269,7 @@
                 {% endfor %}
             {% else %}
                 <div class="text-center">
-                    <p>No topics found on this page.</p>
+                    <p>{{ 'forum.topic.no_topics'|trans }}</p>
                 </div>
             {% endif %}
         </div>
@@ -293,8 +315,11 @@
                     </div>
 
                     <div class="text-center mt-2">
-                        Showing {{ (pagination.currentPage - 1) * pagination.itemsPerPage + 1 }}-{{ min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems) }} 
-                        of {{ pagination.totalItems }} topics
+                        {{ 'forum.pagination.showing'|trans({
+                            'start': (pagination.currentPage - 1) * pagination.itemsPerPage + 1,
+                            'end': min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems),
+                            'total': pagination.totalItems
+                        }) }}
                     </div>
                 </div>
             </div>
@@ -305,38 +330,38 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="newTopicModalLabel">Créer nouveau sujet</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <h5 class="modal-title" id="newTopicModalLabel">{{ 'forum.modal.new_topic.title'|trans }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ 'general.close'|trans }}"></button>
                     </div>
                     <div class="modal-body">
                         {{ form_start(newTopicForm, {'attr': {'class': 'profanity-check-form'}}) }}
                             <div class="mb-3">
-                                {{ form_label(newTopicForm.title, null, {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_label(newTopicForm.title, 'forum.modal.form.title'|trans, {'label_attr': {'class': 'form-label'}}) }}
                                 {{ form_widget(newTopicForm.title, {'attr': {'class': 'form-control'}}) }}
                                 {{ form_errors(newTopicForm.title) }}
                             </div>
                             <div class="mb-3">
-                                {{ form_label(newTopicForm.content, null, {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_label(newTopicForm.content, 'forum.modal.form.content'|trans, {'label_attr': {'class': 'form-label'}}) }}
                                 {{ form_widget(newTopicForm.content, {'attr': {'class': 'form-control'}}) }}
                                 {{ form_errors(newTopicForm.content) }}
                             </div>
                             <div class="mb-3">
-                                {{ form_label(newTopicForm.media_type, null, {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_label(newTopicForm.media_type, 'forum.modal.form.media_type'|trans, {'label_attr': {'class': 'form-label'}}) }}
                                 {{ form_widget(newTopicForm.media_type, {'attr': {'class': 'form-control'}}) }}
                                 {{ form_errors(newTopicForm.media_type) }}
                             </div>
                             <div class="mb-3">
-                                {{ form_label(newTopicForm.media_file, null, {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_label(newTopicForm.media_file, 'forum.modal.form.media_file'|trans, {'label_attr': {'class': 'form-label'}}) }}
                                 {{ form_widget(newTopicForm.media_file, {'attr': {'class': 'form-control-file'}}) }}
                                 {{ form_errors(newTopicForm.media_file) }}
                             </div>
                             <div class="mb-3">
-                                {{ form_label(newTopicForm.game_id, null, {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_label(newTopicForm.game_id, 'forum.modal.form.game_id'|trans, {'label_attr': {'class': 'form-label'}}) }}
                                 {{ form_widget(newTopicForm.game_id, {'attr': {'class': 'form-control'}}) }}
                                 {{ form_errors(newTopicForm.game_id) }}
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Emotes</label>
+                                <label class="form-label">{{ 'forum.modal.form.emotes'|trans }}</label>
                                 <div class="emotes-options">
                                     <button type="button" class="btn btn-emote" onclick="addEmote('😊', 'topic_form_content')">😊</button>
                                     <button type="button" class="btn btn-emote" onclick="addEmote('😂', 'topic_form_content')">😂</button>
@@ -345,8 +370,8 @@
                                 </div>
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                {{ form_widget(newTopicForm.submit, {'attr': {'class': 'btn btn-primary'}}) }}
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ 'general.close'|trans }}</button>
+                                {{ form_widget(newTopicForm.submit, {'attr': {'class': 'btn btn-primary', 'label': 'forum.modal.form.submit'|trans}}) }}
                             </div>
                         {{ form_end(newTopicForm) }}
                     </div>
@@ -385,6 +410,72 @@
             position: relative;
         }
 
+        /* Header Section Styling */
+        .header-section {
+            position: relative;
+            z-index: 1000;
+        }
+
+        /* Language Switcher Styling */
+        .language-switcher {
+            position: relative;
+        }
+
+        .language-switcher .dropdown {
+            display: inline-block;
+        }
+
+        .language-switcher .dropdown-toggle {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .language-switcher .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: rgba(35, 41, 48, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            z-index: 1001;
+            min-width: 150px;
+        }
+
+        .language-switcher .dropdown-item {
+            color: #d1d5db;
+            font-family: 'Montserrat', sans-serif;
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .language-switcher .dropdown-item:hover {
+            background-color: #0585e6;
+            color: #fff;
+        }
+
+        /* Ensure breadcrumbs don't overlap */
+        .nk-breadcrumbs {
+            flex-grow: 1;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 767px) {
+            .header-section {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .language-switcher {
+                margin-top: 10px;
+                align-self: flex-end;
+            }
+            .nk-breadcrumbs {
+                margin-bottom: 10px;
+            }
+        }
+
         /* Modal styling */
         .modal-backdrop {
             background: rgba(0, 0, 0, 0.5);
@@ -403,17 +494,17 @@
 
         /* Style for select elements in the modal */
         .modal-body select {
-            background: rgba(41, 49, 57, 0.8); /* Dark background to match the form */
+            background: rgba(41, 49, 57, 0.8);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            color: #d1d5db; /* Light grey text */
+            color: #d1d5db;
             padding: 8px;
             border-radius: 5px;
             font-family: 'Montserrat', sans-serif;
-            width: 100%; /* Ensure it matches the width of other form controls */
-            appearance: none; /* Remove default browser styling */
+            width: 100%;
+            appearance: none;
             -webkit-appearance: none;
             -moz-appearance: none;
-            background-image: url('data:image/svg+xml;utf8,<svg fill="white" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>'); /* Custom dropdown arrow */
+            background-image: url('data:image/svg+xml;utf8,<svg fill="white" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
             background-repeat: no-repeat;
             background-position: right 10px center;
             background-size: 12px;
@@ -421,22 +512,20 @@
 
         .modal-body select:focus {
             outline: none;
-            border-color: #0585e6; /* Blue border on focus */
-            box-shadow: 0 0 5px rgba(5, 133, 230, 0.5); /* Blue glow on focus */
+            border-color: #0585e6;
+            box-shadow: 0 0 5px rgba(5, 133, 230, 0.5);
         }
 
-        /* Style for options in the select dropdown */
         .modal-body select option {
-            background: #232930; /* Dark background for options */
-            color: #d1d5db; /* Light grey text */
+            background: #232930;
+            color: #d1d5db;
             font-family: 'Montserrat', sans-serif;
-            padding: 8px; /* Add padding for better spacing */
+            padding: 8px;
         }
 
-        /* Hover effect for options (requires browser support, works in modern browsers) */
         .modal-body select option:hover {
-            background: #0585e6; /* Blue background on hover */
-            color: #fff; /* White text on hover */
+            background: #0585e6;
+            color: #fff;
         }
 
         /* Rest of your existing styles */
@@ -754,536 +843,242 @@
             }
         }
 
-      $(document).ready(function() {
-    let sentimentMap = {
-        positive: ['👍', '😊', '😂', '❤️', '🎉', '😍', '👏', '🌟', '😎', '💪'],
-        negative: ['👎', '😢', '😡', '💔', '😤', '😞', '🤬', '😣', '💢', '😠'],
-        neutral: ['🤔', '😐', '🙂', '👀', '🤷', '😶', '🤝', '🙄', '😴', '🤓']
-    };
+        $(document).ready(function() {
+            let sentimentMap = {
+                positive: ['👍', '😊', '😂', '❤️', '🎉', '😍', '👏', '🌟', '😎', '💪'],
+                negative: ['👎', '😢', '😡', '💔', '😤', '😞', '🤬', '😣', '💢', '😠'],
+                neutral: ['🤔', '😐', '🙂', '👀', '🤷', '😶', '🤝', '🙄', '😴', '🤓']
+            };
 
-    // Fetch sentiment map from API
-    $.ajax({
-        url: '{{ path('api_get_sentiment_map') }}',
-        method: 'GET',
-        success: function(response) {
-            if (response.success && response.sentimentMap) {
-                sentimentMap = response.sentimentMap;
-                initializeReactions();
-                fetchUserVotes();
-            } else {
-                console.error('Failed to fetch sentiment map:', response.message);
-                initializeReactions();
-                fetchUserVotes();
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error('AJAX error fetching sentiment map:', status, error);
-            initializeReactions();
-            fetchUserVotes();
-        }
-    });
-
-    function debounce(func, wait) {
-        let timeout;
-        return function(...args) {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(this, args), wait);
-        };
-    }
-
-    function fetchReactions(id, type, $display) {
-        $.ajax({
-            url: '{{ path('react_action') }}',
-            method: 'POST',
-            data: { id: id, type: type, action: 'fetch' },
-            success: function(response) {
-                if (response.success) {
-                    updateReactionDisplay($display, response.reactionCounts || {});
-                } else {
-                    console.error('Failed to fetch reactions:', response.message);
+            // Fetch sentiment map from API
+            $.ajax({
+                url: '{{ path('api_get_sentiment_map') }}',
+                method: 'GET',
+                success: function(response) {
+                    if (response.success && response.sentimentMap) {
+                        sentimentMap = response.sentimentMap;
+                        initializeReactions();
+                        fetchUserVotes();
+                    } else {
+                        console.error('Failed to fetch sentiment map:', response.message);
+                        initializeReactions();
+                        fetchUserVotes();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX error fetching sentiment map:', status, error);
+                    initializeReactions();
+                    fetchUserVotes();
                 }
-            },
-            error: function(xhr, status, error) {
-                console.error('AJAX error fetching reactions:', status, error);
-            }
-        });
-    }
-
-    function updateReactionDisplay($display, reactionCounts) {
-        let reactionHtml = '';
-        for (const [emoji, count] of Object.entries(reactionCounts)) {
-            reactionHtml += `<span class="reaction-item" data-emoji="${emoji}">${emoji} ${count}</span>`;
-        }
-        $display.html(reactionHtml);
-    }
-
-    function initializeReactions() {
-        $('.reaction-display').each(function() {
-            const $display = $(this);
-            const id = $display.data('id');
-            const type = $display.data('type');
-            if ($display.children().length === 0) {
-                fetchReactions(id, type, $display);
-            }
-        });
-    }
-
-    const showEmojiPicker = debounce(function($icon, id, type) {
-        if (sentimentMap.positive.length === 0) return;
-
-        $('.emoji-picker-container').remove();
-
-        let pickerHtml = '<div class="emoji-picker-container">';
-        
-        pickerHtml += '<div class="emoji-section"><h4>Positive</h4><div class="emoji-grid">';
-        sentimentMap.positive.forEach(emoji => {
-            pickerHtml += `<span class="emoji-option" data-emoji="${emoji}" data-id="${id}" data-type="${type}">${emoji}</span>`;
-        });
-        pickerHtml += '</div></div>';
-
-        pickerHtml += '<div class="emoji-section"><h4>Negative</h4><div class="emoji-grid">';
-        sentimentMap.negative.forEach(emoji => {
-            pickerHtml += `<span class="emoji-option" data-emoji="${emoji}" data-id="${id}" data-type="${type}">${emoji}</span>`;
-        });
-        pickerHtml += '</div></div>';
-
-        pickerHtml += '<div class="emoji-section"><h4>Neutral</h4><div class="emoji-grid">';
-        sentimentMap.neutral.forEach(emoji => {
-            pickerHtml += `<span class="emoji-option" data-emoji="${emoji}" data-id="${id}" data-type="${type}">${emoji}</span>`;
-        });
-        pickerHtml += '</div></div>';
-
-        pickerHtml += '</div>';
-
-        $('body').append(pickerHtml);
-        const $newPicker = $('.emoji-picker-container');
-
-        const iconOffset = $icon.offset();
-        const iconHeight = $icon.outerHeight();
-        const viewportHeight = $(window).height();
-        const pickerHeight = $newPicker.outerHeight();
-        let topPosition = iconOffset.top + iconHeight;
-        if (topPosition + pickerHeight > viewportHeight) {
-            topPosition = iconOffset.top - pickerHeight;
-        }
-        $newPicker.css({
-            top: topPosition,
-            left: iconOffset.left
-        }).fadeIn(100);
-
-        $newPicker.data('reaction-wrapper', $icon.closest('.reaction-wrapper'));
-    }, 200);
-
-    function fetchUserVotes() {
-        const topicIds = [];
-        $('.vote-btn').each(function() {
-            const id = $(this).data('id');
-            if (!topicIds.includes(id)) {
-                topicIds.push(id);
-            }
-        });
-
-        if (topicIds.length === 0) return;
-
-        $.ajax({
-            url: '{{ path('ajax_fetch_user_votes') }}',
-            method: 'POST',
-            data: { topicIds: topicIds },
-            success: function(response) {
-                if (response.success) {
-                    response.votes.forEach(vote => {
-                        const $voteSection = $(`.nk-forum-vote-section .vote-btn[data-id="${vote.topicId}"]`);
-                        const $upvoteBtn = $voteSection.filter('.upvote-btn');
-                        const $downvoteBtn = $voteSection.filter('.downvote-btn');
-
-                        if (vote.voteType === 'UP') {
-                            $upvoteBtn.addClass('voted').prop('disabled', true);
-                            $downvoteBtn.removeClass('voted').prop('disabled', false);
-                        } else if (vote.voteType === 'DOWN') {
-                            $downvoteBtn.addClass('voted').prop('disabled', true);
-                            $upvoteBtn.removeClass('voted').prop('disabled', false);
-                        }
-                    });
-                } else {
-                    console.error('Failed to fetch user votes:', response.message);
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error('AJAX error fetching user votes:', status, error);
-            }
-        });
-    }
-
-    $(document).on('mouseenter', '.reaction-icon', function() {
-        const $icon = $(this);
-        const id = $icon.data('id');
-        const type = $icon.data('type');
-        showEmojiPicker($icon, id, type);
-    });
-
-    $(document).on('mouseenter', '.emoji-picker-container', function() {
-        $(this).stop().fadeIn(100);
-    });
-
-    $(document).on('mouseleave', '.reaction-wrapper', function(e) {
-        const $wrapper = $(this);
-        const $picker = $('.emoji-picker-container');
-        const relatedTarget = $(e.relatedTarget);
-
-        if ($picker.length && (relatedTarget.is($picker) || relatedTarget.closest('.emoji-picker-container').length)) {
-            return;
-        }
-
-        if ($picker.data('reaction-wrapper')?.is($wrapper)) {
-            $picker.fadeOut(100, function() {
-                $(this).remove();
             });
-        }
-    });
 
-    $(document).on('mouseleave', '.emoji-picker-container', function(e) {
-        const $picker = $(this);
-        const $wrapper = $picker.data('reaction-wrapper');
-        const relatedTarget = $(e.relatedTarget);
+            function debounce(func, wait) {
+                let timeout;
+                return function(...args) {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => func.apply(this, args), wait);
+                };
+            }
 
-        if ($wrapper && (relatedTarget.is($wrapper) || relatedTarget.closest('.reaction-wrapper').length)) {
-            return;
-        }
+            function fetchReactions(id, type, $display) {
+                $.ajax({
+                    url: '{{ path('react_action') }}',
+                    method: 'POST',
+                    data: { id: id, type: type, action: 'fetch' },
+                    success: function(response) {
+                        if (response.success) {
+                            updateReactionDisplay($display, response.reactionCounts || {});
+                        } else {
+                            console.error('Failed to fetch reactions:', response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('AJAX error fetching reactions:', status, error);
+                    }
+                });
+            }
 
-        $picker.fadeOut(100, function() {
-            $(this).remove();
-        });
-    });
+            function updateReactionDisplay($display, reactionCounts) {
+                let reactionHtml = '';
+                for (const [emoji, count] of Object.entries(reactionCounts)) {
+                    reactionHtml += `<span class="reaction-item" data-emoji="${emoji}">${emoji} ${count}</span>`;
+                }
+                $display.html(reactionHtml);
+            }
 
-    $(document).on('click', '.emoji-option', function() {
-        const $emoji = $(this);
-        const emoji = $emoji.data('emoji');
-        const id = $emoji.data('id');
-        const type = $emoji.data('type');
-        const $display = $(`.reaction-display[data-id="${id}"]`);
-        const $picker = $('.emoji-picker-container');
+            function initializeReactions() {
+                $('.reaction-display').each(function() {
+                    const $display = $(this);
+                    const id = $display.data('id');
+                    const type = $display.data('type');
+                    if ($display.children().length === 0) {
+                        fetchReactions(id, type, $display);
+                    }
+                });
+            }
 
-        $.ajax({
-            url: '{{ path('react_action') }}',
-            method: 'POST',
-            data: { id: id, type: type, emoji: emoji, action: 'react' },
-            success: function(response) {
-                if (response.success) {
-                    updateReactionDisplay($display, response.reactionCounts);
+            const showEmojiPicker = debounce(function($icon, id, type) {
+                if (sentimentMap.positive.length === 0) return;
+
+                $('.emoji-picker-container').remove();
+
+                let pickerHtml = '<div class="emoji-picker-container">';
+                
+                pickerHtml += '<div class="emoji-section"><h4>{{ "forum.reactions.positive"|trans }}</h4><div class="emoji-grid">';
+                sentimentMap.positive.forEach(emoji => {
+                    pickerHtml += `<span class="emoji-option" data-emoji="${emoji}" data-id="${id}" data-type="${type}">${emoji}</span>`;
+                });
+                pickerHtml += '</div></div>';
+
+                pickerHtml += '<div class="emoji-section"><h4>{{ "forum.reactions.negative"|trans }}</h4><div class="emoji-grid">';
+                sentimentMap.negative.forEach(emoji => {
+                    pickerHtml += `<span class="emoji-option" data-emoji="${emoji}" data-id="${id}" data-type="${type}">${emoji}</span>`;
+                });
+                pickerHtml += '</div></div>';
+
+                pickerHtml += '<div class="emoji-section"><h4>{{ "forum.reactions.neutral"|trans }}</h4><div class="emoji-grid">';
+                sentimentMap.neutral.forEach(emoji => {
+                    pickerHtml += `<span class="emoji-option" data-emoji="${emoji}" data-id="${id}" data-type="${type}">${emoji}</span>`;
+                });
+                pickerHtml += '</div></div>';
+
+                pickerHtml += '</div>';
+
+                $('body').append(pickerHtml);
+                const $newPicker = $('.emoji-picker-container');
+
+                const iconOffset = $icon.offset();
+                const iconHeight = $icon.outerHeight();
+                const viewportHeight = $(window).height();
+                const pickerHeight = $newPicker.outerHeight();
+                let topPosition = iconOffset.top + iconHeight;
+                if (topPosition + pickerHeight > viewportHeight) {
+                    topPosition = iconOffset.top - pickerHeight;
+                }
+                $newPicker.css({
+                    top: topPosition,
+                    left: iconOffset.left
+                }).fadeIn(100);
+
+                $newPicker.data('reaction-wrapper', $icon.closest('.reaction-wrapper'));
+            }, 200);
+
+            function fetchUserVotes() {
+                const topicIds = [];
+                $('.vote-btn').each(function() {
+                    const id = $(this).data('id');
+                    if (!topicIds.includes(id)) {
+                        topicIds.push(id);
+                    }
+                });
+
+                if (topicIds.length === 0) return;
+
+                $.ajax({
+                    url: '{{ path('ajax_fetch_user_votes') }}',
+                    method: 'POST',
+                    data: { topicIds: topicIds },
+                    success: function(response) {
+                        if (response.success) {
+                            response.votes.forEach(vote => {
+                                const $voteSection = $(`.nk-forum-vote-section .vote-btn[data-id="${vote.topicId}"]`);
+                                const $upvoteBtn = $voteSection.filter('.upvote-btn');
+                                const $downvoteBtn = $voteSection.filter('.downvote-btn');
+
+                                if (vote.voteType === 'UP') {
+                                    $upvoteBtn.addClass('voted').prop('disabled', true);
+                                    $downvoteBtn.removeClass('voted').prop('disabled', false);
+                                } else if (vote.voteType === 'DOWN') {
+                                    $downvoteBtn.addClass('voted').prop('disabled', true);
+                                    $upvoteBtn.removeClass('voted').prop('disabled', false);
+                                }
+                            });
+                        } else {
+                            console.error('Failed to fetch user votes:', response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('AJAX error fetching user votes:', status, error);
+                    }
+                });
+            }
+
+            $(document).on('mouseenter', '.reaction-icon', function() {
+                const $icon = $(this);
+                const id = $icon.data('id');
+                const type = $icon.data('type');
+                showEmojiPicker($icon, id, type);
+            });
+
+            $(document).on('mouseenter', '.emoji-picker-container', function() {
+                $(this).stop().fadeIn(100);
+            });
+
+            $(document).on('mouseleave', '.reaction-wrapper', function(e) {
+                const $wrapper = $(this);
+                const $picker = $('.emoji-picker-container');
+                const relatedTarget = $(e.relatedTarget);
+
+                if ($picker.length && (relatedTarget.is($picker) || relatedTarget.closest('.emoji-picker-container').length)) {
+                    return;
+                }
+
+                if ($picker.data('reaction-wrapper')?.is($wrapper)) {
                     $picker.fadeOut(100, function() {
                         $(this).remove();
                     });
-                } else {
-                    Swal.fire({
-                        title: 'Error',
-                        text: response.message,
-                        imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
-                        imageWidth: 100,
-                        imageHeight: 100,
-                        background: '#1c2526',
-                        color: '#d1d5db',
-                        confirmButtonColor: '#ff6f61'
-                    });
                 }
-            },
-            error: function() {
-                Swal.fire({
-                    title: 'Error',
-                    text: 'Failed to save reaction',
-                    imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
-                    imageWidth: 100,
-                    imageHeight: 100,
-                    background: '#1c2526',
-                    color: '#d1d5db',
-                    confirmButtonColor: '#ff6f61'
-                });
-            }
-        });
-    });
-
-    $('#topicSearch').on('input', function() {
-        const searchTerm = $(this).val().toLowerCase().trim();
-        $('.nk-forum-item').each(function() {
-            const $topic = $(this);
-            const game = $topic.data('game').toLowerCase();
-            const author = $topic.data('author').toLowerCase();
-            const title = $topic.data('title').toLowerCase();
-            const content = $topic.data('content').toLowerCase();
-
-            const matches = (
-                game.includes(searchTerm) ||
-                author.includes(searchTerm) ||
-                title.includes(searchTerm) ||
-                content.includes(searchTerm)
-            );
-
-            $topic.toggle(matches);
-        });
-    });
-
-    $(document).on('click', '.vote-btn', function(e) {
-        e.preventDefault();
-        const $btn = $(this);
-        const id = $btn.data('id');
-        const type = $btn.data('type');
-        const voteType = $btn.data('vote-type');
-        const $voteSection = $btn.closest('.nk-forum-vote-section');
-        const $voteCount = $voteSection.find('.vote-count');
-        const $upvoteBtn = $voteSection.find('.upvote-btn');
-        const $downvoteBtn = $voteSection.find('.downvote-btn');
-
-        if ($btn.prop('disabled')) {
-            return;
-        }
-
-        $.ajax({
-            url: '{{ path('ajax_vote_action') }}',
-            method: 'POST',
-            data: { id: id, type: type, vote_type: voteType },
-            success: function(response) {
-                if (response.success) {
-                    $voteCount.text(response.votes);
-
-                    if (response.hasUpvoted) {
-                        $upvoteBtn.addClass('voted').prop('disabled', true);
-                        $downvoteBtn.removeClass('voted').prop('disabled', false);
-                    } else if (response.hasDownvoted) {
-                        $downvoteBtn.addClass('voted').prop('disabled', true);
-                        $upvoteBtn.removeClass('voted').prop('disabled', false);
-                    }
-                } else {
-                    Swal.fire({
-                        title: 'Voting Error',
-                        text: response.message,
-                        imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
-                        imageWidth: 100,
-                        imageHeight: 100,
-                        background: '#1c2526',
-                        color: '#d1d5db',
-                        confirmButtonColor: '#fe0369'
-                    });
-                }
-            },
-            error: function() {
-                Swal.fire({
-                    title: 'Voting Error',
-                    text: 'An error occurred while voting. Please try again.',
-                    imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
-                    imageWidth: 100,
-                    imageHeight: 100,
-                    background: '#1c2526',
-                    color: '#d1d5db',
-                    confirmButtonColor: '#fe0369'
-                });
-            }
-        });
-    });
-
-    $(document).on('click', '.share-link', function(e) {
-        e.preventDefault();
-        const $link = $(this);
-        const topicId = $link.data('id');
-        const platform = $link.hasClass('facebook-share') ? 'facebook' :
-                         $link.hasClass('twitter-share') ? 'twitter' :
-                         $link.hasClass('reddit-share') ? 'reddit' : null;
-
-        if (!platform) return;
-
-        $.ajax({
-            url: '{{ path('api_share_topic') }}',
-            method: 'GET',
-            data: { id: topicId },
-            success: function(response) {
-                if (response.success) {
-                    const shareUrl = encodeURIComponent(response.url);
-                    const title = response.title || '';
-                    const content = response.content || '';
-                    const shareText = encodeURIComponent(`${title}: \n${content}`);
-                    let platformUrl;
-
-                    switch (platform) {
-                        case 'facebook':
-                            platformUrl = `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}"e=${shareText}`;
-                            break;
-                        case 'twitter':
-                            platformUrl = `https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareText}`;
-                            break;
-                        case 'reddit':
-                            platformUrl = `https://www.reddit.com/submit?url=${shareUrl}&title=${shareText}`;
-                            break;
-                    }
-
-                    if (platformUrl) {
-                        window.open(platformUrl, '_blank', 'width=600,height=400');
-                    }
-                } else {
-                    Swal.fire({
-                        title: 'Error',
-                        text: response.message || 'Failed to fetch share data.',
-                        imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
-                        imageWidth: 100,
-                        imageHeight: 100,
-                        background: '#1c2526',
-                        color: '#d1d5db',
-                        confirmButtonColor: '#ff6f61'
-                    });
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error('Error fetching share data:', status, error);
-                Swal.fire({
-                    title: 'Error',
-                    text: 'An error occurred while preparing to share.',
-                    imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
-                    imageWidth: 100,
-                    imageHeight: 100,
-                    background: '#1c2526',
-                    color: '#d1d5db',
-                    confirmButtonColor: '#ff6f61'
-                });
-            }
-        });
-    });
-
-    $(document).on('submit', '.profanity-check-form', function(e) {
-        e.preventDefault();
-        const $form = $(this);
-        const title = $form.find('input[name*="[title]"]').val() || '';
-        const content = $form.find('textarea[name*="[content]"]').val() || '';
-        const combinedContent = title + ' ' + content;
-
-        const $submitButton = $form.find('button[type="submit"]');
-        $submitButton.prop('disabled', true);
-
-        $.ajax({
-            url: '{{ path('api_check_profanity') }}',
-            method: 'POST',
-            data: { content: combinedContent },
-            success: function(response) {
-                if (response.isProfane) {
-                    const profanityList = response.details ? response.details.map(m => m['text']).join(', ') : '';
-                    Swal.fire({
-                        title: 'Inappropriate Content Detected',
-                        html: 'Your topic contains inappropriate language. Please revise it.<br><strong>Detected:</strong> ' + (profanityList || 'N/A'),
-                        imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
-                        imageWidth: 100,
-                        imageHeight: 100,
-                        background: '#1c2526',
-                        color: '#d1d5db',
-                        confirmButtonColor: '#fe0369'
-                    }).then(() => {
-                        $submitButton.prop('disabled', false);
-                    });
-                } else {
-                    $form.off('submit');
-                    $form[0].submit();
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error('Profanity check error:', error);
-                Swal.fire({
-                    title: 'Error',
-                    text: 'Error checking profanity. Please try again.',
-                    imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
-                    imageWidth: 100,
-                    imageHeight: 100,
-                    background: '#1c2526',
-                    color: '#d1d5db',
-                    confirmButtonColor: '#fe0369'
-                }).then(() => {
-                    $submitButton.prop('disabled', false);
-                });
-            }
-        });
-    });
-
-    $(document).on('click', '.spam-btn', function(e) {
-        e.preventDefault();
-        const $btn = $(this);
-        const id = $btn.data('id');
-        const type = $btn.data('type');
-        const userId = $btn.data('user-id');
-
-        if (!userId || isNaN(userId) || parseInt(userId) <= 0) {
-            Swal.fire({
-                title: 'Error',
-                text: 'Invalid user ID for reporting.',
-                imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
-                imageWidth: 100,
-                imageHeight: 100,
-                background: '#1c2526',
-                color: '#d1d5db',
-                confirmButtonColor: '#ff6f61'
             });
-            return;
-        }
 
-        let contentToReport = '';
-        if (type === 'question') {
-            contentToReport = $(`.nk-forum-item[data-title="${$btn.closest('.nk-forum-item').data('title')}"] .nk-forum-content p`).text().trim();
-        }
+            $(document).on('mouseleave', '.emoji-picker-container', function(e) {
+                const $picker = $(this);
+                const $wrapper = $picker.data('reaction-wrapper');
+                const relatedTarget = $(e.relatedTarget);
 
-        const modalHtml = `
-            <div class="report-modal-backdrop"></div>
-            <div class="report-modal">
-                <h3>Signaler</h3>
-                <form id="report-form-${id}">
-                    <input type="hidden" name="reporterId" value="{{ app.user ? app.user.id : '' }}">
-                    <input type="hidden" name="reportedUserId" value="${userId}">
-                    <input type="hidden" name="status" value="PENDING">
-                    <select name="reason" required>
-                        <option value="">Sélectionnez une raison</option>
-                        <option value="MINEUR_IMPLIQUE">Minor Involved</option>
-                        <option value="HARCELEMENT">Harassment</option>
-                        <option value="SUICIDE_AUTOMUTILATION">Suicide/Self-Harm</option>
-                        <option value="CONTENU_VIOLENT">Violent Content</option>
-                        <option value="VENTE_ARTICLES_RESTREINTS">Restricted Items Sale</option>
-                        <option value="CONTENU_ADULTE">Adult Content</option>
-                        <option value="ARNAQUE_FAUSSE_INFORMATION">Scam/False Information</option>
-                        <option value="CONTENU_NON_DESIRE">Unwanted Content</option>
-                    </select>
-                    <textarea name="evidence" placeholder="Additional details (optional)" rows="4">${contentToReport}</textarea>
-                    <div style="display: flex; gap: 10px;">
-                        <button type="submit" class="submit-btn">OK</button>
-                        <button type="button" class="cancel-btn">Cancel</button>
-                    </div>
-                </form>
-            </div>
-        `;
+                if ($wrapper && (relatedTarget.is($wrapper) || relatedTarget.closest('.reaction-wrapper').length)) {
+                    return;
+                }
 
-        $('.report-modal, .report-modal-backdrop').remove();
-        $('body').append(modalHtml);
+                $picker.fadeOut(100, function() {
+                    $(this).remove();
+                });
+            });
 
-        $(`#report-form-${id}`).on('submit', function(e) {
-            e.preventDefault();
-            const formData = $(this).serializeArray();
-            const data = {};
-            formData.forEach(item => data[item.name] = item.value);
+            $(document).on('click', '.emoji-option', function() {
+                const $emoji = $(this);
+                const emoji = $emoji.data('emoji');
+                const id = $emoji.data('id');
+                const type = $emoji.data('type');
+                const $display = $(`.reaction-display[data-id="${id}"]`);
+                const $picker = $('.emoji-picker-container');
 
-            console.log('Sending report data:', data);
-
-            $.ajax({
-                url: '{{ path('report_create') }}',
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify(data),
-                success: function(response) {
-                    if (response.success) {
+                $.ajax({
+                    url: '{{ path('react_action') }}',
+                    method: 'POST',
+                    data: { id: id, type: type, emoji: emoji, action: 'react' },
+                    success: function(response) {
+                        if (response.success) {
+                            updateReactionDisplay($display, response.reactionCounts);
+                            $picker.fadeOut(100, function() {
+                                $(this).remove();
+                            });
+                        } else {
+                            Swal.fire({
+                                title: '{{ "forum.alert.error"|trans }}',
+                                text: response.message,
+                                imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
+                                imageWidth: 100,
+                                imageHeight: 100,
+                                achtergrond: '#1c2526',
+                                color: '#d1d5db',
+                                confirmButtonColor: '#ff6f61'
+                            });
+                        }
+                    },
+                    error: function() {
                         Swal.fire({
-                            title: 'Success',
-                            text: 'Report submitted successfully',
-                            imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
-                            imageWidth: 100,
-                            imageHeight: 100,
-                            background: '#1c2526',
-                            color: '#d1d5db',
-                            confirmButtonColor: '#0585e6'
-                        });
-                        $('.report-modal, .report-modal-backdrop').remove();
-                    } else {
-                        Swal.fire({
-                            title: 'Error',
-                            text: response.message || 'Failed to submit report',
+                            title: '{{ "forum.alert.error"|trans }}',
+                            text: '{{ "forum.alert.reaction_error"|trans }}',
                             imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
                             imageWidth: 100,
                             imageHeight: 100,
@@ -1292,12 +1087,216 @@
                             confirmButtonColor: '#ff6f61'
                         });
                     }
-                },
-                error: function(xhr, status, error) {
-                    console.error('AJAX error:', status, error, xhr.responseText);
+                });
+            });
+
+            $('#topicSearch').on('input', function() {
+                const searchTerm = $(this).val().toLowerCase().trim();
+                $('.nk-forum-item').each(function() {
+                    const $topic = $(this);
+                    const game = $topic.data('game').toLowerCase();
+                    const author = $topic.data('author').toLowerCase();
+                    const title = $topic.data('title').toLowerCase();
+                    const content = $topic.data('content').toLowerCase();
+
+                    const matches = (
+                        game.includes(searchTerm) ||
+                        author.includes(searchTerm) ||
+                        title.includes(searchTerm) ||
+                        content.includes(searchTerm)
+                    );
+
+                    $topic.toggle(matches);
+                });
+            });
+
+            $(document).on('click', '.vote-btn', function(e) {
+                e.preventDefault();
+                const $btn = $(this);
+                const id = $btn.data('id');
+                const type = $btn.data('type');
+                const voteType = $btn.data('vote-type');
+                const $voteSection = $btn.closest('.nk-forum-vote-section');
+                const $voteCount = $voteSection.find('.vote-count');
+                const $upvoteBtn = $voteSection.find('.upvote-btn');
+                const $downvoteBtn = $voteSection.find('.downvote-btn');
+
+                if ($btn.prop('disabled')) {
+                    return;
+                }
+
+                $.ajax({
+                    url: '{{ path('ajax_vote_action') }}',
+                    method: 'POST',
+                    data: { id: id, type: type, vote_type: voteType },
+                    success: function(response) {
+                        if (response.success) {
+                            $voteCount.text(response.votes);
+
+                            if (response.hasUpvoted) {
+                                $upvoteBtn.addClass('voted').prop('disabled', true);
+                                $downvoteBtn.removeClass('voted').prop('disabled', false);
+                            } else if (response.hasDownvoted) {
+                                $downvoteBtn.addClass('voted').prop('disabled', true);
+                                $upvoteBtn.removeClass('voted').prop('disabled', false);
+                            }
+                        } else {
+                            Swal.fire({
+                                title: '{{ "forum.voting_error"|trans }}',
+                                text: response.message,
+                                imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
+                                imageWidth: 100,
+                                imageHeight: 100,
+                                background: '#1c2526',
+                                color: '#d1d5db',
+                                confirmButtonColor: '#fe0369'
+                            });
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({
+                            title: '{{ "forum.voting_error"|trans }}',
+                            text: '{{ "forum.error_voting"|trans }}',
+                            imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
+                            imageWidth: 100,
+                            imageHeight: 100,
+                            background: '#1c2526',
+                            color: '#d1d5db',
+                            confirmButtonColor: '#fe0369'
+                        });
+                    }
+                });
+            });
+
+            $(document).on('click', '.share-link', function(e) {
+                e.preventDefault();
+                const $link = $(this);
+                const topicId = $link.data('id');
+                const platform = $link.hasClass('facebook-share') ? 'facebook' :
+                                 $link.hasClass('twitter-share') ? 'twitter' :
+                                 $link.hasClass('reddit-share') ? 'reddit' : null;
+
+                if (!platform) return;
+
+                $.ajax({
+                    url: '{{ path('api_share_topic') }}',
+                    method: 'GET',
+                    data: { id: topicId },
+                    success: function(response) {
+                        if (response.success) {
+                            const shareUrl = encodeURIComponent(response.url);
+                            const title = response.title || '';
+                            const content = response.content || '';
+                            const shareText = encodeURIComponent(`${title}: \n${content}`);
+                            let platformUrl;
+
+                            switch (platform) {
+                                case 'facebook':
+                                    platformUrl = `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}"e=${shareText}`;
+                                    break;
+                                case 'twitter':
+                                    platformUrl = `https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareText}`;
+                                    break;
+                                case 'reddit':
+                                    platformUrl = `https://www.reddit.com/submit?url=${shareUrl}&title=${shareText}`;
+                                    break;
+                            }
+
+                            if (platformUrl) {
+                                window.open(platformUrl, '_blank', 'width=600,height=400');
+                            }
+                        } else {
+                            Swal.fire({
+                                title: '{{ "forum.alert.error"|trans }}',
+                                text: response.message || '{{ "forum.alert.share_error"|trans }}',
+                                imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
+                                imageWidth: 100,
+                                imageHeight: 100,
+                                background: '#1c2526',
+                                color: '##d1d5db',
+                                confirmButtonColor: '#ff6f61'
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error fetching share data:', status, error);
+                        Swal.fire({
+                            title: '{{ "forum.alert.error"|trans }}',
+                            text: '{{ "forum.alert.share_error"|trans }}',
+                            imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
+                            imageWidth: 100,
+                            imageHeight: 100,
+                            background: '#1c2526',
+                            color: '#d1d5db',
+                            confirmButtonColor: '#ff6f61'
+                        });
+                    }
+                });
+            });
+
+            $(document).on('submit', '.profanity-check-form', function(e) {
+                e.preventDefault();
+                const $form = $(this);
+                const title = $form.find('input[name*="[title]"]').val() || '';
+                const content = $form.find('textarea[name*="[content]"]').val() || '';
+                const combinedContent = title + ' ' + content;
+
+                const $submitButton = $form.find('button[type="submit"]');
+                $submitButton.prop('disabled', true);
+
+                $.ajax({
+                    url: '{{ path('api_check_profanity') }}',
+                    method: 'POST',
+                    data: { content: combinedContent },
+                    success: function(response) {
+                        if (response.isProfane) {
+                            const profanityList = response.details ? response.details.map(m => m['text']).join(', ') : '';
+                            Swal.fire({
+                                title: '{{ "forum.inappropriate_content"|trans }}',
+                                html: '{{ "forum.revise_content"|trans }}<br><strong>{{ "forum.detected"|trans }}:</strong> ' + (profanityList || 'N/A'),
+                                imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
+                                imageWidth: 100,
+                                imageHeight: 100,
+                                background: '#1c2526',
+                                color: '#d1d5db',
+                                confirmButtonColor: '#fe0369'
+                            }).then(() => {
+                                $submitButton.prop('disabled', false);
+                            });
+                        } else {
+                            $form.off('submit');
+                            $form[0].submit();
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Profanity check error:', error);
+                        Swal.fire({
+                            title: '{{ "forum.alert.error"|trans }}',
+                            text: '{{ "forum.error_checking_profanity"|trans }}',
+                            imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
+                            imageWidth: 100,
+                            imageHeight: 100,
+                            background: '#1c2526',
+                            color: '#d1d5db',
+                            confirmButtonColor: '#fe0369'
+                        }).then(() => {
+                            $submitButton.prop('disabled', false);
+                        });
+                    }
+                });
+            });
+
+            $(document).on('click', '.spam-btn', function(e) {
+                e.preventDefault();
+                const $btn = $(this);
+                const id = $btn.data('id');
+                const type = $btn.data('type');
+                const userId = $btn.data('user-id');
+
+                if (!userId || isNaN(userId) || parseInt(userId) <= 0) {
                     Swal.fire({
-                        title: 'Error',
-                        text: 'Failed to submit report: ' + (xhr.responseJSON?.message || 'Server error'),
+                        title: '{{ "forum.alert.error"|trans }}',
+                        text: '{{ "forum.invalid_user_id"|trans }}',
                         imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
                         imageWidth: 100,
                         imageHeight: 100,
@@ -1305,14 +1304,104 @@
                         color: '#d1d5db',
                         confirmButtonColor: '#ff6f61'
                     });
+                    return;
                 }
+
+                let contentToReport = '';
+                if (type === 'question') {
+                    contentToReport = $(`.nk-forum-item[data-title="${$btn.closest('.nk-forum-item').data('title')}"] .nk-forum-content p`).text().trim();
+                }
+
+                const modalHtml = `
+                    <div class="report-modal-backdrop"></div>
+                    <div class="report-modal">
+                        <h3>{{ "forum.report"|trans }}</h3>
+                        <form id="report-form-${id}">
+                            <input type="hidden" name="reporterId" value="{{ app.user ? app.user.id : '' }}">
+                            <input type="hidden" name="reportedUserId" value="${userId}">
+                            <input type="hidden" name="status" value="PENDING">
+                            <select name="reason" required>
+                                <option value="">{{ "forum.select_reason"|trans }}</option>
+                                <option value="MINEUR_IMPLIQUE">{{ "forum.reason.minor_involved"|trans }}</option>
+                                <option value="HARCELEMENT">{{ "forum.reason.harassment"|trans }}</option>
+                                <option value="SUICIDE_AUTOMUTILATION">{{ "forum.reason.suicide_self_harm"|trans }}</option>
+                                <option value="CONTENU_VIOLENT">{{ "forum.reason.violent_content"|trans }}</option>
+                                <option value="VENTE_ARTICLES_RESTREINTS">{{ "forum.reason.restricted_items"|trans }}</option>
+                                <option value="CONTENU_ADULTE">{{ "forum.reason.adult_content"|trans }}</option>
+                                <option value="ARNAQUE_FAUSSE_INFORMATION">{{ "forum.reason.scam_false_info"|trans }}</option>
+                                <option value="CONTENU_NON_DESIRE">{{ "forum.reason.unwanted_content"|trans }}</option>
+                            </select>
+                            <textarea name="evidence" placeholder="{{ "forum.additional_details"|trans }}" rows="4">${contentToReport}</textarea>
+                            <div style="display: flex; gap: 10px;">
+                                <button type="submit" class="submit-btn">{{ "general.ok"|trans }}</button>
+                                <button type="button" class="cancel-btn">{{ "general.cancel"|trans }}</button>
+                            </div>
+                        </form>
+                    </div>
+                `;
+
+                $('.report-modal, .report-modal-backdrop').remove();
+                $('body').append(modalHtml);
+
+                $(`#report-form-${id}`).on('submit', function(e) {
+                    e.preventDefault();
+                    const formData = $(this).serializeArray();
+                    const data = {};
+                    formData.forEach(item => data[item.name] = item.value);
+
+                    console.log('Sending report data:', data);
+
+                    $.ajax({
+                        url: '{{ path('report_create') }}',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(data),
+                        success: function(response) {
+                            if (response.success) {
+                                Swal.fire({
+                                    title: '{{ "forum.alert.success"|trans }}',
+                                    text: '{{ "forum.report_submitted"|trans }}',
+                                    imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
+                                    imageWidth: 100,
+                                    imageHeight: 100,
+                                    background: '#1c2526',
+                                    color: '#d1d5db',
+                                    confirmButtonColor: '#0585e6'
+                                });
+                                $('.report-modal, .report-modal-backdrop').remove();
+                            } else {
+                                Swal.fire({
+                                    title: '{{ "forum.alert.error"|trans }}',
+                                    text: response.message || '{{ "forum.error_submitting_report"|trans }}',
+                                    imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
+                                    imageWidth: 100,
+                                    imageHeight: 100,
+                                    background: '#1c2526',
+                                    color: '#d1d5db',
+                                    confirmButtonColor: '#ff6f61'
+                                });
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('AJAX error:', status, error, xhr.responseText);
+                            Swal.fire({
+                                title: '{{ "forum.alert.error"|trans }}',
+                                text: '{{ "forum.error_submitting_report"|trans }}: ' + (xhr.responseJSON?.message || '{{ "general.server_error"|trans }}'),
+                                imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
+                                imageWidth: 100,
+                                imageHeight: 100,
+                                background: '#1c2526',
+                                color: '#d1d5db',
+                                confirmButtonColor: '#ff6f61'
+                            });
+                        }
+                    });
+                });
+
+                $('.cancel-btn, .report-modal-backdrop').on('click', function() {
+                    $('.report-modal, .report-modal-backdrop').remove();
+                });
             });
         });
-
-        $('.cancel-btn, .report-modal-backdrop').on('click', function() {
-            $('.report-modal, .report-modal-backdrop').remove();
-        });
-    });
-});
     </script>
 {% endblock %}

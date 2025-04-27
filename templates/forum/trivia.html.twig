@@ -1,16 +1,16 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Level OP | Gaming Trivia{% endblock %}
+{% block title %}{{ 'trivia.page_title'|trans }}{% endblock %}
 
 {% block body %}
     <div class="nk-gap-1"></div>
     <div class="container">
         <ul class="nk-breadcrumbs">
-            <li><a href="{{ path('app_home') }}">Home</a></li>
+            <li><a href="{{ path('app_home') }}">{{ 'nav.home'|trans }}</a></li>
             <li><span class="fa fa-angle-right"></span></li>
-            <li><a href="{{ path('forum_index') }}">Forum</a></li>
+            <li><a href="{{ path('forum_index') }}">{{ 'nav.forum'|trans }}</a></li>
             <li><span class="fa fa-angle-right"></span></li>
-            <li><span>Gaming Trivia</span></li>
+            <li><span>{{ 'trivia.breadcrumb_title'|trans }}</span></li>
         </ul>
     </div>
     <div class="nk-gap-1"></div>
@@ -20,12 +20,12 @@
 
         {% for label, messages in app.flashes %}
             {% for message in messages %}
-                <div class="alert alert-{{ label }}">{{ message }}</div>
+                <div class="alert alert-{{ label }}">{{ message|trans }}</div>
             {% endfor %}
         {% endfor %}
 
-        <h2 class="nk-title h1">Gaming Trivia Challenge</h2>
-        <p>Testez vos connaissances en matière de jeux vidéo avec ces questions pièges !</p>
+        <h2 class="nk-title h1">{{ 'trivia.challenge_title'|trans }}</h2>
+        <p>{{ 'trivia.challenge_description'|trans }}</p>
 
         <div class="nk-gap-1"></div>
 
@@ -33,7 +33,7 @@
             {% for index, question in triviaQuestions %}
                 <div class="trivia-question" data-index="{{ index }}" style="display: {{ index == 0 ? 'block' : 'none' }};">
                     <div class="nk-forum-topic-content">
-                        <h3>Question {{ index + 1 }}: {{ question.question }}</h3>
+                        <h3>{{ 'trivia.question_label'|trans({'%number%': index + 1}) }}: {{ question.question }}</h3>
                         <div class="nk-gap-1"></div>
                         <div class="answer-options">
                             {% for answer in question.all_answers %}
@@ -50,9 +50,9 @@
 
         <div class="nk-gap-1"></div>
         <div class="trivia-navigation">
-            <button id="prev-question" class="nk-btn nk-btn-rounded nk-btn-color-dark" disabled>Précédent</button>
-            <button id="next-question" class="nk-btn nk-btn-rounded nk-btn-color-white" disabled>Next</button>
-            <button id="finish-quiz" class="nk-btn nk-btn-rounded nk-btn-color-white" style="display: none;">Terminer</button>
+            <button id="prev-question" class="nk-btn nk-btn-rounded nk-btn-color-dark" disabled>{{ 'trivia.prev_button'|trans }}</button>
+            <button id="next-question" class="nk-btn nk-btn-rounded nk-btn-color-white" disabled>{{ 'trivia.next_button'|trans }}</button>
+            <button id="finish-quiz" class="nk-btn nk-btn-rounded nk-btn-color-white" style="display: none;">{{ 'trivia.finish_button'|trans }}</button>
         </div>
 
         <div class="nk-gap-2"></div>
@@ -72,14 +72,17 @@
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
+            {% if app.request.locale == 'ar' %}
+                flex-direction: row-reverse;
+            {% endif %}
         }
         .answer-btn {
             flex: 1 1 45%;
-            text-align: left;
+            text-align: {{ app.request.locale == 'ar' ? 'right' : 'left' }};
             white-space: normal;
             word-wrap: break-word;
-             background-color: #0585e6; /* Default color set to #0585e6 */
-            color: #fff; /* White text for contrast */
+            background-color: #0585e6;
+            color: #fff;
         }
         .answer-btn.correct {
             background-color: #28a745 !important;
@@ -91,6 +94,7 @@
             margin-top: 15px;
             padding: 10px;
             border-radius: 5px;
+            text-align: {{ app.request.locale == 'ar' ? 'right' : 'left' }};
         }
         .answer-feedback.correct {
             background-color: #28a745;
@@ -103,11 +107,18 @@
         .trivia-navigation {
             display: flex;
             justify-content: space-between;
+            {% if app.request.locale == 'ar' %}
+                flex-direction: row-reverse;
+            {% endif %}
         }
         .nk-gaming-swal {
             border: 2px solid #0585e6;
             box-shadow: 0 0 20px rgba(5, 133, 230, 0.5);
             font-family: 'Montserrat', sans-serif;
+            {% if app.request.locale == 'ar' %}
+                direction: rtl;
+                text-align: right;
+            {% endif %}
         }
         .nk-gaming-swal-title {
             color: #fff;
@@ -137,17 +148,17 @@
             const totalQuestions = $('.trivia-question').length;
             let currentIndex = 0;
             let answeredQuestions = new Set();
-            let score = 0; // Track the user's score
+            let score = 0;
 
             function getPersonalizedMessage(score) {
                 if (score <= 3) {
-                    return "Oh non ! Tu peux faire mieux. Continue à t'entraîner !";
+                    return '{{ 'trivia.low_score_message'|trans }}';
                 } else if (score <= 6) {
-                    return "Pas mal ! Tu as un bon niveau, mais il y a encore du progrès à faire.";
+                    return '{{ 'trivia.medium_score_message'|trans }}';
                 } else if (score <= 9) {
-                    return "Superbe performance ! Tu es presque un expert en gaming !";
+                    return '{{ 'trivia.high_score_message'|trans }}';
                 } else {
-                    return "Incroyable ! Tu es un véritable maître du gaming ! Félicitations !";
+                    return '{{ 'trivia.perfect_score_message'|trans }}';
                 }
             }
 
@@ -206,11 +217,11 @@
                             const $feedback = $question.find('.answer-feedback');
                             if (response.isCorrect) {
                                 $btn.addClass('correct');
-                                $feedback.addClass('correct').text('Correct! Well done!');
-                                score++; // Increment score for correct answer
+                                $feedback.addClass('correct').text('{{ 'trivia.correct_feedback'|trans }}');
+                                score++;
                             } else {
                                 $btn.addClass('incorrect');
-                                $feedback.addClass('incorrect').text(`Incorrect. The correct answer was: ${response.correctAnswer}`);
+                                $feedback.addClass('incorrect').text('{{ 'trivia.incorrect_feedback'|trans({'%correctAnswer%': "' + response.correctAnswer + '"}) }}');
                                 $question.find(`.answer-btn[data-answer="${response.correctAnswer}"]`).addClass('correct');
                             }
                             $feedback.show();
@@ -218,7 +229,7 @@
                             updateNavigation();
                         } else {
                             Swal.fire({
-                                title: 'Error',
+                                title: '{{ 'trivia.error_title'|trans }}',
                                 text: response.message,
                                 icon: 'error',
                                 background: '#1c2526',
@@ -229,8 +240,8 @@
                     },
                     error: function() {
                         Swal.fire({
-                            title: 'Error',
-                            text: 'An error occurred while validating your answer.',
+                            title: '{{ 'trivia.error_title'|trans }}',
+                            text: '{{ 'trivia.error_message'|trans }}',
                             icon: 'error',
                             background: '#1c2526',
                             color: '#d1d5db',
@@ -239,7 +250,6 @@
                     }
                 });
 
-                // Disable all buttons for this question after answering
                 $question.find('.answer-btn').prop('disabled', true);
             });
 
@@ -259,15 +269,15 @@
                 const message = getPersonalizedMessage(score);
                 const gifPath = getScoreboardGif(score);
                 Swal.fire({
-                    title: 'Quiz Terminé !',
-                    html: `Tu as obtenu un score de ${score} sur ${totalQuestions} !<br><br>${message}`,
+                    title: '{{ 'trivia.quiz_finished_title'|trans }}',
+                    html: '{{ 'trivia.score_message'|trans({'%score%': "' + score + '", '%total%': "' + totalQuestions + '"}) }}<br><br>' + message,
                     imageUrl: gifPath,
                     imageWidth: 100,
                     imageAlt: 'Luffy Scoreboard GIF',
                     background: '#1c2526',
                     color: '#d1d5db',
                     confirmButtonColor: '#fe0369',
-                    confirmButtonText: 'Retour au Forum',
+                    confirmButtonText: '{{ 'trivia.confirm_button_text'|trans }}',
                     customClass: {
                         container: 'nk-gaming-swal',
                         title: 'nk-gaming-swal-title',
@@ -279,7 +289,6 @@
                 });
             });
 
-            // Initialize the first question
             showQuestion(0);
         });
     </script>

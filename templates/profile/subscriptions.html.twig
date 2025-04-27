@@ -1,0 +1,53 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes abonnements{% endblock %}
+
+{% block body %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6">Mes abonnements</h1>
+    
+    {% if subscriptions is empty %}
+        <p class="text-gray-600">Vous ne suivez aucun sujet pour le moment.</p>
+    {% else %}
+        <div class="grid gap-4">
+            {% for subscription in subscriptions %}
+                <div class="bg-white shadow-lg rounded-lg p-4 flex justify-between items-center">
+                    <div>
+                        <a href="{{ subscription.link }}" class="text-blue-600 hover:underline">{{ subscription.title }}</a>
+                    </div>
+                    <button class="btn btn-danger unsubscribe-btn" data-topic-id="{{ subscription.id }}">Se désabonner</button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        $(document).ready(function() {
+            $('.unsubscribe-btn').on('click', function() {
+                const topicId = $(this).data('topic-id');
+                const $row = $(this).closest('.bg-white');
+
+                $.ajax({
+                    url: '{{ path('ajax_unsubscribe_topic', {'id': '__ID__'}) }}'.replace('__ID__', topicId),
+                    method: 'POST',
+                    headers: {'X-Requested-With': 'XMLHttpRequest'},
+                    success: function(response) {
+                        if (response.success) {
+                            $row.remove();
+                            alert(response.message);
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('Une erreur est survenue.');
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}
+{% endblock %}

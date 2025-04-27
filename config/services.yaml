@@ -1,8 +1,8 @@
 # config/services.yaml
 parameters:
     #uploads_directory: 'C:\xampp\htdocs\uploads'
-    uploads_directory: 'C:\xampp\htdocs\img\games'
-    uploads_directory2: 'C:\xampp\htdocs\img'
+    uploads_directory: 'http://localhost/img/games'
+    uploads_directory2: 'http://localhost/img/'
 
     dossier_upload: 'C:\xampp\htdocs\img'
     image_base_url: 'http://localhost/img/'
@@ -18,12 +18,14 @@ parameters:
     cv_directory: 'C:\xampp\htdocs\img'
     
 services:
+    App\Service\TopicSubscriptionService:
     App\Controller\ForumController:
     App\Service\RedditService:
         arguments:
             $session: '@session'
             $params: '%kernel.parameters%'
             $logger: '@monolog.logger'
+            $entityManager: '@doctrine.orm.entity_manager'
             $router: '@router'
     
     _defaults:
@@ -64,6 +66,9 @@ services:
     App\Controller\PaymentController:
         arguments:
             $logger: '@monolog.logger'
+    App\Controller\ForumStatsController:
+        arguments:
+            $logger: '@logger'
     App\EventSubscriber\CalendarSubscriber:
         arguments:
             $evenementRepository: '@App\Repository\EvenementRepository'

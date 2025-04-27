@@ -115,6 +115,7 @@
                         <li><a href="{{ path('app_catalog_index') }}" data-turbo="true">Catalogue Produits</a></li>
                         <li class="sub-header">Commandes</li>
                         <li><a href="{{ path('app_commande_index') }}" data-turbo="true">Liste Commandes</a></li>
+                        <li><a href="{{ path('app_commande_stats') }}" data-turbo="true">Statistiques Commandes</a></li>
                     </div>
                 </ul>
             </li>
@@ -146,6 +147,13 @@
                     <span>Admin Forum</span>
                 </a>
             </li>
+            <!-- New navigation item for Forum Statistics Dashboard -->
+<li>
+    <a href="{{ path('forum_stats_dashboard') }}">
+        <ion-icon name="stats-chart-outline"></ion-icon>
+        <span>Forum Statistics</span>
+    </a>
+</li>
             <li>
                 <a href="" id="logout-button">
                     <ion-icon name="log-out-outline"></ion-icon>
@@ -157,7 +165,14 @@
 
     <!-- ========================= Main ==================== -->
     <div class="main">
+<<<<<<< HEAD
         <div class="topbar" style="display: flex; justify-content: flex-end;">
+=======
+        <div class="topbar">
+            <div class="search">
+               
+            </div>
+>>>>>>> origin/Evenement
             <div class="user">
                 {% if app.user %}
                     <a href="{{ path('app_profile') }}" title="Mon Profil">

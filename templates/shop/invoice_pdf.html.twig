@@ -121,7 +121,7 @@
 </head>
 <body>
     <div class="header">
-        <img src="{{ asset('images/logo.png') }}" alt="LevelOp Logo" class="logo">
+        <img src="https://i.postimg.cc/wxcZgCYH/level.png" alt="LevelOp Logo" class="logo">
         <div class="header-content">
             <h1>FACTURE</h1>
             <p>N° {{ commande.produit.nomProduit }} | Date: {{ date|date('d/m/Y') }}</p>
@@ -162,13 +162,6 @@
         </thead>
         <tbody>
             <tr>
-                <td>
-                    {% if stock and stock.image %}
-                        <img src="{{ image_base_url }}/{{ stock.image }}" alt="{{ commande.produit.nomProduit }}" class="item-image">
-                    {% else %}
-                        No Image
-                    {% endif %}
-                </td>
                 <td>
                     <strong>{{ commande.produit.nomProduit }}</strong><br>
                     {{ commande.produit.description|length > 100 ? commande.produit.description|slice(0, 100) ~ '...' : commande.produit.description }}

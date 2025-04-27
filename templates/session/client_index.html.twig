@@ -4,323 +4,305 @@
 
 {% block body %}
 <style>
-.promo-session {
-    position: relative;
-    animation: promo-glow 2s infinite;
+body {
+    background: #121212;
+    color: #ffffff;
+    font-family: 'Segoe UI', sans-serif;
 }
-@keyframes promo-glow {
-    0% { box-shadow: 0 0 5px rgba(221, 22, 59, 0.5); }
-    50% { box-shadow: 0 0 20px rgba(221, 22, 59, 0.8); }
-    100% { box-shadow: 0 0 5px rgba(221, 22, 59, 0.5); }
+
+.nk-title {
+    font-size: 3em;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.2em;
 }
-.promo-session::before {
-    content: '🔥 PROMO';
-    position: absolute;
-    top: 10px;
-    right: -35px;
-    background: linear-gradient(45deg, #dd163b, #ff4d6d);
+
+.nk-sub-title {
+    color: #ccc;
+    font-size: 1.2em;
+    margin-bottom: 2em;
+}
+
+.nk-form .form-control {
+    background: #1e1e1e;
+    border: 1px solid #333;
+    color: #fff;
+}
+.nk-btn {
+    background: #dd163b;
+    border: none;
     color: white;
-    padding: 8px 40px;
-    font-size: 0.9em;
-    z-index: 1;
-    font-weight: bold;
-    letter-spacing: 1px;
-    transform: rotate(45deg);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    animation: promo-ribbon 1s ease-in-out infinite;
+    font-weight: 600;
+    padding: 0.6em 1.2em;
+    border-radius: 8px;
+    transition: background 0.3s ease;
 }
-@keyframes promo-ribbon {
-    0% { transform: rotate(45deg) scale(1); }
-    50% { transform: rotate(45deg) scale(1.05); }
-    100% { transform: rotate(45deg) scale(1); }
+.nk-btn:hover {
+    background: #ff4d6d;
 }
-.session-carousel {
+
+/* Carrousel horizontal */
+.carousel-wrapper {
     position: relative;
-    padding: 0 40px;
-    margin-bottom: 40px;
 }
-.session-carousel .nk-product-cat-2 {
-    margin: 0 15px;
-    background: rgba(0, 0, 0, 0.85);
-    border-radius: 15px;
+
+.session-carousel {
+    display: flex;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    gap: 20px;
+    padding-bottom: 10px;
+    scrollbar-width: none;
+}
+.session-carousel::-webkit-scrollbar {
+    display: none;
+}
+
+/* Carte session */
+.session-card {
+    flex: 0 0 auto;
+    width: 280px;
+    background: #1a1a1a;
+    border-radius: 12px;
     overflow: hidden;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    width: 280px;
-    height: 420px;
-    flex-shrink: 0;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-}
-.session-carousel .nk-product-cat-2:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-}
-.session-carousel-container {
-    overflow: hidden;
-    padding: 20px 0;
-}
-.session-list {
-    display: flex;
-    transition: transform 0.3s ease;
-    gap: 30px;
-}
-.nk-product-image {
     position: relative;
-    overflow: hidden;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+}
+.session-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+}
+.session-card img {
+    width: 100%;
     height: 180px;
-    width: 100%;
-    border-radius: 15px 15px 0 0;
-    border-bottom: 2px solid rgba(221, 22, 59, 0.5);
-}
-.nk-product-image img {
-    width: 100%;
-    height: 100%;
     object-fit: cover;
-    object-position: center;
-    transition: transform 0.3s ease;
-    display: block;
+    filter: brightness(0.85);
 }
-.nk-product-image:hover img {
-    transform: scale(1.05);
-}
-.nk-product-cont {
+
+.session-info {
     padding: 20px;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.7), rgba(0,0,0,0.9));
-    height: calc(100% - 180px);
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
 }
-.nk-product-title {
-    color: #fff;
+.session-title {
     font-size: 1.4em;
     margin-bottom: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    color: #fff;
 }
-.nk-product-price {
+.session-price {
     font-size: 1.2em;
     color: #dd163b;
     font-weight: bold;
-    position: relative;
-    display: inline-block;
+    margin-bottom: 10px;
 }
-.promo-session .nk-product-price::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: -5%;
-    width: 110%;
-    height: 2px;
-    background-color: rgba(255,255,255,0.5);
-    transform: rotate(-10deg);
-}
-.promo-session .nk-product-price::after {
-    position: absolute;
-    top: -15px;
-    right: -40px;
-    background: #ff4d6d;
-    color: white;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.8em;
-    animation: price-tag 0.5s ease-in-out infinite alternate;
-}
-@keyframes price-tag {
-    from { transform: scale(1); }
-    to { transform: scale(1.1); }
-}
-.nk-product-rating {
-    display: flex;
-    align-items: center;
-    color: #aaa;
+.session-meta {
     font-size: 0.9em;
+    color: #aaa;
+    margin-bottom: 5px;
 }
-.nk-product-rating i {
-    margin-right: 5px;
-    color: #dd163b;
+
+/* Promo */
+.session-card.promo {
+    border: 2px solid #ff4d6d;
+    animation: pulse-glow 1.8s infinite;
+    box-shadow: 0 0 15px rgba(255, 77, 109, 0.6), 0 0 30px rgba(255, 77, 109, 0.3);
+    position: relative;
 }
+@keyframes pulse-glow {
+    0% {
+        box-shadow: 0 0 10px rgba(255, 77, 109, 0.3), 0 0 20px rgba(255, 77, 109, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(255, 77, 109, 0.6), 0 0 40px rgba(255, 77, 109, 0.3);
+    }
+    100% {
+        box-shadow: 0 0 10px rgba(255, 77, 109, 0.3), 0 0 20px rgba(255, 77, 109, 0.2);
+    }
+}
+.session-card.promo .session-price {
+    color: #ff4d6d;
+    font-size: 1.4em;
+    animation: pricePulse 1.8s infinite;
+}
+@keyframes pricePulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+.session-card.promo::before {
+    content: '🔥 PROMO';
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: linear-gradient(45deg, #ff4d6d, #ff8ba7);
+    color: white;
+    padding: 6px 12px;
+    font-size: 0.75em;
+    font-weight: bold;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* Bande "En promo" */
+.promo-banner {
+    position: absolute;
+    top: 15px;
+    left: -45px;
+    width: 160px;
+    background: linear-gradient(45deg, #ff4d6d, #ff8ba7);
+    color: white;
+    text-align: center;
+    padding: 5px 0;
+    font-weight: bold;
+    font-size: 0.8em;
+    transform: rotate(-45deg);
+    z-index: 2;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    pointer-events: none;
+}
+
+/* Flèches */
 .carousel-arrow {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    width: 50px;
-    height: 50px;
-    background: rgba(221, 22, 59, 0.8);
+    background: rgba(0,0,0,0.7);
     border: none;
     color: white;
-    font-size: 24px;
-    cursor: pointer;
+    font-size: 1.5em;
+    padding: 10px 15px;
     z-index: 10;
+    cursor: pointer;
     border-radius: 50%;
-    transition: background 0.3s ease;
 }
-.carousel-arrow:hover {
-    background: rgba(221, 22, 59, 1);
-}
-.carousel-prev {
-    left: 0;
-}
-.carousel-next {
-    right: 0;
-}
+.carousel-arrow.left { left: -10px; }
+.carousel-arrow.right { right: -10px; }
+
 .navigation-buttons {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    z-index: 1000;
+    margin-top: 40px;
 }
-.navigation-buttons .nk-btn {
-    padding: 15px 25px;
-    border-radius: 25px;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    box-shadow: 0 4px 15px rgba(221, 22, 59, 0.3);
+
+/* Sélecteur de tri */
+.sort-container {
+    margin-bottom: 20px;
+    text-align: center;
 }
-.navigation-buttons .nk-btn:hover {
-    transform: translateX(-5px);
-    box-shadow: 0 6px 20px rgba(221, 22, 59, 0.5);
-}
-.navigation-buttons .nk-btn i {
-    font-size: 1.2em;
+.sort-container select {
+    background: #1e1e1e;
+    border: 1px solid #333;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
 }
 </style>
 
 <div class="nk-main">
     <div class="nk-gap-2"></div>
     <div class="container">
-        <div class="nk-gap-2"></div>
         <h1 class="nk-title text-center">Sessions disponibles</h1>
-        <h3 class="nk-sub-title text-center mb-30">Réservez votre session de coaching</h3>
+        <h3 class="nk-sub-title text-center">Réservez votre session de coaching</h3>
+
+        <!-- Formulaire de recherche -->
         <form method="get" class="nk-form nk-form-style-1 mb-50">
             <div class="row justify-content-center">
                 <div class="col-md-6">
                     <div class="input-group">
-                        <input type="text" name="search" class="form-control required" placeholder="Rechercher par nom du jeu..." value="{{ searchQuery|default('') }}">
-                        <button type="submit" class="nk-btn nk-btn-rounded nk-btn-color-main-1">Rechercher</button>
-                        <button type="button" id="sortPrice" class="nk-btn nk-btn-rounded nk-btn-color-main-1 ml-2">
-                            <i class="fas fa-sort"></i> Prix
-                        </button>
+                        <input type="text" name="search" class="form-control" placeholder="Rechercher par nom du jeu..." value="{{ searchQuery|default('') }}">
+                        <button type="submit" class="nk-btn nk-btn-rounded ml-2">Rechercher</button>
                     </div>
                 </div>
             </div>
         </form>
 
-        <div class="session-carousel">
-            <button class="carousel-arrow carousel-prev">&lt;</button>
-            <button class="carousel-arrow carousel-next">&gt;</button>
-            <div class="session-carousel-container">
-                <div class="session-list">
-                    {% for session in sessions %}
-                        <div class="nk-product-cat-2 {% if session.prix < 60 %}promo-session{% endif %}">
-                            {% if session.imageName %}
-                                <a class="nk-product-image" href="{{ path('reservation_add', {'sessionId': session.id}) }}">
-                                    <img src="{{ image_base_url ~ session.imageName }}" alt="{{ session.game }}">
-                                </a>
-                            {% endif %}
-                            <div class="nk-product-cont">
-                                <h3 class="nk-product-title h5">{{ session.game }}</h3>
-                                <div class="nk-gap-1"></div>
-                                <div class="nk-product-price">{{ session.prix }} DT</div>
-                                <div class="nk-gap-1"></div>
-                                <span class="nk-product-rating">
-                                    <i class="far fa-clock"></i> {{ session.dureeSession }} min
-                                </span>
-                                <div class="nk-gap-1"></div>
-                                <span class="nk-product-rating">
-                                    <span>Coach: {{ session.coach.nom }} {{ session.coach.prenom }}</span>
-                                </span>
-                                <div class="nk-gap-1"></div>
-                                {% if reservedSessions[session.id] %}
-                                    <button class="nk-btn nk-btn-rounded nk-btn-color-dark-3" disabled>Session déjà réservée</button>
-                                {% else %}
-                                    <a href="{{ path('reservation_add', {'sessionId': session.id}) }}" class="nk-btn nk-btn-rounded nk-btn-color-dark-3 nk-btn-hover-color-main-1">Réserver</a>
-                                {% endif %}
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
+        <!-- Tri par prix -->
+        <div class="sort-container">
+            <label for="sortSelect">Trier par : </label>
+            <select id="sortSelect" onchange="sortSessionsByPrice()">
+                <option value="default">-- Ordre par défaut --</option>
+                <option value="asc">Prix croissant</option>
+                <option value="desc">Prix décroissant</option>
+            </select>
         </div>
 
-        <div class="navigation-buttons">
+        <!-- Carrousel des sessions -->
+        <div class="carousel-wrapper mt-4">
+            <button class="carousel-arrow left" onclick="scrollCarousel(-1)">❮</button>
+            <div class="session-carousel" id="sessionCarousel">
+                {% for session in sessions %}
+                    <div class="session-card {% if session.prix < 60 %}promo{% endif %}" data-price="{{ session.prix }}">
+                        {% if session.prix < 60 %}
+                            <div class="promo-banner">En promo</div>
+                        {% endif %}
+                        {% if session.imageName %}
+                            <a href="{{ path('reservation_add', {'sessionId': session.id}) }}">
+                                <img src="{{ image_base_url ~ session.imageName }}" alt="{{ session.game }}">
+                            </a>
+                        {% endif %}
+                        <div class="session-info">
+                            <div class="session-title">{{ session.game }}</div>
+                            <div class="session-price">{{ session.prix }} DT</div>
+                            <div class="session-meta"><i class="far fa-clock"></i> {{ session.dureeSession }} min</div>
+                            <div class="session-meta">Coach : {{ session.coach.nom }} {{ session.coach.prenom }}</div>
+                            {% if reservedSessions[session.id] %}
+                                <button class="nk-btn nk-btn-rounded" disabled>Déjà réservée</button>
+                            {% else %}
+                                <a href="{{ path('reservation_add', {'sessionId': session.id}) }}" class="nk-btn nk-btn-rounded">Réserver</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <button class="carousel-arrow right" onclick="scrollCarousel(1)">❯</button>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination">
+            {{ knp_pagination_render(sessions) }}
+        </div>
+
+        <!-- Boutons bas de page -->
+        <div class="navigation-buttons text-end">
             {% if is_granted('ROLE_COACH') %}
-                <a href="{{ path('session_list') }}" class="nk-btn nk-btn-rounded nk-btn-color-main-1">
-                    <i class="fas fa-chalkboard-teacher"></i>
-                    Interface Coach
+                <a href="{{ path('session_list') }}" class="nk-btn nk-btn-rounded me-2">
+                    <i class="fas fa-chalkboard-teacher"></i> Interface Coach
                 </a>
             {% endif %}
-            <a href="{{ path('reservation_list') }}" class="nk-btn nk-btn-rounded nk-btn-color-main-1">
-                <i class="fas fa-calendar-check"></i>
-                Mes Réservations
+            <a href="{{ path('reservation_list') }}" class="nk-btn nk-btn-rounded">
+                <i class="fas fa-calendar-check"></i> Mes Réservations
             </a>
         </div>
     </div>
 </div>
 
+<img class="nk-page-background-top" src="{{ asset('images/bg-top.png') }}" alt="">
+<img class="nk-page-background-bottom" src="{{ asset('images/bg-bottom.png') }}" alt="">
+
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const container = document.querySelector('.session-carousel-container');
-    const list = document.querySelector('.session-list');
-    const items = document.querySelectorAll('.session-list .nk-product-cat-2');
-    const prevBtn = document.querySelector('.carousel-prev');
-    const nextBtn = document.querySelector('.carousel-next');
-    const sortBtn = document.querySelector('#sortPrice');
-    let isAscending = true;
+function scrollCarousel(direction) {
+    const carousel = document.getElementById('sessionCarousel');
+    const scrollAmount = 300;
+    carousel.scrollBy({
+        left: direction * scrollAmount,
+        behavior: 'smooth'
+    });   
+}
 
-    let currentIndex = 0;
-    const itemWidth = items[0].offsetWidth + 30; // 30px for gap
-    const visibleItems = Math.floor(container.offsetWidth / itemWidth);
+function sortSessionsByPrice() {
+    const carousel = document.getElementById('sessionCarousel');
+    const cards = Array.from(carousel.children);
+    const sortValue = document.getElementById('sortSelect').value;
 
-    function updateCarousel() {
-        const translateX = -currentIndex * itemWidth;
-        list.style.transform = `translateX(${translateX}px)`;
+    if (sortValue === 'default') {
+        return;
     }
 
-    function sortByPrice() {
-        const itemsArray = Array.from(items);
-        itemsArray.sort((a, b) => {
-            const priceA = parseFloat(a.querySelector('.nk-product-price').textContent);
-            const priceB = parseFloat(b.querySelector('.nk-product-price').textContent);
-            return isAscending ? priceA - priceB : priceB - priceA;
-        });
-
-        itemsArray.forEach(item => list.appendChild(item));
-        isAscending = !isAscending;
-        currentIndex = 0;
-        updateCarousel();
-
-        // Update sort button icon
-        const icon = sortBtn.querySelector('i');
-        icon.className = isAscending ? 'fas fa-sort-amount-down' : 'fas fa-sort-amount-up';
-    }
-
-    sortBtn.addEventListener('click', sortByPrice);
-
-    prevBtn.addEventListener('click', () => {
-        if (currentIndex > 0) {
-            currentIndex--;
-            updateCarousel();
-        }
+    cards.sort((a, b) => {
+        const priceA = parseFloat(a.dataset.price);
+        const priceB = parseFloat(b.dataset.price);
+        return sortValue === 'asc' ? priceA - priceB : priceB - priceA;
     });
 
-    nextBtn.addEventListener('click', () => {
-        if (currentIndex < items.length - visibleItems) {
-            currentIndex++;
-            updateCarousel();
-        }
-    });
-
-    window.addEventListener('resize', () => {
-        updateCarousel();
-    });
-});
+    carousel.innerHTML = '';
+    cards.forEach(card => carousel.appendChild(card));
+}
 </script>
-   <!-- Background de la page d'accueil -->
-    <img class="nk-page-background-top" src="{{ asset('images/bg-top.png') }}" alt="">
-    <img class="nk-page-background-bottom" src="{{ asset('images/bg-bottom.png') }}" alt="">
+
 {% endblock %}

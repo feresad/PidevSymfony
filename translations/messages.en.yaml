@@ -1,0 +1,221 @@
+# Page and Navigation
+page:
+  title: "Level OP | title"
+nav:
+  home: "Home"
+  forum: "Forum"
+  main_game_discussions: "Main Game Discussions"
+
+# Forum Section
+forum:
+  topic_title: "Topic: title"  # For FORUM.TOPIC.TITLE
+  user_role:
+    regular: "Regular Member"
+    com: "Community Moderator"
+  user_avatar_alt: "Avatar of nickname"
+  posted_on: "Posted on"
+  topics:
+    title: "Forum Discussions"
+  breadcrumbs:
+    home: "Home"
+    forum: "Forum"
+    discussions: "Discussions"
+  search:
+    placeholder: "Search topics by game, author, title, or content..."
+  button:
+    trivia: "Trivia"
+    new_topic: "New Topic"
+  trending:
+    title: "Trending on Reddit"
+  topic:
+    started_by: "Started by author on date"
+    posts: "count posts"
+    last_activity: "Last activity by user"
+    no_topics: "No topics found."
+  pagination:
+    prev: "Previous"
+    next: "Next"
+    ellipsis: "..."
+    showing: "Showing start to end of total topics"
+    showing_comments: "Showing start to end of total comments"
+  modal:
+    new_topic:
+      title: "Create New Topic"
+    share:
+      title: "Share Topic"
+      body: "Share this topic on your favorite platform:"
+      close: "Close"
+    update_topic:
+      title: "Update Topic"
+    delete_topic:
+      title: "Delete Topic"
+      body: "Are you sure you want to delete the topic 'title'? This action cannot be undone."
+      cancel: "Cancel"
+      delete: "Delete"
+    form:
+      title: "Title"
+      content: "Content"
+      media_type: "Media Type"
+      media_file: "Media File"
+      game_id: "Game"
+      emotes: "Add Emotes"
+      submit: "Submit"
+  member_since: "Member since"
+  attachment: "Attachment"
+  topic_media: "Topic Media"
+  video_unsupported: "Your browser does not support the video tag."
+  upvote: "Upvote"
+  downvote: "Downvote"
+  react: "React"
+  follow: "Subscribe"
+  unsubscribe: "Unsubscribe"
+  game_image: "Game Image"
+  default_game_image: "Default Game Image"
+  reply: "Reply"
+  spam: "Spam"
+  edit: "Edit"
+  delete: "Delete"
+  low_quality_label: "Low Quality (Votes: votes)"
+  hide_replies: "Hide Replies (count)"
+  show_replies: "Show Replies (count)"
+  no_comments: "No comments found on this page."
+  reactions:
+    positive: "Positive"
+    negative: "Negative"
+    neutral: "Neutral"
+  reply_placeholder: "Write your reply here..."
+  update_placeholder: "Update your comment here..."
+  voting_error: "Voting Error"
+  error_voting: "An error occurred while voting. Please try again."
+  inappropriate_content: "Inappropriate Content Detected"
+  revise_content: "Your comment contains inappropriate language. Please revise it."
+  detected: "Detected"
+  error_checking_profanity: "Error checking profanity. Please try again."
+  invalid_user_id: "Invalid user ID for reporting."
+  error_subscription_update: "An error occurred while updating the subscription status."
+  report: "Report Content"
+  select_reason: "Select a reason"
+  reason:
+    minor_involved: "Minor Involved"
+    harassment: "Harassment or Bullying"
+    suicide_self_harm: "Suicide or Self-Harm"
+    violent_content: "Violent or Graphic Content"
+    restricted_items: "Sale of Restricted Items"
+    adult_content: "Adult Content"
+    scam_false_info: "Scam or False Information"
+    unwanted_content: "Unwanted or Spam Content"
+  additional_details: "Additional details (optional)"
+  report_submitted: "Thank you! Your report has been submitted."
+  error_submitting_report: "An error occurred while submitting your report."
+  delete_comment_title: "Delete Comment"
+  delete_comment_confirm: "Are you sure you want to delete the comment"
+  delete_warning: "This action cannot be undone."
+  comment_deleted: "Comment deleted successfully."
+  error_deleting_comment: "An error occurred while deleting the comment."
+  alert:
+    success: "Success"
+    error: "Error"
+    ok: "OK"
+    vote_error: "An error occurred while voting."
+    share_error: "An error occurred while sharing the topic."
+    reaction_error: "An error occurred while adding your reaction."
+
+# Trivia Section
+trivia:
+  page_title: "Level OP | Gaming Trivia"
+  breadcrumb_title: "Gaming Trivia"
+  challenge_title: "Gaming Trivia Challenge"
+  challenge_description: "Test your video game knowledge with these tricky questions!"
+  question_label: "Question %{number}"
+  prev_button: "Previous"
+  next_button: "Next"
+  finish_button: "Finish"
+  correct_feedback: "Correct! Well done!"
+  incorrect_feedback: "Incorrect. The correct answer was: %{correctAnswer}"
+  error_title: "Error"
+  error_message: "An error occurred while validating your answer."
+  quiz_finished_title: "Quiz Finished!"
+  score_message: "You scored %{score} out of %{total}!"
+  confirm_button_text: "Back to Forum"
+  low_score_message: "Oh no! You can do better. Keep practicing!"
+  medium_score_message: "Not bad! You have a good level, but there's still room for improvement."
+  high_score_message: "Great performance! You're almost a gaming expert!"
+  perfect_score_message: "Amazing! You're a true gaming master! Congratulations!"
+
+# Report Form
+report:
+  form:
+    reason: "Report"
+    title: "Report Content"
+    select_reason: "Select a reason"
+    reason_spam: "Spam"
+    reason_inappropriate: "Inappropriate Content"
+    reason_offensive: "Offensive Behavior"
+    reason_other: "Other"
+    details: "Provide details about the issue"
+    submit: "Submit Report"
+    cancel: "Cancel"
+    self_report: "You cannot report your own content."
+    success: "Report submitted successfully."
+    error: "An error occurred while submitting the report."
+
+# General
+general:
+  success: "Success"
+  error: "Error"
+  ok: "OK"
+  cancel: "Cancel"
+  server_error: "Server error occurred."
+  unknown_user: "Unknown"
+  date_not_set: "Not set"
+
+# Flash Messages
+flash:
+  login_required: "You must be logged in to perform this action."
+  topic_not_found: "Topic not found."
+  topic_created: "Topic created successfully!"
+  error_creating_topic: "Error creating topic: error"
+  topic_deleted: "Topic deleted successfully!"
+  error_deleting_topic: "Error deleting topic: error"
+  unauthorized_delete: "You are not authorized to delete this topic."
+  topic_updated: "Topic updated successfully!"
+  error_updating_topic: "Error updating topic: error"
+  unauthorized_update: "You are not authorized to update this topic."
+
+# Form Errors
+form:
+  error:
+    title_blank: "The title cannot be blank."
+    content_blank: "The content cannot be blank."
+    game_required: "A game must be selected."
+    media_type_required: "Media type is required when uploading a file."
+    file_too_large: "The file is too large. Maximum size is 30MB."
+    invalid_image: "Invalid image format. Allowed formats: JPEG, PNG, GIF."
+    invalid_video: "Invalid video format. Allowed formats: MP4, MPEG, WebM, QuickTime, AVI."
+
+# API Responses
+api:
+  error:
+    login_required: "You must be logged in to perform this action."
+    invalid_sentiment_map: "Invalid sentiment map provided."
+    question_not_found: "Question not found."
+    comment_not_found: "Comment not found."
+    invalid_vote_type: "Invalid vote type."
+    already_upvoted: "You have already upvoted this question."
+    already_downvoted: "You have already downvoted this question."
+    invalid_type: "Invalid type specified."
+    no_topic_ids: "No topic IDs provided."
+    topic_id_required: "Topic ID is required."
+    topic_not_found: "Topic not found."
+  sentiment_map_updated: "Sentiment map updated successfully."
+
+# Log Messages
+log:
+  created_uploads_directory: "Created uploads directory."
+  media_file_uploaded: "Media file uploaded successfully."
+  deleted_media_file: "Deleted media file."
+  deleted_old_media_file: "Deleted old media file."
+  deleted_old_media_file_no_type: "Deleted old media file due to media_type set to None."
+  error_creating_topic: "Error creating topic."
+  error_deleting_topic: "Error deleting topic."
+  error_updating_topic: "Error updating topic."

@@ -1,0 +1,218 @@
+# Page and Navigation
+page:
+  title: "Level OP | title"
+nav:
+  home: "Accueil"
+  forum: "Forum"
+  main_game_discussions: "Discussions principales sur les jeux"
+
+# Forum Section
+forum:
+  topics:
+    title: "Discussions du Forum"
+  breadcrumbs:
+    home: "Accueil"
+    forum: "Forum"
+    discussions: "Discussions"
+  search:
+    placeholder: "Rechercher des sujets par jeu, auteur, titre ou contenu..."
+  button:
+    trivia: "Trivia"
+    new_topic: "Nouveau Sujet"
+  trending:
+    title: "Tendances sur Reddit"
+  topic:
+    started_by: "Démarré par author le date"
+    posts: "count messages"
+    last_activity: "Dernière activité par user"
+    no_topics: "Aucun sujet trouvé."
+  pagination:
+    showing: "Affichage de start à end sur total sujets"
+  modal:
+    new_topic:
+      title: "Créer un Nouveau Sujet"
+    share:
+      title: "Partager le Sujet"
+      body: "Partagez ce sujet sur votre plateforme préférée :"
+      close: "Fermer"
+    update_topic:
+      title: "Mettre à Jour le Sujet"
+    delete_topic:
+      title: "Supprimer le Sujet"
+      body: "Êtes-vous sûr de vouloir supprimer le sujet 'title' ? Cette action est irréversible."
+      cancel: "Annuler"
+      delete: "Supprimer"
+    form:
+      title: "Titre"
+      content: "Contenu"
+      media_type: "Type de Média"
+      media_file: "Fichier Média"
+      game_id: "Jeu"
+      emotes: "Ajouter des Émotes"
+      submit: "Soumettre"
+  member_since: "Membre depuis"
+  attachment: "Pièce jointe"
+  topic_media: "Média du sujet"
+  video_unsupported: "Votre navigateur ne prend pas en charge la balise vidéo."
+  upvote: "Voter pour"
+  downvote: "Voter contre"
+  react: "Réagir"
+  follow: "S'abonner"
+  unsubscribe: "Se désabonner"
+  game_image: "Image du jeu"
+  default_game_image: "Image de jeu par défaut"
+  reply: "Répondre"
+  spam: "Spam"
+  edit: "Modifier"
+  delete: "Supprimer"
+  low_quality_label: "Basse qualité (Votes : votes)"
+  hide_replies: "Masquer les réponses (count)"
+  show_replies: "Afficher les réponses (count)"
+  no_comments: "Aucun commentaire trouvé sur cette page."
+  showing_comments: "Affichage des commentaires start-end sur total"
+  reactions:
+    positive: "Positif"
+    negative: "Négatif"
+    neutral: "Neutre"
+  reply_placeholder: "Écrivez votre réponse ici..."
+  update_placeholder: "Mettez à jour votre commentaire ici..."
+  voting_error: "Erreur de vote"
+  error_voting: "Une erreur s'est produite lors du vote. Veuillez réessayer."
+  inappropriate_content: "Contenu inapproprié détecté"
+  revise_content: "Votre commentaire contient un langage inapproprié. Veuillez le réviser."
+  detected: "Détecté"
+  error_checking_profanity: "Erreur lors de la vérification des grossièretés. Veuillez réessayer."
+  invalid_user_id: "ID utilisateur invalide pour le signalement."
+  error_subscription_update: "Une erreur s'est produite lors de la mise à jour de l'abonnement."
+  report: "Signaler le contenu"
+  select_reason: "Sélectionnez une raison"
+  reason:
+    minor_involved: "Mineur impliqué"
+    harassment: "Harcèlement ou intimidation"
+    suicide_self_harm: "Suicide ou automutilation"
+    violent_content: "Contenu violent ou graphique"
+    restricted_items: "Vente d'articles restreints"
+    adult_content: "Contenu pour adultes"
+    scam_false_info: "Arnaque ou fausses informations"
+    unwanted_content: "Contenu indésirable ou spam"
+  additional_details: "Détails supplémentaires (facultatif)"
+  report_submitted: "Merci ! Votre signalement a été soumis."
+  error_submitting_report: "Une erreur s'est produite lors de la soumission de votre signalement."
+  delete_comment_title: "Supprimer le commentaire"
+  delete_comment_confirm: "Êtes-vous sûr de vouloir supprimer le commentaire"
+  delete_warning: "Cette action ne peut pas être annulée."
+  comment_deleted: "Commentaire supprimé avec succès."
+  error_deleting_comment: "Une erreur s'est produite lors de la suppression du commentaire."
+  alert:
+    success: "Succès"
+    error: "Erreur"
+    ok: "OK"
+    vote_error: "Une erreur s'est produite lors du vote."
+    share_error: "Une erreur s'est produite lors du partage du sujet."
+    reaction_error: "Une erreur s'est produite lors de l'ajout de votre réaction."
+
+# Trivia Section
+trivia:
+  page_title: "Level OP | Trivia de Jeux Vidéo"
+  breadcrumb_title: "Trivia de Jeux Vidéo"
+  challenge_title: "Défi de Trivia de Jeux Vidéo"
+  challenge_description: "Testez vos connaissances en matière de jeux vidéo avec ces questions pièges !"
+  question_label: "Question %number%"
+  prev_button: "Précédent"
+  next_button: "Suivant"
+  finish_button: "Terminer"
+  correct_feedback: "Correct ! Bien joué !"
+  incorrect_feedback: "Incorrect. La bonne réponse était : %correctAnswer%"
+  error_title: "Erreur"
+  error_message: "Une erreur s'est produite lors de la validation de votre réponse."
+  quiz_finished_title: "Quiz Terminé !"
+  score_message: "Tu as obtenu un score de %score% sur %total% !"
+  confirm_button_text: "Retour au Forum"
+  low_score_message: "Oh non ! Tu peux faire mieux. Continue à t'entraîner !"
+  medium_score_message: "Pas mal ! Tu as un bon niveau, mais il y a encore du progrès à faire."
+  high_score_message: "Superbe performance ! Tu es presque un expert en gaming !"
+  perfect_score_message: "Incroyable ! Tu es un véritable maître du gaming ! Félicitations !"
+
+# Report Form
+report:
+  form:
+    reason: "Signaler"
+    title: "Signaler un Contenu"
+    select_reason: "Sélectionnez une raison"
+    reason_spam: "Spam"
+    reason_inappropriate: "Contenu Inapproprié"
+    reason_offensive: "Comportement Offensant"
+    reason_other: "Autre"
+    details: "Fournissez des détails sur le problème"
+    submit: "Soumettre le Signalement"
+    cancel: "Annuler"
+    self_report: "Vous ne pouvez pas signaler votre propre contenu."
+    success: "Signalement soumis avec succès."
+    error: "Une erreur s'est produite lors de la soumission du signalement."
+
+# General
+general:
+  success: "Succès"
+  error: "Erreur"
+  ok: "OK"
+  cancel: "Annuler"
+  server_error: "Une erreur de serveur s'est produite."
+  unknown_user: "Inconnu"
+  date_not_set: "Non défini"
+
+# Flash Messages
+flash:
+  login_required: "Vous devez être connecté pour effectuer cette action."
+  topic_not_found: "Sujet non trouvé."
+  topic_created: "Sujet créé avec succès !"
+  error_creating_topic: "Une erreur s'est produite lors de la création du sujet : %error%"
+  topic_deleted: "Sujet supprimé avec succès !"
+  error_deleting_topic: "Une erreur s'est produite lors de la suppression du sujet : %error%"
+  unauthorized_delete: "Vous n'êtes pas autorisé à supprimer ce sujet."
+  topic_updated: "Sujet mis à jour avec succès !"
+  error_updating_topic: "Une erreur s'est produite lors de la mise à jour du sujet : %error%"
+  unauthorized_update: "Vous n'êtes pas autorisé à mettre à jour ce sujet."
+
+# Form Errors
+form:
+  error:
+    title_blank: "Le titre ne peut pas être vide."
+    content_blank: "Le contenu ne peut pas être vide."
+    game_required: "Un jeu doit être sélectionné."
+    media_type_required: "Le type de média est requis lors du téléchargement d'un fichier."
+    file_too_large: "Le fichier est trop volumineux. Taille maximale : 30 Mo."
+    invalid_image: "Format d'image invalide. Formats autorisés : JPEG, PNG, GIF."
+    invalid_video: "Format de vidéo invalide. Formats autorisés : MP4, MPEG, WebM, QuickTime, AVI."
+
+# API Responses
+api:
+  error:
+    login_required: "Vous devez être connecté pour effectuer cette action."
+    invalid_sentiment_map: "Carte de sentiment invalide fournie."
+    question_not_found: "Question non trouvée."
+    comment_not_found: "Commentaire non trouvé."
+    invalid_vote_type: "Type de vote invalide."
+    already_upvoted: "Vous avez déjà voté pour cette question."
+    already_downvoted: "Vous avez déjà voté contre cette question."
+    invalid_type: "Type invalide spécifié."
+    no_topic_ids: "Aucun ID de sujet fourni."
+    topic_id_required: "L'ID du sujet est requis."
+    topic_not_found: "Sujet non trouvé."
+  sentiment_map_updated: "Carte de sentiment mise à jour avec succès."
+
+# Log Messages
+log:
+  created_uploads_directory: "Répertoire de téléchargements créé."
+  media_file_uploaded: "Fichier média téléchargé avec succès."
+  deleted_media_file: "Fichier média supprimé."
+  deleted_old_media_file: "Ancien fichier média supprimé."
+  deleted_old_media_file_no_type: "Ancien fichier média supprimé en raison du type de média défini à Aucun."
+  error_creating_topic: "Erreur lors de la création du sujet."
+  error_deleting_topic: "Erreur lors de la suppression du sujet."
+  error_updating_topic: "Erreur lors de la mise à jour du sujet."
+  forum:
+  pagination:
+    prev: "Précédent"
+    next: "Suivant"
+    ellipsis: "..."
+    showing_comments: "Affichage des commentaires start à end sur total"
