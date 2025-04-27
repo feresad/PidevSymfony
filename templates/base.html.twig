@@ -15,6 +15,8 @@
     {% block stylesheets %}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css" />
         <!-- Google Fonts -->
         <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700|Open+Sans:400,700" rel="stylesheet">
 
@@ -50,72 +52,198 @@
             }
 
             .notification-bell {
-                font-size: 20px;
+                font-size: 22px;
                 color: #fff;
                 cursor: pointer;
-                transition: color 0.3s ease;
+                transition: color 0.3s ease, transform 0.2s ease;
             }
 
             .notification-bell:hover {
                 color: #0585e6;
+                transform: scale(1.1);
             }
 
             .notification-count {
                 position: absolute;
-                top: -5px;
-                right: -10px;
+                top: -8px;
+                right: -8px;
                 border-radius: 50%;
-                width: 18px;
-                height: 18px;
-                line-height: 18px;
+                width: 20px;
+                height: 20px;
+                line-height: 20px;
                 text-align: center;
                 font-size: 12px;
+                font-weight: bold;
+                background: #e63946;
+                color: #fff;
+                border: 2px solid #232930;
             }
 
             .notification-dropdown {
                 position: absolute;
-                top: 35px;
+                top: 40px;
                 right: 0;
-                background: rgba(35, 41, 48, 0.95);
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                border-radius: 5px;
-                width: 300px;
-                max-height: 400px;
+                background: #232930;
+                border-radius: 10px;
+                width: 320px;
+                max-height: 450px;
                 overflow-y: auto;
                 z-index: 1000;
-                box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+                opacity: 0;
+                visibility: hidden;
+                transform: translateY(-10px);
+                transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+            }
+
+            .notification-dropdown.show {
+                opacity: 1;
+                visibility: visible;
+                transform: translateY(0);
+            }
+
+            .notification-header {
+                padding: 12px 15px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background: linear-gradient(135deg, #2a2f38 0%, #232930 100%);
+                border-top-left-radius: 10px;
+                border-top-right-radius: 10px;
+            }
+
+            .notification-header h6 {
+                margin: 0;
+                font-size: 14px;
+                font-weight: 600;
+                color: #fff;
+            }
+
+            .notification-header .mark-all-read {
+                font-size: 12px;
+                color: #0585e6;
+                cursor: pointer;
+                text-decoration: none;
+            }
+
+            .notification-header .mark-all-read:hover {
+                text-decoration: underline;
             }
 
             .notification-list {
                 margin: 0;
+                padding: 0;
             }
 
             .notification-item {
-                padding: 10px;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                display: flex;
+                align-items: center;
+                padding: 12px 15px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
                 color: #d1d5db;
                 cursor: pointer;
-                transition: background 0.3s ease;
+                transition: background 0.2s ease;
+            }
+
+            .notification-item.unread {
+                background: rgba(5, 133, 230, 0.1);
             }
 
             .notification-item:hover {
-                background: rgba(255, 255, 255, 0.1);
+                background: rgba(255, 255, 255, 0.05);
+            }
+
+            .notification-item .avatar {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                margin-right: 12px;
+                background: #0585e6;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 18px;
+                color: #fff;
+            }
+
+            .notification-item .avatar .fas {
+                font-size: 18px;
+            }
+
+            .notification-item .content {
+                flex: 1;
             }
 
             .notification-item a {
                 color: #d1d5db;
                 text-decoration: none;
+                font-size: 14px;
                 display: block;
+                line-height: 1.4;
+            }
+
+            .notification-item a:hover {
+                color: #0585e6;
             }
 
             .notification-item small {
                 display: block;
                 color: #a0a0a0;
-                font-size: 0.8em;
+                font-size: 12px;
+                margin-top: 4px;
             }
 
             .notification-item:last-child {
                 border-bottom: none;
+            }
+
+            .no-notifications {
+                padding: 20px;
+                text-align: center;
+                color: #a0a0a0;
+                font-size: 14px;
+            }
+
+            /* Scrollbar Styling */
+            .notification-dropdown::-webkit-scrollbar {
+                width: 8px;
+            }
+
+            .notification-dropdown::-webkit-scrollbar-track {
+                background: #2a2f38;
+                border-radius: 10px;
+            }
+
+            .notification-dropdown::-webkit-scrollbar-thumb {
+                background: #0585e6;
+                border-radius: 10px;
+            }
+
+            .notification-dropdown::-webkit-scrollbar-thumb:hover {
+                background: #0469b5;
+            }
+
+            /* Loading Spinner */
+            .notification-item.loading {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 20px;
+            }
+
+            .notification-item.loading .spinner {
+                border: 2px solid #0585e6;
+                border-top: 2px solid transparent;
+                border-radius: 50%;
+                width: 24px;
+                height: 24px;
+                animation: spin 1s linear infinite;
+            }
+
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
             }
         </style>
     {% endblock %}
@@ -176,7 +304,11 @@
                                 <div class="notification-wrapper">
                                     <span class="notification-bell fas fa-bell" title="Notifications"></span>
                                     <span class="notification-count badge bg-danger" style="display: none;">0</span>
-                                    <div class="notification-dropdown" style="display: none;">
+                                    <div class="notification-dropdown">
+                                        <div class="notification-header">
+                                            <h6>Notifications</h6>
+                                            <a href="#" class="mark-all-read" style="display: none;">Tout marquer comme lu</a>
+                                        </div>
                                         <ul class="notification-list list-unstyled"></ul>
                                     </div>
                                 </div>
@@ -282,173 +414,230 @@
         <script src="{{ asset('js/goodgames-init.js') }}"></script>
         <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5/main.min.js"></script>
 
-        <!-- Chatbot JavaScript -->
+        <!-- Consolidated JavaScript -->
         <script>
-            const chatbotToggler = document.querySelector(".chatbot-toggler");
-            const chatbox = document.querySelector(".chatbox");
-            const chatInput = document.querySelector(".chat-input textarea");
-            const sendChatBtn = document.querySelector("#send-btn");
-            const inputInitHeight = chatInput.scrollHeight;
-    
+        $(document).ready(function() {
+            // Chatbot Functionality
+            const $chatbotToggler = $('.chatbot-toggler');
+            const $chatbox = $('.chatbox');
+            const $chatInput = $('.chat-input textarea');
+            const $sendChatBtn = $('#send-btn');
+            const inputInitHeight = $chatInput[0].scrollHeight;
+
             const createChatLi = (message, className) => {
-                const chatLi = document.createElement("li");
-                chatLi.classList.add("chat", className);
-                let chatContent = className === "outgoing" ? `<p>${message}</p>` : `<span class="fas fa-robot"></span><p></p>`;
-                chatLi.innerHTML = chatContent;
+                const chatLi = $('<li>').addClass('chat').addClass(className);
+                const chatContent = className === 'outgoing' 
+                    ? `<p>${message}</p>` 
+                    : `<span class="fas fa-robot"></span><p></p>`;
+                chatLi.html(chatContent);
                 return chatLi;
             };
-    
+
             const typeWriter = (text, element, speed = 100) => {
                 const words = text.split(" ");
                 let i = 0;
-    
+
                 function type() {
                     if (i < words.length) {
                         element.textContent += (i === 0 ? "" : " ") + words[i];
                         i++;
-                        chatbox.scrollTo(0, chatbox.scrollHeight); // Scroll pendant l'écriture
+                        $chatbox.scrollTop($chatbox[0].scrollHeight);
                         setTimeout(type, speed);
                     }
                 }
                 type();
             };
-    
-            // Handle chat submission
+
             const handleChat = async () => {
-                const userMessage = chatInput.value.trim();
+                const userMessage = $chatInput.val().trim();
                 if (!userMessage) return;
-    
-                // Reset input
-                chatInput.value = "";
-                chatInput.style.height = `${inputInitHeight}px`;
-    
-                // Add user message
+
+                $chatInput.val("");
+                $chatInput.css('height', `${inputInitHeight}px`);
+
                 const outgoingChatLi = createChatLi(userMessage, "outgoing");
-                chatbox.appendChild(outgoingChatLi);
-                chatbox.scrollTo(0, chatbox.scrollHeight);
-    
-                // Fetch response from Gemini via HomeController
-                const response = await fetch("{{ path('chatbot') }}", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded",
-                        "X-Requested-With": "XMLHttpRequest"
-                    },
-                    body: new URLSearchParams({ message: userMessage })
-                });
-    
-                const data = await response.text();
-    
-                const incomingChatLi = createChatLi("", "incoming");
-                chatbox.appendChild(incomingChatLi);
-                const messageElement = incomingChatLi.querySelector("p");
-                typeWriter(data, messageElement, 100);
+                $chatbox.append(outgoingChatLi);
+                $chatbox.scrollTop($chatbox[0].scrollHeight);
+
+                try {
+                    const response = await $.ajax({
+                        url: "{{ path('chatbot') }}",
+                        method: "POST",
+                        contentType: "application/x-www-form-urlencoded",
+                        data: { message: userMessage },
+                        headers: { "X-Requested-With": "XMLHttpRequest" }
+                    });
+
+                    const incomingChatLi = createChatLi("", "incoming");
+                    $chatbox.append(incomingChatLi);
+                    const messageElement = incomingChatLi.find("p")[0];
+                    typeWriter(response, messageElement, 100);
+                } catch (error) {
+                    console.error('Failed to get chatbot response:', error);
+                    const errorLi = createChatLi("Erreur lors de la communication avec le chatbot.", "incoming");
+                    $chatbox.append(errorLi);
+                    $chatbox.scrollTop($chatbox[0].scrollHeight);
+                }
             };
-    
-            // Adjust textarea height
-            chatInput.addEventListener("input", () => {
-                chatInput.style.height = `${inputInitHeight}px`;
-                chatInput.style.height = `${chatInput.scrollHeight}px`;
+
+            $chatInput.on('input', () => {
+                $chatInput.css('height', `${inputInitHeight}px`);
+                $chatInput.css('height', `${$chatInput[0].scrollHeight}px`);
             });
-    
-            // Send with Enter key
-            chatInput.addEventListener("keydown", (e) => {
+
+            $chatInput.on('keydown', (e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
                     handleChat();
                 }
             });
-    
-            sendChatBtn.addEventListener("click", handleChat);
-    
-            // Toggle chatbot visibility
-            chatbotToggler.addEventListener("click", () => document.body.classList.toggle("show-chatbot"));
-        </script>
 
-        <script>
-            $(document).ready(function() {
-                const $bell = $('.notification-bell');
-                const $count = $('.notification-count');
-                const $dropdown = $('.notification-dropdown');
-                const $list = $('.notification-list');
+            $sendChatBtn.on('click', handleChat);
 
-                function fetchNotifications() {
-                    $.ajax({
-                        url: "{ path('api_notifications') }}",
-                        method: 'GET',
-                        success: function(response) {
-                            if (response.success) {
-                                const notifications = response.notifications;
-                                $count.text(notifications.length);
-                                $count.toggle(notifications.length > 0);
+            $chatbotToggler.on('click', (e) => {
+                e.stopPropagation();
+                $('body').toggleClass('show-chatbot');
+            });
 
-                                $list.empty();
-                                if (notifications.length > 0) {
-                                    notifications.forEach(function(notification) {
-                                        $list.append(`
-                                            <li class="notification-item" data-id="${notification.id}">
+            // Notification Functionality
+            const $bell = $('.notification-bell');
+            const $count = $('.notification-count');
+            const $dropdown = $('.notification-dropdown');
+            const $list = $('.notification-list');
+            const $markAllRead = $('.mark-all-read');
+
+            function fetchNotifications() {
+                $list.html('<li class="notification-item loading"><div class="spinner"></div></li>');
+
+                $.ajax({
+                    url: "{{ path('api_notifications') }}",
+                    method: 'GET',
+                    success: function(response) {
+                        if (response.success) {
+                            const notifications = response.notifications;
+                            $count.text(notifications.length);
+                            $count.toggle(notifications.length > 0);
+
+                            $list.empty();
+                            if (notifications.length > 0) {
+                                notifications.forEach(function(notification) {
+                                    const iconClass = notification.message.includes('comment') ? 'fas fa-comment' : 'fas fa-bell';
+                                    $list.append(`
+                                        <li class="notification-item ${notification.isRead ? '' : 'unread'}" data-id="${notification.id}">
+                                            <div class="avatar"><span class="fas fa-user"></span></div>
+                                            <div class="content">
                                                 <a href="${notification.link}">${notification.message}</a>
                                                 <small>${notification.createdAt}</small>
-                                            </li>
-                                        `);
-                                    });
-                                } else {
-                                    $list.append('<li class="notification-item">Aucune nouvelle notification</li>');
-                                }
+                                            </div>
+                                        </li>
+                                    `);
+                                });
+                                $markAllRead.show();
+                            } else {
+                                $list.append('<li class="notification-item">Aucune nouvelle notification</li>');
+                                $markAllRead.hide();
+                            }
+                        } else {
+                            console.error('Failed to fetch notifications:', response.message);
+                            if (response.message === 'You must be logged in.') {
+                                $list.empty().append('<li class="notification-item">Veuillez vous connecter pour voir les notifications</li>');
+                                $markAllRead.hide();
+                            }
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Failed to fetch notifications:', xhr.status, xhr.responseText);
+                        $list.empty().append('<li class="notification-item">Erreur lors de la récupération des notifications</li>');
+                        $markAllRead.hide();
+                    }
+                });
+            }
+
+            fetchNotifications();
+            setInterval(fetchNotifications, 30000);
+
+            $bell.on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $dropdown.toggleClass('show');
+            });
+
+            $markAllRead.on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const previousListContent = $list.html();
+                $list.empty().append('<li class="notification-item">Aucune nouvelle notification</li>');
+                $count.text('0').hide();
+                $markAllRead.hide();
+
+                $.ajax({
+                    url: "{{ path('api_notifications_mark_all_read') }}",
+                    method: 'POST',
+                    success: function(response) {
+                        if (response.success) {
+                            console.log('All notifications marked as read:', response.message);
+                        } else {
+                            console.error('Failed to mark all notifications as read:', response.message);
+                            alert('Erreur: ' + response.message);
+                            fetchNotifications();
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Failed to mark all notifications as read:', xhr.status, xhr.responseText);
+                        alert('Erreur lors de la mise à jour des notifications.');
+                        $list.html(previousListContent);
+                        fetchNotifications();
+                    }
+                });
+            });
+
+            $list.on('click', '.notification-item', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const $item = $(this);
+                const notificationId = $item.data('id');
+                const link = $item.find('a').attr('href');
+
+                if (notificationId) {
+                    $.ajax({
+                        url: "{{ path('api_notifications_read', {'id': 'ID'}) }}".replace('ID', notificationId),
+                        method: 'POST',
+                        success: function(response) {
+                            if (response.success) {
+                                $item.removeClass('unread');
+                                fetchNotifications();
+                                window.location.href = link;
                             }
                         },
                         error: function() {
-                            console.error('Failed to fetch notifications');
+                            console.error('Failed to mark notification as read');
                         }
                     });
+                } else {
+                    $dropdown.removeClass('show');
                 }
-
-                fetchNotifications();
-                setInterval(fetchNotifications, 30000);
-
-                $bell.on('click', function(e) {
-                    e.preventDefault();
-                    $dropdown.toggle();
-                });
-
-                $list.on('click', '.notification-item', function(e) {
-                    e.preventDefault();
-                    const $item = $(this);
-                    const notificationId = $item.data('id');
-                    const link = $item.find('a').attr('href');
-
-                    if (notificationId) {
-                        $.ajax({
-                            url: "{{ path('api_notifications_read', {'id': 'ID'}) }}".replace('ID', notificationId),
-                            method: 'POST',
-                            success: function(response) {
-                                if (response.success) {
-                                    fetchNotifications(); 
-                                    window.location.href = link; 
-                                }
-                            },
-                            error: function() {
-                                console.error('Failed to mark notification as read');
-                            }
-                        });
-                    } else {
-                        $dropdown.hide(); 
-                    }
-                });
-
-                $(document).on('click', function(e) {
-                    if (!$bell.is(e.target) && !$dropdown.is(e.target) && $dropdown.has(e.target).length === 0) {
-                        $dropdown.hide();
-                    }
-                });
             });
-        </script>
-        <script>
-            document.getElementById('logout-button').addEventListener('click', function (e) {
-                e.preventDefault(); // prevent default anchor behavior
-                localStorage.clear(); // clear localStorage
-                window.location.href = "{{ path('app_logout') }}"; // redirect to Symfony logout route
+
+            $(document).on('click', function(e) {
+                const $target = $(e.target);
+                if (!$bell.is($target) && !$dropdown.is($target) && $dropdown.has($target).length === 0) {
+                    $dropdown.removeClass('show');
+                }
             });
+
+            // Logout Functionality
+            $('#logout-button').on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                try {
+                    localStorage.clear();
+                    window.location.href = "{{ path('app_logout') }}";
+                } catch (error) {
+                    console.error('Error during logout:', error);
+                    alert('Erreur lors de la déconnexion. Veuillez réessayer.');
+                }
+            });
+        });
         </script>
     {% endblock %}
 </body>

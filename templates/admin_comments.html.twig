@@ -334,7 +334,8 @@
         }
 
         .reaction-icon:hover {
-            background-color: #f1f3f5;
+            background: none;
+            border: none;
         }
 
         .emoji-picker-container {
@@ -441,7 +442,7 @@
         }
 
         .btn-danger:hover {
-            background-color:rgb(184, 0, 73);
+            background-color: rgb(184, 0, 73);
             border-color: #fe0369;
             transform: translateY(-1px);
         }
@@ -561,6 +562,14 @@
 
         .floating-modal .modal-body {
             padding: 1.5rem;
+        }
+
+        .floating-modal .modal-footer {
+            border-top: none;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
         }
 
         .floating-modal .modal-footer {
@@ -706,6 +715,10 @@
                 z-index: 1040;
             }
         }
+
+        .comment-content {
+    transition: opacity 0.2s ease-in-out;
+}
     </style>
 {% endblock %}
 
@@ -1359,221 +1372,138 @@
                 });
             }
 
-            function appendComment(comment, level, parentId) {
-                const commentHtml = `
-                    <div class="card mb-3 comment-card" style="--level: ${level};" data-comment-id="${comment.id}">
-                        <div class="card-body d-flex align-items-start">
-                            <div class="vote-section me-4 text-center">
-                                <button class="vote-btn upvote-btn voting-button upvote" data-id="${comment.id}" data-type="comment" data-vote-type="UP">
-                                    <ion-icon name="arrow-up-outline"></ion-icon>
-                                </button>
-                                <span class="vote-count d-block my-1">${comment.votes}</span>
-                                <button class="vote-btn downvote-btn voting-button downvote" data-id="${comment.id}" data-type="comment" data-vote-type="DOWN">
-                                    <ion-icon name="arrow-down-outline"></ion-icon>
-                                </button>
-                            </div>
-                            <div class="content-section flex-grow-1">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <span class="fw-bold">${comment.utilisateurId.nickname || 'Unknown'}</span>
-                                        <span class="text-muted small"> • ${comment.createdAt}</span>
-                                    </div>
-                                </div>
-                                <p class="comment-content">${comment.content}</p>
-                                <div class="reactions mt-2 d-flex align-items-center">
-                                    <div class="reaction-display me-3" data-id="${comment.id}" data-type="comment">
-                                        ${Object.entries(comment.reactionCounts).map(([emoji, count]) => `<span class="reaction-item" data-emoji="${emoji}">${emoji} ${count}</span>`).join('')}
-                                    </div>
-                                </div>
-                                <div class="actions mt-3 d-flex gap-2 align-items-center">
-                                    <button class="btn btn-sm btn-outline-secondary reply-btn" data-id="${comment.id}" data-question-id="{{ question.id }}">
-                                        <ion-icon name="return-down-forward-outline"></ion-icon> Reply
-                                    </button>
-                                    <button class="btn btn-sm btn-primary edit-comment-btn" data-id="${comment.id}">
-                                        Edit
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-danger delete-comment-btn" data-id="${comment.id}">
-                                        Delete
-                                    </button>
-                                    <div class="reaction-wrapper">
-                                        <button class="btn btn-sm btn-outline-secondary reaction-icon" data-id="${comment.id}" data-type="comment">
-                                            <ion-icon name="happy-outline"></ion-icon>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div id="reply-form-${comment.id}" class="reply-form mt-3" style="display: none;">
-                                    <form class="profanity-check-form" action="{{ path('admin_comments_create', {'id': question.id}) }}" method="POST">
-                                        <input type="hidden" name="comment_form[parent_commentaire_id]" value="${comment.id}">
-                                        <div class="mb-3">
-                                            <label for="reply_content_${comment.id}" class="form-label">Reply</label>
-                                            <textarea id="reply_content_${comment.id}" name="comment_form[contenu]" class="form-control" rows="3" required></textarea>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Emotes</label>
-                                            <div class="emotes-options d-flex gap-2">
-                                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('😊', 'reply_content_${comment.id}')">😊</button>
-                                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('😂', 'reply_content_${comment.id}')">😂</button>
-                                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('❤️', 'reply_content_${comment.id}')">❤️</button>
-                                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('👍', 'reply_content_${comment.id}')">👍</button>
-                                            </div>
-                                        </div>
-                                        <button type="submit" class="btn btn-primary">Submit Reply</button>
-                                        <button type="button" class="btn btn-secondary cancel-reply-btn" data-id="${comment.id}">Cancel</button>
-                                    </form>
-                                </div>
-                                <div id="update-form-container-${comment.id}" class="update-form mt-3" style="display: none;"></div>
-                                <div id="child-comments-${comment.id}" class="child-comments"></div>
-                            </div>
-                            <div class="activity-section text-center">
-                                <img src="${comment.utilisateurId.photo || '{{ asset('images/one-piece-monkey-d-luffy.gif') }}'}" alt="User Image" class="rounded-circle mb-2" style="width: 40px; height: 40px;">
-                                <div class="small">${comment.utilisateurId.nickname || 'Unknown'}</div>
-                            </div>
-                        </div>
-                    </div>
-                `;
+          $(document).on('submit', '.profanity-check-form', function(e) {
+    e.preventDefault();
+    const $form = $(this);
+    const $textarea = $form.find('textarea[name="comment_form[contenu]"]');
+    const title = $form.find('input[name*="[title]"]').val() || '';
+    const content = $textarea.val() || '';
+    const combinedContent = title + ' ' + content;
 
-                if (parentId === 0) {
-                    $('#comments-container').prepend(commentHtml);
-                } else {
-                    let $childComments = $(`#child-comments-${parentId}`);
-                    if (!$childComments.length) {
-                        $(`#reply-form-${parentId}`).after(`<div id="child-comments-${parentId}" class="child-comments show"></div>`);
-                        $childComments = $(`#child-comments-${parentId}`);
-                        const $toggleBtn = $(`<button class="toggle-replies-btn" data-id="${parentId}">Hide Replies</button>`);
-                        $(`#reply-form-${parentId}`).before($toggleBtn);
-                    }
-                    $childComments.append(commentHtml);
-                    $childComments.addClass('show');
+    const $submitButton = $form.find('button[type="submit"]');
+    $submitButton.prop('disabled', true);
+
+    $.ajax({
+        url: '{{ path('api_check_profanity') }}',
+        method: 'POST',
+        data: { content: combinedContent },
+        xhrFields: { withCredentials: true },
+        success: function(response) {
+            if (response.isProfane) {
+                const profanityList = response.details ? response.details.map(m => m['text']).join(', ') : '';
+                Swal.fire({
+                    title: 'Inappropriate Content Detected',
+                    html: 'Your content contains inappropriate language. Please revise it.<br><strong>Detected:</strong> ' + (profanityList || 'N/A'),
+                    icon: 'warning',
+                    background: '#fff',
+                    color: '#212529',
+                    confirmButtonColor: '#007bff'
+                }).then(() => {
+                    $submitButton.prop('disabled', false);
+                });
+            } else {
+                const formAction = $form.attr('action');
+                const formData = new FormData($form[0]);
+                formData.set('comment_form[contenu]', content);
+
+                const isUpdateQuestionForm = formAction.includes('forum_update_topic');
+                const isCommentForm = formAction.includes('admin_comments_create');
+                const isUpdateCommentForm = formAction.includes('admin_comments_update');
+                const isReplyForm = $form.closest('.reply-form').length > 0;
+
+                let url = formAction;
+                if (isReplyForm) {
+                    url = formAction + '?reply=true';
                 }
-                initializeReactions();
-            }
-
-            $(document).on('submit', '.profanity-check-form', function(e) {
-                e.preventDefault();
-                const $form = $(this);
-                const $textarea = $form.find('textarea[name="comment_form[contenu]"]');
-                const title = $form.find('input[name*="[title]"]').val() || '';
-                const content = $textarea.val() || '';
-                const combinedContent = title + ' ' + content;
-
-                const $submitButton = $form.find('button[type="submit"]');
-                $submitButton.prop('disabled', true);
 
                 $.ajax({
-                    url: '{{ path('api_check_profanity') }}',
+                    url: url,
                     method: 'POST',
-                    data: { content: combinedContent },
+                    data: formData,
+                    processData: false,
+                    contentType: false,
                     xhrFields: { withCredentials: true },
                     success: function(response) {
-                        if (response.isProfane) {
-                            const profanityList = response.details ? response.details.map(m => m['text']).join(', ') : '';
+                        if (response.success) {
+                            if (isUpdateQuestionForm) {
+                                $form.closest('.modal').modal('hide');
+                                refreshQuestion();
+                            } else if (isCommentForm || isReplyForm) {
+                                $form.find('textarea[name*="[contenu]"]').val('');
+                                const $replyForm = $form.closest('.reply-form');
+                                if ($replyForm.length) {
+                                    $replyForm.hide();
+                                }
+                                window.location.reload(); // Keep reload for new comments/replies
+                            } else if (isUpdateCommentForm) {
+                                const commentId = $form.find('input[name*="[id]"]').val() || $form.data('comment-id');
+                                const $commentContent = $(`.comment-card[data-comment-id="${commentId}"] .comment-content`);
+                                const $updateFormContainer = $(`#update-form-container-${commentId}`);
+
+                                $commentContent.fadeOut(200, function() {
+                                    $commentContent.text(response.content).fadeIn(200);
+                                });
+
+                                $updateFormContainer.slideUp(200, function() {
+                                    $(this).empty();
+                                });
+
+                                Swal.fire({
+                                    title: 'Success',
+                                    text: 'Comment updated successfully!',
+                                    icon: 'success',
+                                    background: '#fff',
+                                    color: '#212529',
+                                    confirmButtonColor: '#007bff'
+                                });
+                            }
+                        } else {
+                            console.error('Submission failed:', response.message);
                             Swal.fire({
-                                title: 'Inappropriate Content Detected',
-                                html: 'Your content contains inappropriate language. Please revise it.<br><strong>Detected:</strong> ' + (profanityList || 'N/A'),
-                                icon: 'warning',
+                                title: 'Error',
+                                text: response.message || 'An error occurred.',
+                                icon: 'error',
                                 background: '#fff',
                                 color: '#212529',
                                 confirmButtonColor: '#007bff'
-                            }).then(() => {
-                                $submitButton.prop('disabled', false);
-                            });
-                        } else {
-                            const formAction = $form.attr('action');
-                            const formData = new FormData($form[0]);
-                            formData.set('comment_form[contenu]', content);
-
-                            const isUpdateQuestionForm = formAction.includes('forum_update_topic');
-                            const isCommentForm = formAction.includes('admin_comments_create');
-                            const isUpdateCommentForm = formAction.includes('admin_comments_update');
-                            const isReplyForm = $form.closest('.reply-form').length > 0;
-
-                            let url = formAction;
-                            if (isReplyForm) {
-                                url = formAction + '?reply=true';
-                            }
-
-                            $.ajax({
-                                url: url,
-                                method: 'POST',
-                                data: formData,
-                                processData: false,
-                                contentType: false,
-                                xhrFields: { withCredentials: true },
-                                success: function(response) {
-                                    if (response.success) {
-                                        Swal.fire({
-                                            title: 'Success',
-                                            text: response.message || 'Action completed successfully!',
-                                            icon: 'success',
-                                            background: '#fff',
-                                            color: '#212529',
-                                            confirmButtonColor: '#007bff'
-                                        });
-
-                                        if (isUpdateQuestionForm) {
-                                            $form.closest('.modal').modal('hide');
-                                            refreshQuestion();
-                                        } else if (isCommentForm || isReplyForm) {
-                                            $form.find('textarea[name*="[contenu]"]').val('');
-                                            const parentCommentId = $form.find('input[name="comment_form[parent_commentaire_id]"]').val();
-                                            const $replyForm = $form.closest('.reply-form');
-                                            if ($replyForm.length) {
-                                                $replyForm.hide();
-                                            }
-
-                                            if (isReplyForm && parentCommentId != '0') {
-                                                appendComment(response.comment, response.level + 1, parentCommentId);
-                                            } else {
-                                                appendComment(response.comment, 0, 0);
-                                            }
-                                        } else if (isUpdateCommentForm) {
-                                            $(`#update-form-container-${$form.find('input[name*="[id]"]').val() || $form.data('comment-id')}`).hide().empty();
-                                            refreshComments();
-                                        }
-                                    } else {
-                                        Swal.fire({
-                                            title: 'Error',
-                                            text: response.message || 'An error occurred.',
-                                            icon: 'error',
-                                            background: '#fff',
-                                            color: '#212529',
-                                            confirmButtonColor: '#007bff'
-                                        });
-                                    }
-                                    $submitButton.prop('disabled', false);
-                                },
-                                error: function(xhr) {
-                                    let errorMessage = 'An error occurred. Please try again.';
-                                    if (xhr.responseJSON && xhr.responseJSON.message) {
-                                        errorMessage = xhr.responseJSON.message;
-                                    }
-                                    Swal.fire({
-                                        title: 'Error',
-                                        text: errorMessage,
-                                        icon: 'error',
-                                        background: '#fff',
-                                        color: '#212529',
-                                        confirmButtonColor: '#007bff'
-                                    });
-                                    $submitButton.prop('disabled', false);
-                                }
                             });
                         }
+                        $submitButton.prop('disabled', false);
                     },
-                    error: function() {
+                    error: function(xhr) {
+                        console.error('AJAX error:', xhr.responseText);
+                        let errorMessage = 'An error occurred. Please try again.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
+                        }
                         Swal.fire({
                             title: 'Error',
-                            text: 'Error checking profanity. Please try again.',
+                            text: errorMessage,
                             icon: 'error',
                             background: '#fff',
                             color: '#212529',
                             confirmButtonColor: '#007bff'
-                        }).then(() => {
-                            $submitButton.prop('disabled', false);
                         });
+                        $submitButton.prop('disabled', false);
                     }
                 });
+            }
+        },
+        error: function(xhr) {
+            console.error('Profanity check failed:', xhr.responseText);
+            Swal.fire({
+                title: 'Error',
+                text: 'Error checking profanity. Please try again.',
+                icon: 'error',
+                background: '#fff',
+                color: '#212529',
+                confirmButtonColor: '#007bff'
+            }).then(() => {
+                $submitButton.prop('disabled', false);
             });
+        }
+    });
+});
         });
     </script>
 {% endblock %}

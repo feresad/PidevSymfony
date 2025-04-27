@@ -14,21 +14,28 @@ use App\Repository\QuestionsRepository;
 use App\Repository\UtilisateurRepository;
 use App\Repository\CommentaireRepository;
 use App\Service\RedditService;
+use App\Service\TopicSubscriptionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Psr\Log\LoggerInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ForumController extends AbstractController
 {
     private $logger;
+    private $subscriptionService;
+    private $translator;
 
-    public function __construct(LoggerInterface $logger)
+    public function __construct(LoggerInterface $logger, TopicSubscriptionService $subscriptionService, TranslatorInterface $translator)
     {
         $this->logger = $logger;
+        $this->subscriptionService = $subscriptionService;
+        $this->translator = $translator;
     }
 
     #[Route('/forum', name: 'forum_index')]
@@ -48,7 +55,7 @@ class ForumController extends AbstractController
         /** @var Utilisateur|null $utilisateur */
         $utilisateur = $this->getUser();
         if (!$utilisateur) {
-            $this->addFlash('error', 'You must be logged in to create a topic.');
+            $this->addFlash('error', $this->translator->trans('flash.login_required'));
             return $this->redirectToRoute('app_login_page');
         }
     
@@ -69,20 +76,20 @@ class ForumController extends AbstractController
     
             // Validate title
             if (empty($title)) {
-                $errors['title'] = 'The topic title cannot be blank.';
+                $errors['title'] = $this->translator->trans('form.error.title_blank');
             }
     
             if (empty($content)) {
-                $errors['content'] = 'The content cannot be blank.';
+                $errors['content'] = $this->translator->trans('form.error.content_blank');
             }
     
             if (!$gameId) {
-                $errors['game_id'] = 'Please select a game.';
+                $errors['game_id'] = $this->translator->trans('form.error.game_required');
             }
     
             if ($mediaFile) {
                 if (!$mediaType) {
-                    $errors['media_type'] = 'Please select a media type if you are uploading a file.';
+                    $errors['media_type'] = $this->translator->trans('form.error.media_type_required');
                 } else {
                     $mimeType = $mediaFile->getMimeType();
                     $allowedImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
@@ -90,13 +97,13 @@ class ForumController extends AbstractController
                     $maxFileSize = 30 * 1024 * 1024; 
     
                     if ($mediaFile->getSize() > $maxFileSize) {
-                        $errors['media_file'] = 'The file is too large. Maximum allowed size is 30MB.';
+                        $errors['media_file'] = $this->translator->trans('form.error.file_too_large');
                     }
     
                     if ($mediaType->value === 'image' && !in_array($mimeType, $allowedImageTypes)) {
-                        $errors['media_file'] = 'Selected media type is "image," but the uploaded file is not an image.';
+                        $errors['media_file'] = $this->translator->trans('form.error.invalid_image');
                     } elseif ($mediaType->value === 'video' && !in_array($mimeType, $allowedVideoTypes)) {
-                        $errors['media_file'] = 'Selected media type is "video," but the uploaded file is not a video.';
+                        $errors['media_file'] = $this->translator->trans('form.error.invalid_video');
                     }
                 }
             }
@@ -109,11 +116,11 @@ class ForumController extends AbstractController
     
                         if (!is_dir($uploadsDirectory)) {
                             mkdir($uploadsDirectory, 0777, true);
-                            $this->logger->info('Created uploads directory.', ['directory' => $uploadsDirectory]);
+                            $this->logger->info($this->translator->trans('log.created_uploads_directory'), ['directory' => $uploadsDirectory]);
                         }
     
                         $mediaFile->move($uploadsDirectory, $mediaFilename);
-                        $this->logger->info('Media file uploaded successfully.', [
+                        $this->logger->info($this->translator->trans('log.media_file_uploaded'), [
                             'filename' => $mediaFilename,
                             'path' => $uploadsDirectory . '\\' . $mediaFilename,
                         ]);
@@ -132,14 +139,14 @@ class ForumController extends AbstractController
                     $entityManager->persist($question);
                     $entityManager->flush();
     
-                    $this->addFlash('success', 'Topic created successfully!');
+                    $this->addFlash('success', $this->translator->trans('flash.topic_created'));
                     return $this->redirectToRoute('forum_topics');
                 } catch (\Exception $e) {
-                    $this->logger->error('Error creating topic.', [
+                    $this->logger->error($this->translator->trans('log.error_creating_topic'), [
                         'error' => $e->getMessage(),
                         'trace' => $e->getTraceAsString(),
                     ]);
-                    $this->addFlash('error', 'An error occurred while creating the topic: ' . $e->getMessage());
+                    $this->addFlash('error', $this->translator->trans('flash.error_creating_topic', ['%error%' => $e->getMessage()]));
                 }
             } else {
                 foreach ($errors as $field => $message) {
@@ -190,7 +197,7 @@ class ForumController extends AbstractController
     
         $questions = array_merge($highQualityQuestions, $lowQualityQuestions);
     
-        $topics = array_map(function (Questions $question) use ($entityManager, $sentimentMap) {
+        $topics = array_map(function (Questions $question) use ($entityManager, $sentimentMap, $request) {
             $user = $question->getUtilisateurId();
             $game = $question->getGameId();
     
@@ -236,13 +243,13 @@ class ForumController extends AbstractController
                 'video' => $question->getMediaType() && $question->getMediaType()->value === 'video' && $question->getMediaPath() ? $question->getMediaPath() : null,
                 'icon' => 'ion-chatboxes',
                 'locked' => false,
-                'startedBy' => $user ? $user->getNickname() : 'Unknown',
+                'startedBy' => $user ? $user->getNickname() : $this->translator->trans('general.unknown_user'),
                 'startedById' => $user ? $user->getId() : null,
-                'startedOn' => $question->getCreatedAt() ? $question->getCreatedAt()->format('F j, Y') : 'Not set',
+                'startedOn' => $question->getCreatedAt() ? $question->getCreatedAt()->format('F j, Y') : $this->translator->trans('general.date_not_set'),
                 'postCount' => $question->getCommentaires()->count(),
-                'lastActivityUser' => $user ? $user->getNickname() : 'Unknown',
+                'lastActivityUser' => $user ? $user->getNickname() : $this->translator->trans('general.unknown_user'),
                 'lastActivityAvatar' => $user && $user->getPhoto() ? $user->getPhoto() : 'avatar-1.jpg',
-                'lastActivityDate' => $question->getCreatedAt() ? $question->getCreatedAt()->format('F j, Y') : 'Not set',
+                'lastActivityDate' => $question->getCreatedAt() ? $question->getCreatedAt()->format('F j, Y') : $this->translator->trans('general.date_not_set'),
                 'gameImage' => $game && $game->getImagePath() ? $game->getImagePath() : null,
                 'updateForm' => $updateForm->createView(),
                 'reactionCounts' => $reactionCounts,
@@ -266,10 +273,6 @@ class ForumController extends AbstractController
         ]);
     }
 
-
-
-
-    
     #[Route('/forum/topic/{id}', name: 'forum_single_topic', methods: ['GET', 'POST'])]
     public function singleTopic(
         int $id,
@@ -280,7 +283,7 @@ class ForumController extends AbstractController
     ): Response {
         $question = $questionsRepository->find($id);
         if (!$question) {
-            $this->addFlash('error', 'Topic not found.');
+            $this->addFlash('error', $this->translator->trans('flash.topic_not_found'));
             return $this->redirectToRoute('forum_topics');
         }
     
@@ -362,7 +365,7 @@ class ForumController extends AbstractController
             'neutral' => ['🤔', '😐', '🙂', '👀', '🤷', '😶', '🤝', '🙄', '😴', '🤓']
         ]);
     
-        $mapComment = function (Commentaire $comment) use (&$mapComment, $entityManager, $commentaireRepository, $sentimentMap) {
+        $mapComment = function (Commentaire $comment) use (&$mapComment, $entityManager, $commentaireRepository, $sentimentMap, $request) {
             $childCommentaires = $commentaireRepository->createQueryBuilder('c')
                 ->where('c.parent_commentaire_id = :parentId')
                 ->setParameter('parentId', $comment->getCommentaireId())
@@ -423,11 +426,18 @@ class ForumController extends AbstractController
             'itemsPerPage' => $itemsPerPage,
         ];
     
+        /** @var Utilisateur|null $user */
+        $user = $this->getUser();
+        $isSubscribed = $user ? $this->subscriptionService->isSubscribed($user, $question) : false;
+        $subscribeButtonLabel = $isSubscribed ? $this->translator->trans('forum.unsubscribe') : $this->translator->trans('forum.follow');
+
         return $this->render('forum/single_topic.html.twig', [
             'question' => $questionData,
             'comments' => $commentData,
             'comment_form' => $commentForm->createView(),
             'pagination' => $pagination,
+            'is_subscribed' => $isSubscribed,
+            'subscribe_button_label' => $subscribeButtonLabel,
         ]);
     }
 
@@ -450,12 +460,12 @@ class ForumController extends AbstractController
         $sentimentMap = $data['sentimentMap'] ?? [];
 
         if (!isset($sentimentMap['positive']) || !isset($sentimentMap['negative']) || !isset($sentimentMap['neutral'])) {
-            return new JsonResponse(['success' => false, 'message' => 'Invalid sentiment map format'], 400);
+            return new JsonResponse(['success' => false, 'message' => $this->translator->trans('api.error.invalid_sentiment_map')], 400);
         }
 
         $request->getSession()->set('sentiment_map', $sentimentMap);
 
-        return new JsonResponse(['success' => true, 'message' => 'Sentiment map updated']);
+        return new JsonResponse(['success' => true, 'message' => $this->translator->trans('api.sentiment_map_updated')]);
     }
 
     #[Route('/forum/topic/delete/{id}', name: 'forum_delete_topic', methods: ['GET'])]
@@ -463,14 +473,14 @@ class ForumController extends AbstractController
     {
         $question = $questionsRepository->find($id);
         if (!$question) {
-            $this->addFlash('error', 'Topic not found.');
+            $this->addFlash('error', $this->translator->trans('flash.topic_not_found'));
             return $this->redirectToRoute('forum_topics');
         }
 
         /** @var Utilisateur|null $utilisateur */
         $utilisateur = $this->getUser();
         if (!$utilisateur || $question->getUtilisateurId()->getId() !== $utilisateur->getId()) {
-            $this->addFlash('error', 'You are not authorized to delete this topic.');
+            $this->addFlash('error', $this->translator->trans('flash.unauthorized_delete'));
             return $this->redirectToRoute('forum_topics');
         }
 
@@ -479,16 +489,16 @@ class ForumController extends AbstractController
                 $mediaPath = $this->getParameter('uploads_directory') . '\\' . $question->getMediaPath();
                 if (file_exists($mediaPath)) {
                     unlink($mediaPath);
-                    $this->logger->info('Deleted media file.', ['path' => $mediaPath]);
+                    $this->logger->info($this->translator->trans('log.deleted_media_file'), ['path' => $mediaPath]);
                 }
             }
 
             $entityManager->remove($question);
             $entityManager->flush();
-            $this->addFlash('success', 'Topic deleted successfully!');
+            $this->addFlash('success', $this->translator->trans('flash.topic_deleted'));
         } catch (\Exception $e) {
-            $this->logger->error('Error deleting topic.', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-            $this->addFlash('error', 'An error occurred while deleting the topic: ' . $e->getMessage());
+            $this->logger->error($this->translator->trans('log.error_deleting_topic'), ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            $this->addFlash('error', $this->translator->trans('flash.error_deleting_topic', ['%error%' => $e->getMessage()]));
         }
 
         return $this->redirectToRoute('forum_topics');
@@ -499,14 +509,14 @@ class ForumController extends AbstractController
     {
         $question = $questionsRepository->find($id);
         if (!$question) {
-            $this->addFlash('error', 'Topic not found.');
+            $this->addFlash('error', $this->translator->trans('flash.topic_not_found'));
             return $this->redirectToRoute('forum_topics');
         }
     
         /** @var Utilisateur|null $utilisateur */
         $utilisateur = $this->getUser();
         if (!$utilisateur || $question->getUtilisateurId()->getId() !== $utilisateur->getId()) {
-            $this->addFlash('error', 'You are not authorized to update this topic.');
+            $this->addFlash('error', $this->translator->trans('flash.unauthorized_update'));
             return $this->redirectToRoute('forum_topics');
         }
     
@@ -523,20 +533,20 @@ class ForumController extends AbstractController
             $gameId = $updateForm->get('game_id')->getData();
     
             if (empty($title)) {
-                $errors['title'] = 'The topic title cannot be blank.';
+                $errors['title'] = $this->translator->trans('form.error.title_blank');
             }
     
             if (empty($content)) {
-                $errors['content'] = 'The content cannot be blank.';
+                $errors['content'] = $this->translator->trans('form.error.content_blank');
             }
     
             if (!$gameId) {
-                $errors['game_id'] = 'Please select a game.';
+                $errors['game_id'] = $this->translator->trans('form.error.game_required');
             }
     
             if ($mediaFile) {
                 if (!$mediaType) {
-                    $errors['media_type'] = 'Please select a media type if you are uploading a file.';
+                    $errors['media_type'] = $this->translator->trans('form.error.media_type_required');
                 } else {
                     $mimeType = $mediaFile->getMimeType();
                     $allowedImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
@@ -544,13 +554,13 @@ class ForumController extends AbstractController
                     $maxFileSize = 30 * 1024 * 1024; // 30MB in bytes
     
                     if ($mediaFile->getSize() > $maxFileSize) {
-                        $errors['media_file'] = 'The file is too large. Maximum allowed size is 30MB.';
+                        $errors['media_file'] = $this->translator->trans('form.error.file_too_large');
                     }
     
                     if ($mediaType->value === 'image' && !in_array($mimeType, $allowedImageTypes)) {
-                        $errors['media_file'] = 'Selected media type is "image," but the uploaded file is not an image.';
+                        $errors['media_file'] = $this->translator->trans('form.error.invalid_image');
                     } elseif ($mediaType->value === 'video' && !in_array($mimeType, $allowedVideoTypes)) {
-                        $errors['media_file'] = 'Selected media type is "video," but the uploaded file is not a video.';
+                        $errors['media_file'] = $this->translator->trans('form.error.invalid_video');
                     }
                 }
             }
@@ -562,7 +572,7 @@ class ForumController extends AbstractController
                             $oldMediaPath = $this->getParameter('uploads_directory') . '\\' . $question->getMediaPath();
                             if (file_exists($oldMediaPath)) {
                                 unlink($oldMediaPath);
-                                $this->logger->info('Deleted old media file.', ['path' => $oldMediaPath]);
+                                $this->logger->info($this->translator->trans('log.deleted_old_media_file'), ['path' => $oldMediaPath]);
                             }
                         }
     
@@ -570,6 +580,10 @@ class ForumController extends AbstractController
                         $uploadsDirectory = $this->getParameter('uploads_directory');
     
                         $mediaFile->move($uploadsDirectory, $mediaFilename);
+                        $this->logger->info($this->translator->trans('log.media_file_uploaded'), [
+                            'filename' => $mediaFilename,
+                            'path' => $uploadsDirectory . '\\' . $mediaFilename,
+                        ]);
                         $question->setMediaPath($mediaFilename);
                         $question->setMediaType($mediaType);
                     } elseif ($mediaType === null || $mediaType->value === null) {
@@ -577,7 +591,7 @@ class ForumController extends AbstractController
                             $oldMediaPath = $this->getParameter('uploads_directory') . '\\' . $question->getMediaPath();
                             if (file_exists($oldMediaPath)) {
                                 unlink($oldMediaPath);
-                                $this->logger->info('Deleted old media file due to media_type set to None.', ['path' => $oldMediaPath]);
+                                $this->logger->info($this->translator->trans('log.deleted_old_media_file_no_type'), ['path' => $oldMediaPath]);
                             }
                         }
                         $question->setMediaPath(null);
@@ -589,10 +603,10 @@ class ForumController extends AbstractController
                     $question->setGameId($gameId);
     
                     $entityManager->flush();
-                    $this->addFlash('success', 'Topic updated successfully!');
+                    $this->addFlash('success', $this->translator->trans('flash.topic_updated'));
                 } catch (\Exception $e) {
-                    $this->logger->error('Error updating topic.', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-                    $this->addFlash('error', 'An error occurred while updating the topic: ' . $e->getMessage());
+                    $this->logger->error($this->translator->trans('log.error_updating_topic'), ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+                    $this->addFlash('error', $this->translator->trans('flash.error_updating_topic', ['%error%' => $e->getMessage()]));
                 }
             } else {
                 foreach ($errors as $field => $message) {
@@ -614,13 +628,13 @@ class ForumController extends AbstractController
         /** @var Utilisateur|null $utilisateur */
         $utilisateur = $this->getUser();
         if (!$utilisateur) {
-            return new JsonResponse(['success' => false, 'message' => 'You must be logged in to vote.'], 401);
+            return new JsonResponse(['success' => false, 'message' => $this->translator->trans('api.error.login_required')], 401);
         }
 
         if ($type === 'question') {
             $entity = $questionsRepository->find($id);
             if (!$entity) {
-                return new JsonResponse(['success' => false, 'message' => 'Question not found.'], 404);
+                return new JsonResponse(['success' => false, 'message' => $this->translator->trans('api.error.question_not_found')], 404);
             }
 
             // Check if the user has already voted
@@ -635,15 +649,15 @@ class ForumController extends AbstractController
 
             // Validate vote type
             if (!in_array($voteType, ['UP', 'DOWN'])) {
-                return new JsonResponse(['success' => false, 'message' => 'Invalid vote type.'], 400);
+                return new JsonResponse(['success' => false, 'message' => $this->translator->trans('api.error.invalid_vote_type')], 400);
             }
 
             // Check if the user is trying to repeat the same vote
             if ($voteType === 'UP' && $hasUpvoted) {
-                return new JsonResponse(['success' => false, 'message' => 'You have already upvoted this topic.'], 403);
+                return new JsonResponse(['success' => false, 'message' => $this->translator->trans('api.error.already_upvoted')], 403);
             }
             if ($voteType === 'DOWN' && $hasDownvoted) {
-                return new JsonResponse(['success' => false, 'message' => 'You have already downvoted this topic.'], 403);
+                return new JsonResponse(['success' => false, 'message' => $this->translator->trans('api.error.already_downvoted')], 403);
             }
 
             $currentVotes = $entity->getVotes() ?? 0;
@@ -693,7 +707,7 @@ class ForumController extends AbstractController
         } elseif ($type === 'comment') {
             $entity = $entityManager->getRepository(Commentaire::class)->find($id);
             if (!$entity) {
-                return new JsonResponse(['success' => false, 'message' => 'Comment not found.'], 404);
+                return new JsonResponse(['success' => false, 'message' => $this->translator->trans('api.error.comment_not_found')], 404);
             }
 
             $currentVotes = $entity->getVotes() ?? 0;
@@ -702,7 +716,7 @@ class ForumController extends AbstractController
             } elseif ($voteType === 'DOWN') {
                 $entity->setVotes($currentVotes - 1);
             } else {
-                return new JsonResponse(['success' => false, 'message' => 'Invalid vote type.'], 400);
+                return new JsonResponse(['success' => false, 'message' => $this->translator->trans('api.error.invalid_vote_type')], 400);
             }
 
             $entityManager->persist($entity);
@@ -714,20 +728,21 @@ class ForumController extends AbstractController
             ]);
         }
 
-        return new JsonResponse(['success' => false, 'message' => 'Invalid type.'], 400);
+        return new JsonResponse(['success' => false, 'message' => $this->translator->trans('api.error.invalid_type')], 400);
     }
+
     #[Route('/ajax/fetch-user-votes', name: 'ajax_fetch_user_votes', methods: ['POST'])]
     public function ajaxFetchUserVotes(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
         /** @var Utilisateur|null $utilisateur */
         $utilisateur = $this->getUser();
         if (!$utilisateur) {
-            return new JsonResponse(['success' => false, 'message' => 'You must be logged in to fetch votes.'], 401);
+            return new JsonResponse(['success' => false, 'message' => $this->translator->trans('api.error.login_required')], 401);
         }
     
         $topicIds = $request->request->get('topicIds', []);
         if (!is_array($topicIds) || empty($topicIds)) {
-            return new JsonResponse(['success' => false, 'message' => 'No topic IDs provided.'], 400);
+            return new JsonResponse(['success' => false, 'message' => $this->translator->trans('api.error.no_topic_ids')], 400);
         }
     
         $voteRepository = $entityManager->getRepository(QuestionVotes::class);
@@ -752,17 +767,18 @@ class ForumController extends AbstractController
             'votes' => $voteData,
         ]);
     }
+
     #[Route('/api/share/topic', name: 'api_share_topic', methods: ['GET'])]
     public function shareTopic(Request $request, QuestionsRepository $questionsRepository): JsonResponse
     {
         $id = $request->query->get('id');
         if (!$id) {
-            return new JsonResponse(['success' => false, 'message' => 'Topic ID is required.'], 400);
+            return new JsonResponse(['success' => false, 'message' => $this->translator->trans('api.error.topic_id_required')], 400);
         }
 
         $question = $questionsRepository->find($id);
         if (!$question) {
-            return new JsonResponse(['success' => false, 'message' => 'Topic not found.'], 404);
+            return new JsonResponse(['success' => false, 'message' => $this->translator->trans('api.error.topic_not_found')], 404);
         }
 
         $topicUrl = $this->generateUrl('forum_single_topic', ['id' => $id], \Symfony\Component\Routing\Generator\UrlGeneratorInterface::ABSOLUTE_URL);
@@ -779,5 +795,86 @@ class ForumController extends AbstractController
         ];
 
         return new JsonResponse($shareData);
+    }
+
+    #[Route('/switch-language/{locale}', name: 'switch_language', methods: ['GET'])]
+    public function switchLanguage(string $locale, Request $request, SessionInterface $session): Response
+    {
+        // Update the list of allowed locales to include 'ar'
+        if (!in_array($locale, ['en', 'fr', 'es', 'ar'])) {
+            $locale = 'en'; // Fallback to English
+        }
+
+        $session->set('_locale', $locale);
+        $request->setLocale($locale);
+
+        $referer = $request->headers->get('referer');
+        return $this->redirect($referer ?: $this->generateUrl('forum_index'));
+    }
+
+    #[Route('/ajax/subscribe-topic/{id}', name: 'ajax_subscribe_topic', methods: ['POST'])]
+    public function ajaxSubscribeTopic(int $id, QuestionsRepository $questionsRepository): JsonResponse
+    {
+        /** @var Utilisateur|null $user */
+        $user = $this->getUser();
+        if (!$user) {
+            return new JsonResponse(['success' => false, 'message' => $this->translator->trans('api.error.login_required')], 401);
+        }
+
+        $question = $questionsRepository->find($id);
+        if (!$question) {
+            return new JsonResponse(['success' => false, 'message' => $this->translator->trans('api.error.question_not_found')], 404);
+        }
+
+        try {
+            $this->subscriptionService->subscribe($user, $question);
+            return new JsonResponse([
+                'success' => true,
+                'isSubscribed' => true,
+                'message' => $this->translator->trans('flash.subscribed_successfully')
+            ]);
+        } catch (\Exception $e) {
+            $this->logger->error($this->translator->trans('log.error_subscribing_topic'), [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return new JsonResponse([
+                'success' => false,
+                'message' => $this->translator->trans('flash.error_subscribing_topic', ['%error%' => $e->getMessage()])
+            ], 500);
+        }
+    }
+
+    #[Route('/ajax/unsubscribe-topic/{id}', name: 'ajax_unsubscribe_topic', methods: ['POST'])]
+    public function ajaxUnsubscribeTopic(int $id, QuestionsRepository $questionsRepository): JsonResponse
+    {
+        /** @var Utilisateur|null $user */
+        $user = $this->getUser();
+        if (!$user) {
+            return new JsonResponse(['success' => false, 'message' => $this->translator->trans('api.error.login_required')], 401);
+        }
+
+        $question = $questionsRepository->find($id);
+        if (!$question) {
+            return new JsonResponse(['success' => false, 'message' => $this->translator->trans('api.error.question_not_found')], 404);
+        }
+
+        try {
+            $this->subscriptionService->unsubscribe($user, $question);
+            return new JsonResponse([
+                'success' => true,
+                'isSubscribed' => false,
+                'message' => $this->translator->trans('flash.unsubscribed_successfully')
+            ]);
+        } catch (\Exception $e) {
+            $this->logger->error($this->translator->trans('log.error_unsubscribing_topic'), [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return new JsonResponse([
+                'success' => false,
+                'message' => $this->translator->trans('flash.error_unsubscribing_topic', ['%error%' => $e->getMessage()])
+            ], 500);
+        }
     }
 }

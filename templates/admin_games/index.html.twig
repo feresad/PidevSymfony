@@ -1,278 +1,375 @@
 {% extends 'baseadmin.html.twig' %}
 
-{% block title %}Gaming Dashboard{% endblock %}
+{% block title %}Tableau de bord des jeux{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+{% endblock %}
 
 {% block body %}
-    <!-- Display Flash Messages -->
-    {% for label, messages in app.flashes %}
-        {% for message in messages %}
-            <div class="flash-{{ label }}">
-                {{ message }}
-            </div>
+    <div class="gaming-wrapper">
+        <!-- Display Flash Messages -->
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="flash-{{ label }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
         {% endfor %}
-    {% endfor %}
 
-    <!-- ======================= Cards ================== -->
-    <div class="cardBox">
-        <div class="card">
-            <div>
-                <div class="numbers">{{ games|length }}</div>
-                <div class="cardName">Total Games</div>
-            </div>
-            <div class="iconBx">
-                <ion-icon name="game-controller-outline"></ion-icon>
-            </div>
-        </div>
-    </div>
-
-    <!-- ================ Games List ================= -->
-    <div class="details">
-        <div class="recentOrders">
-            <div class="cardHeader">
-                <h2>Games</h2>
-                <div class="header-actions">
-                    <!-- Search Bar -->
-                    <form method="get" action="{{ path('admin_games_dashboard') }}" class="search-form">
-                        <input type="text" name="search" placeholder="Rechercher des jeux par nom..." value="{{ searchTerm|default('') }}" class="search-input">
-                        <button type="submit" class="btn search-btn">Search</button>
-                    </form>
-                    <a href="{{ path('admin_games_new') }}" class="btn">Ajouter</a>
+        <!-- ======================= Cards ================== -->
+        <div class="cardBox">
+            <div class="card">
+                <div>
+                    <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0585c6" stroke-width="2">
+                        <path d="M12 4v4m-4 4h8m-8 4h8m-4-8v8M4 4h16v16H4z"/>
+                    </svg>
+                    <div class="numbers">{{ games|length }}</div>
+                    <div class="cardName">Total des jeux</div>
                 </div>
             </div>
+        </div>
 
-            <div class="gameCards">
-                {% if games is empty %}
-                    <p>No games found.</p>
-                {% else %}
-                    {% for game in games %}
-                        <div class="gameCard">
-                            {% if game.getImagePath() %}
-                                <img src="http://localhost/img/games/{{ game.getImagePath() }}" alt="{{ game.getGameName() }}" class="gameImage">
-                            {% else %}
-                                <img src="{{ asset('images/default-game.jpg') }}" alt="Default Image" class="gameImage">
-                            {% endif %}
-                            <div class="gameInfo">
-                                <h3>{{ game.getGameName() }}</h3>
-                                <p><strong>Type:</strong> {{ game.getGameType().value }}</p>
-                                <p><strong>Questions:</strong> {{ game.getQuestions()|length }}</p>
+        <!-- ================ Games List ================= -->
+        <div class="details">
+            <div class="recentOrders">
+                <div class="cardHeader">
+                    <h2>Jeux</h2>
+                    <div class="header-actions">
+                        <!-- Search Bar -->
+                        <form method="get" action="{{ path('admin_games_dashboard') }}" class="search-form">
+                            <input type="text" name="search" placeholder="Rechercher des jeux par nom..." value="{{ searchTerm|default('') }}" class="search-input">
+                            <button type="submit" class="btn search-btn">Rechercher</button>
+                        </form>
+                        <a href="{{ path('admin_games_new') }}" class="btn">Ajouter</a>
+                    </div>
+                </div>
+
+                <div class="gameCards">
+                    {% if games is empty %}
+                        <p>Aucun jeu trouvé.</p>
+                    {% else %}
+                        {% for game in games %}
+                            <div class="gameCard">
+                                {% if game.getImagePath() %}
+                                    <img src="http://localhost/img/games/{{ game.getImagePath() }}" alt="{{ game.getGameName() }}" class="gameImage">
+                                {% else %}
+                                    <img src="{{ asset('images/default-game.jpg') }}" alt="Image par défaut" class="gameImage">
+                                {% endif %}
+                                <div class="gameInfo">
+                                    <h3>{{ game.getGameName() }}</h3>
+                                    <p><strong>Type :</strong> {{ game.getGameType().value }}</p>
+                                    <p><strong>Questions :</strong> {{ game.getQuestions()|length }}</p>
+                                </div>
+                                <div class="gameActions">
+                                    <a href="{{ path('admin_games_edit', {'id': game.getGameId()}) }}" class="btn">Modifier</a>
+                                    <form method="post" action="{{ path('admin_games_delete', {'id': game.getGameId()}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce jeu ?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ game.getGameId()) }}">
+                                        <button type="submit" class="btn danger">Supprimer</button>
+                                    </form>
+                                </div>
                             </div>
-                            <div class="gameActions">
-                                <a href="{{ path('admin_games_edit', {'id': game.getGameId()}) }}" class="btn">Modifier</a>
-                                <form method="post" action="{{ path('admin_games_delete', {'id': game.getGameId()}) }}" onsubmit="return confirm('Are you sure you want to delete this game?');">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ game.getGameId()) }}">
-                                    <button type="submit" class="btn danger">Supprimer</button>
-                                </form>
-                            </div>
-                        </div>
-                    {% endfor %}
-                {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                </div>
             </div>
         </div>
+
+        <!-- Custom CSS -->
+        <style>
+            .gaming-wrapper {
+                background-color: #091221 !important;
+                color: #ffffff;
+                min-height: 100vh;
+                position: relative;
+                font-family: 'Roboto', sans-serif;
+                padding: 20px;
+            }
+            .cardBox {
+                display: flex;
+                gap: 20px;
+                padding: 20px;
+            }
+            .card {
+                background: rgba(9, 18, 33, 0.9);
+                border: 1px solid transparent;
+                border-radius: 10px;
+                padding: 20px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                transition: all 0.3s ease;
+                position: relative;
+                overflow: hidden;
+                animation: neon-border 3s infinite;
+            }
+            @keyframes neon-border {
+                0%, 100% { border-color: #0236a5; box-shadow: 0 0 10px rgba(2, 54, 165, 0.5); }
+                50% { border-color: #fe0369; box-shadow: 0 0 10px rgba(254, 3, 105, 0.5); }
+            }
+            .card:hover {
+                animation-play-state: paused;
+                transform: scale(1.05);
+                border-color: #fe0369;
+                box-shadow: 0 0 15px rgba(254, 3, 105, 0.5);
+            }
+            .card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(45deg, transparent, rgba(2, 54, 165, 0.2), transparent);
+                transition: all 0.3s ease;
+                z-index: 0;
+            }
+            .card:hover::before {
+                background: linear-gradient(45deg, transparent, rgba(254, 3, 105, 0.3), transparent);
+            }
+            .card .icon {
+                margin-bottom: 10px;
+                filter: drop-shadow(0 0 5px #0585c6);
+                position: relative;
+                z-index: 1;
+            }
+            .numbers {
+                font-family: 'Orbitron', sans-serif;
+                font-size: 2.5rem;
+                font-weight: bold;
+                color: #fe0369;
+                text-shadow: 0 0 5px rgba(254, 3, 105, 0.5);
+                position: relative;
+                z-index: 1;
+            }
+            .cardName {
+                font-family: 'Orbitron', sans-serif;
+                font-size: 1.2rem;
+                color: #0585c6;
+                opacity: 0.9;
+                position: relative;
+                z-index: 1;
+            }
+            .details {
+                padding: 20px;
+            }
+            .recentOrders {
+                background: rgba(9, 18, 33, 0.9);
+                border: 1px solid transparent;
+                border-radius: 10px;
+                padding: 20px;
+                animation: neon-border 3s infinite;
+            }
+            .recentOrders:hover {
+                animation-play-state: paused;
+                border-color: #fe0369;
+                box-shadow: 0 0 15px rgba(254, 3, 105, 0.5);
+            }
+            .cardHeader {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+            }
+            .cardHeader h2 {
+                font-family: 'Orbitron', sans-serif;
+                font-size: 1.8rem;
+                color: #fe0369;
+                text-shadow: 0 0 10px rgba(254, 3, 105, 0.5);
+                position: relative;
+                animation: glitch 2s linear infinite;
+            }
+            .cardHeader h2::before,
+            .cardHeader h2::after {
+                content: 'Jeux';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                color: #0585c6;
+            }
+            .cardHeader h2::before {
+                animation: glitch-top 1s linear infinite;
+                clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%);
+                -webkit-clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%);
+            }
+            .cardHeader h2::after {
+                animation: glitch-bottom 1.5s linear infinite;
+                clip-path: polygon(0 67%, 100% 67%, 100% 100%, 0 100%);
+                -webkit-clip-path: polygon(0 67%, 100% 67%, 100% 100%, 0 100%);
+            }
+            @keyframes glitch {
+                2%, 64% { transform: translate(2px, 0) skew(0deg); }
+                4%, 60% { transform: translate(-2px, 0) skew(0deg); }
+                62% { transform: translate(0, 0) skew(5deg); }
+            }
+            @keyframes glitch-top {
+                2%, 64% { transform: translate(2px, -2px); }
+                4%, 60% { transform: translate(-2px, 2px); }
+                62% { transform: translate(13px, -1px) skew(-13deg); }
+            }
+            @keyframes glitch-bottom {
+                2%, 64% { transform: translate(-2px, 0); }
+                4%, 60% { transform: translate(-2px, 0); }
+                62% { transform: translate(-22px, 5px) skew(21deg); }
+            }
+            .header-actions {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+            }
+            .search-form {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            .search-input {
+                padding: 8px;
+                border-radius: 5px;
+                border: 1px solid #0236a5;
+                background: #091221;
+                color: #fff;
+                width: 200px;
+                transition: all 0.3s ease;
+            }
+            .search-input::placeholder {
+                color: rgba(255, 255, 255, 0.8);
+            }
+            .search-input:focus {
+                outline: none;
+                border-color: #fe0369;
+                box-shadow: 0 0 5px rgba(254, 3, 105, 0.5);
+            }
+            .search-btn {
+                padding: 8px 15px;
+                background: #fe0369;
+                color: #fff;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                transition: background 0.3s ease;
+            }
+            .search-btn:hover {
+                background: #0585c6;
+            }
+            .gameCards {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 20px;
+                padding: 20px;
+            }
+            .gameCard {
+                background: rgba(9, 18, 33, 0.9);
+                border: 1px solid #0236a5;
+                border-radius: 10px;
+                padding: 15px;
+                width: 300px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                transition: all 0.3s ease;
+                position: relative;
+                overflow: hidden;
+            }
+            .gameCard:hover {
+                transform: scale(1.05);
+                border-color: #fe0369;
+                box-shadow: 0 0 15px rgba(254, 3, 105, 0.5);
+            }
+            .gameCard::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(45deg, transparent, rgba(2, 54, 165, 0.2), transparent);
+                transition: all 0.3s ease;
+                z-index: 0;
+            }
+            .gameCard:hover::before {
+                background: linear-gradient(45deg, transparent, rgba(254, 3, 105, 0.3), transparent);
+            }
+            .gameImage {
+                width: 150px;
+                height: 150px;
+                object-fit: cover;
+                border-radius: 10px;
+                position: relative;
+                z-index: 1;
+            }
+            .gameInfo {
+                padding: 10px 0;
+                text-align: center;
+                color: #fff;
+                position: relative;
+                z-index: 1;
+            }
+            .gameInfo h3 {
+                font-family: 'Orbitron', sans-serif;
+                font-size: 1.3rem;
+                color: #fe0369;
+                text-shadow: 0 0 5px rgba(254, 3, 105, 0.5);
+                margin-bottom: 5px;
+            }
+            .gameInfo p {
+                font-size: 0.9rem;
+                color: #0585c6;
+                margin: 3px 0;
+            }
+            .gameActions {
+                display: flex;
+                gap: 10px;
+                margin-top: 10px;
+                position: relative;
+                z-index: 1;
+            }
+            .btn {
+                padding: 8px 20px;
+                text-decoration: none;
+                color: #fff;
+                background: #0585c6;
+                border-radius: 5px;
+                font-family: 'Orbitron', sans-serif;
+                font-weight: bold;
+                transition: background 0.3s ease;
+            }
+            .btn:hover {
+                background: #fe0369;
+            }
+            .btn.danger {
+                background: #fe0369;
+            }
+            .btn.danger:hover {
+                background: #0585c6;
+            }
+            .flash-success {
+                color: #fff;
+                padding: 10px;
+                margin: 10px 20px;
+                background: rgba(5, 133, 230, 0.3);
+                border: 1px solid #0585c6;
+                border-radius: 5px;
+                font-family: 'Roboto', sans-serif;
+            }
+            .flash-error {
+                color: #fff;
+                padding: 10px;
+                margin: 10px 20px;
+                background: rgba(254, 3, 105, 0.3);
+                border: 1px solid #fe0369;
+                border-radius: 5px;
+                font-family: 'Roboto', sans-serif;
+            }
+            p {
+                color: #0585c6;
+                text-align: center;
+                font-style: italic;
+                padding: 20px;
+                text-shadow: 0 0 5px rgba(5, 133, 198, 0.5);
+            }
+        </style>
     </div>
-
-    <!-- Custom CSS for game cards -->
-    <style>
-        body {
-            background: #091221;
-            color: #fff;
-        }
-
-        .cardBox {
-            display: flex;
-            gap: 20px;
-            padding: 20px;
-        }
-
-        .card {
-            background: linear-gradient(145deg, #0236a5, #0585e6);
-            border-radius: 15px;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 5px 15px rgba(5, 133, 230, 0.3);
-            transition: transform 0.3s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-        }
-
-        .numbers {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #fe0369;
-        }
-
-        .cardName {
-            font-size: 1.2rem;
-            color: #fff;
-            opacity: 0.9;
-        }
-
-        .iconBx ion-icon {
-            font-size: 2.5rem;
-            color: #fe0369;
-        }
-
-        .details {
-            padding: 20px;
-        }
-
-        .recentOrders {
-            background: rgba(9, 18, 33, 0.8);
-            border-radius: 15px;
-            padding: 20px;
-        }
-
-        .cardHeader {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .cardHeader h2 {
-            font-size: 1.8rem;
-            color: #0585e6;
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .search-form {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .search-input {
-            padding: 8px;
-            border-radius: 5px;
-            border: 1px solid #0585e6;
-            background: #0236a5;
-            color: #fff;
-            width: 200px;
-        }
-
-        .search-input::placeholder {
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        .search-btn {
-            padding: 8px 15px;
-            background: #fe0369;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-
-        .search-btn:hover {
-            background: #0585e6;
-        }
-
-        .gameCards {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            padding: 20px;
-        }
-
-        .gameCard {
-            background: linear-gradient(145deg, #0236a5, #091221);
-            border: 1px solid #0585e6;
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(5, 133, 230, 0.2);
-            padding: 15px;
-            width: 300px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .gameCard:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(254, 3, 105, 0.3);
-        }
-
-        .gameImage {
-            width: 50%;
-            height: 50%;
-            object-fit: cover;
-            border-radius: 10px;
-            
-        }
-
-        .gameInfo {
-            padding: 10px 0;
-            text-align: center;
-            color: #fff;
-        }
-
-        .gameInfo h3 {
-            font-size: 1.3rem;
-            color: #fe0369;
-            margin-bottom: 5px;
-        }
-
-        .gameInfo p {
-            font-size: 0.9rem;
-            color: #0585e6;
-            margin: 3px 0;
-        }
-
-        .gameActions {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .btn {
-            padding: 8px 20px;
-            text-decoration: none;
-            color:rgb(255, 255, 255);
-            background: #0585e6;
-            border-radius: 5px;
-            font-weight: bold;
-            transition: background 0.3s ease;
-        }
-
-        .btn:hover {
-            background: #fe0369;
-            color: #fff;
-        }
-
-        .btn.danger {
-            background: #fe0369;
-            color: #fff;
-        }
-
-        .btn.danger:hover {
-            background: #0585e6;
-        }
-
-        .flash-success {
-            color: #fff;
-            padding: 10px;
-            margin: 10px 0;
-            background: rgba(5, 133, 230, 0.3);
-            border: 1px solid #0585e6;
-            border-radius: 5px;
-        }
-
-        .flash-error {
-            color: #fff;
-            padding: 10px;
-            margin: 10px 0;
-            background: rgba(254, 3, 105, 0.3);
-            border: 1px solid #fe0369;
-            border-radius: 5px;
-        }
-    </style>
 {% endblock %}

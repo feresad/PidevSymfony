@@ -141,6 +141,13 @@
                     <span>Admin Forum</span>
                 </a>
             </li>
+            <!-- New navigation item for Forum Statistics Dashboard -->
+<li>
+    <a href="{{ path('forum_stats_dashboard') }}">
+        <ion-icon name="stats-chart-outline"></ion-icon>
+        <span>Forum Statistics</span>
+    </a>
+</li>
             <li>
                 <a href="" id="logout-button">
                     <ion-icon name="log-out-outline"></ion-icon>
@@ -154,10 +161,7 @@
     <div class="main">
         <div class="topbar">
             <div class="search">
-                <label>
-                    <input type="text" placeholder="Search here">
-                    <ion-icon name="search-outline"></ion-icon>
-                </label>
+               
             </div>
             <div class="user">
                 {% if app.user %}
