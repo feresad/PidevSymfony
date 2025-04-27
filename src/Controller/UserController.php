@@ -91,7 +91,7 @@ class UserController extends AbstractController
         }
 
         $today = new \DateTime();
-        $recentEvenements = $repo->findRecentEvents($today, 4);
+        $recentEvenements = $repo->findRecentEvents($today, 3);
 
         // Fetch top 2 trending topics based on votes
         $trendingTopics = $questionsRepository->createQueryBuilder('q')

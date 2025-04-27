@@ -1,7 +1,17 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-    <h1>Calendrier des événements</h1>
+    <h1>Calendrier des événements</h1>  
+    <div style="background-color: rgba(255, 255, 255, 0.9); border: 2px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-bottom: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; animation: slideIn 0.5s ease forwards;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <span class="legend-icon" style="display: inline-block; width: 16px; height: 16px; background-color: #5cb85c; border-radius: 50%; transition: transform 0.3s ease, box-shadow 0.3s ease;" onmouseover="this.style.transform='scale(1.3)'; this.style.boxShadow='0 0 8px #5cb85c';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none';"></span>
+            <span style="font-size: 0.95em; font-weight: 600; color: #1a202c; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Événement réservé (vert)</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <span class="legend-icon" style="display: inline-block; width: 16px; height: 16px; background-color: #3788d8; border-radius: 50%; transition: transform 0.3s ease, box-shadow 0.3s ease;" onmouseover="this.style.transform='scale(1.3)'; this.style.boxShadow='0 0 8px #3788d8';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none';"></span>
+            <span style="font-size: 0.95em; font-weight: 600; color: #1a202c; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Événement non réservé (bleu)</span>
+        </div>
+    </div>
     <div id="calendar-holder"></div>
     <img class="nk-page-background-top" src="{{ asset('images/bg-top.png') }}" alt="">
     <img class="nk-page-background-bottom" src="{{ asset('images/bg-bottom.png') }}" alt="">
@@ -26,7 +36,7 @@
                     right: 'dayGridMonth,timeGridWeek,timeGridDay'
                 },
                 locale: 'fr',
-                timeZone: 'Europe/Paris',
+                timeZone: 'Africa/Tunis',
                 eventClick: function(info) {
                     if (info.event.url) {
                         window.open(info.event.url, '_blank');
