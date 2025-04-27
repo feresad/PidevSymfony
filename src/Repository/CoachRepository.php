@@ -13,5 +13,18 @@ class CoachRepository extends ServiceEntityRepository
         parent::__construct($registry, Coach::class);
     }
 
+    public function searchByGameOrUser(?string $query)
+    {
+        $qb = $this->createQueryBuilder('c')
+            ->join('c.userId', 'u');
+        if ($query) {
+            $qb->where('c.game LIKE :query')
+               ->orWhere('u.nom LIKE :query')
+               ->orWhere('u.prenom LIKE :query')
+               ->setParameter('query', '%' . $query . '%');
+        }
+        return $qb->getQuery();
+    }
+
     // Add custom methods as needed
 }

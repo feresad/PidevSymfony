@@ -8,7 +8,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 
 use App\Entity\Utilisateur;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: 'App\\Repository\\DemandeRepository')]
 class Demande
 {
     public function __construct()

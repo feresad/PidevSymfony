@@ -12,9 +12,18 @@ use Symfony\Component\Routing\Annotation\Route;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Entity\Reports;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 
 class AdminController extends AbstractController
 {
+    private $mailer;
+
+    public function __construct(MailerInterface $mailer)
+    {
+        $this->mailer = $mailer;
+    }
+
     #[Route('/admin/dashboard', name: 'admin_dashboard')]
     public function dashboard(
         Request $request,
@@ -74,17 +83,43 @@ class AdminController extends AbstractController
         $duration = $data['duration'] ?? 0;
 
         $user->setBan(true);
-        
+        $banEnd = null;
         if ($duration > 0) {
             $banTime = new \DateTime();
             $banTime->modify("+{$duration} days");
             $user->setBanTime($banTime);
+            $banEnd = $banTime;
         } else {
             // Permanent ban
             $user->setBanTime(null);
         }
 
         $entityManager->flush();
+
+        // Send ban email
+        $logoUrl = "https://i.postimg.cc/wxcZgCYH/level.png";
+        $banMessage = $banEnd
+            ? "Votre compte a été banni jusqu'au <b>" . $banEnd->format('d/m/Y H:i') . "</b>."
+            : "Votre compte a été banni de façon permanente.";
+        $emailMessage = (new Email())
+            ->from('levelopcorporation@gmail.com')
+            ->to($user->getEmail())
+            ->subject('Notification de bannissement')
+            ->html(
+                "<html>" .
+                    "<body style='background-color: #1B1B1B; color: #ffffff; font-family: Arial, sans-serif; text-align: center; padding: 20px;'>" .
+                    "<div style='max-width: 500px; margin: auto; background-color: #2A2A2A; padding: 20px; border-radius: 10px;'>" .
+                    "<img src='" . $logoUrl . "' alt='Logo LevelOP' style='max-width: 150px; margin-bottom: 10px;'>" .
+                    "<h2 style='color: #ff4444;'>Bannissement de votre compte</h2>" .
+                    "<p style='font-size: 16px;'>" . $banMessage . "</p>" .
+                    "<p style='font-size: 14px; color: #aaaaaa;'>Si vous pensez qu'il s'agit d'une erreur, veuillez contacter le support.</p>" .
+                    "<hr style='border: 1px solid #444;'>" .
+                    "<p style='font-size: 12px; color: #777;'>Cordialement, <br> L'équipe LevelOP</p>" .
+                    "</div>" .
+                    "</body>" .
+                    "</html>"
+            );
+        $this->mailer->send($emailMessage);
 
         return new JsonResponse(['success' => true]);
     }

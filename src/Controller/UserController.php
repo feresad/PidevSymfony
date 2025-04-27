@@ -47,18 +47,26 @@ class UserController extends AbstractController
             return $this->json(['error' => 'Invalid credentials'], Response::HTTP_UNAUTHORIZED);
         }
 
+        // Check if user is banned
+        if ($user->isBan()) {
+            $banEnd = $user->getBanTime();
+            $banMessage = $banEnd
+                ? "Votre compte est banni jusqu'au " . $banEnd->format('d/m/Y H:i') . "."
+                : "Votre compte est banni de façon permanente.";
+            return $this->json([
+                'error' => 'Account is banned',
+                'banMessage' => $banMessage
+            ], Response::HTTP_FORBIDDEN);
+        }
+
         // Get the stored hash
         $storedHash = $user->getPassword();
-        
-        // Verify using the same format
         $isValid = hash_equals($storedHash, crypt($password, $storedHash));
-        
 
         if (!$isValid) {
             return $this->json(['error' => 'Invalid credentials'], Response::HTTP_UNAUTHORIZED);
         }
 
-        // Get user roles through the security interface
         $roles = $user->getRoles();
         $isAdmin = in_array('ROLE_ADMIN', $roles);
 

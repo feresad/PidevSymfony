@@ -11,6 +11,12 @@
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('css/StyleEvenement.css') }}">
     <style>
+        .topbar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
         .topbar .user {
             position: relative;
             width: 40px;
@@ -151,13 +157,7 @@
 
     <!-- ========================= Main ==================== -->
     <div class="main">
-        <div class="topbar">
-            <div class="search">
-                <label>
-                    <input type="text" placeholder="Search here">
-                    <ion-icon name="search-outline"></ion-icon>
-                </label>
-            </div>
+        <div class="topbar" style="display: flex; justify-content: flex-end;">
             <div class="user">
                 {% if app.user %}
                     <a href="{{ path('app_profile') }}" title="Mon Profil">

@@ -589,15 +589,14 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            alert('Utilisateur banni avec succès');
+                            
                             window.location.reload();
                         } else {
-                            alert('Erreur lors du bannissement');
+                            console.error('Erreur lors du bannissement');
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        alert('Erreur lors du bannissement');
                     });
                 }
                 banModal.style.display = 'none';
@@ -618,27 +617,24 @@
             };
 
             window.unbanUser = function(userId, userName) {
-                if (confirm(`Êtes-vous sûr de vouloir débannir ${userName} ?`)) {
-                    fetch(`/admin/user/${userId}/unban`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert('Utilisateur débanni avec succès');
-                            window.location.reload();
-                        } else {
-                            alert('Erreur lors du débannissement');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('Erreur lors du débannissement');
-                    });
-                }
+                // Remove confirmation dialog, unban immediately
+                fetch(`/admin/user/${userId}/unban`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        console.error('Erreur lors du débannissement');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
             };
         });
     </script>

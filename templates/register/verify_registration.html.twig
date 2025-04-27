@@ -1,0 +1,64 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Vérification du compte{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/verify_registration.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="register-container">
+    <div class="register-form-container">
+        <h1>Vérification du compte</h1>
+        <p class="subtitle">Un code de vérification a été envoyé à votre email</p>
+        <p class="email-display">{{ app.session.get('registration_data').email }}</p>
+
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger" role="alert">{{ message }}</div>
+        {% endfor %}
+
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success" role="alert">{{ message }}</div>
+        {% endfor %}
+
+        <form action="{{ path('app_check_registration_otp') }}" method="post" class="verification-form">
+            <div class="form-group">
+                <label for="otp">Code de vérification</label>
+                <input type="text" id="otp" name="otp" class="form-control" required 
+                       pattern="[0-9]{6}" maxlength="6" 
+                       placeholder="Entrez le code à 6 chiffres">
+            </div>
+
+            <button type="submit" class="btn-register">Vérifier</button>
+
+            <div class="resend-otp">
+                <p>Vous n'avez pas reçu le code ?</p>
+                <a href="{{ path('app_register') }}" class="resend-link">Recommencer l'inscription</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const otpInput = document.querySelector('#otp');
+            
+            // Only allow numeric input
+            otpInput.addEventListener('input', function(e) {
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+
+            // Prevent paste of non-numeric content
+            otpInput.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+                const numericText = pastedText.replace(/[^0-9]/g, '');
+                document.execCommand('insertText', false, numericText);
+            });
+        });
+    </script>
+{% endblock %}
+{% endblock %} 

@@ -48,6 +48,8 @@ security:
     - { path: ^/profile, roles: PUBLIC_ACCESS }
     - { path: ^/check-otp, roles: PUBLIC_ACCESS }
     - { path: ^/reset-password, roles: PUBLIC_ACCESS }
+    - { path: ^/verify-registration, roles: PUBLIC_ACCESS }
+    - { path: ^/check-registration-otp, roles: PUBLIC_ACCESS }
     - { path: ^/coach-applications, roles: ROLE_ADMIN }
     - { path: ^/admin, roles: ROLE_ADMIN }
     - { path: "^/coach-application/\\d+/accept", roles: ROLE_ADMIN }
