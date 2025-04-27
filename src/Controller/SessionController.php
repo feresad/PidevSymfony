@@ -19,45 +19,62 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 class SessionController extends AbstractController
 {
     #[Route('/coach/sessions', name: 'session_list')]
-    public function index(Request $request, Session_gameRepository $sessionRepository): Response
-    {
-        $user = $this->getUser();
-        if (!$user || !in_array('ROLE_COACH', $user->getRoles())) {
-            return $this->redirectToRoute('app_login_page');
-        }
-
-        $searchQuery = $request->query->get('search');
-        $sessions = $searchQuery
-            ? $sessionRepository->findByGameNameAndCoach($searchQuery, $user)
-            : $sessionRepository->findBy(['coach' => $user]);
-
-        return $this->render('session/index.html.twig', [
-            'sessions' => $sessions,
-            'searchQuery' => $searchQuery,
-            'image_base_url' => $this->getParameter('image_base_url'),
-        ]);
+public function index(Request $request, Session_gameRepository $sessionRepository, \Knp\Component\Pager\PaginatorInterface $paginator): Response
+{
+    $user = $this->getUser();
+    if (!$user || !in_array('ROLE_COACH', $user->getRoles())) {
+        return $this->redirectToRoute('app_login_page');
     }
 
-    #[Route('/sessions/available', name: 'session_client_list')]
-    public function clientIndex(Request $request, Session_gameRepository $sessionRepository, ReservationRepository $reservationRepository): Response
-    {
-        $searchQuery = $request->query->get('search');
-        $sessions = $searchQuery
-            ? $sessionRepository->findByGameName($searchQuery)
-            : $sessionRepository->findAll();
+    $searchQuery = $request->query->get('search');
+    $queryBuilder = $searchQuery
+        ? $sessionRepository->findByGameNameAndCoach($searchQuery, $user)
+        : $sessionRepository->findBy(['coach' => $user]);
 
-        $reservedSessions = [];
-        foreach ($sessions as $session) {
-            $reservedSessions[$session->getId()] = $reservationRepository->findOneBy(['session' => $session]) !== null;
-        }
+    // Pagination
+    $sessions = $paginator->paginate(
+        $queryBuilder, // Query or QueryBuilder
+        $request->query->getInt('page', 1), // Current page number
+        10 // Limit per page
+    );
 
-        return $this->render('session/client_index.html.twig', [
-            'sessions' => $sessions,
-            'searchQuery' => $searchQuery,
-            'image_base_url' => $this->getParameter('image_base_url'),
-            'reservedSessions' => $reservedSessions,
-        ]);
+    return $this->render('session/index.html.twig', [
+        'sessions' => $sessions,
+        'searchQuery' => $searchQuery,
+        'image_base_url' => $this->getParameter('image_base_url'),
+    ]);
+}
+
+
+#[Route('/sessions/available', name: 'session_client_list')]
+public function clientIndex(Request $request, Session_gameRepository $sessionRepository, ReservationRepository $reservationRepository, \Knp\Component\Pager\PaginatorInterface $paginator): Response
+{
+    $searchQuery = $request->query->get('search');
+    $queryBuilder = $searchQuery
+        ? $sessionRepository->findByGameName($searchQuery)
+        : $sessionRepository->findAll();
+
+    // Pagination
+    $sessions = $paginator->paginate(
+        $queryBuilder, // Query or QueryBuilder
+        $request->query->getInt('page', 1), // Current page number
+        10 // Limit per page
+    );
+
+    // Logic for checking reserved sessions
+    $reservedSessions = [];
+    foreach ($sessions as $session) {
+        $reservedSessions[$session->getId()] = $reservationRepository->findOneBy(['session' => $session]) !== null;
     }
+
+    return $this->render('session/client_index.html.twig', [
+        'sessions' => $sessions,
+        'searchQuery' => $searchQuery,
+        'image_base_url' => $this->getParameter('image_base_url'),
+        'reservedSessions' => $reservedSessions,
+    ]);
+}
+
 
     #[Route('/session/add', name: 'session_add', methods: ['GET', 'POST'])]
     public function ajouter(Request $request, EntityManagerInterface $entityManager,UtilisateurRepository $utilisateurRepository): Response

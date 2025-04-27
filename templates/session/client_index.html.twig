@@ -159,7 +159,6 @@ body {
     pointer-events: none;
 }
 
-
 /* Flèches */
 .carousel-arrow {
     position: absolute;
@@ -254,6 +253,11 @@ body {
             <button class="carousel-arrow right" onclick="scrollCarousel(1)">❯</button>
         </div>
 
+        <!-- Pagination -->
+        <div class="pagination">
+            {{ knp_pagination_render(sessions) }}
+        </div>
+
         <!-- Boutons bas de page -->
         <div class="navigation-buttons text-end">
             {% if is_granted('ROLE_COACH') %}
@@ -278,7 +282,7 @@ function scrollCarousel(direction) {
     carousel.scrollBy({
         left: direction * scrollAmount,
         behavior: 'smooth'
-    });
+    });   
 }
 
 function sortSessionsByPrice() {
@@ -300,4 +304,5 @@ function sortSessionsByPrice() {
     cards.forEach(card => carousel.appendChild(card));
 }
 </script>
+
 {% endblock %}
