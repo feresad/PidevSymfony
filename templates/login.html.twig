@@ -157,6 +157,30 @@
 			font-size: 0.875rem;
 			margin-top: 5px;
 		}
+
+		.alert-ban {
+			background-color: rgba(255, 0, 0, 0.1);
+			border: 1px solid #ff4444;
+			border-radius: 4px;
+			padding: 15px;
+			margin-bottom: 20px;
+			color: #ff4444;
+		}
+
+		.ban-title {
+			font-weight: bold;
+			font-size: 1.1em;
+			margin-bottom: 5px;
+		}
+
+		.ban-message {
+			font-size: 0.9em;
+		}
+
+		.disabled-form {
+			opacity: 0.5;
+			pointer-events: none;
+		}
 	</style>
 {% endblock %}
 
@@ -172,7 +196,14 @@
 
 			{% if error %}
 				<div class="error-message">
-					{{ error.messageKey|trans(error.messageData, 'security') }}
+					{% if error.messageKey == 'Account is banned' %}
+						<div class="alert-ban">
+							<div class="ban-title">Compte Banni</div>
+							<div class="ban-message">{{ error.messageData.banMessage }}</div>
+						</div>
+					{% else %}
+						{{ error.messageKey|trans(error.messageData, 'security') }}
+					{% endif %}
 				</div>
 			{% endif %}
 
@@ -364,26 +395,26 @@
 				const data = await response.json();
 
 				if (!response.ok) {
-					throw data;
-				}
+					if (data.error === 'Account is banned') {
+						const errorDiv = document.createElement('div');
+						errorDiv.className = 'alert-ban';
+						errorDiv.innerHTML = `
+							<div class="ban-title">Compte Banni</div>
+							<div class="ban-message">${data.banMessage}</div>
+						`;
+						
+						const existingError = document.querySelector('.error-message');
+						if (existingError) {
+							existingError.replaceWith(errorDiv);
+						} else {
+							document.querySelector('.right-section').insertBefore(errorDiv, document.querySelector('form'));
+						}
 
-				if (data.banned) {
-					const errorDiv = document.createElement('div');
-					errorDiv.className = 'alert-ban';
-					errorDiv.innerHTML = `
-						<div class="ban-title">Compte Banni</div>
-						<div class="ban-message">${data.banMessage}</div>
-					`;
-					
-					const existingError = document.querySelector('.alert-ban, .alert-danger');
-					if (existingError) {
-						existingError.replaceWith(errorDiv);
+						// Disable the form
+						form.classList.add('disabled-form');
 					} else {
-						document.querySelector('.login-container').insertBefore(errorDiv, document.querySelector('form'));
+						throw data;
 					}
-
-					// Disable the form
-					form.classList.add('disabled-form');
 					return false;
 				}
 
@@ -393,14 +424,14 @@
 				window.location.href = '{{ path("app_home") }}';
 			} catch (error) {
 				const errorDiv = document.createElement('div');
-				errorDiv.className = 'alert alert-danger';
+				errorDiv.className = 'error-message';
 				errorDiv.textContent = error.error || 'Une erreur est survenue lors de la connexion';
 				
-				const existingError = document.querySelector('.alert-danger');
+				const existingError = document.querySelector('.error-message');
 				if (existingError) {
 					existingError.replaceWith(errorDiv);
 				} else {
-					document.querySelector('.login-container').insertBefore(errorDiv, document.querySelector('form'));
+					document.querySelector('.right-section').insertBefore(errorDiv, document.querySelector('form'));
 				}
 			}
 

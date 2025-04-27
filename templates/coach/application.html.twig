@@ -12,48 +12,178 @@
         background-repeat: no-repeat;
         background-attachment: fixed;
         min-height: 100vh;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
+
+    .container {
+        padding: 2rem 0;
+    }
+
     .card {
-        background-color: rgba(0, 0, 0, 0.8);
+        background-color: rgba(0, 0, 0, 0.85);
         color: white;
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(10px);
+        transition: transform 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.1);
     }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    }
+
     .card-header {
-        background-color: rgba(0, 0, 0, 0.5);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        background: linear-gradient(135deg, rgba(0, 123, 255, 0.2), rgba(255, 20, 147, 0.2));
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 15px 15px 0 0 !important;
+        padding: 1.5rem;
     }
+
+    .card-header h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+        background: linear-gradient(135deg, #007bff, #ff1493);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .card-body {
+        padding: 2rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #fff;
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+    }
+
     .form-control, .form-select {
         background-color: rgba(255, 255, 255, 0.1);
         border: 1px solid rgba(255, 255, 255, 0.2);
         color: white;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
     }
+
     .form-control:focus, .form-select:focus {
         background-color: rgba(255, 255, 255, 0.15);
-        border-color: rgba(255, 255, 255, 0.3);
+        border-color: #007bff;
         color: white;
-        box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.1);
+        box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
     }
+
     .form-control::placeholder {
         color: rgba(255, 255, 255, 0.6);
     }
+
     .form-select option {
         background-color: rgba(0, 0, 0, 0.9);
         color: white;
+        padding: 0.5rem;
     }
+
     .form-text {
         color: rgba(255, 255, 255, 0.6);
+        font-size: 0.9rem;
+        margin-top: 0.25rem;
     }
+
     .btn-primary {
-        background-color: #0d6efd;
+        background: linear-gradient(135deg, #007bff, #ff1493);
         border: none;
-        padding: 10px 20px;
-        font-weight: bold;
+        padding: 12px 24px;
+        font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 1px;
-    }
-    .btn-primary:hover {
-        background-color: #0b5ed7;
-        transform: translateY(-2px);
+        border-radius: 8px;
         transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #ff1493, #007bff);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 20, 147, 0.4);
+    }
+
+    .alert {
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .alert-success {
+        background: linear-gradient(135deg, rgba(40, 167, 69, 0.2), rgba(0, 123, 255, 0.2));
+        color: #28a745;
+        border-left: 4px solid #28a745;
+    }
+
+    .alert-danger {
+        background: linear-gradient(135deg, rgba(220, 53, 69, 0.2), rgba(255, 20, 147, 0.2));
+        color: #dc3545;
+        border-left: 4px solid #dc3545;
+    }
+
+    /* Custom file input styling */
+    .form-control[type="file"] {
+        padding: 0.5rem;
+    }
+
+    .form-control[type="file"]::-webkit-file-upload-button {
+        background: linear-gradient(135deg, #007bff, #ff1493);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .form-control[type="file"]::-webkit-file-upload-button:hover {
+        background: linear-gradient(135deg, #ff1493, #007bff);
+    }
+
+    /* Animation for form elements */
+    .form-group {
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeInUp 0.5s ease forwards;
+    }
+
+    @keyframes fadeInUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Add delay to each form group */
+    .form-group:nth-child(1) { animation-delay: 0.1s; }
+    .form-group:nth-child(2) { animation-delay: 0.2s; }
+    .form-group:nth-child(3) { animation-delay: 0.3s; }
+    .form-group:nth-child(4) { animation-delay: 0.4s; }
+
+    /* Add a subtle gradient border effect */
+    .card::before {
+        content: '';
+        position: absolute;
+        top: -1px;
+        left: -1px;
+        right: -1px;
+        bottom: -1px;
+        background: linear-gradient(135deg, #007bff, #ff1493);
+        border-radius: 16px;
+        z-index: -1;
+        opacity: 0.5;
     }
 </style>
 {% endblock %}
@@ -80,7 +210,7 @@
                     {% endfor %}
 
                     <form action="{{ path('app_submit_coach_application') }}" method="post" enctype="multipart/form-data">
-                        <div class="mb-3">
+                        <div class="form-group mb-4">
                             <label for="game" class="form-label">Sélectionnez le jeu</label>
                             <select class="form-select" id="game" name="game" required>
                                 <option value="">Choisissez un jeu...</option>
@@ -90,20 +220,22 @@
                             </select>
                         </div>
 
-                        <div class="mb-3">
+                        <div class="form-group mb-4">
                             <label for="description" class="form-label">À propos de vous et de vos compétences</label>
                             <textarea class="form-control" id="description" name="description" rows="5" required
                                     placeholder="Parlez-nous de votre expérience dans le gaming, de vos compétences en coaching et pourquoi vous souhaitez devenir coach..."></textarea>
                         </div>
 
-                        <div class="mb-3">
+                        <div class="form-group mb-4">
                             <label for="cv" class="form-label">Téléchargez votre CV</label>
                             <input type="file" class="form-control" id="cv" name="cv" accept=".pdf,.doc,.docx" required>
-                            <div class="form-text">Accepted formats: PDF, DOC, DOCX</div>
+                            <div class="form-text">Formats acceptés : PDF, DOC, DOCX</div>
                         </div>
 
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">Soumettre une demande</button>
+                        <div class="form-group">
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">Soumettre une demande</button>
+                            </div>
                         </div>
                     </form>
                 </div>
