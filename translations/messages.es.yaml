@@ -57,7 +57,7 @@ forum:
   upvote: "Votar a favor"
   downvote: "Votar en contra"
   react: "Reaccionar"
-  subscribe: "Suscribirse"
+  follow: "Suscribirse"
   unsubscribe: "Desuscribirse"
   game_image: "Imagen del juego"
   default_game_image: "Imagen de juego predeterminada"

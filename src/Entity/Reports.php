@@ -17,7 +17,7 @@ class Reports
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: "integer")]
+    #[ORM\Column(type: "integer", name: "reportId")]
     private int $reportId;
 
     #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: "reportss")]

@@ -1,0 +1,150 @@
+{% extends 'baseadmin.html.twig' %}
+
+{% block title %}Demandes de Coach{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    body {
+        background-color: #1a1c2e;
+        color: white;
+        min-height: 100vh;
+    }
+    .applications-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+        padding: 2rem;
+    }
+    .application-card {
+        background-color: rgba(30, 32, 44, 0.95);
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .application-header {
+        margin-bottom: 1rem;
+    }
+    .game-title {
+        font-size: 1.25rem;
+        font-weight: bold;
+        color: #fff;
+        margin-bottom: 0.5rem;
+    }
+    .user-name {
+        color: #a8b3cf;
+        font-size: 0.9rem;
+    }
+    .cv-preview {
+        width: 100%;
+        height: 200px;
+        background-color: #2a2d3e;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+    .cv-preview img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+    .btn-accept {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        cursor: pointer;
+        flex: 1;
+    }
+    .btn-refuse {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        cursor: pointer;
+        flex: 1;
+    }
+    .btn-accept:hover {
+        background-color: #218838;
+    }
+    .btn-refuse:hover {
+        background-color: #c82333;
+    }
+    .page-title {
+        color: white;
+        padding: 2rem;
+        margin: 0;
+        font-size: 2rem;
+        font-weight: bold;
+    }
+    .alert {
+        margin: 1rem 2rem;
+        padding: 1rem;
+        border-radius: 5px;
+    }
+    .alert-success {
+        background-color: rgba(40, 167, 69, 0.2);
+        border: 1px solid #28a745;
+        color: #fff;
+    }
+    .alert-info {
+        background-color: rgba(23, 162, 184, 0.2);
+        border: 1px solid #17a2b8;
+        color: #fff;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+    <h1 class="page-title">Demandes de Coach</h1>
+    
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+    
+    <div class="applications-grid">
+        {% for demande in demandes %}
+            <div class="application-card">
+                <div class="application-header">
+                    <div class="game-title">Game: {{ demande.game }}</div>
+                    <div class="user-name">{{ demande.userId.nom }} {{ demande.userId.prenom }}</div>
+                </div>
+                
+                <div class="cv-preview">
+                    {% if demande.file ends with '.pdf' %}
+                        <embed src="{{ 'http://localhost/img/' ~ demande.file }}" type="application/pdf" width="100%" height="100%">
+                    {% else %}
+                        <img src="{{ 'http://localhost/img/' ~ demande.file }}" alt="CV Preview">
+                    {% endif %}
+                </div>
+
+                <div class="description">
+                    {{ demande.description|length > 100 ? demande.description|slice(0, 100) ~ '...' : demande.description }}
+                </div>
+
+                <div class="action-buttons">
+                    <form action="{{ path('app_coach_application_accept', {'id': demande.id}) }}" method="post" style="flex: 1;">
+                        <button type="submit" class="btn-accept">Accept</button>
+                    </form>
+                    <form action="{{ path('app_coach_application_refuse', {'id': demande.id}) }}" method="post" style="flex: 1;">
+                        <button type="submit" class="btn-refuse">Refuse</button>
+                    </form>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %} 
