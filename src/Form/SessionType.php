@@ -33,7 +33,7 @@ class SessionType extends AbstractType
                     'title' => 'Entrez le prix en euros (€)'
                 ]
             ])
-            ->add('dureeSession', NumberType::class, [
+            ->add('dureeSession', NumberType::class, [ 
                 'label' => 'Durée (minutes)',
                 'attr' => [
                     'class' => 'form-control',

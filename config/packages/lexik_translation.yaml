@@ -1,0 +1,5 @@
+lexik_translation:
+    storage:
+        type: orm
+    managed_locales: ['en', 'fr', 'es', 'ar']  # Add 'ar' here
+    fallback_locale: en

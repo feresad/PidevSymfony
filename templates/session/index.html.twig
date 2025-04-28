@@ -1,105 +1,147 @@
+
 {% extends 'base.html.twig' %}
 
 {% block title %}Liste des sessions{% endblock %}
 
 {% block body %}
 <style>
-.session-carousel {
-    position: relative;
-    padding: 0 40px;
+body {
+    background: #121212;
+    color: #ffffff;
+    font-family: 'Segoe UI', sans-serif;
 }
-.session-carousel .nk-product-cat-2 {
-    margin: 0 15px;
-    background: rgba(0, 0, 0, 0.85);
-    border-radius: 15px;
+
+.nk-title {
+    font-size: 3em;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.2em;
+}
+
+.nk-sub-title {
+    color: #ccc;
+    font-size: 1.2em;
+    margin-bottom: 2em;
+}
+
+.nk-form .form-control {
+    background: #1e1e1e;
+    border: 1px solid #333;
+    color: #fff;
+}
+
+.nk-btn {
+    background: #dd163b;
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 0.6em 1.2em;
+    border-radius: 8px;
+    transition: background 0.3s ease;
+}
+
+.nk-btn:hover {
+    background: #ff4d6d;
+}
+
+.nk-btn-color-main-5 {
+    background: #333;
+}
+
+.nk-btn-color-main-5:hover {
+    background: #555;
+}
+
+/* Carrousel horizontal */
+.carousel-wrapper {
+    position: relative;
+}
+
+.session-carousel {
+    display: flex;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    gap: 20px;
+    padding-bottom: 10px;
+    scrollbar-width: none;
+}
+
+.session-carousel::-webkit-scrollbar {
+    display: none;
+}
+
+/* Carte session */
+.session-card {
+    flex: 0 0 auto;
+    width: 280px;
+    background: #1a1a1a;
+    border-radius: 12px;
     overflow: hidden;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    width: 280px;
-    height: 420px;
-    flex-shrink: 0;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-}
-.session-carousel .nk-product-cat-2:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-}
-.session-carousel-container {
-    overflow: hidden;
-    padding: 20px 0;
-}
-.session-list {
-    display: flex;
-    transition: transform 0.3s ease;
-    gap: 30px;
-}
-.nk-product-image {
     position: relative;
-    overflow: hidden;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+}
+
+.session-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+}
+
+.session-card img {
+    width: 100%;
     height: 180px;
-    width: 100%;
-    border-radius: 15px 15px 0 0;
-    border-bottom: 2px solid rgba(221, 22, 59, 0.5);
-}
-.nk-product-image img {
-    width: 100%;
-    height: 100%;
     object-fit: cover;
-    object-position: center;
-    transition: transform 0.3s ease;
-    display: block;
+    filter: brightness(0.85);
 }
-.nk-product-image:hover img {
-    transform: scale(1.05);
-}
-.nk-product-cont {
+
+.session-info {
     padding: 20px;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.7), rgba(0,0,0,0.9));
-    height: calc(100% - 180px);
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
 }
-.nk-product-title {
-    color: #fff;
+
+.session-title {
     font-size: 1.4em;
     margin-bottom: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    color: #fff;
 }
-.nk-product-price {
+
+.session-price {
     font-size: 1.2em;
     color: #dd163b;
     font-weight: bold;
+    margin-bottom: 10px;
 }
-.nk-product-rating {
-    display: flex;
-    align-items: center;
-    color: #aaa;
+
+.session-meta {
     font-size: 0.9em;
+    color: #aaa;
+    margin-bottom: 5px;
 }
+
+/* Flèches */
 .carousel-arrow {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    width: 50px;
-    height: 50px;
-    background: rgba(221, 22, 59, 0.8);
+    background: rgba(0,0,0,0.7);
     border: none;
     color: white;
-    font-size: 24px;
-    cursor: pointer;
+    font-size: 1.5em;
+    padding: 10px 15px;
     z-index: 10;
+    cursor: pointer;
     border-radius: 50%;
-    transition: background 0.3s ease;
 }
-.carousel-arrow:hover {
-    background: rgba(221, 22, 59, 1);
+
+.carousel-arrow.left {
+    left: -10px;
 }
-.carousel-prev {
-    left: 0;
+
+.carousel-arrow.right {
+    right: -10px;
 }
-.carousel-next {
-    right: 0;
+
+.navigation-buttons {
+    margin-top: 40px;
 }
 </style>
 
@@ -109,96 +151,65 @@
         <div class="nk-gap-2"></div>
         <h1 class="nk-title text-center">Liste des sessions</h1>
         <h3 class="nk-sub-title text-center mb-30">Gérez vos sessions de jeux</h3>
+
+        <!-- Formulaire de recherche -->
         <form method="get" class="nk-form nk-form-style-1 mb-50">
             <div class="row justify-content-center">
                 <div class="col-md-6">
                     <div class="input-group">
                         <input type="text" name="search" class="form-control required" placeholder="Rechercher par nom du jeu..." value="{{ searchQuery }}">
-                        <button type="submit" class="nk-btn nk-btn-rounded nk-btn-color-main-1">Rechercher</button>
+                        <button type="submit" class="nk-btn nk-btn-rounded ml-2">Rechercher</button>
                     </div>
                 </div>
             </div>
         </form>
 
+        <!-- Boutons d'action -->
         <div class="text-center mb-30">
-            <a href="{{ path('session_add') }}" class="nk-btn nk-btn-rounded nk-btn-color-main-1">Ajouter une session</a>
-            <a href="{{ path('coach_reservations') }}" class="nk-btn nk-btn-rounded nk-btn-color-main-1">Voir les réservations</a>
+            <a href="{{ path('session_add') }}" class="nk-btn nk-btn-rounded">Ajouter une session</a>
+            <a href="{{ path('coach_reservations') }}" class="nk-btn nk-btn-rounded">Voir les réservations</a>
         </div>
 
-        <div class="session-carousel">
-            <button class="carousel-arrow carousel-prev">&lt;</button>
-            <button class="carousel-arrow carousel-next">&gt;</button>
-            <div class="session-carousel-container">
-                <div class="session-list">
-                    {% for session in sessions %}
-                        <div class="nk-product-cat-2">
-                            {% if session.imageName %}
-                                <div class="nk-product-image">
-                                    <img src="{{ image_base_url ~ session.imageName }}" alt="{{ session.game }}">
-                                </div>
-                            {% endif %}
-                            <div class="nk-product-cont">
-                                <h3 class="nk-product-title h5">{{ session.game }}</h3>
-                                <div class="nk-gap-1"></div>
-                                <div class="nk-product-price">{{ session.prix }} DT</div>
-                                <div class="nk-gap-1"></div>
-                                <span class="nk-product-rating">
-                                    <i class="far fa-clock"></i>  {{ session.dureeSession }}  min
-                                </span>
-                                <div class="nk-gap-1"></div>
-                                <div class="d-flex gap-2">
-                                    <a href="{{ path('session_edit', {'id': session.id}) }}" class="nk-btn nk-btn-rounded nk-btn-color-main-1">Modifier</a>
-                                    <form method="post" action="{{ path('session_delete', {'id': session.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette session?');">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ session.id) }}">
-                                        <button type="submit" class="nk-btn nk-btn-rounded nk-btn-color-main-5">Supprimer</button>
-                                    </form>
-                                </div>
+        <!-- Carrousel des sessions -->
+        <div class="carousel-wrapper mt-4">
+            <button class="carousel-arrow left" onclick="scrollCarousel(-1)">❮</button>
+            <div class="session-carousel" id="sessionCarousel">
+                {% for session in sessions %}
+                    <div class="session-card">
+                        {% if session.imageName %}
+                            <img src="{{ image_base_url ~ session.imageName }}" alt="{{ session.game }}">
+                        {% endif %}
+                        <div class="session-info">
+                            <div class="session-title">{{ session.game }}</div>
+                            <div class="session-price">{{ session.prix }} DT</div>
+                            <div class="session-meta"><i class="far fa-clock"></i> {{ session.dureeSession }} min</div>
+                            <div class="d-flex gap-2 mt-3">
+                                <a href="{{ path('session_edit', {'id': session.id}) }}" class="nk-btn nk-btn-rounded">Modifier</a>
+                                <form method="post" action="{{ path('session_delete', {'id': session.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette session?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ session.id) }}">
+                                    <button type="submit" class="nk-btn nk-btn-rounded nk-btn-color-main-5">Supprimer</button>
+                                </form>
                             </div>
                         </div>
-                    {% endfor %}
-                </div>
+                    </div>
+                {% endfor %}
             </div>
+            <button class="carousel-arrow right" onclick="scrollCarousel(1)">❯</button>
         </div>
     </div>
 </div>
 
+<img class="nk-page-background-top" src="{{ asset('images/bg-top.png') }}" alt="">
+<img class="nk-page-background-bottom" src="{{ asset('images/bg-bottom.png') }}" alt="">
+
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const container = document.querySelector('.session-carousel-container');
-    const list = document.querySelector('.session-list');
-    const items = document.querySelectorAll('.session-list .nk-product-cat-2');
-    const prevBtn = document.querySelector('.carousel-prev');
-    const nextBtn = document.querySelector('.carousel-next');
-
-    let currentIndex = 0;
-    const itemWidth = items[0].offsetWidth + 30; // 30px for gap
-    const visibleItems = Math.floor(container.offsetWidth / itemWidth);
-
-    function updateCarousel() {
-        const translateX = -currentIndex * itemWidth;
-        list.style.transform = `translateX(${translateX}px)`;
-    }
-
-    prevBtn.addEventListener('click', () => {
-        if (currentIndex > 0) {
-            currentIndex--;
-            updateCarousel();
-        }
+function scrollCarousel(direction) {
+    const carousel = document.getElementById('sessionCarousel');
+    const scrollAmount = 300;
+    carousel.scrollBy({
+        left: direction * scrollAmount,
+        behavior: 'smooth'
     });
-
-    nextBtn.addEventListener('click', () => {
-        if (currentIndex < items.length - visibleItems) {
-            currentIndex++;
-            updateCarousel();
-        }
-    });
-
-    window.addEventListener('resize', () => {
-        updateCarousel();
-    });
-});
+}
 </script>
- <!-- Background de la page d'accueil -->
-    <img class="nk-page-background-top" src="{{ asset('images/bg-top.png') }}" alt="">
-    <img class="nk-page-background-bottom" src="{{ asset('images/bg-bottom.png') }}" alt="">
 {% endblock %}

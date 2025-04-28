@@ -62,7 +62,6 @@ class StockController extends AbstractController
             $entityManager->flush();
 
             $this->addFlash('success', 'Stock ajouté avec succès');
-            return $this->redirectToRoute('app_stock_index');
         }
 
         return $this->render('stock/new.html.twig', [
@@ -121,7 +120,5 @@ class StockController extends AbstractController
             $entityManager->remove($stock);
             $entityManager->flush();
         }
-
-        return $this->redirectToRoute('app_stock_index', [], Response::HTTP_SEE_OTHER);
     }
 }

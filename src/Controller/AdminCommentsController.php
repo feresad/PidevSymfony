@@ -482,23 +482,27 @@ class AdminCommentsController extends AbstractController
         if (!$comment) {
             return new JsonResponse(['success' => false, 'message' => 'Comment not found.'], 404);
         }
-
+    
         $utilisateur = $this->getUser();
         if (!$utilisateur) {
             return new JsonResponse(['success' => false, 'message' => 'You must be logged in to update a comment.'], 403);
         }
-
+    
         if ($comment->getUtilisateurId() !== $utilisateur && !$this->isGranted('ROLE_ADMIN')) {
             return new JsonResponse(['success' => false, 'message' => 'You do not have permission to update this comment.'], 403);
         }
-
+    
         $form = $this->createForm(CommentFormType::class, $comment);
         $form->handleRequest($request);
-
+    
         if ($form->isSubmitted() && $form->isValid()) {
             try {
                 $entityManager->flush();
-                return new JsonResponse(['success' => true, 'message' => 'Comment updated successfully!']);
+                return new JsonResponse([
+                    'success' => true,
+                    'message' => 'Comment updated successfully!',
+                    'content' => strip_tags($comment->getContenu()) // Include the updated content
+                ]);
             } catch (\Exception $e) {
                 $this->logger->error('Error updating comment.', [
                     'error' => $e->getMessage(),
@@ -507,7 +511,7 @@ class AdminCommentsController extends AbstractController
                 return new JsonResponse(['success' => false, 'message' => 'An error occurred while updating the comment.'], 500);
             }
         }
-
+    
         $errors = [];
         foreach ($form->getErrors(true) as $error) {
             $errors[] = $error->getMessage();

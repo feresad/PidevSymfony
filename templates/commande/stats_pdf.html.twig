@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Statistiques des Commandes - {{ year|default("now"|date("Y")) }}</title>
+    <style>
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: #dc3545;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #dc3545;
+            padding-bottom: 10px;
+        }
+        
+        .header h1 {
+            color: #dc3545;
+            font-size: 24px;
+            margin: 0;
+        }
+        
+        .header p {
+            color: #dc3545;
+            margin: 5px 0 0 0;
+        }
+        
+        .summary-box {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #f8f9fa;
+        }
+        
+        .summary-box h2 {
+            margin-top: 0;
+            font-size: 18px;
+            color: #dc3545;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .summary-value {
+            font-size: 22px;
+            font-weight: bold;
+            text-align: center;
+            margin: 10px 0;
+            color: #dc3545;
+        }
+        
+        .summary-label {
+            text-align: center;
+            color: #dc3545;
+            font-size: 14px;
+        }
+        
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .summary-col {
+            width: 48%;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        table th {
+            background-color: #dc3545;
+            color: white;
+            text-align: left;
+            padding: 10px;
+            font-size: 14px;
+        }
+        
+        table td {
+            border-bottom: 1px solid #ddd;
+            padding: 10px;
+            font-size: 13px;
+            color: #dc3545;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            color: #dc3545;
+            margin: 30px 0 15px 0;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 12px;
+            color: #dc3545;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Statistiques des Commandes</h1>
+        <p>Rapport généré le {{ "now"|date("d/m/Y H:i") }} | Année: {{ year|default("now"|date("Y")) }}</p>
+    </div>
+    
+    <div class="summary-row">
+        <div class="summary-col">
+            <div class="summary-box">
+                <h2>Revenu Total</h2>
+                <div class="summary-value">{{ total_revenue|number_format(2, '.', ',') }} TND</div>
+                <div class="summary-label">pour l'année {{ year|default("now"|date("Y")) }}</div>
+            </div>
+        </div>
+        
+        <div class="summary-col">
+            <div class="summary-box">
+                <h2>Nombre de Commandes</h2>
+                <div class="summary-value">{{ total_orders }}</div>
+                <div class="summary-label">pour l'année {{ year|default("now"|date("Y")) }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <h3 class="section-title">Top Produits les Plus Vendus</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Rang</th>
+                <th>Produit</th>
+                <th>Quantité</th>
+                <th>Revenu Total</th>
+                <th>Prix Moyen</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in top_products %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ product.name }}</td>
+                    <td>{{ product.quantity }}</td>
+                    <td>{{ product.revenue|number_format(2, '.', ',') }} TND</td>
+                    <td>{{ product.avg_price|number_format(2, '.', ',') }} TND</td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="5" style="text-align: center;">Aucun produit vendu</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <h3 class="section-title">Revenus Mensuels</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Mois</th>
+                <th>Nombre de Commandes</th>
+                <th>Revenu</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for month in monthly_data %}
+                <tr>
+                    <td>{{ month.month_name }}</td>
+                    <td>{{ month.order_count }}</td>
+                    <td>{{ month.revenue|number_format(2, '.', ',') }} TND</td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="3" style="text-align: center;">Aucune donnée disponible</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <div class="footer">
+        <p>© {{ "now"|date("Y") }} LevelOp - Rapport de statistiques des commandes</p>
+    </div>
+</body>
+</html> 
