@@ -21,12 +21,10 @@ class SummaryController extends AbstractController
         UtilisateurRepository $utilisateurRepository,
         EntityManagerInterface $entityManager
     ): Response {
-        // Get total number of reservations
         $totalReservations = $entityManager
             ->createQuery('SELECT COUNT(r) FROM App\\Entity\\Reservation r')
             ->getSingleScalarResult();
 
-        // Get most active customers (with most reservations)
         $activeCustomers = $entityManager
             ->createQuery(
                 'SELECT u.nickname, COUNT(r) as reservationCount 
@@ -38,7 +36,6 @@ class SummaryController extends AbstractController
             ->setMaxResults(5)
             ->getResult();
 
-        // Get coaches with most sessions reserved
         $topCoaches = $entityManager
             ->createQuery(
                 'SELECT u.nickname, COUNT(r) as sessionCount 
@@ -51,42 +48,46 @@ class SummaryController extends AbstractController
             ->setMaxResults(5)
             ->getResult();
 
-        // Get weekly revenue data for the last 8 weeks using native SQL
+        // Revenus mensuels (12 derniers mois)
         $connection = $entityManager->getConnection();
-
-        $sql = "
-            SELECT WEEK(r.date_reservation) as week, 
-                   YEAR(r.date_reservation) as year, 
+        $stmt = $connection->prepare("
+            SELECT MONTH(r.date_reservation) as month,
+                   YEAR(r.date_reservation) as year,
                    SUM(s.prix) as revenue
             FROM reservation r
             JOIN session_game s ON r.session_id_id = s.id
             WHERE r.date_reservation >= :startDate
-            GROUP BY week, year
-            ORDER BY year DESC, week DESC
-            LIMIT 8
-        ";
+            GROUP BY year, month
+            ORDER BY year, month
+        ");
+        $monthlyResult = $stmt->executeQuery([
+            'startDate' => (new \DateTime('-11 months'))->modify('first day of this month')->format('Y-m-d'),
+        ])->fetchAllAssociative();
 
-        $stmt = $connection->prepare($sql);
-        $result = $stmt->executeQuery([
-            'startDate' => (new \DateTime('-8 weeks'))->format('Y-m-d H:i:s'),
-        ]);
+        $monthLabels = [];
+        $monthlyRevenue = [];
+        $currentDate = new \DateTime();
+        $monthlyDataMap = [];
 
-        $weeklyRevenue = $result->fetchAllAssociative();
+        foreach ($monthlyResult as $row) {
+            $key = $row['year'] . '-' . str_pad($row['month'], 2, '0', STR_PAD_LEFT);
+            $monthlyDataMap[$key] = $row['revenue'];
+        }
 
-        // Format weekly revenue for the chart
-        $labels = [];
-        $revenueData = [];
-        foreach (array_reverse($weeklyRevenue) as $week) {
-            $labels[] = "Week {$week['week']}";
-            $revenueData[] = $week['revenue'];
+        for ($i = 11; $i >= 0; $i--) {
+            $date = (clone $currentDate)->modify("-$i months");
+            $label = $date->format('F');
+            $key = $date->format('Y-m');
+            $monthLabels[] = $label;
+            $monthlyRevenue[] = isset($monthlyDataMap[$key]) ? (float)$monthlyDataMap[$key] : 0;
         }
 
         return $this->render('summary/index.html.twig', [
             'totalReservations' => $totalReservations,
             'activeCustomers' => $activeCustomers,
             'topCoaches' => $topCoaches,
-            'weekLabels' => json_encode($labels),
-            'weeklyRevenue' => json_encode($revenueData),
+            'monthLabels' => json_encode($monthLabels),
+            'monthlyRevenue' => json_encode($monthlyRevenue),
         ]);
     }
 }
