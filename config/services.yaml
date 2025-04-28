@@ -1,8 +1,8 @@
 # config/services.yaml
 parameters:
     #uploads_directory: 'C:\xampp\htdocs\uploads'
-    uploads_directory: 'http://localhost/img/games'
-    uploads_directory2: 'http://localhost/img/'
+    uploads_directory: 'C:\xampp\htdocs\img\games'
+    uploads_directory2: 'C:\xampp\htdocs\img'
 
     dossier_upload: 'C:\xampp\htdocs\img'
     image_base_url: 'http://localhost/img/'
