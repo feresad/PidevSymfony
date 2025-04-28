@@ -1,0 +1,87 @@
+<div class="card mb-3 comment-card" style="--level: {{ level }};" data-comment-id="{{ comment.id }}" aria-labelledby="comment-{{ comment.id }}-title">
+    <div class="card-body d-flex align-items-start">
+        <div class="vote-section me-4 text-center">
+            <button class="vote-btn upvote-btn voting-button upvote" data-id="{{ comment.id }}" data-type="comment" data-vote-type="UP" aria-label="Upvote comment">
+                <ion-icon name="arrow-up-outline"></ion-icon>
+            </button>
+            <span class="vote-count d-block my-1" id="vote-count-{{ comment.id }}">{{ comment.votes|default(0) }}</span>
+            <button class="vote-btn downvote-btn voting-button downvote" data-id="{{ comment.id }}" data-type="comment" data-vote-type="DOWN" aria-label="Downvote comment">
+                <ion-icon name="arrow-down-outline"></ion-icon>
+            </button>
+        </div>
+        <div class="content-section flex-grow-1">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <span class="fw-bold" id="comment-{{ comment.id }}-title">{{ comment.utilisateurId.nickname|default('Unknown') }}</span>
+                    <span class="text-muted small"> • {{ comment.createdAt|date('F j, Y') }}</span>
+                </div>
+            </div>
+            <p class="comment-content" id="comment-content-{{ comment.id }}">{{ comment.content }}</p>
+            <div class="reactions mt-2 d-flex align-items-center">
+                <div class="reaction-display me-3" data-id="{{ comment.id }}" data-type="comment" aria-label="Comment reactions">
+                    {% for emoji, count in comment.reactionCounts|default([]) %}
+                        <span class="reaction-item" data-emoji="{{ emoji }}">{{ emoji }} {{ count }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="actions mt-3 d-flex gap-2 align-items-center">
+                {% if comment.childCommentaires|length > 0 %}
+                    <button class="toggle-replies-btn" data-id="{{ comment.id }}" aria-label="Toggle replies">Afficher</button>
+                {% endif %}
+                <button class="btn btn-sm btn-outline-secondary reply-btn" data-id="{{ comment.id }}" data-question-id="{{ question_id }}" aria-label="Reply to comment">
+                    <ion-icon name="return-down-forward-outline"></ion-icon> Repondre
+                </button>
+                <button class="btn btn-sm btn-primary edit-comment-btn" data-id="{{ comment.id }}" aria-label="Edit comment">
+                    Modif
+                </button>
+                <button type="button" class="btn btn-sm btn-danger delete-comment-btn" data-id="{{ comment.id }}" aria-label="Delete comment">
+                    Supp
+                </button>
+                <div class="reaction-wrapper">
+                    <button class="btn btn-sm btn-outline-secondary reaction-icon" data-id="{{ comment.id }}" data-type="comment" aria-label="Add reaction">
+                        <ion-icon name="happy-outline"></ion-icon>
+                    </button>
+                </div>
+            </div>
+            <!-- Reply Form Container -->
+            <div id="reply-form-{{ comment.id }}" class="reply-form mt-3" style="display: none;">
+                <form class="profanity-check-form" action="{{ path('admin_comments_create', {'id': question_id}) }}" method="POST">
+                    <input type="hidden" name="comment_form[parent_commentaire_id]" value="{{ comment.id }}">
+                    <div class="mb-3">
+                        <label for="reply_content_{{ comment.id }}" class="form-label">Reply</label>
+                        <textarea id="reply_content_{{ comment.id }}" name="comment_form[contenu]" class="form-control" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Emotes</label>
+                        <div class="emotes-options d-flex gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('😊', 'reply_content_{{ comment.id }}')" aria-label="Add smile emoji">😊</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('😂', 'reply_content_{{ comment.id }}')" aria-label="Add laugh emoji">😂</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('❤️', 'reply_content_{{ comment.id }}')" aria-label="Add heart emoji">❤️</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addEmote('👍', 'reply_content_{{ comment.id }}')" aria-label="Add thumbs up emoji">👍</button>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Soumettre</button>
+                    <button type="button" class="btn btn-secondary cancel-reply-btn" data-id="{{ comment.id }}">Cancel</button>
+                </form>
+            </div>
+            <!-- Update Form Container -->
+            <div id="update-form-container-{{ comment.id }}" class="update-form mt-3" style="display: none;"></div>
+            <!-- Child Comments -->
+            {% if comment.childCommentaires|length > 0 %}
+                <div id="child-comments-{{ comment.id }}" class="child-comments">
+                    {% for child in comment.childCommentaires %}
+                        {% include 'forum/_comment_card.html.twig' with {
+                            'comment': child,
+                            'question_id': question_id,
+                            'level': level + 1
+                        } %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        <div class="activity-section text-center">
+            <img src="{{ comment.utilisateurId.photo ? 'http://localhost/img/users/' ~ comment.utilisateurId.photo : asset('images/one-piece-monkey-d-luffy.gif') }}" alt="User Image" class="rounded-circle mb-2" style="width: 40px; height: 40px;">
+            <div class="small">{{ comment.utilisateurId.nickname|default('Unknown') }}</div>
+        </div>
+    </div>
+</div>

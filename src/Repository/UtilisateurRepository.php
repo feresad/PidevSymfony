@@ -28,10 +28,11 @@ class UtilisateurRepository extends ServiceEntityRepository
         
         if ($query) {
             $qb->where('u.nickname LIKE :query')
-               ->setParameter('query', '%' . $query . '%')
-               ->orderBy('u.nickname', 'ASC');
+               ->setParameter('query', '%' . $query . '%');
         }
-        
+        // Always order by ban status first (banned users first), then by nickname
+        $qb->orderBy('u.ban', 'DESC')
+           ->addOrderBy('u.nickname', 'ASC');
         return $qb->getQuery();
     }
 

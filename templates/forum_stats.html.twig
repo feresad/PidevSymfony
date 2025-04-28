@@ -1,0 +1,783 @@
+{% extends 'baseadmin.html.twig' %}
+
+{% block title %}Tableau de bord des statistiques du forum{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        /* Ensure the wrapper overrides any parent background styles */
+        .stats-wrapper {
+            background-color: #091221 !important;
+            color: #ffffff;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+            font-family: 'Roboto', sans-serif;
+        }
+        /* Particules en arrière-plan */
+        #particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .particle {
+            position: absolute;
+            background: #0585c6;
+            width: 2px;
+            height: 2px;
+            border-radius: 50%;
+            box-shadow: 0 0 5px #0585c6;
+            animation: float 10s infinite linear;
+        }
+        @keyframes float {
+            0% { transform: translateY(100vh) translateX(0); opacity: 0.5; }
+            100% { transform: translateY(-100vh) translateX(20px); opacity: 0; }
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #fe0369;
+            text-shadow: 0 0 10px rgba(254, 3, 105, 0.5);
+            margin-bottom: 20px;
+            text-align: center;
+            position: relative;
+            animation: glitch 2s linear infinite;
+        }
+        h2::before,
+        h2::after {
+            content: 'Tableau de bord des statistiques du forum';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            color: #0585c6;
+        }
+        h2::before {
+            animation: glitch-top 1s linear infinite;
+            clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%);
+            -webkit-clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%);
+        }
+        h2::after {
+            animation: glitch-bottom 1.5s linear infinite;
+            clip-path: polygon(0 67%, 100% 67%, 100% 100%, 0 100%);
+            -webkit-clip-path: polygon(0 67%, 100% 67%, 100% 100%, 0 100%);
+        }
+        @keyframes glitch {
+            2%, 64% { transform: translate(2px, 0) skew(0deg); }
+            4%, 60% { transform: translate(-2px, 0) skew(0deg); }
+            62% { transform: translate(0, 0) skew(5deg); }
+        }
+        @keyframes glitch-top {
+            2%, 64% { transform: translate(2px, -2px); }
+            4%, 60% { transform: translate(-2px, 2px); }
+            62% { transform: translate(13px, -1px) skew(-13deg); }
+        }
+        @keyframes glitch-bottom {
+            2%, 64% { transform: translate(-2px, 0); }
+            4%, 60% { transform: translate(-2px, 0); }
+            62% { transform: translate(-22px, 5px) skew(21deg); }
+        }
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: rgba(9, 18, 33, 0.9);
+            border: 1px solid #0236a5;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(2, 54, 165, 0.2), transparent);
+            transition: all 0.3s ease;
+            z-index: 0;
+        }
+        .stat-card:hover {
+            transform: scale(1.05);
+            border-color: #fe0369;
+            box-shadow: 0 0 15px rgba(254, 3, 105, 0.5);
+        }
+        .stat-card:hover::before {
+            background: linear-gradient(45deg, transparent, rgba(254, 3, 105, 0.3), transparent);
+        }
+        .stat-card .icon {
+            margin-bottom: 10px;
+            filter: drop-shadow(0 0 5px #0585c6);
+        }
+        .stat-card h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 400;
+            color: #0585c6;
+            margin: 0 0 10px 0;
+            position: relative;
+            z-index: 1;
+        }
+        .stat-card .number {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #ffffff;
+            position: relative;
+            z-index: 1;
+        }
+        .stat-card .unit {
+            font-size: 0.9rem;
+            color: #0585c6;
+            position: relative;
+            z-index: 1;
+        }
+        .chart-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        .chart-container {
+            background: rgba(9, 18, 33, 0.9);
+            border: 1px solid transparent;
+            border-radius: 10px;
+            padding: 20px;
+            position: relative;
+            transition: all 0.3s ease;
+            animation: neon-border 3s infinite;
+        }
+        @keyframes neon-border {
+            0%, 100% { border-color: #0236a5; box-shadow: 0 0 10px rgba(2, 54, 165, 0.5); }
+            50% { border-color: #fe0369; box-shadow: 0 0 10px rgba(254, 3, 105, 0.5); }
+        }
+        .chart-container:hover {
+            animation-play-state: paused;
+            border-color: #fe0369;
+            box-shadow: 0 0 15px rgba(254, 3, 105, 0.5);
+        }
+        .chart-container h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 400;
+            color: #0585c6;
+            margin-bottom: 15px;
+        }
+        .chart-container canvas {
+            max-width: 100%;
+        }
+        .no-data-message {
+            text-align: center;
+            color: #0585c6;
+            font-style: italic;
+            padding: 20px;
+            text-shadow: 0 0 5px rgba(5, 133, 198, 0.5);
+        }
+        .filter-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            background: rgba(9, 18, 33, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid transparent;
+            transition: all 0.3s ease;
+            animation: neon-border 3s infinite;
+        }
+        .filter-section:hover {
+            animation-play-state: paused;
+            border-color: #fe0369;
+            box-shadow: 0 0 10px rgba(254, 3, 105, 0.5);
+        }
+        .filter-section label {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 400;
+            color: #0585c6;
+            text-shadow: 0 0 5px rgba(5, 133, 198, 0.5);
+        }
+        .filter-section select {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #0236a5;
+            background: #091221;
+            color: #ffffff;
+            font-family: 'Roboto', sans-serif;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+        .filter-section select:focus {
+            outline: none;
+            border-color: #fe0369;
+            box-shadow: 0 0 5px rgba(254, 3, 105, 0.5);
+        }
+        .list-section {
+            margin-bottom: 30px;
+        }
+        .list-section h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 400;
+            color: #0585c6;
+            margin-bottom: 15px;
+        }
+        .list-container {
+            background: rgba(9, 18, 33, 0.9);
+            border: 1px solid transparent;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            animation: neon-border 3s infinite;
+        }
+        .list-container:hover {
+            animation-play-state: paused;
+            border-color: #fe0369;
+            box-shadow: 0 0 15px rgba(254, 3, 105, 0.5);
+        }
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(2, 54, 165, 0.3);
+            transition: background 0.3s ease;
+        }
+        .list-item:hover {
+            background: rgba(254, 3, 105, 0.1);
+        }
+        .list-item:last-child {
+            border-bottom: none;
+        }
+        .list-item span {
+            font-size: 0.95rem;
+            color: #ffffff;
+        }
+        .list-item .count {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 600;
+            color: #fe0369;
+            text-shadow: 0 0 5px rgba(254, 3, 105, 0.5);
+        }
+        .topic-reactions {
+            display: flex;
+            gap: 10px;
+            font-size: 0.85rem;
+            color: #0585c6;
+        }
+        .topic-reactions span {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .positive { color: #0585c6; text-shadow: 0 0 5px rgba(5, 133, 198, 0.5); }
+        .negative { color: #fe0369; text-shadow: 0 0 5px rgba(254, 3, 105, 0.5); }
+        .neutral { color: #ffffff; text-shadow: 0 0 5px rgba(255, 255, 255, 0.5); }
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(9, 18, 33, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+        .spinner {
+            border: 4px solid #0236a5;
+            border-top: 4px solid #fe0369;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="stats-wrapper">
+        <!-- Particules en arrière-plan -->
+        <div id="particles"></div>
+
+        <div class="container">
+            <h2>Tableau de bord des statistiques du forum</h2>
+
+            <!-- Filtre -->
+            <div class="filter-section">
+                <label for="timeRange">Période :</label>
+                <select id="timeRange" onchange="updateCharts()">
+                    <option value="7">7 derniers jours</option>
+                    <option value="30">30 derniers jours</option>
+                    <option value="90">90 derniers jours</option>
+                    <option value="365">Dernière année</option>
+                </select>
+            </div>
+
+            <!-- Cartes de statistiques -->
+            <div class="stats-container">
+                <div class="stat-card">
+                    <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0585c6" stroke-width="2">
+                        <path d="M3 3h18v18H3zM9 3v18M15 3v18M3 9h18M3 15h18"/>
+                    </svg>
+                    <h3>Total des sujets</h3>
+                    <div class="number" id="totalTopics">0</div>
+                </div>
+                <div class="stat-card">
+                    <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0585c6" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                    </svg>
+                    <h3>Total des commentaires</h3>
+                    <div class="number" id="totalComments">0</div>
+                </div>
+                <div class="stat-card">
+                    <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0585c6" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    <h3>Utilisateurs actifs</h3>
+                    <div class="number" id="activeUsers">0</div>
+                </div>
+                <div class="stat-card">
+                    <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0585c6" stroke-width="2">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                    <h3>Total des réactions</h3>
+                    <div class="number" id="totalReactions">0</div>
+                </div>
+                <div class="stat-card">
+                    <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0585c6" stroke-width="2">
+                        <path d="M3 21v-6a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v6M7 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8zM17 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"/>
+                    </svg>
+                    <h3>Taux d'engagement</h3>
+                    <div class="number" id="engagementRate">0</div>
+                    <div class="unit">interactions/sujet</div>
+                </div>
+            </div>
+
+            <!-- Section des graphiques -->
+            <div class="chart-section">
+                <div class="chart-container">
+                    <h3>Tendance de création de sujets</h3>
+                    <canvas id="topicsChart"></canvas>
+                    <div class="loading-overlay" id="topicsChartLoading">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h3>Tendance d'activité des commentaires</h3>
+                    <canvas id="commentsChart"></canvas>
+                    <div class="loading-overlay" id="commentsChartLoading">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+                <div class="chart-container" id="reactionsChartContainer">
+                    <h3>Répartition des réactions</h3>
+                    <canvas id="reactionsChart"></canvas>
+                    <div class="no-data-message" id="noReactionsMessage" style="display: none;">
+                        Aucune réaction disponible à afficher.
+                    </div>
+                    <div class="loading-overlay" id="reactionsChartLoading">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h3>Tendance des sentiments des réactions</h3>
+                    <canvas id="reactionSentimentChart"></canvas>
+                    <div class="loading-overlay" id="reactionSentimentChartLoading">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section des listes -->
+            <div class="chart-section">
+                <div class="list-section">
+                    <h3>Utilisateurs les plus actifs</h3>
+                    <div class="list-container" id="topActiveUsers">
+                        <div class="no-data-message">Chargement...</div>
+                    </div>
+                </div>
+                <div class="list-section">
+                    <h3>Sujets les plus réagis</h3>
+                    <div class="list-container" id="mostReactedTopics">
+                        <div class="no-data-message">Chargement...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <script>
+        // Création des particules
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const numParticles = 50;
+            for (let i = 0; i < numParticles; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + 'vw';
+                particle.style.animationDelay = Math.random() * 10 + 's';
+                particle.style.animationDuration = Math.random() * 5 + 5 + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+        document.addEventListener('DOMContentLoaded', createParticles);
+
+        Chart.register(ChartDataLabels);
+
+        let topicsChart, commentsChart, reactionsChart, reactionSentimentChart;
+
+        function showLoading(show = true) {
+            document.querySelectorAll('.loading-overlay').forEach(loader => {
+                loader.style.display = show ? 'flex' : 'none';
+            });
+        }
+
+        function fetchStats(timeRange) {
+            showLoading(true);
+            fetch('/api/forum/stats?timeRange=' + timeRange)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Échec du chargement des statistiques : ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Mise à jour des cartes de statistiques
+                        document.getElementById('totalTopics').textContent = data.stats.totalTopics;
+                        document.getElementById('totalComments').textContent = data.stats.totalComments;
+                        document.getElementById('activeUsers').textContent = data.stats.activeUsers;
+                        document.getElementById('totalReactions').textContent = data.stats.totalReactions;
+                        document.getElementById('engagementRate').textContent = data.stats.engagementRate;
+
+                        // Mise à jour des graphiques
+                        updateTopicsChart(data.stats.topicsTrend);
+                        updateCommentsChart(data.stats.commentsTrend);
+                        updateReactionsChart(data.stats.reactionsDistribution);
+                        updateReactionSentimentChart(data.stats.reactionSentimentTrend);
+
+                        // Mise à jour des listes
+                        updateTopActiveUsers(data.stats.topActiveUsers);
+                        updateMostReactedTopics(data.stats.mostReactedTopics);
+                    } else {
+                        console.error('Erreur de l\'API :', data.message);
+                        alert('Erreur lors du chargement des statistiques : ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la récupération des statistiques :', error);
+                    alert('Impossible de charger les statistiques du forum. Veuillez réessayer plus tard.');
+                })
+                .finally(() => {
+                    showLoading(false);
+                });
+        }
+
+        function updateTopicsChart(data) {
+            const ctx = document.getElementById('topicsChart').getContext('2d');
+            if (topicsChart) topicsChart.destroy();
+            topicsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Nouveaux sujets',
+                        data: data.values,
+                        borderColor: '#0236a5',
+                        backgroundColor: 'rgba(2, 54, 165, 0.3)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Sujets', color: '#0585c6' },
+                            ticks: { color: '#0585c6' },
+                            grid: { color: 'rgba(5, 133, 198, 0.2)' }
+                        },
+                        x: {
+                            title: { display: true, text: 'Date', color: '#0585c6' },
+                            ticks: { color: '#0585c6' },
+                            grid: { color: 'rgba(5, 133, 198, 0.2)' }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            enabled: true,
+                            backgroundColor: '#091221',
+                            titleColor: '#fe0369',
+                            bodyColor: '#ffffff',
+                            borderColor: '#0236a5',
+                            borderWidth: 1
+                        },
+                        legend: {
+                            position: 'top',
+                            labels: { color: '#0585c6' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateCommentsChart(data) {
+            const ctx = document.getElementById('commentsChart').getContext('2d');
+            if (commentsChart) commentsChart.destroy();
+            commentsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Nouveaux commentaires',
+                        data: data.values,
+                        borderColor: '#0585c6',
+                        backgroundColor: 'rgba(5, 133, 198, 0.3)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Commentaires', color: '#0585c6' },
+                            ticks: { color: '#0585c6' },
+                            grid: { color: 'rgba(5, 133, 198, 0.2)' }
+                        },
+                        x: {
+                            title: { display: true, text: 'Date', color: '#0585c6' },
+                            ticks: { color: '#0585c6' },
+                            grid: { color: 'rgba(5, 133, 198, 0.2)' }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            enabled: true,
+                            backgroundColor: '#091221',
+                            titleColor: '#fe0369',
+                            bodyColor: '#ffffff',
+                            borderColor: '#0236a5',
+                            borderWidth: 1
+                        },
+                        legend: {
+                            position: 'top',
+                            labels: { color: '#0585c6' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateReactionsChart(data) {
+            const ctx = document.getElementById('reactionsChart').getContext('2d');
+            const noReactionsMessage = document.getElementById('noReactionsMessage');
+            const chartContainer = document.getElementById('reactionsChartContainer');
+
+            console.log('Données de répartition des réactions :', data);
+
+            const totalReactions = Object.values(data).reduce((sum, value) => sum + value, 0);
+
+            if (totalReactions === 0) {
+                ctx.canvas.style.display = 'none';
+                noReactionsMessage.style.display = 'block';
+                if (reactionsChart) reactionsChart.destroy();
+                return;
+            }
+
+            ctx.canvas.style.display = 'block';
+            noReactionsMessage.style.display = 'none';
+
+            if (reactionsChart) reactionsChart.destroy();
+            reactionsChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Positif', 'Négatif', 'Neutre'],
+                    datasets: [{
+                        data: Object.values(data),
+                        backgroundColor: ['#0585c6', '#fe0369', '#0236a5']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { color: '#0585c6' }
+                        },
+                        datalabels: {
+                            formatter: (value, ctx) => {
+                                const total = ctx.chart.data.datasets[0].data.reduce((sum, val) => sum + val, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return `${percentage}%`;
+                            },
+                            color: '#ffffff',
+                            font: { weight: 'bold', family: 'Orbitron' },
+                            textShadowColor: '#fe0369',
+                            textShadowBlur: 5
+                        },
+                        tooltip: {
+                            enabled: true,
+                            backgroundColor: '#091221',
+                            titleColor: '#fe0369',
+                            bodyColor: '#ffffff',
+                            borderColor: '#0236a5',
+                            borderWidth: 1
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateReactionSentimentChart(data) {
+            const ctx = document.getElementById('reactionSentimentChart').getContext('2d');
+            if (reactionSentimentChart) reactionSentimentChart.destroy();
+            reactionSentimentChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [
+                        {
+                            label: 'Positif',
+                            data: data.positive,
+                            borderColor: '#0585c6',
+                            backgroundColor: 'rgba(5, 133, 198, 0.3)',
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Négatif',
+                            data: data.negative,
+                            borderColor: '#fe0369',
+                            backgroundColor: 'rgba(254, 3, 105, 0.3)',
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Neutre',
+                            data: data.neutral,
+                            borderColor: '#0236a5',
+                            backgroundColor: 'rgba(2, 54, 165, 0.3)',
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Réactions', color: '#0585c6' },
+                            ticks: { color: '#0585c6' },
+                            grid: { color: 'rgba(5, 133, 198, 0.2)' }
+                        },
+                        x: {
+                            title: { display: true, text: 'Date', color: '#0585c6' },
+                            ticks: { color: '#0585c6' },
+                            grid: { color: 'rgba(5, 133, 198, 0.2)' }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            enabled: true,
+                            backgroundColor: '#091221',
+                            titleColor: '#fe0369',
+                            bodyColor: '#ffffff',
+                            borderColor: '#0236a5',
+                            borderWidth: 1
+                        },
+                        legend: {
+                            position: 'top',
+                            labels: { color: '#0585c6' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateTopActiveUsers(users) {
+            const container = document.getElementById('topActiveUsers');
+            container.innerHTML = '';
+            if (users.length === 0) {
+                container.innerHTML = '<div class="no-data-message">Aucun utilisateur actif dans cette période.</div>';
+                return;
+            }
+            users.forEach(user => {
+                const item = document.createElement('div');
+                item.className = 'list-item';
+                item.innerHTML = `
+                    <span>${user.nickname || 'Inconnu'}</span>
+                    <span class="count">${user.activity_count} activités</span>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function updateMostReactedTopics(topics) {
+            const container = document.getElementById('mostReactedTopics');
+            container.innerHTML = '';
+            if (topics.length === 0) {
+                container.innerHTML = '<div class="no-data-message">Aucun sujet avec des réactions dans cette période.</div>';
+                return;
+            }
+            topics.forEach(topic => {
+                const item = document.createElement('div');
+                item.className = 'list-item';
+                item.innerHTML = `
+                    <span>${topic.title}</span>
+                    <div class="topic-reactions">
+                        <span class="count">${topic.reaction_count} réactions</span>
+                        <span class="positive">+${topic.reactions.positive}</span>
+                        <span class="negative">-${topic.reactions.negative}</span>
+                        <span class="neutral">${topic.reactions.neutral}</span>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function updateCharts() {
+            const timeRange = document.getElementById('timeRange').value;
+            fetchStats(timeRange);
+        }
+
+        // Chargement initial
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchStats(7);
+        });
+    </script>
+{% endblock %}

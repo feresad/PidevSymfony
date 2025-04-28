@@ -15,6 +15,7 @@ use App\Form\CommentFormType;
 use App\Repository\QuestionsRepository;
 use App\Repository\UtilisateurRepository;
 use App\Repository\NotificationRepository;
+use App\Service\TopicSubscriptionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -50,7 +51,8 @@ class CommentController extends AbstractController
         Request $request,
         QuestionsRepository $questionsRepository,
         UtilisateurRepository $utilisateurRepository,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        TopicSubscriptionService $subscriptionService
     ): Response {
         $question = $questionsRepository->find($id);
         if (!$question) {
@@ -121,6 +123,9 @@ class CommentController extends AbstractController
                         $notification->setLink($this->generateUrl('forum_single_topic', ['id' => $question->getQuestionId()]) . '#comment-' . $comment->getCommentaireId());
                         $entityManager->flush();
                     }
+
+                    // Notify subscribers of the new comment
+                    $subscriptionService->notifySubscribers($question, $comment, $utilisateur);
 
                     $this->addFlash('success', 'Commentaire ajouté avec succès !');
                 } catch (\Exception $e) {
@@ -386,6 +391,121 @@ class CommentController extends AbstractController
         }
     }
 
+    #[Route('/ajax/vote-comment', name: 'ajax_vote_comment_action', methods: ['POST'])]
+    public function ajaxVoteCommentAction(Request $request, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $id = $request->request->get('id');
+        $voteType = $request->request->get('vote_type');
+
+        /** @var Utilisateur|null $utilisateur */
+        $utilisateur = $this->getUser();
+        if (!$utilisateur) {
+            return new JsonResponse(['success' => false, 'message' => 'You must be logged in to vote.'], 401);
+        }
+
+        $entity = $entityManager->getRepository(Commentaire::class)->find($id);
+        if (!$entity) {
+            return new JsonResponse(['success' => false, 'message' => 'Comment not found.'], 404);
+        }
+
+        $voteRepository = $entityManager->getRepository(CommentaireVotes::class);
+        $existingVote = $voteRepository->findOneBy([
+            'commentaire_id' => $entity,
+            'user_id' => $utilisateur,
+        ]);
+
+        $hasUpvoted = $existingVote && $existingVote->getVoteType()->value === 'UP';
+        $hasDownvoted = $existingVote && $existingVote->getVoteType()->value === 'DOWN';
+
+        if (!in_array($voteType, ['UP', 'DOWN'])) {
+            return new JsonResponse(['success' => false, 'message' => 'Invalid vote type.'], 400);
+        }
+
+        if ($voteType === 'UP' && $hasUpvoted) {
+            return new JsonResponse(['success' => false, 'message' => 'You have already upvoted this comment.'], 403);
+        }
+        if ($voteType === 'DOWN' && $hasDownvoted) {
+            return new JsonResponse(['success' => false, 'message' => 'You have already downvoted this comment.'], 403);
+        }
+
+        $currentVotes = $entity->getVotes() ?? 0;
+
+        if ($existingVote) {
+            if ($voteType === 'UP' && $hasDownvoted) {
+                $existingVote->setVoteType(\App\Enum\VoteType::from('UP'));
+                $entity->setVotes($currentVotes + 1);
+            } elseif ($voteType === 'DOWN' && $hasUpvoted) {
+                $existingVote->setVoteType(\App\Enum\VoteType::from('DOWN'));
+                $entity->setVotes($currentVotes - 1); 
+            }
+        } else {
+            $newVote = new CommentaireVotes();
+            $newVote->setCommentaireId($entity);
+            $newVote->setUserId($utilisateur);
+            $newVote->setVoteType(\App\Enum\VoteType::from($voteType));
+
+            if ($voteType === 'UP') {
+                $entity->setVotes($currentVotes + 1);
+            } elseif ($voteType === 'DOWN') {
+                $entity->setVotes($currentVotes - 1);
+            }
+
+            $entityManager->persist($newVote);
+        }
+
+        $entityManager->persist($entity);
+        $entityManager->flush();
+
+        $updatedVote = $voteRepository->findOneBy([
+            'commentaire_id' => $entity,
+            'user_id' => $utilisateur,
+        ]);
+
+        return new JsonResponse([
+            'success' => true,
+            'votes' => $entity->getVotes(),
+            'hasUpvoted' => $updatedVote && $updatedVote->getVoteType()->value === 'UP',
+            'hasDownvoted' => $updatedVote && $updatedVote->getVoteType()->value === 'DOWN',
+        ]);
+    }
+
+    #[Route('/ajax/fetch-user-comment-votes', name: 'ajax_fetch_user_comment_votes', methods: ['POST'])]
+    public function ajaxFetchUserCommentVotes(Request $request, EntityManagerInterface $entityManager): JsonResponse
+    {
+        /** @var Utilisateur|null $utilisateur */
+        $utilisateur = $this->getUser();
+        if (!$utilisateur) {
+            return new JsonResponse(['success' => false, 'message' => 'You must be logged in to fetch votes.'], 401);
+        }
+    
+        $commentIds = $request->request->get('commentIds', []);
+        if (!is_array($commentIds) || empty($commentIds)) {
+            return new JsonResponse(['success' => false, 'message' => 'No comment IDs provided.'], 400);
+        }
+    
+        $voteRepository = $entityManager->getRepository(CommentaireVotes::class);
+        $qb = $voteRepository->createQueryBuilder('v')
+            ->select('v')
+            ->where('v.user_id = :user')
+            ->andWhere('v.commentaire_id IN (:commentIds)')
+            ->setParameter('user', $utilisateur)
+            ->setParameter('commentIds', $commentIds);
+    
+        $votes = $qb->getQuery()->getResult();
+    
+        $voteData = array_map(function (CommentaireVotes $vote) {
+            return [
+                'commentId' => $vote->getCommentaireId()->getCommentaireId(),
+                'voteType' => $vote->getVoteType()->value,
+            ];
+        }, $votes);
+    
+        return new JsonResponse([
+            'success' => true,
+            'votes' => $voteData,
+        ]);
+    }
+
     #[Route('/react', name: 'react_action', methods: ['POST'])]
     public function reactAction(
         Request $request,
@@ -512,34 +632,40 @@ class CommentController extends AbstractController
     }
 
     #[Route('/api/notifications', name: 'api_notifications', methods: ['GET'])]
-    public function getNotifications(NotificationRepository $notificationRepository): JsonResponse
-    {
-        /** @var Utilisateur|null $utilisateur */
-        $utilisateur = $this->getUser();
-        if (!$utilisateur) {
-            return new JsonResponse(['success' => false, 'message' => 'You must be logged in.'], 401);
-        }
-
-        try {
-            $notifications = $notificationRepository->findUnreadByUser($utilisateur->getId());
-            $data = array_map(function (Notification $notification) {
-                return [
-                    'id' => $notification->getId(),
-                    'message' => $notification->getMessage(),
-                    'link' => $notification->getLink(),
-                    'createdAt' => $notification->getCreatedAt()->format('Y-m-d H:i:s'),
-                ];
-            }, $notifications);
-
-            return new JsonResponse(['success' => true, 'notifications' => $data]);
-        } catch (\Exception $e) {
-            $this->logger->error('Error fetching notifications', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            return new JsonResponse(['success' => false, 'message' => 'Error fetching notifications'], 500);
-        }
+public function getNotifications(NotificationRepository $notificationRepository, LoggerInterface $logger): JsonResponse
+{
+    /** @var Utilisateur|null $utilisateur */
+    $utilisateur = $this->getUser();
+    if (!$utilisateur) {
+        $logger->warning('Unauthenticated access to /api/notifications');
+        return new JsonResponse(['success' => false, 'message' => 'You must be logged in.'], 401);
     }
+
+    try {
+        $logger->info('Fetching unread notifications for user', ['userId' => $utilisateur->getId()]);
+        $notifications = $notificationRepository->findUnreadByUser($utilisateur->getId());
+        $logger->info('Found notifications', ['count' => count($notifications)]);
+
+        $data = array_map(function (Notification $notification) use ($logger) {
+            $logger->debug('Processing notification', ['id' => $notification->getId()]);
+            return [
+                'id' => $notification->getId(),
+                'message' => $notification->getMessage(),
+                'link' => $notification->getLink(),
+                'createdAt' => $notification->getCreatedAt()->format('Y-m-d H:i:s'),
+            ];
+        }, $notifications);
+
+        return new JsonResponse(['success' => true, 'notifications' => $data]);
+    } catch (\Exception $e) {
+        $logger->error('Error fetching notifications', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+            'userId' => $utilisateur->getId()
+        ]);
+        return new JsonResponse(['success' => false, 'message' => 'Error fetching notifications: ' . $e->getMessage()], 500);
+    }
+}
 
     #[Route('/api/notifications/read/{id}', name: 'api_notifications_read', methods: ['POST'])]
     public function markNotificationRead(int $id, EntityManagerInterface $entityManager): JsonResponse
@@ -560,4 +686,39 @@ class CommentController extends AbstractController
 
         return new JsonResponse(['success' => true, 'message' => 'Notification marked as read']);
     }
+    #[Route('/api/notifications/read-all', name: 'api_notifications_mark_all_read', methods: ['POST'])]
+public function markAllNotificationsAsRead(NotificationRepository $notificationRepository, LoggerInterface $logger): JsonResponse
+{
+    /** @var Utilisateur|null $utilisateur */
+    $utilisateur = $this->getUser();
+    if (!$utilisateur) {
+        $logger->warning('Unauthenticated access to /api/notifications/read-all');
+        return new JsonResponse(['success' => false, 'message' => 'You must be logged in.'], 401);
+    }
+
+    try {
+        $logger->info('Marking all notifications as read for user', ['userId' => $utilisateur->getId()]);
+
+        $qb = $notificationRepository->createQueryBuilder('n')
+            ->update()
+            ->set('n.isRead', ':isRead')
+            ->where('n.user = :userId')
+            ->andWhere('n.isRead = :isReadFalse')
+            ->setParameter('isRead', true)
+            ->setParameter('isReadFalse', false)
+            ->setParameter('userId', $utilisateur->getId());
+
+        $affectedRows = $qb->getQuery()->execute();
+        $logger->info('Updated notifications', ['affectedRows' => $affectedRows]);
+
+        return new JsonResponse(['success' => true, 'message' => sprintf('Marked %d notifications as read', $affectedRows)]);
+    } catch (\Exception $e) {
+        $logger->error('Error marking all notifications as read', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+            'userId' => $utilisateur->getId()
+        ]);
+        return new JsonResponse(['success' => false, 'message' => 'Error marking all notifications as read: ' . $e->getMessage()], 500);
+    }
+}
 }

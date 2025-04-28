@@ -56,18 +56,22 @@
             background: none;
             border: none;
             cursor: pointer;
-            padding: 5px;
+            padding: 8px 12px;
             border-radius: 5px;
             transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
-        .user-actions button:hover {
-            background-color: #f0f0f0;
+        .user-actions .report-btn {
+            color: #f59e0b;
+            background-color: #fef3c7;
         }
-        .user-actions .edit-btn {
-            color: #4CAF50;
+        .user-actions .report-btn:hover {
+            background-color: #fde68a;
         }
-        .user-actions .delete-btn {
-            color: #f44336;
+        .user-actions ion-icon {
+            font-size: 18px;
         }
         .search-container {
             margin: 20px;
@@ -159,6 +163,210 @@
             color: #6c757d;
             font-size: 0.9rem;
         }
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 20px;
+            width: 80%;
+            max-width: 800px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .close-modal {
+            position: absolute;
+            right: 20px;
+            top: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .reports-list {
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .report-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .report-item:last-child {
+            border-bottom: none;
+        }
+
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .report-reason {
+            font-weight: bold;
+            color: #f59e0b;
+        }
+
+        .report-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .status-pending {
+            background-color: #fef3c7;
+            color: #d97706;
+        }
+
+        .status-reviewed {
+            background-color: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .status-resolved {
+            background-color: #dcfce7;
+            color: #15803d;
+        }
+
+        .report-details {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .report-date {
+            color: #999;
+            font-size: 0.8em;
+            margin-top: 5px;
+        }
+
+        .reporter-info {
+            margin-bottom: 10px;
+            color: #666;
+        }
+
+        .reporter-label {
+            font-weight: 500;
+            color: #4b5563;
+        }
+
+        .reporter-name {
+            color: #1f2937;
+            font-weight: 500;
+        }
+
+        .reporter-nickname {
+            color: #6b7280;
+            font-size: 0.9em;
+        }
+
+        .report-evidence {
+            margin-top: 8px;
+            padding: 8px;
+            background-color: #f3f4f6;
+            border-radius: 4px;
+            color: #4b5563;
+        }
+
+        .ban-btn {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+
+        .ban-btn:hover {
+            background-color: #fecaca;
+        }
+
+        .ban-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .ban-option {
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            background-color: #f3f4f6;
+            color: #1f2937;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .ban-option:hover {
+            background-color: #e5e7eb;
+        }
+
+        .ban-confirm {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f3f4f6;
+            border-radius: 6px;
+        }
+
+        .ban-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .confirm-ban {
+            background-color: #dc2626;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .confirm-ban:hover {
+            background-color: #b91c1c;
+        }
+
+        .cancel-ban {
+            background-color: #6b7280;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .cancel-ban:hover {
+            background-color: #4b5563;
+        }
+
+        .unban-btn {
+            background-color: #dcfce7;
+            color: #15803d;
+        }
+
+        .unban-btn:hover {
+            background-color: #bbf7d0;
+        }
+
+        .ban-info {
+            margin-top: 10px;
+            padding: 8px;
+            background-color: #fee2e2;
+            color: #dc2626;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
     </style>
 {% endblock %}
 
@@ -192,12 +400,21 @@
                 </div>
             </div>
             <div class="user-actions">
-                <button class="edit-btn" title="Edit User">
-                    <ion-icon name="create-outline"></ion-icon>
+                <button class="report-btn" title="Reports" onclick="showReports({{ user.id }}, '{{ user.prenom }} {{ user.nom }}')">
+                    <ion-icon name="warning-outline"></ion-icon>
+                    Rapports ({{ user.getReportCount() }})
                 </button>
-                <button class="delete-btn" title="Delete User">
-                    <ion-icon name="trash-outline"></ion-icon>
-                </button>
+                {% if user.isBan() %}
+                    <button class="unban-btn" title="Unban User" onclick="unbanUser({{ user.id }}, '{{ user.prenom }} {{ user.nom }}')">
+                        <ion-icon name="checkmark-circle-outline"></ion-icon>
+                        Débannir
+                    </button>
+                {% else %}
+                    <button class="ban-btn" title="Ban User" onclick="showBanOptions({{ user.id }}, '{{ user.prenom }} {{ user.nom }}')">
+                        <ion-icon name="ban-outline"></ion-icon>
+                        Bannir
+                    </button>
+                {% endif %}
             </div>
         </div>
     {% endfor %}
@@ -210,4 +427,215 @@
     </div>
     {{ knp_pagination_render(users) }}
 </div>
+
+<!-- Modal for Reports -->
+<div id="reportsModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2>Rapports pour <span id="userName"></span></h2>
+        <div class="reports-list" id="reportsList">
+            <!-- Reports will be loaded here -->
+        </div>
+    </div>
+</div>
+
+<!-- Ban Modal -->
+<div id="banModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2>Bannir l'utilisateur <span id="banUserName"></span></h2>
+        <div class="ban-options">
+            <button class="ban-option" data-duration="1">1 Jour</button>
+            <button class="ban-option" data-duration="7">1 Semaine</button>
+            <button class="ban-option" data-duration="30">1 Mois</button>
+            <button class="ban-option" data-duration="0">Permanent</button>
+        </div>
+        <div class="ban-confirm" style="display: none;">
+            <p>Êtes-vous sûr de vouloir bannir cet utilisateur pour <span id="selectedDuration"></span> ?</p>
+            <div class="ban-buttons">
+                <button class="confirm-ban">Confirmer</button>
+                <button class="cancel-ban">Annuler</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('reportsModal');
+            const closeBtn = document.querySelector('.close-modal');
+            const reportsList = document.getElementById('reportsList');
+            const userName = document.getElementById('userName');
+
+            // Function to open modal and load reports
+            window.showReports = function(userId, userFullName) {
+                userName.textContent = userFullName;
+                modal.style.display = 'block';
+                
+                // Fetch reports for the user
+                fetch(`/admin/user/${userId}/reports`)
+                    .then(response => response.json())
+                    .then(reports => {
+                        reportsList.innerHTML = '';
+                        if (reports.length === 0) {
+                            reportsList.innerHTML = '<p>Aucun rapport pour cet utilisateur.</p>';
+                            return;
+                        }
+                        
+                        reports.forEach(report => {
+                            const reportItem = document.createElement('div');
+                            reportItem.className = 'report-item';
+                            
+                            const statusClass = `status-${report.status.toLowerCase()}`;
+                            
+                            reportItem.innerHTML = `
+                                <div class="report-header">
+                                    <span class="report-reason">${report.reason}</span>
+                                    <span class="report-status ${statusClass}">${report.status}</span>
+                                </div>
+                                <div class="report-details">
+                                    <div class="reporter-info">
+                                        <span class="reporter-label">Signalé par:</span>
+                                        <span class="reporter-name">${report.reporter.name}</span>
+                                        <span class="reporter-nickname">(${report.reporter.nickname})</span>
+                                    </div>
+                                    ${report.evidence ? `<p class="report-evidence">Preuve: ${report.evidence}</p>` : ''}
+                                </div>
+                                <div class="report-date">
+                                    Date: ${new Date(report.created_at).toLocaleDateString()}
+                                </div>
+                            `;
+                            
+                            reportsList.appendChild(reportItem);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error loading reports:', error);
+                        reportsList.innerHTML = '<p>Erreur lors du chargement des rapports.</p>';
+                    });
+            };
+
+            // Close modal when clicking the close button
+            closeBtn.onclick = function() {
+                modal.style.display = 'none';
+            };
+
+            // Close modal when clicking outside
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            };
+
+            // Ban Modal functionality
+            const banModal = document.getElementById('banModal');
+            const banUserName = document.getElementById('banUserName');
+            const banOptions = document.querySelectorAll('.ban-option');
+            const banConfirm = document.querySelector('.ban-confirm');
+            const selectedDuration = document.getElementById('selectedDuration');
+            const confirmBan = document.querySelector('.confirm-ban');
+            const cancelBan = document.querySelector('.cancel-ban');
+            let currentUserId = null;
+            let selectedBanDuration = null;
+
+            window.showBanOptions = function(userId, userName) {
+                currentUserId = userId;
+                banUserName.textContent = userName;
+                banModal.style.display = 'block';
+                banConfirm.style.display = 'none';
+            };
+
+            banOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    const duration = parseInt(this.dataset.duration);
+                    selectedBanDuration = duration;
+                    
+                    let durationText = '';
+                    switch(duration) {
+                        case 1:
+                            durationText = '1 jour';
+                            break;
+                        case 7:
+                            durationText = '1 semaine';
+                            break;
+                        case 30:
+                            durationText = '1 mois';
+                            break;
+                        case 0:
+                            durationText = 'permanent';
+                            break;
+                    }
+                    
+                    selectedDuration.textContent = durationText;
+                    banConfirm.style.display = 'block';
+                });
+            });
+
+            confirmBan.addEventListener('click', function() {
+                if (currentUserId && selectedBanDuration !== null) {
+                    fetch(`/admin/user/${currentUserId}/ban`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            duration: selectedBanDuration
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            
+                            window.location.reload();
+                        } else {
+                            console.error('Erreur lors du bannissement');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+                }
+                banModal.style.display = 'none';
+            });
+
+            cancelBan.addEventListener('click', function() {
+                banModal.style.display = 'none';
+            });
+
+            // Close ban modal when clicking outside
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+                if (event.target == banModal) {
+                    banModal.style.display = 'none';
+                }
+            };
+
+            window.unbanUser = function(userId, userName) {
+                // Remove confirmation dialog, unban immediately
+                fetch(`/admin/user/${userId}/unban`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        console.error('Erreur lors du débannissement');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            };
+        });
+    </script>
 {% endblock %} 

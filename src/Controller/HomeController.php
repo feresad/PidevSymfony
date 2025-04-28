@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Repository\EvenementRepository;
 use App\Service\GeminiService;
 use App\Repository\UtilisateurRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -12,13 +13,9 @@ use Symfony\Component\Routing\Attribute\Route;
 final class HomeController extends AbstractController
 {
     #[Route('/', name: 'app_home')]
-    public function index(): Response
+    public function index(EvenementRepository $repo): Response
     {
-        
-        return $this->render('home/index.html.twig', [
-            'controller_name' => 'HomeController',
-            
-
+        return $this->render('index.html.twig', [
         ]);
     }
     #[Route('/admin', name: 'app_home_admin')]
@@ -48,4 +45,6 @@ final class HomeController extends AbstractController
 
         return new Response('Aucun message fourni', 400);
     }
+
+    
 }

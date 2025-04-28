@@ -6,6 +6,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity]
 #[ORM\Table(name: "utilisateur")]
@@ -37,6 +39,11 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: "string", enumType: Role::class)]
     private Role $role;
+
+    #[ORM\Column(type: "string", length: 255, name: "googleId", nullable: true)]
+    private ?string $googleId = null;
+
+    
 
     public function setRole(string|Role $role): self
     {
@@ -72,6 +79,9 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: "string", length: 255, nullable: true)]
     private ?string $photo = null;
+
+    #[ORM\OneToMany(targetEntity: Reports::class, mappedBy: 'reportedUserId')]
+    private Collection $reportss;
 
     public function getId(): int
     {
@@ -184,6 +194,11 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function getReportCount(): int
+    {
+        return $this->reportss->count();
+    }
+
     public function getPhoto(): ?string
     {
         return $this->photo;
@@ -222,6 +237,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         $this->privilege = "regular";
         $this->ban = false;
         $this->countRep = 0;
+        $this->reportss = new ArrayCollection();
     }
 
     // Static method to handle localStorage data
@@ -253,5 +269,45 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $userEmail = '<script>document.write(localStorage.getItem("userEmail"))</script>';
         return $userEmail ?: null;
+    }
+
+    public function getGoogleId(): ?string
+    {
+        return $this->googleId;
+    }
+
+    public function setGoogleId(?string $googleId): self
+    {
+        $this->googleId = $googleId;
+        return $this;
+    }
+
+    public function isBanned(): bool
+    {
+        if (!$this->ban) {
+            return false;
+        }
+
+        if ($this->banTime === null) {
+            return true; // Permanent ban
+        }
+
+        return $this->banTime > new \DateTime();
+    }
+
+    public function getBanMessage(): ?string
+    {
+        if (!$this->isBanned()) {
+            return null;
+        }
+
+        if ($this->banTime === null) {
+            return 'Votre compte a été banni de façon permanente.';
+        }
+
+        return sprintf(
+            'Votre compte est banni jusqu\'au %s.',
+            $this->banTime->format('d/m/Y H:i')
+        );
     }
 }

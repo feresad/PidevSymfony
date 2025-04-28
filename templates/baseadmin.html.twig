@@ -11,6 +11,12 @@
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('css/StyleEvenement.css') }}">
     <style>
+        .topbar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
         .topbar .user {
             position: relative;
             width: 40px;
@@ -59,7 +65,7 @@
     <nav id="sidebar">
         <ul>
             <li>
-                <span class="logo">Level OP</span>
+                <img src="{{ asset('/images/level.png')}}" alt="" width="100">
                 <button onclick="toggleSidebar()" id="toggle-btn">
                     <!-- Icon for sidebar open (chevron-left) -->
                     <ion-icon class="toggle-icon open-icon" name="chevron-back-outline"></ion-icon>
@@ -107,11 +113,9 @@
                     <div>
                         <li class="sub-header">Produits</li>
                         <li><a href="{{ path('app_catalog_index') }}" data-turbo="true">Catalogue Produits</a></li>
-                        
                         <li class="sub-header">Commandes</li>
-                     <li><a href="{{ path('app_commande_index') }}" data-turbo="true">Liste Commandes</a></li>
-                        
-                      
+                        <li><a href="{{ path('app_commande_index') }}" data-turbo="true">Liste Commandes</a></li>
+                        <li><a href="{{ path('app_commande_stats') }}" data-turbo="true">Statistiques Commandes</a></li>
                     </div>
                 </ul>
             </li>
@@ -128,6 +132,28 @@
                     <span>Liste Utilisateurs</span>
                 </a>
             </li>
+
+            <li>
+                <a href="{{ path('app_coach_applications') }}">
+                    <ion-icon name="people"></ion-icon>
+                    <span>Demandes</span>
+                </a>
+            </li>
+            
+            <!-- Updated navigation item for Admin Forum -->
+            <li>
+                <a href="{{ path('forum_admin') }}">
+                    <ion-icon name="chatbubbles-outline"></ion-icon>
+                    <span>Admin Forum</span>
+                </a>
+            </li>
+            <!-- New navigation item for Forum Statistics Dashboard -->
+<li>
+    <a href="{{ path('forum_stats_dashboard') }}">
+        <ion-icon name="stats-chart-outline"></ion-icon>
+        <span>Forum Statistics</span>
+    </a>
+</li>
             <li>
                 <a href="" id="logout-button">
                     <ion-icon name="log-out-outline"></ion-icon>
@@ -139,13 +165,14 @@
 
     <!-- ========================= Main ==================== -->
     <div class="main">
+<<<<<<< HEAD
+        <div class="topbar" style="display: flex; justify-content: flex-end;">
+=======
         <div class="topbar">
             <div class="search">
-                <label>
-                    <input type="text" placeholder="Search here">
-                    <ion-icon name="search-outline"></ion-icon>
-                </label>
+               
             </div>
+>>>>>>> origin/Evenement
             <div class="user">
                 {% if app.user %}
                     <a href="{{ path('app_profile') }}" title="Mon Profil">
@@ -186,10 +213,10 @@
             button.classList.toggle("rotate");
         }
     </script>
-        <script src="{{ asset('js/main.js') }}"></script>
-        <!-- ====== ionicons ======= -->
-        <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
-        <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+    <script src="{{ asset('js/main.js') }}"></script>
+    <!-- ====== ionicons ======= -->
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
     {% endblock %}
 </body>
 </html>

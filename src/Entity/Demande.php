@@ -8,19 +8,19 @@ use Doctrine\Common\Collections\ArrayCollection;
 
 use App\Entity\Utilisateur;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: 'App\\Repository\\DemandeRepository')]
 class Demande
 {
     public function __construct()
     {
     }
 
-
     #[ORM\Id]
+    #[ORM\GeneratedValue]
     #[ORM\Column(type: "integer")]
     private int $id;
 
-        #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: "demandes")]
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: "demandes")]
     #[ORM\JoinColumn(name: 'userId', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private Utilisateur $userId;
 
@@ -41,18 +41,12 @@ class Demande
         return $this->id;
     }
 
-    public function setId(int $id): self
-    {
-        $this->id = $id;
-        return $this;
-    }
-
-    public function getUserId(): int
+    public function getUserId(): Utilisateur
     {
         return $this->userId;
     }
 
-    public function setUserId(int $userId): self
+    public function setUserId(Utilisateur $userId): self
     {
         $this->userId = $userId;
         return $this;

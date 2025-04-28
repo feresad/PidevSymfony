@@ -1,0 +1,11 @@
+{% if comments|length > 0 %}
+    {% for comment in comments %}
+        {% include 'forum/_comment_card.html.twig' with {
+            'comment': comment,
+            'question_id': question_id,
+            'level': 0
+        } %}
+    {% endfor %}
+{% else %}
+    <div class="alert alert-info">No comments yet.</div>
+{% endif %}

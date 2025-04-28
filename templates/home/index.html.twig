@@ -40,6 +40,7 @@
                 </div>
             </div>
 
+
             <div class="nk-image-slider-item">
                 <img src="{{asset('images/slide-5.jpg')}}" alt="" class="nk-image-slider-img" data-thumb="{{asset('images/slide-5-thumb.jpg')}}">
                 <div class="nk-image-slider-content">
@@ -171,189 +172,104 @@
             </div>
         </div>
 
-        <div class="nk-gap-2"></div>
-        <div class="nk-blog-grid">
-            <div class="row">
-                <div class="col-md-6 col-lg-3">
-                    <!-- START: Post -->
-                    <div class="nk-blog-post">
-                        <a href="#" class="nk-post-img">
-                            <img src="{{asset('images/post-5-mid.jpg')}}" alt="He made his passenger captain of one">
-                            <span class="nk-post-comments-count">13</span>
-                            <span class="nk-post-categories">
-                                <span class="bg-main-5">Indie</span>
-                            </span>
-                        </a>
-                        <div class="nk-gap"></div>
-                        <h2 class="nk-post-title h4"><a href="#">He made his passenger captain of one</a></h2>
-                        <div class="nk-post-text">
-                            <p>Just then her head struck against the roof of the hall: in fact she was now more than nine feet high, and she at once took up the little golden key and hurried off to the garden door...</p>
-                        </div>
-                        <div class="nk-gap"></div>
-                        <a href="#" class="nk-btn nk-btn-rounded nk-btn-color-dark-3 nk-btn-hover-color-main-1">Read More</a>
-                        <div class="nk-post-date float-right"><span class="fa fa-calendar"></span> Jul 23, 2018</div>
-                    </div>
-                    <!-- END: Post -->
-                </div>
-
-                <div class="col-md-6 col-lg-3">
-                    <!-- START: Post -->
-                    <div class="nk-blog-post">
-                        <a href="#" class="nk-post-img">
-                            <img src="{{asset('images/post-6-mid.jpg')}}" alt="At first, for some time, I was not able to answer">
-                            <span class="nk-post-comments-count">0</span>
-                            <span class="nk-post-categories">
-                                <span class="bg-main-5">Racing</span>
-                            </span>
-                        </a>
-                        <div class="nk-gap"></div>
-                        <h2 class="nk-post-title h4"><a href="#">At first, for some time, I was not able to answer</a></h2>
-                        <div class="nk-post-text">
-                            <p>This little wandering journey, without settled place of abode, had been so unpleasant to me, that my own house, as I called it to myself, was a perfect settlement to me compared to that...</p>
-                        </div>
-                        <div class="nk-gap"></div>
-                        <a href="#" class="nk-btn nk-btn-rounded nk-btn-color-dark-3 nk-btn-hover-color-main-1">Read More</a>
-                        <div class="nk-post-date float-right"><span class="fa fa-calendar"></span> Jul 3, 2018</div>
-                    </div>
-                    <!-- END: Post -->
-                </div>
-
-                <div class="col-md-6 col-lg-3">
-                    <!-- START: Post -->
-                    <div class="nk-blog-post">
-                        <a href="#" class="nk-post-img">
-                            <img src="{{asset('images/post-7-mid.jpg')}}" alt="At length one of them called out in a clear">
-                            <span class="nk-post-comments-count">0</span>
-                            <span class="nk-post-categories">
-                                <span class="bg-main-6">MOBA</span>
-                            </span>
-                        </a>
-                        <div class="nk-gap"></div>
-                        <h2 class="nk-post-title h4"><a href="#">At length one of them called out in a clear</a></h2>
-                        <div class="nk-post-text">
-                            <p>TJust then her head struck against the roof of the hall: in fact she was now more than nine feet high, and she at once took up the little golden key and hurried off to the garden door...</p>
-                        </div>
-                        <div class="nk-gap"></div>
-                        <a href="#" class="nk-btn nk-btn-rounded nk-btn-color-dark-3 nk-btn-hover-color-main-1">Read More</a>
-                        <div class="nk-post-date float-right"><span class="fa fa-calendar"></span> Jul 3, 2018</div>
-                    </div>
-                    <!-- END: Post -->
-                </div>
-
-                <div class="col-md-6 col-lg-3">
-                    <!-- START: Post -->
-                    <div class="nk-blog-post">
-                        <a href="#" class="nk-post-img">
-                            <img src="{{asset('images/post-8-mid.jpg')}}" alt="For good, too though, in consequence">
-                            <span class="nk-post-comments-count">0</span>
-                            <span class="nk-post-categories">
-                                <span class="bg-main-2">Adventure</span>
-                            </span>
-                        </a>
-                        <div class="nk-gap"></div>
-                        <h2 class="nk-post-title h4"><a href="#">For good, too though, in consequence</a></h2>
-                        <div class="nk-post-text">
-                            <p>This little wandering journey, without settled place of abode, had been so unpleasant to me, that my own house, as I called it to myself, was a perfect settlement to me compared to that...</p>
-                        </div>
-                        <div class="nk-gap"></div>
-                        <a href="#" class="nk-btn nk-btn-rounded nk-btn-color-dark-3 nk-btn-hover-color-main-1">Read More</a>
-                        <div class="nk-post-date float-right"><span class="fa fa-calendar"></span> Jul 3, 2018</div>
-                    </div>
-                    <!-- END: Post -->
-                </div>
-            </div>
-        </div>
-        <!-- END: Latest News -->
+      <!-- START: Latest Events -->
+      <div class="nk-gap-2"></div>
+      <h3 class="nk-decorated-h-2"><span><span class="text-main-1">Les Dernieres</span> Evenements</span></h3>
+      <div class="nk-gap"></div>
+      <div class="nk-blog-grid">
+          <div class="row">
+              {% for evenement in recentEvenements %}
+                  <div class="col-md-6 col-lg-4">
+                      <!-- START: Event -->
+                      <div class="nk-blog-post">
+                          <a href="{{ path('evenement_detailles', {'id': evenement.id}) }}" class="nk-post-img">
+                              <img src="{{ image_base_url ~ evenement.photoEvent }}" alt="{{ evenement.nomEvent }}">
+                              <span class="nk-post-comments-count">0</span>
+                              <span class="nk-post-categories">
+                                  <span class="bg-main-5">{{ evenement.categorie ? evenement.categorie.nom : 'Non spécifiée' }}</span>
+                              </span>
+                          </a>
+                          <div class="nk-gap"></div>
+                          <h2 class="nk-post-title h4"><a href="{{ path('evenement_detailles', {'id': evenement.id}) }}">{{ evenement.nomEvent }}</a></h2>
+                          <div class="nk-post-text">
+                              <p>{{ evenement.lieuEvent|length > 100 ? evenement.lieuEvent|slice(0, 100) ~ '...' : evenement.lieuEvent }}</p>
+                          </div>
+                          <div class="nk-gap"></div>
+                          <a href="{{ path('evenement_detailles', {'id': evenement.id}) }}" class="nk-btn nk-btn-rounded nk-btn-color-dark-3 nk-btn-hover-color-main-1">Read More</a>
+                          <div class="nk-post-date float-right"><span class="fa fa-calendar"></span> {{ evenement.dateEvent|date('M d, Y') }}</div>
+                      </div>
+                      <!-- END: Event -->
+                  </div>
+              {% else %}
+                  <div class="col-12">
+                      <p>Aucun événement récent trouvé.</p>
+                  </div>
+              {% endfor %}
+          </div>
+      </div>
 
         <div class="nk-gap-2"></div>
         <div class="row vertical-gap">
             <div class="col-lg-8">
-                <!-- START: Latest Posts -->
-                <h3 class="nk-decorated-h-2"><span><span class="text-main-1">Latest</span> Posts</span></h3>
+                <!-- START: Trending Topics -->
+                <h3 class="nk-decorated-h-2"><span><span class="text-main-1">Trending</span> Topics</span></h3>
                 <div class="nk-gap"></div>
                 <div class="nk-blog-grid">
                     <div class="row">
-                        <div class="col-md-6">
-                            <!-- START: Post -->
-                            <div class="nk-blog-post">
-                                <a href="#" class="nk-post-img">
-                                    <img src="{{asset('images/post-5-mid.jpg')}}" alt="He made his passenger captain of one">
-                                    <span class="nk-post-comments-count">13</span>
-                                </a>
-                                <div class="nk-gap"></div>
-                                <h2 class="nk-post-title h4"><a href="#">He made his passenger captain of one</a></h2>
-                                <div class="nk-post-by">
-                                    <img src="{{asset('images/avatar-3.jpg')}}" alt="Wolfenstein" class="rounded-circle" width="35"> by <a href="#">Wolfenstein</a> in Jul 23, 2018
+                        {% for topic in trendingTopics %}
+                            <div class="col-md-6">
+                                <!-- START: Topic -->
+                                <div class="nk-blog-post">
+                                    <a href="{{ path('forum_single_topic', {'id': topic.id}) }}" class="nk-post-img">
+                                        {% if topic.mediaType is null or topic.mediaPath is null %}
+                                            <img class="nk-post-img" src="{{ asset('assets/images/default-game.jpg') }}" alt="{{ topic.title }}">
+                                        {% elseif topic.mediaType == 'video' %}
+                                            <video class="nk-post-img" controls>
+                                                <source src="http://localhost/img/games/{{ topic.mediaPath }}" type="video/mp4">
+                                                Your browser does not support the video tag.
+                                            </video>
+                                        {% else %}
+                                            <img class="nk-post-img" src="http://localhost/img/games/{{ topic.mediaPath }}" alt="{{ topic.title }}">
+                                        {% endif %}
+                                        <span class="nk-post-comments-count">{{ topic.postCount }}</span>
+                                    </a>
+                                    <div class="nk-gap"></div>
+                                    <h2 class="nk-post-title h4"><a href="{{ path('forum_single_topic', {'id': topic.id}) }}">{{ topic.title }}</a></h2>
+                                    <div class="nk-post-by">
+                                        <img src="{{ asset('images/avatar-3.jpg') }}" alt="{{ topic.startedBy }}" class="rounded-circle" width="35"> by <a href="#">{{ topic.startedBy }}</a> in {{ topic.startedOn }}
+                                    </div>
+                                    <div class="nk-gap"></div>
+                                    <div class="nk-post-text">
+                                        <p>{{ topic.content|length > 100 ? topic.content|slice(0, 100) ~ '...' : topic.content }}</p>
+                                    </div>
+                                    <div class="nk-gap"></div>
+                                    <a href="{{ path('forum_single_topic', {'id': topic.id}) }}" class="nk-btn nk-btn-rounded nk-btn-color-dark-3 nk-btn-hover-color-main-1">Read More</a>
                                 </div>
-                                <div class="nk-gap"></div>
-                                <div class="nk-post-text">
-                                    <p>Just then her head struck against the roof of the hall: in fact she was now more than nine feet high, and she at once took up the little golden key and hurried off to the garden door...</p>
-                                </div>
-                                <div class="nk-gap"></div>
-                                <a href="#" class="nk-btn nk-btn-rounded nk-btn-color-dark-3 nk-btn-hover-color-main-1">Read More</a>
+                                <!-- END: Topic -->
                             </div>
-                            <!-- END: Post -->
-                        </div>
-
-                        <div class="col-md-6">
-                            <!-- START: Post -->
-                            <div class="nk-blog-post">
-                                <a href="#" class="nk-post-img">
-                                    <img src="{{asset('images/post-6-mid.jpg')}}" alt="At first, for some time, I was not able to answer">
-                                    <span class="nk-post-comments-count">0</span>
-                                </a>
-                                <div class="nk-gap"></div>
-                                <h2 class="nk-post-title h4"><a href="#">At first, for some time, I was not able to answer</a></h2>
-                                <div class="nk-post-by">
-                                    <img src="{{asset('images/avatar-3.jpg')}}" alt="Wolfenstein" class="rounded-circle" width="35"> by <a href="#">Wolfenstein</a> in Jul 3, 2018
-                                </div>
-                                <div class="nk-gap"></div>
-                                <div class="nk-post-text">
-                                    <p>This little wandering journey, without settled place of abode, had been so unpleasant to me, that my own house, as I called it to myself, was a perfect settlement to me compared to that...</p>
-                                </div>
-                                <div class="nk-gap"></div>
-                                <a href="#" class="nk-btn nk-btn-rounded nk-btn-color-dark-3 nk-btn-hover-color-main-1">Read More</a>
+                        {% else %}
+                            <div class="col-12">
+                                <p>No trending topics found.</p>
                             </div>
-                            <!-- END: Post -->
-                        </div>
+                        {% endfor %}
                     </div>
                 </div>
-                <!-- END: Latest Posts -->
+                <!-- END: Trending Topics -->
 
                 <!-- START: Latest Matches -->
                 <div class="nk-gap-2"></div>
                 <h3 class="nk-decorated-h-2"><span><span class="text-main-1">Latest</span> Matches</span></h3>
                 <div class="nk-gap"></div>
                 <div class="row">
-                    <div class="col-md-4">
-                        <div class="nk-match-score bg-dark-3">
-                            Now Playing
-                        </div>
-                        <div class="nk-gap-2"></div>
-                        <div class="nk-widget-match p-0">
-                            <div class="nk-widget-match-teams">
-                                <div class="nk-widget-match-team-logo">
-                                    <img src="{{asset('images/team-1.jpg')}}" alt="">
-                                </div>
-                                <div class="nk-widget-match-vs">VS</div>
-                                <div class="nk-widget-match-team-logo">
-                                    <img src="{{asset('images/team-2.jpg')}}" alt="">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="nk-gap-2"></div>
-                        <p>As she said this she looked down at her hands and was surprised to see.</p>
-                        <a href="#" class="nk-btn nk-btn-rounded nk-btn-color-main-1">Match Details</a>
-                    </div>
-                    <div class="col-md-8">
+                    <div class="col-md">
                         <div class="responsive-embed responsive-embed-16x9">
                             <iframe
-                            src="https://player.twitch.tv/?channel=jingggxd&parent={{ app.request.host }}&autoplay=false&muted=true"
-                            allowfullscreen
-                            title="Twitch Live Stream - tiiniie"
-                            class="twitch-player"
-                            loading="lazy">
-                        </iframe>    
+                                src="https://player.twitch.tv/?channel=zerator&parent={{ app.request.host }}&autoplay=false&muted=true"
+                                allowfullscreen
+                                title="Twitch Live Stream - tiiniie"
+                                class="twitch-player"
+                                loading="lazy">
+                            </iframe>
                         </div>
                     </div>
                 </div>
@@ -586,7 +502,7 @@
                                     <span class="fa fa-comments"></span> <a href="#">0 comments</a>
                                 </div>
                                 <div class="nk-post-text">
-                                    <p>TJust then her head struck against the roof of the hall: in fact she was now more than nine feet high, and she at once took up the little golden key and hurried off to the garden door...</p>
+                                    <p>Just then her head struck against the roof of the hall: in fact she was now more than nine feet high, and she at once took up the little golden key and hurried off to the garden door...</p>
                                 </div>
                             </div>
                         </div>
@@ -942,6 +858,8 @@
                                 <div class="nk-product-rating" data-rating="4"> <i class="fa fa-star"></i> <i class="fa fa-star"></i> <i class="fa fa-star"></i> <i class="fa fa-star"></i> <i class="far fa-star"></i></div>
                                 <div class="nk-product-price">€ 23.00</div>
                             </div>
+
+
                             <div class="nk-widget-post">
                                 <a href="#" class="nk-post-image">
                                     <img src="{{asset('images/product-2-xs.jpg')}}" alt="However, I have reason">
@@ -950,12 +868,15 @@
                                 <div class="nk-product-rating" data-rating="2.5"> <i class="fa fa-star"></i> <i class="fa fa-star"></i> <i class="fas fa-star-half"></i> <i class="far fa-star"></i> <i class="far fa-star"></i></div>
                                 <div class="nk-product-price">€ 32.00</div>
                             </div>
+
+
                             <div class="nk-widget-post">
                                 <a href="#" class="nk-post-image">
                                     <img src="{{asset('images/product-3-xs.jpg')}}" alt="It was some time before">
                                 </a>
                                 <h3 class="nk-post-title"><a href="#">It was some time before</a></h3>
-                                <div class="nk-product-rating" data-rating="5"> <i class="fa fa-star"></i> <i class="fa fa-star"></i> <i class="fa fa-star"></i> <i class="fa fa-star"></i> <i class="fa fa-star"></i></div>
+                                <div class="nk-product-rating" data-rating="3"> <i class="fa fa-star"></i> <i class="fa fa-star"></i> <i class="fa fa-star"></i> <i class="far fa-star"></i> <i class="far fa-star"></i></div>
+                                <div class="nk-product-rating" data-rating="3"> <i class="fa fa-star"></i> <i class="fa fa-star"></i> <i class="fa fa-star"></i> <i class="far fa-star"></i> <i class="far fa-star"></i></div>
                                 <div class="nk-product-price">€ 14.00</div>
                             </div>
                         </div>
@@ -965,90 +886,28 @@
             </div>
         </div>
     </div>
-</div>
-
-<div class="nk-gap-4"></div>
-
-<!-- START: Page Background -->
-<img class="nk-page-background-top" src="{{asset('images/bg-top.png')}}" alt="">
-<img class="nk-page-background-bottom" src="{{asset('images/bg-bottom.png')}}" alt="">
-<!-- END: Page Background -->
-
-<!-- START: Search Modal -->
-<div class="nk-modal modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-sm" role="document">
-        <div class="modal-content">
-            <div class="modal-body">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span class="ion-android-close"></span>
-                </button>
-
-                <h4 class="mb-0">Search</h4>
-
-                <div class="nk-gap-1"></div>
-                <form action="#" class="nk-form nk-form-style-1">
-                    <input type="text" value="" name="search" class="form-control" placeholder="Type something and press Enter" autofocus>
-                </form>
             </div>
         </div>
     </div>
+
+    <div class="nk-gap-2"></div>
 </div>
-<!-- END: Search Modal -->
-
-<!-- START: Login Modal -->
-<div class="nk-modal modal fade" id="modalLogin" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-sm" role="document">
-        <div class="modal-content">
-            <div class="modal-body">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span class="ion-android-close"></span>
-                </button>
-
-                <h4 class="mb-0"><span class="text-main-1">Sign</span> In</h4>
-
-                <div class="nk-gap-1"></div>
-                <form action="#" class="nk-form text-white">
-                    <div class="row vertical-gap">
-                        <div class="col-md-6">
-                            Use email and password:
-
-                            <div class="nk-gap"></div>
-                            <input type="email" value="" name="email" class=" form-control" placeholder="Email">
-
-                            <div class="nk-gap"></div>
-                            <input type="password" value="" name="password" class="required form-control" placeholder="Password">
-                        </div>
-                        <div class="col-md-6">
-                            Or social account:
-
-                            <div class="nk-gap"></div>
-
-                            <ul class="nk-social-links-2">
-                                <li><a class="nk-social-facebook" href="#"><span class="fab fa-facebook"></span></a></li>
-                                <li><a class="nk-social-google-plus" href="#"><span class="fab fa-google-plus"></span></a></li>
-                                <li><a class="nk-social-twitter" href="#"><span class="fab fa-twitter"></span></a></li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div class="nk-gap-1"></div>
-                    <div class="row vertical-gap">
-                        <div class="col-md-6">
-                            <a href="#" class="nk-btn nk-btn-rounded nk-btn-color-white nk-btn-block">Sign In</a>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mnt-5">
-                                <small><a href="#">Forgot your password?</a></small>
-                            </div>
-                            <div class="mnt-5">
-                                <small><a href="#">Not a member? Sign up</a></small>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+<img class="nk-page-background-top" src="{{ asset('images/bg-top.png') }}" alt="">
+<img class="nk-page-background-bottom" src="{{ asset('images/bg-bottom.png') }}" alt="">
+    <div class="nk-gap-2"></div>
 </div>
-<!-- END: Login Modal -->
+<img class="nk-page-background-top" src="{{ asset('images/bg-top.png') }}" alt="">
+<img class="nk-page-background-bottom" src="{{ asset('images/bg-bottom.png') }}" alt="">
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .nk-post-img {
+            width: 350px !important;
+            height: 250 !important;
+            object-fit: cover;
+            display: block;
+        }
+    </style>
 {% endblock %}
