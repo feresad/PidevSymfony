@@ -27,6 +27,7 @@
                                 <img src="{{ asset('images/doownvote-emoji.png') }}" alt="{{ 'forum.downvote'|trans }}" class="vote-icon">
                             </button>
                         </div>
+                        <img src="{% if topic.gameImage is defined and topic.gameImage %}http://localhost/img/games/{{ topic.gameImage }}{% else %}{{ asset('assets/images/default-game.jpg') }}{% endif %}" alt="{{ 'forum.game_image'|trans }}" class="nk-forum-game-image">
                     </div>
                 </div>
                 <div class="nk-forum-recommended-content">
@@ -34,7 +35,6 @@
                         <h3><a href="{{ path('forum_single_topic', { id: topic.id }) }}">{{ topic.title|slice(0, 50) }}{% if topic.title|length > 50 %}...{% endif %}</a></h3>
                         <div class="nk-forum-title-sub">
                             {{ 'forum.topic.started_by'|trans({'author': topic.startedBy, 'date': topic.startedOn}) }}
-                            <span class="sentiment-badge sentiment-{{ topic.sentiment }}">{{ topic.sentiment|capitalize }}</span>
                         </div>
                         {% if topic.content is defined and topic.content %}
                             <div class="nk-forum-content">

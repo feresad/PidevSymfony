@@ -865,7 +865,7 @@
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border: 1px solid transparent;
-    }
+}
 
 .nk-forum-recommended-header {
     display: flex;
@@ -892,7 +892,7 @@
 .nk-forum-recommended-item {
     background: rgba(3, 41, 97, 0.15);
     border-radius: 15px;
-    border: 1px solidrgb(0, 22, 40);
+    border: 1px solid transparent;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
     overflow: hidden;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -936,9 +936,25 @@
     position: absolute;
     top: 10px;
     left: 10px;
+    right: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.nk-forum-recommended-overlay .nk-forum-vote-section {
     background: rgba(0, 0, 0, 0.5);
     border-radius: 8px;
     padding: 5px;
+}
+
+.nk-forum-recommended-overlay .nk-forum-game-image {
+    width: 50px;
+    height: 50px;
+    border-radius: 4px;
+    object-fit: cover;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 2px;
 }
 
 .nk-forum-recommended-content {
@@ -953,7 +969,7 @@
 }
 
 .nk-forum-recommended-content h3 a:hover {
-    color: #0585e6;
+    color:rgb(255, 204, 0);
 }
 
 .nk-forum-title-sub {
@@ -1001,8 +1017,11 @@
     .nk-forum-recommended-media {
         height: 150px;
     }
-}
-        
+    .nk-forum-recommended-overlay .nk-forum-game-image {
+        width: 24px;
+        height: 24px;
+    }
+}  
     </style>
 {% endblock %}
 
