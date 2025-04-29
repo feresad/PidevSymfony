@@ -1,205 +1,65 @@
-<div class="nk-forum">
-    {% if recommendedTopics|length > 0 %}
+{% if recommendedTopics|length > 0 %}
+    <div class="nk-forum-recommended-grid">
         {% for topic in recommendedTopics %}
-            <div class="nk-forum-item {{ topic.locked ? 'nk-forum-locked' : '' }} sentiment-{{ topic.sentiment }}" 
-                 data-game="{{ topic.gameImage ? topic.gameImage|replace({'img/games/': ''}) : 'No game' }}" 
-                 data-author="{{ topic.startedBy }}" 
-                 data-title="{{ topic.title|lower }}" 
+            <div class="nk-forum-recommended-item {{ topic.locked ? 'nk-forum-locked' : '' }} sentiment-{{ topic.sentiment }}"
+                 data-game="{{ topic.gameImage ? topic.gameImage|replace({'img/games/': ''}) : 'No game' }}"
+                 data-author="{{ topic.startedBy }}"
+                 data-title="{{ topic.title|lower }}"
                  data-content="{{ topic.content ? topic.content|lower : '' }}">
-                <div class="nk-forum-vote-section">
-                    <button class="vote-btn upvote-btn voting-button upvote" data-id="{{ topic.id }}" data-type="question" data-vote-type="UP" data-fallback="↑">
-                        <img src="{{ asset('images/uppvote-emoji.png') }}" alt="{{ 'forum.upvote'|trans }}" class="vote-icon">
-                    </button>
-                    <span class="vote-count">{{ topic.votes|default(0) }}</span>
-                    <button class="vote-btn downvote-btn voting-button downvote" data-id="{{ topic.id }}" data-type="question" data-vote-type="DOWN" data-fallback="↓">
-                        <img src="{{ asset('images/doownvote-emoji.png') }}" alt="{{ 'forum.downvote'|trans }}" class="vote-icon">
-                    </button>
-                </div>
-                <div class="nk-forum-title">
-                    <h3><a href="{{ path('forum_single_topic', { id: topic.id }) }}">{{ topic.title }}</a></h3>
-                    <div class="nk-forum-title-sub">
-                        {{ 'forum.topic.started_by'|trans({'author': topic.startedBy, 'date': topic.startedOn}) }}
-                        <span class="sentiment-badge sentiment-{{ topic.sentiment }}">{{ topic.sentiment|capitalize }}</span>
-                    </div>
-                    {% if topic.content is defined and topic.content %}
-                        <div class="nk-forum-content mt-2">
-                            <p>
-                                {{ topic.content|slice(0, 150) }}
-                                {% if topic.content|length > 150 %}...{% endif %}
-                            </p>
-                        </div>
-                    {% endif %}
+                <div class="nk-forum-recommended-media">
                     {% if topic.image is defined and topic.image %}
-                        <div class="nk-forum-title-image mt-8">
-                            <img src="http://localhost/img/games/{{ topic.image }}" alt="{{ 'forum.topic_media'|trans }}" style="max-width: 200px;">
-                        </div>
-                    {% endif %}
-                    {% if topic.video is defined and topic.video %}
-                        <div class="nk-forum-title-video mt-8">
-                            <video width="400" height="300" controls>
-                                <source src="http://localhost/img/games/{{ topic.video }}" type="video/mp4">
-                                {{ 'forum.video_unsupported'|trans }}
-                            </video>
-                        </div>
-                    {% endif %}
-                    <div class="nk-forum-reactions mt-8">
-                        <div class="reaction-display" data-id="{{ topic.id }}" data-type="question">
-                            {% for emoji, count in topic.reactionCounts|default([]) %}
-                                <span class="reaction-item" data-emoji="{{ emoji }}">{{ emoji }} {{ count }}</span>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    <div class="nk-forum-actions mt-8">
-                        {% if app.user and app.user.id == topic.startedById %}
-                            <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-main-1" data-bs-toggle="modal" data-bs-target="#updateTopicModal-{{ topic.id }}">
-                                {{ 'forum.edit'|trans }}
-                            </button>
-                            <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-danger" data-bs-toggle="modal" data-bs-target="#deleteTopicModal-{{ topic.id }}">
-                                {{ 'forum.delete'|trans }}
-                            </button>
-                        {% endif %}
-                        <span class="share-btn" data-id="{{ topic.id }}" data-bs-toggle="modal" data-bs-target="#shareModal-{{ topic.id }}">
-                            <img src="{{ asset('images/share_icon.png') }}" alt="{{ 'forum.share'|trans }}" class="share-icon">
-                        </span>
-                        <div class="reaction-wrapper">
-                            <img src="{{ asset('images/meme_icon.png') }}" alt="{{ 'forum.react'|trans }}" class="reaction-icon" data-id="{{ topic.id }}" data-type="question">
-                        </div>
-                        <span class="spam-btn" data-id="{{ topic.id }}" data-type="question" data-user-id="{{ topic.startedById }}">
-                            <a href="#" class="nk-anchor">
-                                <span class="fa fa-flag"></span> {{ 'forum.spam'|trans }}
-                            </a>
-                        </span>
-                    </div>
-                </div>
-                <div class="nk-forum-count">
-                    {{ 'forum.topic.posts'|trans({'count': topic.postCount}) }}
-                </div>
-                <div class="nk-forum-activity">
-                    {% if topic.gameImage is defined and topic.gameImage %}
-                        <div class="nk-forum-game-image mb-2">
-                            <img src="http://localhost/img/games/{{ topic.gameImage }}" alt="{{ 'forum.game_image'|trans }}" class="game-image">
-                        </div>
+                        <img src="http://localhost/img/games/{{ topic.image }}" alt="{{ 'forum.topic_media'|trans }}" class="recommended-media">
+                    {% elseif topic.video is defined and topic.video %}
+                        <video class="recommended-media" muted loop>
+                            <source src="http://localhost/img/games/{{ topic.video }}" type="video/mp4">
+                            {{ 'forum.video_unsupported'|trans }}
+                        </video>
                     {% else %}
-                        <div class="nk-forum-game-image mb-2">
-                            <img src="{{ asset('assets/images/default-game.jpg') }}" alt="{{ 'forum.default_game_image'|trans }}" class="game-image">
-                        </div>
+                        <img src="{{ asset('assets/images/default-game.jpg') }}" alt="{{ 'forum.default_game_image'|trans }}" class="recommended-media">
                     {% endif %}
-                    <div class="nk-forum-activity-title" title="{{ topic.lastActivityUser }}">
-                        {{ 'forum.topic.last_activity'|trans({'user': topic.lastActivityUser}) }}
+                    <div class="nk-forum-recommended-overlay">
+                        <div class="nk-forum-vote-section">
+                            <button class="vote-btn upvote-btn voting-button upvote" data-id="{{ topic.id }}" data-type="question" data-vote-type="UP" data-fallback="↑">
+                                <img src="{{ asset('images/uppvote-emoji.png') }}" alt="{{ 'forum.upvote'|trans }}" class="vote-icon">
+                            </button>
+                            <span class="vote-count">{{ topic.votes|default(0) }}</span>
+                            <button class="vote-btn downvote-btn voting-button downvote" data-id="{{ topic.id }}" data-type="question" data-vote-type="DOWN" data-fallback="↓">
+                                <img src="{{ asset('images/doownvote-emoji.png') }}" alt="{{ 'forum.downvote'|trans }}" class="vote-icon">
+                            </button>
+                        </div>
                     </div>
-                    <div class="nk-forum-activity-date">
-                        {{ topic.lastActivityDate }}
+                </div>
+                <div class="nk-forum-recommended-content">
+                    <div class="nk-forum-title">
+                        <h3><a href="{{ path('forum_single_topic', { id: topic.id }) }}">{{ topic.title|slice(0, 50) }}{% if topic.title|length > 50 %}...{% endif %}</a></h3>
+                        <div class="nk-forum-title-sub">
+                            {{ 'forum.topic.started_by'|trans({'author': topic.startedBy, 'date': topic.startedOn}) }}
+                            <span class="sentiment-badge sentiment-{{ topic.sentiment }}">{{ topic.sentiment|capitalize }}</span>
+                        </div>
+                        {% if topic.content is defined and topic.content %}
+                            <div class="nk-forum-content">
+                                <p>{{ topic.content|slice(0, 100) }}{% if topic.content|length > 100 %}...{% endif %}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="nk-forum-recommended-footer">
+                        <div class="nk-forum-reactions">
+                            <div class="reaction-display" data-id="{{ topic.id }}" data-type="question">
+                                {% for emoji, count in topic.reactionCounts|default([]) %}
+                                    <span class="reaction-item" data-emoji="{{ emoji }}">{{ emoji }} {{ count }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="nk-forum-count">
+                            {{ 'forum.topic.posts'|trans({'count': topic.postCount}) }}
+                        </div>
                     </div>
                 </div>
             </div>
-
-            <!-- Share Modal -->
-            <div class="modal fade" id="shareModal-{{ topic.id }}" tabindex="-1" aria-labelledby="shareModalLabel-{{ topic.id }}" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="shareModalLabel-{{ topic.id }}">{{ 'forum.modal.share.title'|trans }}</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ 'general.close'|trans }}"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p>{{ 'forum.modal.share.body'|trans }}</p>
-                            <div class="share-options">
-                                <a href="#" class="share-link facebook-share" data-id="{{ topic.id }}" target="_blank">
-                                    <i class="fab fa-facebook-f"></i> Facebook
-                                </a>
-                                <a href="#" class="share-link reddit-share" data-id="{{ topic.id }}" target="_blank">
-                                    <i class="fab fa-reddit-alien"></i> Reddit
-                                </a>
-                                <a href="#" class="share-link twitter-share" data-id="{{ topic.id }}" target="_blank">
-                                    <i class="fab fa-twitter"></i> Twitter
-                                </a>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ 'forum.modal.share.close'|trans }}</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {% if app.user and app.user.id == topic.startedById %}
-                <!-- Update Topic Modal -->
-                <div class="modal fade" id="updateTopicModal-{{ topic.id }}" tabindex="-1" aria-labelledby="updateTopicModalLabel-{{ topic.id }}" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="updateTopicModalLabel-{{ topic.id }}">{{ 'forum.modal.update_topic.title'|trans }}</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ 'general.close'|trans }}"></button>
-                            </div>
-                            <div class="modal-body">
-                                {{ form_start(topic.updateForm, {'attr': {'class': 'profanity-check-form'}}) }}
-                                    <div class="mb-3">
-                                        {{ form_label(topic.updateForm.title, 'forum.modal.form.title'|trans, {'label_attr': {'class': 'form-label'}}) }}
-                                        {{ form_widget(topic.updateForm.title, {'attr': {'class': 'form-control'}}) }}
-                                        {{ form_errors(topic.updateForm.title) }}
-                                    </div>
-                                    <div class="mb-3">
-                                        {{ form_label(topic.updateForm.content, 'forum.modal.form.content'|trans, {'label_attr': {'class': 'form-label'}}) }}
-                                        {{ form_widget(topic.updateForm.content, {'attr': {'class': 'form-control'}}) }}
-                                        {{ form_errors(topic.updateForm.content) }}
-                                    </div>
-                                    <div class="mb-3">
-                                        {{ form_label(topic.updateForm.media_type, 'forum.modal.form.media_type'|trans, {'label_attr': {'class': 'form-label'}}) }}
-                                        {{ form_widget(topic.updateForm.media_type, {'attr': {'class': 'form-control'}}) }}
-                                        {{ form_errors(topic.updateForm.media_type) }}
-                                    </div>
-                                    <div class="mb-3">
-                                        {{ form_label(topic.updateForm.media_file, 'forum.modal.form.media_file'|trans, {'label_attr': {'class': 'form-label'}}) }}
-                                        {{ form_widget(topic.updateForm.media_file, {'attr': {'class': 'form-control-file'}}) }}
-                                        {{ form_errors(topic.updateForm.media_file) }}
-                                    </div>
-                                    <div class="mb-3">
-                                        {{ form_label(topic.updateForm.game_id, 'forum.modal.form.game_id'|trans, {'label_attr': {'class': 'form-label'}}) }}
-                                        {{ form_widget(topic.updateForm.game_id, {'attr': {'class': 'form-control'}}) }}
-                                        {{ form_errors(topic.updateForm.game_id) }}
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">{{ 'forum.modal.form.emotes'|trans }}</label>
-                                        <div class="emotes-options">
-                                            <button type="button" class="btn btn-emote" onclick="addEmote('😊', 'update_topic_form_{{ topic.id }}_content')">😊</button>
-                                            <button type="button" class="btn btn-emote" onclick="addEmote('😂', 'update_topic_form_{{ topic.id }}_content')">😂</button>
-                                            <button type="button" class="btn btn-emote" onclick="addEmote('❤️', 'update_topic_form_{{ topic.id }}_content')">❤️</button>
-                                            <button type="button" class="btn btn-emote" onclick="addEmote('👍', 'update_topic_form_{{ topic.id }}_content')">👍</button>
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ 'general.close'|trans }}</button>
-                                        {{ form_widget(topic.updateForm.submit, {'attr': {'class': 'btn btn-primary', 'label': 'forum.modal.form.submit'|trans}}) }}
-                                    </div>
-                                {{ form_end(topic.updateForm) }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Delete Topic Modal -->
-                <div class="modal fade" id="deleteTopicModal-{{ topic.id }}" tabindex="-1" aria-labelledby="deleteTopicModalLabel-{{ topic.id }}" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="deleteTopicModalLabel-{{ topic.id }}">{{ 'forum.modal.delete_topic.title'|trans }}</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ 'general.close'|trans }}"></button>
-                            </div>
-                            <div class="modal-body">
-                                {{ 'forum.modal.delete_topic.body'|trans({'title': topic.title})|raw }}
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ 'forum.modal.delete_topic.cancel'|trans }}</button>
-                                <a href="{{ path('forum_delete_topic', { id: topic.id }) }}" class="btn btn-danger">{{ 'forum.modal.delete_topic.delete'|trans }}</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            {% endif %}
         {% endfor %}
-    {% else %}
-        <div class="text-center">
-            <p>{{ 'forum.recommended.no_topics'|trans }}</p>
-        </div>
-    {% endif %}
-</div>
+    </div>
+{% else %}
+    <div class="text-center">
+        <p>{{ 'forum.recommended.no_topics'|trans }}</p>
+    </div>
+{% endif %}

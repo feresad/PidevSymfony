@@ -34,7 +34,7 @@ class TopicRecommendationService
         $this->logger = $logger;
     }
 
-    public function recommend(Utilisateur $user, int $limit = 5, array $sentimentMap = []): array
+    public function recommend(Utilisateur $user, int $limit = 6, array $sentimentMap = []): array
     {
         $this->logger->info('Starting topic recommendation for user', ['user_id' => $user->getId()]);
 

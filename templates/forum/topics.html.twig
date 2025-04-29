@@ -69,14 +69,15 @@
         </div>
 
         <!-- Recommended Topics Section -->
-        <div class="nk-forum-recommended mb-3">
-            <div class="nk-forum-recommended-header">
-                <span>{{ 'forum.recommended.title'|trans }}</span>
-            </div>
-            <div id="recommended-topics">
-                <!-- Recommended topics will be loaded via AJAX -->
-            </div>
-        </div>
+       <div class="nk-forum-recommended mb-3">
+    <div class="nk-forum-recommended-header">
+        <img src="{{ asset('images/recommended-icon.png') }}" alt="{{ 'forum.recommended.icon_alt'|trans }}" class="nk-forum-recommended-icon">
+        <span>{{ 'forum.recommended.title'|trans }}</span>
+    </div>
+    <div id="recommended-topics">
+        <!-- Recommended topics will be loaded via AJAX -->
+    </div>
+</div>
 
         <div class="nk-forum">
             {% if topics|length > 0 %}
@@ -534,7 +535,7 @@
 
         /* Recommended Topics Styling */
         .nk-forum-recommended {
-            background-color: #f8f9fa;
+            background-color: #e0e0e0;
             padding: 15px;
             border-radius: 8px;
             border: 1px solid #e0e0e0;
@@ -548,7 +549,7 @@
             color: #333;
         }
         .nk-forum-recommended .nk-forum-item {
-            background-color: #ffffff;
+            background-color: #e0e0e0;
             margin-bottom: 10px;
             border-left: 4px solid #007bff;
         }
@@ -855,6 +856,153 @@
             opacity: 0.5;
             cursor: not-allowed;
         }
+/* Recommended Section Styling */
+.nk-forum-recommended {
+    background: rgba(10, 31, 40, 0.9);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid transparent;
+    }
+
+.nk-forum-recommended-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.nk-forum-recommended-icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+}
+
+.nk-forum-recommended-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.nk-forum-recommended-item {
+    background: rgba(3, 41, 97, 0.15);
+    border-radius: 15px;
+    border: 1px solidrgb(0, 22, 40);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+}
+
+.nk-forum-recommended-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.nk-forum-recommended-item.sentiment-positive {
+    border-left: 4px solid #28a745;
+}
+
+.nk-forum-recommended-item.sentiment-negative {
+    border-left: 4px solid #dc3545;
+}
+
+.nk-forum-recommended-item.sentiment-neutral {
+    border-left: 4px solid #6c757d;
+}
+
+.nk-forum-recommended-media {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+}
+
+.nk-forum-recommended-media img,
+.nk-forum-recommended-media video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+}
+
+.nk-forum-recommended-overlay {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+    padding: 5px;
+}
+
+.nk-forum-recommended-content {
+    padding: 15px;
+}
+
+.nk-forum-recommended-content h3 a {
+    font-size: 1.2rem;
+    color: #ffffff;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.nk-forum-recommended-content h3 a:hover {
+    color: #0585e6;
+}
+
+.nk-forum-title-sub {
+    font-size: 0.9rem;
+    color: #d1d5db;
+    margin-bottom: 10px;
+}
+
+.nk-forum-content p {
+    font-size: 0.95rem;
+    color: #d1d5db;
+    margin: 0;
+}
+
+.nk-forum-recommended-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.nk-forum-count {
+    font-size: 0.9rem;
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+@supports not (backdrop-filter: blur(10px)) {
+    .nk-forum-recommended {
+        background: rgba(10, 31, 40, 1);
+    }
+    .nk-forum-recommended-item {
+        background: rgba(5, 133, 230, 0.4);
+    }
+    .nk-forum-recommended-item:hover {
+        background: rgba(5, 133, 230, 0.5);
+    }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 767px) {
+    .nk-forum-recommended-grid {
+        grid-template-columns: 1fr;
+    }
+    .nk-forum-recommended-media {
+        height: 150px;
+    }
+}
+        
     </style>
 {% endblock %}
 
@@ -1333,6 +1481,18 @@
                     }
                 });
             });
+
+$(document).on('mouseenter', '.nk-forum-recommended-item', function() {
+    const $video = $(this).find('video');
+    if ($video.length) {
+        $video[0].play();
+    }
+}).on('mouseleave', '.nk-forum-recommended-item', function() {
+    const $video = $(this).find('video');
+    if ($video.length) {
+        $video[0].pause();
+    }
+});
 
             $(document).on('click', '.spam-btn', function(e) {
                 e.preventDefault();

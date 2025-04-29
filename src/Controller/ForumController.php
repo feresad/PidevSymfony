@@ -292,7 +292,7 @@ class ForumController extends AbstractController
         ]);
 
         // Fetch recommended topics
-        $recommendedQuestions = $recommendationService->recommend($utilisateur, 5, $sentimentMap);
+        $recommendedQuestions = $recommendationService->recommend($utilisateur, 6, $sentimentMap);
         $recommendedTopics = array_map(function (Questions $question) use ($entityManager, $sentimentMap, $request) {
             $user = $question->getUtilisateurId();
             $game = $question->getGameId();
