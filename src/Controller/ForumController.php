@@ -14,6 +14,7 @@ use App\Repository\QuestionsRepository;
 use App\Repository\UtilisateurRepository;
 use App\Repository\CommentaireRepository;
 use App\Service\RedditService;
+use App\Service\TopicRecommendationService;
 use App\Service\TopicSubscriptionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -50,7 +51,8 @@ class ForumController extends AbstractController
         QuestionsRepository $questionsRepository,
         UtilisateurRepository $utilisateurRepository,
         EntityManagerInterface $entityManager,
-        RedditService $redditService
+        RedditService $redditService,
+        ?TopicRecommendationService $recommendationService = null
     ): Response {
         /** @var Utilisateur|null $utilisateur */
         $utilisateur = $this->getUser();
@@ -67,14 +69,12 @@ class ForumController extends AbstractController
         if ($form->isSubmitted()) {
             $errors = [];
     
-            // Extract form data
             $title = $form->get('title')->getData();
             $content = $form->get('content')->getData();
             $mediaFile = $form->get('media_file')->getData();
             $mediaType = $form->get('media_type')->getData();
             $gameId = $form->get('game_id')->getData();
     
-            // Validate title
             if (empty($title)) {
                 $errors['title'] = $this->translator->trans('form.error.title_blank');
             }
@@ -256,7 +256,7 @@ class ForumController extends AbstractController
                 'sentiment' => $sentiment,
             ];
         }, $questions);
-    
+
         $trendingPosts = $redditService->fetchTopGamingPosts(5);
         $totalPages = ceil($totalQuestions / $limit);
     
@@ -270,6 +270,91 @@ class ForumController extends AbstractController
                 'totalItems' => $totalQuestions,
                 'itemsPerPage' => $limit,
             ],
+        ]);
+    }
+
+    #[Route('/forum/recommended', name: 'forum_recommended', methods: ['GET'])]
+    public function recommended(
+        Request $request,
+        TopicRecommendationService $recommendationService,
+        EntityManagerInterface $entityManager
+    ): Response {
+        /** @var Utilisateur|null $utilisateur */
+        $utilisateur = $this->getUser();
+        if (!$utilisateur) {
+            return new Response('', 204); // No content for unauthenticated users
+        }
+
+        $sentimentMap = $request->getSession()->get('sentiment_map', [
+            'positive' => ['👍', '😊', '😂', '❤️', '🎉', '😍', '👏', '🌟', '😎', '💪'],
+            'negative' => ['👎', '😢', '😡', '💔', '😤', '😞', '🤬', '😣', '💢', '😠'],
+            'neutral' => ['🤔', '😐', '🙂', '👀', '🤷', '😶', '🤝', '🙄', '😴', '🤓']
+        ]);
+
+        // Fetch recommended topics
+        $recommendedQuestions = $recommendationService->recommend($utilisateur, 5, $sentimentMap);
+        $recommendedTopics = array_map(function (Questions $question) use ($entityManager, $sentimentMap, $request) {
+            $user = $question->getUtilisateurId();
+            $game = $question->getGameId();
+
+            $updateForm = $this->createForm(TopicFormType::class, $question, [
+                'action' => $this->generateUrl('forum_update_topic', ['id' => $question->getQuestionId()]),
+            ]);
+
+            $reactionRepository = $entityManager->getRepository(QuestionReactions::class);
+            $reactions = $reactionRepository->findBy(['question_id' => $question->getQuestionId()]);
+            $reactionCounts = [];
+            foreach ($reactions as $reaction) {
+                $emoji = $reaction->getEmoji();
+                $reactionCounts[$emoji] = ($reactionCounts[$emoji] ?? 0) + 1;
+            }
+
+            $positiveCount = 0;
+            $negativeCount = 0;
+            $neutralCount = 0;
+
+            foreach ($reactionCounts as $emoji => $count) {
+                if (in_array($emoji, $sentimentMap['positive'])) {
+                    $positiveCount += $count;
+                } elseif (in_array($emoji, $sentimentMap['negative'])) {
+                    $negativeCount += $count;
+                } elseif (in_array($emoji, $sentimentMap['neutral'])) {
+                    $neutralCount += $count;
+                }
+            }
+
+            $sentiment = 'neutral';
+            if ($positiveCount > $negativeCount && $positiveCount > $neutralCount) {
+                $sentiment = 'positive';
+            } elseif ($negativeCount > $positiveCount && $negativeCount > $neutralCount) {
+                $sentiment = 'negative';
+            }
+
+            return [
+                'id' => $question->getQuestionId(),
+                'title' => $question->getTitle(),
+                'content' => $question->getContent(),
+                'votes' => $question->getVotes(),
+                'image' => $question->getMediaType() && $question->getMediaType()->value === 'image' && $question->getMediaPath() ? $question->getMediaPath() : null,
+                'video' => $question->getMediaType() && $question->getMediaType()->value === 'video' && $question->getMediaPath() ? $question->getMediaPath() : null,
+                'icon' => 'ion-chatboxes',
+                'locked' => false,
+                'startedBy' => $user ? $user->getNickname() : $this->translator->trans('general.unknown_user'),
+                'startedById' => $user ? $user->getId() : null,
+                'startedOn' => $question->getCreatedAt() ? $question->getCreatedAt()->format('F j, Y') : $this->translator->trans('general.date_not_set'),
+                'postCount' => $question->getCommentaires()->count(),
+                'lastActivityUser' => $user ? $user->getNickname() : $this->translator->trans('general.unknown_user'),
+                'lastActivityAvatar' => $user && $user->getPhoto() ? $user->getPhoto() : 'avatar-1.jpg',
+                'lastActivityDate' => $question->getCreatedAt() ? $question->getCreatedAt()->format('F j, Y') : $this->translator->trans('general.date_not_set'),
+                'gameImage' => $game && $game->getImagePath() ? $game->getImagePath() : null,
+                'updateForm' => $updateForm->createView(),
+                'reactionCounts' => $reactionCounts,
+                'sentiment' => $sentiment,
+            ];
+        }, $recommendedQuestions);
+
+        return $this->render('forum/recommended.html.twig', [
+            'recommendedTopics' => $recommendedTopics,
         ]);
     }
 
@@ -637,7 +722,6 @@ class ForumController extends AbstractController
                 return new JsonResponse(['success' => false, 'message' => $this->translator->trans('api.error.question_not_found')], 404);
             }
 
-            // Check if the user has already voted
             $voteRepository = $entityManager->getRepository(QuestionVotes::class);
             $existingVote = $voteRepository->findOneBy([
                 'question_id' => $entity,
@@ -647,12 +731,10 @@ class ForumController extends AbstractController
             $hasUpvoted = $existingVote && $existingVote->getVoteType()->value === 'UP';
             $hasDownvoted = $existingVote && $existingVote->getVoteType()->value === 'DOWN';
 
-            // Validate vote type
             if (!in_array($voteType, ['UP', 'DOWN'])) {
                 return new JsonResponse(['success' => false, 'message' => $this->translator->trans('api.error.invalid_vote_type')], 400);
             }
 
-            // Check if the user is trying to repeat the same vote
             if ($voteType === 'UP' && $hasUpvoted) {
                 return new JsonResponse(['success' => false, 'message' => $this->translator->trans('api.error.already_upvoted')], 403);
             }
@@ -663,18 +745,14 @@ class ForumController extends AbstractController
             $currentVotes = $entity->getVotes() ?? 0;
 
             if ($existingVote) {
-                // User has voted before, so they are switching or adding the opposite vote
                 if ($voteType === 'UP' && $hasDownvoted) {
-                    // Switch from downvote to upvote
                     $existingVote->setVoteType(\App\Enum\VoteType::from('UP'));
-                    $entity->setVotes($currentVotes + 1); // Remove downvote (-1) and add upvote (+1)
+                    $entity->setVotes($currentVotes + 1);
                 } elseif ($voteType === 'DOWN' && $hasUpvoted) {
-                    // Switch from upvote to downvote
                     $existingVote->setVoteType(\App\Enum\VoteType::from('DOWN'));
-                    $entity->setVotes($currentVotes - 1); // Remove upvote (+1) and add downvote (-1)
+                    $entity->setVotes($currentVotes - 1);
                 }
             } else {
-                // First vote for this user on this question
                 $newVote = new QuestionVotes();
                 $newVote->setQuestionId($entity);
                 $newVote->setUserId($utilisateur);
@@ -692,7 +770,6 @@ class ForumController extends AbstractController
             $entityManager->persist($entity);
             $entityManager->flush();
 
-            // Fetch updated voting status
             $updatedVote = $voteRepository->findOneBy([
                 'question_id' => $entity,
                 'user_id' => $utilisateur,
@@ -800,9 +877,8 @@ class ForumController extends AbstractController
     #[Route('/switch-language/{locale}', name: 'switch_language', methods: ['GET'])]
     public function switchLanguage(string $locale, Request $request, SessionInterface $session): Response
     {
-        // Update the list of allowed locales to include 'ar'
         if (!in_array($locale, ['en', 'fr', 'es', 'ar'])) {
-            $locale = 'en'; // Fallback to English
+            $locale = 'en';
         }
 
         $session->set('_locale', $locale);

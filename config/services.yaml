@@ -18,6 +18,7 @@ parameters:
     cv_directory: 'C:\xampp\htdocs\img'
     
 services:
+    App\Service\TopicRecommendationService:
     App\Service\TopicSubscriptionService:
     App\Controller\ForumController:
     App\Service\RedditService:
@@ -27,6 +28,9 @@ services:
             $logger: '@monolog.logger'
             $entityManager: '@doctrine.orm.entity_manager'
             $router: '@router'
+            $questionsRepository: '@App\Repository\QuestionsRepository'
+            $commentaireRepository: '@App\Repository\CommentaireRepository'
+            $request: '@request_stack'
     
     _defaults:
         autowire: true

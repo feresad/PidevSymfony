@@ -18,19 +18,19 @@
             <div class="language-switcher">
                 <div class="dropdown">
                     <button class="nk-btn nk-btn-rounded nk-btn-color-white dropdown-toggle" 
-        type="button" 
-        id="languageDropdown" 
-        data-bs-toggle="dropdown" 
-        aria-expanded="false" 
-        aria-label="{{ 'select_language'|trans }}">
-    <span class="fa fa-globe me-1"></span> {{ app.request.locale|upper }}
-</button>
-<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
-    <li><a class="dropdown-item" href="{{ path('switch_language', {'locale': 'en'}) }}" aria-label="{{ 'english'|trans }}">🇬🇧 {{ 'english'|trans }}</a></li>
-    <li><a class="dropdown-item" href="{{ path('switch_language', {'locale': 'fr'}) }}" aria-label="{{ 'french'|trans }}">🇫🇷 {{ 'french'|trans }}</a></li>
-    <li><a class="dropdown-item" href="{{ path('switch_language', {'locale': 'es'}) }}" aria-label="{{ 'spanish'|trans }}">🇪🇸 {{ 'spanish'|trans }}</a></li>
-    <li><a class="dropdown-item" href="{{ path('switch_language', {'locale': 'ar'}) }}" aria-label="{{ 'arabic'|trans }}">🇸🇦 {{ 'arabic'|trans }}</a></li>
-</ul>
+                            type="button" 
+                            id="languageDropdown" 
+                            data-bs-toggle="dropdown" 
+                            aria-expanded="false" 
+                            aria-label="{{ 'select_language'|trans }}">
+                        <span class="fa fa-globe me-1"></span> {{ app.request.locale|upper }}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+                        <li><a class="dropdown-item" href="{{ path('switch_language', {'locale': 'en'}) }}" aria-label="{{ 'english'|trans }}">🇬🇧 {{ 'english'|trans }}</a></li>
+                        <li><a class="dropdown-item" href="{{ path('switch_language', {'locale': 'fr'}) }}" aria-label="{{ 'french'|trans }}">🇫🇷 {{ 'french'|trans }}</a></li>
+                        <li><a class="dropdown-item" href="{{ path('switch_language', {'locale': 'es'}) }}" aria-label="{{ 'spanish'|trans }}">🇪🇸 {{ 'spanish'|trans }}</a></li>
+                        <li><a class="dropdown-item" href="{{ path('switch_language', {'locale': 'ar'}) }}" aria-label="{{ 'arabic'|trans }}">🇸🇦 {{ 'arabic'|trans }}</a></li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -66,6 +66,16 @@
                     </li>
                 {% endfor %}
             </ul>
+        </div>
+
+        <!-- Recommended Topics Section -->
+        <div class="nk-forum-recommended mb-3">
+            <div class="nk-forum-recommended-header">
+                <span>{{ 'forum.recommended.title'|trans }}</span>
+            </div>
+            <div id="recommended-topics">
+                <!-- Recommended topics will be loaded via AJAX -->
+            </div>
         </div>
 
         <div class="nk-forum">
@@ -267,63 +277,57 @@
                         </div>
                     {% endif %}
                 {% endfor %}
+
+                <!-- Pagination -->
+                {% if topics|length > 0 %}
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="nk-pagination nk-pagination-center">
+                                <a href="{{ path('forum_topics', {'page': pagination.currentPage - 1}) }}"
+                                   class="nk-pagination-prev {{ pagination.currentPage == 1 ? 'disabled' : '' }}">
+                                    <span class="ion-ios-arrow-back"></span>
+                                </a>
+                                <nav>
+                                    {% if pagination.currentPage > 3 %}
+                                        <a href="{{ path('forum_topics', {'page': 1}) }}">1</a>
+                                        {% if pagination.currentPage > 4 %}
+                                            <span>...</span>
+                                        {% endif %}
+                                    {% endif %}
+                                    {% for i in max(1, pagination.currentPage - 2)..min(pagination.totalPages, pagination.currentPage + 2) %}
+                                        <a href="{{ path('forum_topics', {'page': i}) }}"
+                                           class="{{ pagination.currentPage == i ? 'nk-pagination-current' : '' }}">
+                                            {{ i }}
+                                        </a>
+                                    {% endfor %}
+                                    {% if pagination.currentPage < pagination.totalPages - 2 %}
+                                        {% if pagination.currentPage < pagination.totalPages - 3 %}
+                                            <span>...</span>
+                                        {% endif %}
+                                        <a href="{{ path('forum_topics', {'page': pagination.totalPages}) }}">{{ pagination.totalPages }}</a>
+                                    {% endif %}
+                                </nav>
+                                <a href="{{ path('forum_topics', {'page': pagination.currentPage + 1}) }}"
+                                   class="nk-pagination-next {{ pagination.currentPage == pagination.totalPages ? 'disabled' : '' }}">
+                                    <span class="ion-ios-arrow-forward"></span>
+                                </a>
+                            </div>
+                            <div class="text-center mt-2">
+                                {{ 'forum.pagination.showing'|trans({
+                                    'start': (pagination.currentPage - 1) * pagination.itemsPerPage + 1,
+                                    'end': min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems),
+                                    'total': pagination.totalItems
+                                }) }}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
             {% else %}
                 <div class="text-center">
-                    <p>{{ 'forum.topic.no_topics'|trans }}</p>
+                    <p>{{ 'forum.no_topics'|trans }}</p>
                 </div>
             {% endif %}
         </div>
-
-        <div class="nk-gap-2"></div>
-
-        {% if topics|length > 0 %}
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="nk-pagination nk-pagination-center">
-                        <a href="{{ path('forum_topics', {'page': pagination.currentPage - 1}) }}"
-                           class="nk-pagination-prev {{ pagination.currentPage == 1 ? 'disabled' : '' }}">
-                            <span class="ion-ios-arrow-back"></span>
-                        </a>
-
-                        <nav>
-                            {% if pagination.currentPage > 3 %}
-                                <a href="{{ path('forum_topics', {'page': 1}) }}">1</a>
-                                {% if pagination.currentPage > 4 %}
-                                    <span>...</span>
-                                {% endif %}
-                            {% endif %}
-
-                            {% for i in max(1, pagination.currentPage - 2)..min(pagination.totalPages, pagination.currentPage + 2) %}
-                                <a href="{{ path('forum_topics', {'page': i}) }}"
-                                   class="{{ pagination.currentPage == i ? 'nk-pagination-current' : '' }}">
-                                    {{ i }}
-                                </a>
-                            {% endfor %}
-
-                            {% if pagination.currentPage < pagination.totalPages - 2 %}
-                                {% if pagination.currentPage < pagination.totalPages - 3 %}
-                                    <span>...</span>
-                                {% endif %}
-                                <a href="{{ path('forum_topics', {'page': pagination.totalPages}) }}">{{ pagination.totalPages }}</a>
-                            {% endif %}
-                        </nav>
-
-                        <a href="{{ path('forum_topics', {'page': pagination.currentPage + 1}) }}"
-                           class="nk-pagination-next {{ pagination.currentPage == pagination.totalPages ? 'disabled' : '' }}">
-                            <span class="ion-ios-arrow-forward"></span>
-                        </a>
-                    </div>
-
-                    <div class="text-center mt-2">
-                        {{ 'forum.pagination.showing'|trans({
-                            'start': (pagination.currentPage - 1) * pagination.itemsPerPage + 1,
-                            'end': min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems),
-                            'total': pagination.totalItems
-                        }) }}
-                    </div>
-                </div>
-            </div>
-        {% endif %}
 
         <!-- New Topic Modal -->
         <div class="modal fade" id="newTopicModal" tabindex="-1" aria-labelledby="newTopicModalLabel" aria-hidden="true">
@@ -363,10 +367,10 @@
                             <div class="mb-3">
                                 <label class="form-label">{{ 'forum.modal.form.emotes'|trans }}</label>
                                 <div class="emotes-options">
-                                    <button type="button" class="btn btn-emote" onclick="addEmote('😊', 'topic_form_content')">😊</button>
-                                    <button type="button" class="btn btn-emote" onclick="addEmote('😂', 'topic_form_content')">😂</button>
-                                    <button type="button" class="btn btn-emote" onclick="addEmote('❤️', 'topic_form_content')">❤️</button>
-                                    <button type="button" class="btn btn-emote" onclick="addEmote('👍', 'topic_form_content')">👍</button>
+                                    <button type="button" class="btn btn-emote" onclick="addEmote('😊', 'new_topic_form_content')">😊</button>
+                                    <button type="button" class="btn btn-emote" onclick="addEmote('😂', 'new_topic_form_content')">😂</button>
+                                    <button type="button" class="btn btn-emote" onclick="addEmote('❤️', 'new_topic_form_content')">❤️</button>
+                                    <button type="button" class="btn btn-emote" onclick="addEmote('👍', 'new_topic_form_content')">👍</button>
                                 </div>
                             </div>
                             <div class="modal-footer">
@@ -526,6 +530,27 @@
         .modal-body select option:hover {
             background: #0585e6;
             color: #fff;
+        }
+
+        /* Recommended Topics Styling */
+        .nk-forum-recommended {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        .nk-forum-recommended-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #333;
+        }
+        .nk-forum-recommended .nk-forum-item {
+            background-color: #ffffff;
+            margin-bottom: 10px;
+            border-left: 4px solid #007bff;
         }
 
         /* Rest of your existing styles */
@@ -836,10 +861,33 @@
 {% block javascripts %}
     {{ parent() }}
     <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Load recommended topics via AJAX
+            fetch('{{ path('forum_recommended') }}', {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('recommended-topics').innerHTML = data;
+            })
+            .catch(error => {
+                console.error('Error loading recommended topics:', error);
+                document.getElementById('recommended-topics').innerHTML = '<p>{{ 'forum.recommended.error'|trans }}</p>';
+            });
+        });
+
         function addEmote(emote, fieldId) {
             const contentField = document.querySelector('#' + fieldId);
             if (contentField) {
-                contentField.value += emote;
+                const startPos = contentField.selectionStart;
+                const endPos = contentField.selectionEnd;
+                const text = contentField.value;
+                contentField.value = text.substring(0, startPos) + emote + text.substring(endPos);
+                contentField.selectionStart = contentField.selectionEnd = startPos + emote.length;
+                contentField.focus();
             }
         }
 
@@ -1069,7 +1117,7 @@
                                 imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
                                 imageWidth: 100,
                                 imageHeight: 100,
-                                achtergrond: '#1c2526',
+                                background: '#1c2526',
                                 color: '#d1d5db',
                                 confirmButtonColor: '#ff6f61'
                             });
@@ -1192,7 +1240,7 @@
 
                             switch (platform) {
                                 case 'facebook':
-                                    platformUrl = `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}"e=${shareText}`;
+                                    platformUrl = `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}&quote=${shareText}`;
                                     break;
                                 case 'twitter':
                                     platformUrl = `https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareText}`;
@@ -1213,7 +1261,7 @@
                                 imageWidth: 100,
                                 imageHeight: 100,
                                 background: '#1c2526',
-                                color: '##d1d5db',
+                                color: '#d1d5db',
                                 confirmButtonColor: '#ff6f61'
                             });
                         }

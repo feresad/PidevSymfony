@@ -5,10 +5,12 @@ nav:
   home: "Home"
   forum: "Forum"
   main_game_discussions: "Main Game Discussions"
-
+  
 # Forum Section
 forum:
   topic_title: "Topic: title"  # For FORUM.TOPIC.TITLE
+  recommended:
+    title: "Recommended Topics"
   user_role:
     regular: "Regular Member"
     com: "Community Moderator"

@@ -10,6 +10,8 @@ nav:
 forum:
   topics:
     title: "Discussions du Forum"
+  recommended:
+    title: "Sujets Recommandés"
   breadcrumbs:
     home: "Accueil"
     forum: "Forum"
