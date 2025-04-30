@@ -1,0 +1,65 @@
+{% if recommendedTopics|length > 0 %}
+    <div class="nk-forum-recommended-grid">
+        {% for topic in recommendedTopics %}
+            <div class="nk-forum-recommended-item {{ topic.locked ? 'nk-forum-locked' : '' }} sentiment-{{ topic.sentiment }}"
+                 data-game="{{ topic.gameImage ? topic.gameImage|replace({'img/games/': ''}) : 'No game' }}"
+                 data-author="{{ topic.startedBy }}"
+                 data-title="{{ topic.title|lower }}"
+                 data-content="{{ topic.content ? topic.content|lower : '' }}">
+                <div class="nk-forum-recommended-media">
+                    {% if topic.image is defined and topic.image %}
+                        <img src="http://localhost/img/games/{{ topic.image }}" alt="{{ 'forum.topic_media'|trans }}" class="recommended-media">
+                    {% elseif topic.video is defined and topic.video %}
+                        <video class="recommended-media" muted loop>
+                            <source src="http://localhost/img/games/{{ topic.video }}" type="video/mp4">
+                            {{ 'forum.video_unsupported'|trans }}
+                        </video>
+                    {% else %}
+                        <img src="{{ asset('assets/images/default-game.jpg') }}" alt="{{ 'forum.default_game_image'|trans }}" class="recommended-media">
+                    {% endif %}
+                    <div class="nk-forum-recommended-overlay">
+                        <div class="nk-forum-vote-section">
+                            <button class="vote-btn upvote-btn voting-button upvote" data-id="{{ topic.id }}" data-type="question" data-vote-type="UP" data-fallback="↑">
+                                <img src="{{ asset('images/uppvote-emoji.png') }}" alt="{{ 'forum.upvote'|trans }}" class="vote-icon">
+                            </button>
+                            <span class="vote-count">{{ topic.votes|default(0) }}</span>
+                            <button class="vote-btn downvote-btn voting-button downvote" data-id="{{ topic.id }}" data-type="question" data-vote-type="DOWN" data-fallback="↓">
+                                <img src="{{ asset('images/doownvote-emoji.png') }}" alt="{{ 'forum.downvote'|trans }}" class="vote-icon">
+                            </button>
+                        </div>
+                        <img src="{% if topic.gameImage is defined and topic.gameImage %}http://localhost/img/games/{{ topic.gameImage }}{% else %}{{ asset('assets/images/default-game.jpg') }}{% endif %}" alt="{{ 'forum.game_image'|trans }}" class="nk-forum-game-image">
+                    </div>
+                </div>
+                <div class="nk-forum-recommended-content">
+                    <div class="nk-forum-title">
+                        <h3><a href="{{ path('forum_single_topic', { id: topic.id }) }}">{{ topic.title|slice(0, 50) }}{% if topic.title|length > 50 %}...{% endif %}</a></h3>
+                        <div class="nk-forum-title-sub">
+                            {{ 'forum.topic.started_by'|trans({'author': topic.startedBy, 'date': topic.startedOn}) }}
+                        </div>
+                        {% if topic.content is defined and topic.content %}
+                            <div class="nk-forum-content">
+                                <p>{{ topic.content|slice(0, 100) }}{% if topic.content|length > 100 %}...{% endif %}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="nk-forum-recommended-footer">
+                        <div class="nk-forum-reactions">
+                            <div class="reaction-display" data-id="{{ topic.id }}" data-type="question">
+                                {% for emoji, count in topic.reactionCounts|default([]) %}
+                                    <span class="reaction-item" data-emoji="{{ emoji }}">{{ emoji }} {{ count }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="nk-forum-count">
+                            {{ 'forum.topic.posts'|trans({'count': topic.postCount}) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="text-center">
+        <p>{{ 'forum.recommended.no_topics'|trans }}</p>
+    </div>
+{% endif %}

@@ -18,19 +18,19 @@
             <div class="language-switcher">
                 <div class="dropdown">
                     <button class="nk-btn nk-btn-rounded nk-btn-color-white dropdown-toggle" 
-        type="button" 
-        id="languageDropdown" 
-        data-bs-toggle="dropdown" 
-        aria-expanded="false" 
-        aria-label="{{ 'select_language'|trans }}">
-    <span class="fa fa-globe me-1"></span> {{ app.request.locale|upper }}
-</button>
-<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
-    <li><a class="dropdown-item" href="{{ path('switch_language', {'locale': 'en'}) }}" aria-label="{{ 'english'|trans }}">🇬🇧 {{ 'english'|trans }}</a></li>
-    <li><a class="dropdown-item" href="{{ path('switch_language', {'locale': 'fr'}) }}" aria-label="{{ 'french'|trans }}">🇫🇷 {{ 'french'|trans }}</a></li>
-    <li><a class="dropdown-item" href="{{ path('switch_language', {'locale': 'es'}) }}" aria-label="{{ 'spanish'|trans }}">🇪🇸 {{ 'spanish'|trans }}</a></li>
-    <li><a class="dropdown-item" href="{{ path('switch_language', {'locale': 'ar'}) }}" aria-label="{{ 'arabic'|trans }}">🇸🇦 {{ 'arabic'|trans }}</a></li>
-</ul>
+                            type="button" 
+                            id="languageDropdown" 
+                            data-bs-toggle="dropdown" 
+                            aria-expanded="false" 
+                            aria-label="{{ 'select_language'|trans }}">
+                        <span class="fa fa-globe me-1"></span> {{ app.request.locale|upper }}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+                        <li><a class="dropdown-item" href="{{ path('switch_language', {'locale': 'en'}) }}" aria-label="{{ 'english'|trans }}">🇬🇧 {{ 'english'|trans }}</a></li>
+                        <li><a class="dropdown-item" href="{{ path('switch_language', {'locale': 'fr'}) }}" aria-label="{{ 'french'|trans }}">🇫🇷 {{ 'french'|trans }}</a></li>
+                        <li><a class="dropdown-item" href="{{ path('switch_language', {'locale': 'es'}) }}" aria-label="{{ 'spanish'|trans }}">🇪🇸 {{ 'spanish'|trans }}</a></li>
+                        <li><a class="dropdown-item" href="{{ path('switch_language', {'locale': 'ar'}) }}" aria-label="{{ 'arabic'|trans }}">🇸🇦 {{ 'arabic'|trans }}</a></li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -67,6 +67,17 @@
                 {% endfor %}
             </ul>
         </div>
+
+        <!-- Recommended Topics Section -->
+       <div class="nk-forum-recommended mb-3">
+    <div class="nk-forum-recommended-header">
+        <img src="{{ asset('images/recommended-icon.png') }}" alt="{{ 'forum.recommended.icon_alt'|trans }}" class="nk-forum-recommended-icon">
+        <span>{{ 'forum.recommended.title'|trans }}</span>
+    </div>
+    <div id="recommended-topics">
+        <!-- Recommended topics will be loaded via AJAX -->
+    </div>
+</div>
 
         <div class="nk-forum">
             {% if topics|length > 0 %}
@@ -267,63 +278,57 @@
                         </div>
                     {% endif %}
                 {% endfor %}
+
+                <!-- Pagination -->
+                {% if topics|length > 0 %}
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="nk-pagination nk-pagination-center">
+                                <a href="{{ path('forum_topics', {'page': pagination.currentPage - 1}) }}"
+                                   class="nk-pagination-prev {{ pagination.currentPage == 1 ? 'disabled' : '' }}">
+                                    <span class="ion-ios-arrow-back"></span>
+                                </a>
+                                <nav>
+                                    {% if pagination.currentPage > 3 %}
+                                        <a href="{{ path('forum_topics', {'page': 1}) }}">1</a>
+                                        {% if pagination.currentPage > 4 %}
+                                            <span>...</span>
+                                        {% endif %}
+                                    {% endif %}
+                                    {% for i in max(1, pagination.currentPage - 2)..min(pagination.totalPages, pagination.currentPage + 2) %}
+                                        <a href="{{ path('forum_topics', {'page': i}) }}"
+                                           class="{{ pagination.currentPage == i ? 'nk-pagination-current' : '' }}">
+                                            {{ i }}
+                                        </a>
+                                    {% endfor %}
+                                    {% if pagination.currentPage < pagination.totalPages - 2 %}
+                                        {% if pagination.currentPage < pagination.totalPages - 3 %}
+                                            <span>...</span>
+                                        {% endif %}
+                                        <a href="{{ path('forum_topics', {'page': pagination.totalPages}) }}">{{ pagination.totalPages }}</a>
+                                    {% endif %}
+                                </nav>
+                                <a href="{{ path('forum_topics', {'page': pagination.currentPage + 1}) }}"
+                                   class="nk-pagination-next {{ pagination.currentPage == pagination.totalPages ? 'disabled' : '' }}">
+                                    <span class="ion-ios-arrow-forward"></span>
+                                </a>
+                            </div>
+                            <div class="text-center mt-2">
+                                {{ 'forum.pagination.showing'|trans({
+                                    'start': (pagination.currentPage - 1) * pagination.itemsPerPage + 1,
+                                    'end': min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems),
+                                    'total': pagination.totalItems
+                                }) }}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
             {% else %}
                 <div class="text-center">
-                    <p>{{ 'forum.topic.no_topics'|trans }}</p>
+                    <p>{{ 'forum.no_topics'|trans }}</p>
                 </div>
             {% endif %}
         </div>
-
-        <div class="nk-gap-2"></div>
-
-        {% if topics|length > 0 %}
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="nk-pagination nk-pagination-center">
-                        <a href="{{ path('forum_topics', {'page': pagination.currentPage - 1}) }}"
-                           class="nk-pagination-prev {{ pagination.currentPage == 1 ? 'disabled' : '' }}">
-                            <span class="ion-ios-arrow-back"></span>
-                        </a>
-
-                        <nav>
-                            {% if pagination.currentPage > 3 %}
-                                <a href="{{ path('forum_topics', {'page': 1}) }}">1</a>
-                                {% if pagination.currentPage > 4 %}
-                                    <span>...</span>
-                                {% endif %}
-                            {% endif %}
-
-                            {% for i in max(1, pagination.currentPage - 2)..min(pagination.totalPages, pagination.currentPage + 2) %}
-                                <a href="{{ path('forum_topics', {'page': i}) }}"
-                                   class="{{ pagination.currentPage == i ? 'nk-pagination-current' : '' }}">
-                                    {{ i }}
-                                </a>
-                            {% endfor %}
-
-                            {% if pagination.currentPage < pagination.totalPages - 2 %}
-                                {% if pagination.currentPage < pagination.totalPages - 3 %}
-                                    <span>...</span>
-                                {% endif %}
-                                <a href="{{ path('forum_topics', {'page': pagination.totalPages}) }}">{{ pagination.totalPages }}</a>
-                            {% endif %}
-                        </nav>
-
-                        <a href="{{ path('forum_topics', {'page': pagination.currentPage + 1}) }}"
-                           class="nk-pagination-next {{ pagination.currentPage == pagination.totalPages ? 'disabled' : '' }}">
-                            <span class="ion-ios-arrow-forward"></span>
-                        </a>
-                    </div>
-
-                    <div class="text-center mt-2">
-                        {{ 'forum.pagination.showing'|trans({
-                            'start': (pagination.currentPage - 1) * pagination.itemsPerPage + 1,
-                            'end': min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems),
-                            'total': pagination.totalItems
-                        }) }}
-                    </div>
-                </div>
-            </div>
-        {% endif %}
 
         <!-- New Topic Modal -->
         <div class="modal fade" id="newTopicModal" tabindex="-1" aria-labelledby="newTopicModalLabel" aria-hidden="true">
@@ -363,10 +368,10 @@
                             <div class="mb-3">
                                 <label class="form-label">{{ 'forum.modal.form.emotes'|trans }}</label>
                                 <div class="emotes-options">
-                                    <button type="button" class="btn btn-emote" onclick="addEmote('😊', 'topic_form_content')">😊</button>
-                                    <button type="button" class="btn btn-emote" onclick="addEmote('😂', 'topic_form_content')">😂</button>
-                                    <button type="button" class="btn btn-emote" onclick="addEmote('❤️', 'topic_form_content')">❤️</button>
-                                    <button type="button" class="btn btn-emote" onclick="addEmote('👍', 'topic_form_content')">👍</button>
+                                    <button type="button" class="btn btn-emote" onclick="addEmote('😊', 'new_topic_form_content')">😊</button>
+                                    <button type="button" class="btn btn-emote" onclick="addEmote('😂', 'new_topic_form_content')">😂</button>
+                                    <button type="button" class="btn btn-emote" onclick="addEmote('❤️', 'new_topic_form_content')">❤️</button>
+                                    <button type="button" class="btn btn-emote" onclick="addEmote('👍', 'new_topic_form_content')">👍</button>
                                 </div>
                             </div>
                             <div class="modal-footer">
@@ -526,6 +531,27 @@
         .modal-body select option:hover {
             background: #0585e6;
             color: #fff;
+        }
+
+        /* Recommended Topics Styling */
+        .nk-forum-recommended {
+            background-color: #e0e0e0;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        .nk-forum-recommended-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #333;
+        }
+        .nk-forum-recommended .nk-forum-item {
+            background-color: #e0e0e0;
+            margin-bottom: 10px;
+            border-left: 4px solid #007bff;
         }
 
         /* Rest of your existing styles */
@@ -830,16 +856,205 @@
             opacity: 0.5;
             cursor: not-allowed;
         }
+/* Recommended Section Styling */
+.nk-forum-recommended {
+    background: rgba(10, 31, 40, 0.9);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid transparent;
+}
+
+.nk-forum-recommended-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.nk-forum-recommended-icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+}
+
+.nk-forum-recommended-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.nk-forum-recommended-item {
+    background: rgba(3, 41, 97, 0.15);
+    border-radius: 15px;
+    border: 1px solid transparent;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+}
+
+.nk-forum-recommended-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.nk-forum-recommended-item.sentiment-positive {
+    border-left: 4px solid #28a745;
+}
+
+.nk-forum-recommended-item.sentiment-negative {
+    border-left: 4px solid #dc3545;
+}
+
+.nk-forum-recommended-item.sentiment-neutral {
+    border-left: 4px solid #6c757d;
+}
+
+.nk-forum-recommended-media {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+}
+
+.nk-forum-recommended-media img,
+.nk-forum-recommended-media video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+}
+
+.nk-forum-recommended-overlay {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.nk-forum-recommended-overlay .nk-forum-vote-section {
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+    padding: 5px;
+}
+
+.nk-forum-recommended-overlay .nk-forum-game-image {
+    width: 50px;
+    height: 50px;
+    border-radius: 4px;
+    object-fit: cover;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 2px;
+}
+
+.nk-forum-recommended-content {
+    padding: 15px;
+}
+
+.nk-forum-recommended-content h3 a {
+    font-size: 1.2rem;
+    color: #ffffff;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.nk-forum-recommended-content h3 a:hover {
+    color:rgb(255, 204, 0);
+}
+
+.nk-forum-title-sub {
+    font-size: 0.9rem;
+    color: #d1d5db;
+    margin-bottom: 10px;
+}
+
+.nk-forum-content p {
+    font-size: 0.95rem;
+    color: #d1d5db;
+    margin: 0;
+}
+
+.nk-forum-recommended-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.nk-forum-count {
+    font-size: 0.9rem;
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+@supports not (backdrop-filter: blur(10px)) {
+    .nk-forum-recommended {
+        background: rgba(10, 31, 40, 1);
+    }
+    .nk-forum-recommended-item {
+        background: rgba(5, 133, 230, 0.4);
+    }
+    .nk-forum-recommended-item:hover {
+        background: rgba(5, 133, 230, 0.5);
+    }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 767px) {
+    .nk-forum-recommended-grid {
+        grid-template-columns: 1fr;
+    }
+    .nk-forum-recommended-media {
+        height: 150px;
+    }
+    .nk-forum-recommended-overlay .nk-forum-game-image {
+        width: 24px;
+        height: 24px;
+    }
+}  
     </style>
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
     <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Load recommended topics via AJAX
+            fetch('{{ path('forum_recommended') }}', {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('recommended-topics').innerHTML = data;
+            })
+            .catch(error => {
+                console.error('Error loading recommended topics:', error);
+                document.getElementById('recommended-topics').innerHTML = '<p>{{ 'forum.recommended.error'|trans }}</p>';
+            });
+        });
+
         function addEmote(emote, fieldId) {
             const contentField = document.querySelector('#' + fieldId);
             if (contentField) {
-                contentField.value += emote;
+                const startPos = contentField.selectionStart;
+                const endPos = contentField.selectionEnd;
+                const text = contentField.value;
+                contentField.value = text.substring(0, startPos) + emote + text.substring(endPos);
+                contentField.selectionStart = contentField.selectionEnd = startPos + emote.length;
+                contentField.focus();
             }
         }
 
@@ -1069,7 +1284,7 @@
                                 imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
                                 imageWidth: 100,
                                 imageHeight: 100,
-                                achtergrond: '#1c2526',
+                                background: '#1c2526',
                                 color: '#d1d5db',
                                 confirmButtonColor: '#ff6f61'
                             });
@@ -1192,7 +1407,7 @@
 
                             switch (platform) {
                                 case 'facebook':
-                                    platformUrl = `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}"e=${shareText}`;
+                                    platformUrl = `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}&quote=${shareText}`;
                                     break;
                                 case 'twitter':
                                     platformUrl = `https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareText}`;
@@ -1213,7 +1428,7 @@
                                 imageWidth: 100,
                                 imageHeight: 100,
                                 background: '#1c2526',
-                                color: '##d1d5db',
+                                color: '#d1d5db',
                                 confirmButtonColor: '#ff6f61'
                             });
                         }
@@ -1285,6 +1500,18 @@
                     }
                 });
             });
+
+$(document).on('mouseenter', '.nk-forum-recommended-item', function() {
+    const $video = $(this).find('video');
+    if ($video.length) {
+        $video[0].play();
+    }
+}).on('mouseleave', '.nk-forum-recommended-item', function() {
+    const $video = $(this).find('video');
+    if ($video.length) {
+        $video[0].pause();
+    }
+});
 
             $(document).on('click', '.spam-btn', function(e) {
                 e.preventDefault();

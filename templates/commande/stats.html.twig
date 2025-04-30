@@ -122,10 +122,12 @@
                 <h5 class="mb-0">Distribution des Ventes par Produit</h5>
             </div>
             <div class="card-body">
-                <canvas id="productChart" width="400" height="300"
-                    data-labels="{{ top_products|map(product => product.name)|json_encode() }}"
-                    data-values="{{ top_products|map(product => product.quantity)|json_encode() }}">
-                </canvas>
+                <div class="chart-container">
+                    <canvas id="productChart" width="200" height="200"
+                        data-labels="{{ top_products|map(product => product.name)|json_encode() }}"
+                        data-values="{{ top_products|map(product => product.quantity)|json_encode() }}">
+                    </canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -135,158 +137,321 @@
     {{ parent() }}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
-        /* Global text color settings */
-        .container-main, 
-        .card-body, 
-        .table, 
-        h1, h2, h3, h4, h5, h6, 
-        p, 
-        .list-group-item,
-        .text-muted,
-        label,
-        .form-control,
-        option,
-        select,
-        input,
-        button {
-            color: #000 !important;
+        :root {
+            --primary-color: #6366f1; /* Indigo */
+            --success-color: #10b981; /* Emerald */
+            --info-color: #3b82f6; /* Blue */
+            --danger-color: #ef4444; /* Red */
+            --background-color: #f8fafc; /* Slate-50 */
+            --card-bg: #ffffff;
+            --text-color: #1e293b; /* Slate-800 */
+            --text-muted: #64748b; /* Slate-500 */
+            --border-color: #e2e8f0; /* Slate-200 */
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --transition: all 0.2s ease-in-out;
         }
-        
-        /* Override for button text that should remain white */
-        .btn-primary, 
-        .btn-info, 
-        .btn-success,
-        .btn-danger,
-        .btn-warning,
-        .btn-secondary {
-            color: #fff !important;
+
+        /* Reset and Base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        
-        /* Table specific styles */
-        #products-table,
-        .table-sm {
-            color: #000 !important;
-            background-color: #fff;
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
         }
-        
-        #products-table th,
-        #products-table td,
-        .table-sm th,
-        .table-sm td {
-            color: #000 !important;
-            border-color: #dee2e6;
+
+        /* Container */
+        .container-main {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1rem;
         }
-        
-        /* Keep header text white for contrast */
-        .card-header {
-            color: white !important;
+
+        /* Typography */
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 1rem;
         }
-        
-        .card-header h5 {
-            color: white !important;
+
+        h5 {
+            font-size: 1.125rem;
+            font-weight: 600;
         }
-        
-        #products-table thead {
-            background-color: #0d6efd;
-        }
-        
-        #products-table thead th {
-            color: white !important;
-            font-weight: bold;
-        }
-        
-        #products-table tbody tr:hover {
-            background-color: rgba(13, 110, 253, 0.1);
-        }
-        
-        .card-main {
-            background-color: #fff;
-            border-radius: 0.5rem;
-            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-            overflow: hidden;
-            margin-bottom: 1.5rem;
-        }
-        
-        .card-header {
-            padding: 0.75rem 1.25rem;
-            border-bottom: 1px solid rgba(0,0,0,.125);
-        }
-        
+
         .display-4 {
             font-size: 2.5rem;
-            font-weight: 300;
-            line-height: 1.2;
-            color: #000 !important;
+            font-weight: 700;
+            color: var(--text-color);
         }
-        
-        /* PDF Export Button */
-        .export-section {
-            background-color: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 25px;
-            text-align: center;
-            border: 1px solid #dee2e6;
-            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
+
+        .text-muted {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        /* Cards */
+        .card-main {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            overflow: hidden;
+        }
+
+        .card-main:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            padding: 1rem 1.5rem;
+            background-color: var(--primary-color);
+            color: white;
+            border-bottom: none;
+        }
+
+        .card-header.bg-success {
+            background-color: var(--success-color);
+        }
+
+        .card-header.bg-info {
+            background-color: var(--info-color);
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
             align-items: center;
-            flex-wrap: wrap;
-        }
-        
-        .export-section p {
-            font-size: 1.1rem;
-            margin-bottom: 0;
-            color: #495057 !important;
-            flex: 1;
-            text-align: left;
-            padding-left: 10px;
-        }
-        
-        .export-button-container {
-            flex: 0 0 auto;
-            padding-right: 10px;
-        }
-        
-        .btn-export-pdf {
-            font-size: 1.1rem;
-            font-weight: bold;
-            padding: 12px 25px;
-            background-color: #dc3545;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            transition: var(--transition);
             border: none;
-            border-radius: 5px;
-            box-shadow: 0 4px 6px rgba(220, 53, 69, 0.2);
-            transition: all 0.3s ease;
-            white-space: nowrap;
         }
-        
-        .btn-export-pdf:hover {
-            background-color: #c82333;
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #4f46e5;
             transform: translateY(-2px);
-            box-shadow: 0 6px 10px rgba(220, 53, 69, 0.3);
         }
-        
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        .btn-lg {
+            padding: 0.875rem 2rem;
+            font-size: 1rem;
+        }
+
+        /* Export Section */
+        .export-section {
+            background-color: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            transition: var(--transition);
+        }
+
+        .export-section:hover {
+            box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.1);
+        }
+
+        .export-section p {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-color);
+            margin: 0;
+        }
+
+        .btn-export-pdf {
+            padding: 0.75rem 1.5rem;
+            font-size: 0.875rem;
+            border-radius: 8px;
+        }
+
         .export-icon {
-            margin-right: 10px;
-            font-size: 1.2rem;
-            vertical-align: middle;
+            margin-right: 0.5rem;
         }
-        
+
+        /* Table */
+        .table {
+            width: 100%;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .table thead {
+            background-color: var(--primary-color);
+        }
+
+        .table thead th {
+            color: white;
+            font-weight: 600;
+            padding: 1rem;
+            text-align: left;
+            border: none;
+        }
+
+        .table tbody tr {
+            transition: var(--transition);
+        }
+
+        .table tbody tr:hover {
+            background-color: rgba(99, 102, 241, 0.05);
+        }
+
+        .table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+            color: var(--text-color);
+        }
+
+        .table-responsive {
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        /* Form */
+        .form-control {
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: white;
+            color: var(--text-color);
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            outline: none;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: stretch;
+        }
+
+        .input-group .btn {
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* Charts */
+        canvas {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Pie Chart Container */
+        .chart-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            max-width: 350px; /* Smaller container for the pie chart */
+            margin: 0 auto;
+        }
+
+        /* Layout */
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: -1rem;
+        }
+
+        .row > [class*="col-"] {
+            padding: 1rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .row > [class*="col-"] {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+        }
+
         @media (max-width: 768px) {
             .export-section {
                 flex-direction: column;
+                gap: 1rem;
                 text-align: center;
             }
-            
-            .export-section p {
-                margin-bottom: 15px;
-                text-align: center;
-                padding-left: 0;
-            }
-            
+
             .export-button-container {
-                padding-right: 0;
+                width: 100%;
+            }
+
+            .btn-export-pdf {
+                width: 100%;
+                justify-content: center;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .display-4 {
+                font-size: 2rem;
+            }
+
+            .btn-lg {
+                padding: 0.75rem 1.5rem;
+                font-size: 0.875rem;
+            }
+
+            .chart-container {
+                max-width: 300px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .container-main {
+                padding: 0 0.5rem;
+            }
+
+            .table-responsive {
+                margin: 0 -0.5rem;
+            }
+
+            .card-body {
+                padding: 1rem;
+            }
+
+            .chart-container {
+                max-width: 250px;
             }
         }
     </style>
@@ -298,14 +463,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         $(document).ready(function() {
-            // Force text color for all table cells
-            $('.table tbody td').css('color', '#000');
-            $('.table th').each(function() {
-                if (!$(this).closest('thead').hasClass('table-primary')) {
-                    $(this).css('color', '#000');
-                }
-            });
-            
             // Initialize revenue chart
             var revenueCanvas = document.getElementById('revenueChart');
             var revenueCtx = revenueCanvas.getContext('2d');
@@ -321,8 +478,8 @@
                     datasets: [{
                         label: 'Revenu Mensuel (TND)',
                         data: revenueData,
-                        backgroundColor: 'rgba(13, 110, 253, 0.5)',
-                        borderColor: 'rgba(13, 110, 253, 1)',
+                        backgroundColor: 'rgba(99, 102, 241, 0.5)',
+                        borderColor: 'rgba(99, 102, 241, 1)',
                         borderWidth: 1
                     }]
                 },
@@ -332,21 +489,21 @@
                         y: {
                             beginAtZero: true,
                             ticks: {
-                                color: '#000',
+                                color: '#1e293b',
                                 callback: function(value) {
                                     return value + ' TND';
                                 }
                             },
                             grid: {
-                                color: 'rgba(0, 0, 0, 0.1)'
+                                color: 'rgba(0, 0, 0, 0.05)'
                             }
                         },
                         x: {
                             ticks: {
-                                color: '#000'
+                                color: '#1e293b'
                             },
                             grid: {
-                                color: 'rgba(0, 0, 0, 0.1)'
+                                display: false
                             }
                         }
                     },
@@ -355,10 +512,16 @@
                             display: true,
                             position: 'top',
                             labels: {
-                                color: '#000'
+                                color: '#1e293b',
+                                font: {
+                                    size: 12
+                                }
                             }
                         },
                         tooltip: {
+                            backgroundColor: '#1e293b',
+                            titleColor: '#ffffff',
+                            bodyColor: '#ffffff',
                             callbacks: {
                                 label: function(context) {
                                     return context.dataset.label + ': ' + context.raw + ' TND';
@@ -377,15 +540,18 @@
             var productLabels = JSON.parse(productCanvas.getAttribute('data-labels') || '[]');
             var productData = JSON.parse(productCanvas.getAttribute('data-values') || '[]');
             
-            // Generate colors for the pie chart
-            var backgroundColors = [];
-            var borderColors = [];
-            
-            for (var i = 0; i < productLabels.length; i++) {
-                var hue = (i * 37) % 360; // Generate different hues
-                backgroundColors.push('hsla(' + hue + ', 70%, 60%, 0.7)');
-                borderColors.push('hsla(' + hue + ', 70%, 50%, 1)');
-            }
+            // Use colors from the image
+            var backgroundColors = [
+                '#f28b82', // Steam Key (red)
+                '#fbbc04', // cs2 (orange)
+                '#fff475', // elden ring (yellow)
+                '#ccff90', // FC 25 (light green)
+                '#a7ffeb', // overwatch Battle pass (light teal)
+                '#80d8ff', // GTA 6 (light blue)
+                '#82b1ff', // giftCard (blue)
+                '#b388ff'  // Red dead redemption (purple)
+            ];
+            var borderColors = backgroundColors.map(color => color.replace('0.7', '1'));
             
             new Chart(productCtx, {
                 type: 'pie',
@@ -400,17 +566,43 @@
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         legend: {
                             position: 'right',
                             labels: {
-                                color: '#000',
+                                color: '#1e293b',
                                 font: {
-                                    weight: 'bold'
+                                    size: 12,
+                                    weight: '600'
+                                },
+                                boxWidth: 14,
+                                boxHeight: 14,
+                                padding: 10,
+                                generateLabels: function(chart) {
+                                    const data = chart.data;
+                                    if (data.labels.length && data.datasets.length) {
+                                        return data.labels.map((label, i) => {
+                                            const meta = chart.getDatasetMeta(0);
+                                            const style = meta.controller.getStyle(i);
+                                            return {
+                                                text: label,
+                                                fillStyle: style.backgroundColor,
+                                                strokeStyle: style.borderColor,
+                                                lineWidth: style.borderWidth,
+                                                hidden: !chart.getDataVisibility(i),
+                                                index: i
+                                            };
+                                        });
+                                    }
+                                    return [];
                                 }
                             }
                         },
                         tooltip: {
+                            backgroundColor: '#1e293b',
+                            titleColor: '#ffffff',
+                            bodyColor: '#ffffff',
                             callbacks: {
                                 label: function(context) {
                                     var label = context.label || '';
@@ -426,4 +618,4 @@
             });
         });
     </script>
-{% endblock %} 
+{% endblock %}
