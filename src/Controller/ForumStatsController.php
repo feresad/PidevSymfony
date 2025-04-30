@@ -28,7 +28,9 @@ class ForumStatsController extends AbstractController
     public function index(): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
-        return $this->render('forum_stats.html.twig', []);
+        return $this->render('forum_stats.html.twig', [
+            'image_base_url' => $this->getParameter('image_base_url'),
+        ]);
     }
 
     #[Route('/api/forum/stats', name: 'api_forum_stats', methods: ['GET'])]

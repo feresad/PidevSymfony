@@ -42,6 +42,7 @@ class CoachApplicationController extends AbstractController
         $demandes = $entityManager->getRepository(Demande::class)->searchByGameOrUser($searchQuery)->getResult();
         return $this->render('coach/list_applications.html.twig', [
             'demandes' => $demandes,
+            'image_base_url' => $this->getParameter('image_base_url'),
             'searchQuery' => $searchQuery,
         ]);
     }

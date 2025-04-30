@@ -30,7 +30,7 @@
             <li data-id="{{ question.id }}" class="question-card">
                 <div class="nk-forum-topic-author">
                     <a href="#">
-                        <img src="{{ question.utilisateurId.getPhoto() ? 'http://localhost/img/games/' ~ question.utilisateurId.getPhoto() : asset('images/one-piece-luffy.gif') }}" alt="{{ question.utilisateurId.getNickname() }}">
+                        <img src="{{ question.utilisateurId.getPhoto() ? image_base_url2 ~ question.utilisateurId.getPhoto() : asset('images/one-piece-luffy.gif') }}" alt="{{ question.utilisateurId.getNickname() }}">
                     </a>
                     <div class="nk-forum-topic-author-name" title="{{ question.utilisateurId.getNickname() }}">
                         <a href="#">{{ question.utilisateurId.getNickname() }}</a>
@@ -46,14 +46,14 @@
                     {% if question.image %}
                         <div class="nk-forum-topic-attachments">
                             <h4 class="h5">{{ 'forum.attachment'|trans }}</h4>
-                            <img src="http://localhost/img/games/{{ question.image }}" alt="{{ 'forum.topic_media'|trans }}" style="max-width: 300px;">
+                            <img src="{{ image_base_url2 ~ question.image }}" alt="{{ 'forum.topic_media'|trans }}" style="max-width: 300px;">
                         </div>
                     {% endif %}
                     {% if question.video %}
                         <div class="nk-forum-topic-attachments">
                             <h4 class="h5">{{ 'forum.attachment'|trans }}</h4>
                             <video width="640" height="480" controls>
-                                <source src="http://localhost/img/games/{{ question.video }}" type="video/mp4">
+                                <source src="{{ image_base_url2 ~ question.video }}" type="video/mp4">
                                 {{ 'forum.video_not_supported'|trans }}
                             </video>
                         </div>
@@ -94,7 +94,7 @@
                         {% endif %}
                         {% if question.gameImage %}
                             <div class="nk-forum-game-image">
-                                <img src="http://localhost/img/games/{{ question.gameImage }}" alt="{{ 'forum.game_image'|trans }}" style="max-width: 50px; margin-right: 15px;">
+                                <img src="{{ image_base_url2 ~ question.gameImage }}" alt="{{ 'forum.game_image'|trans }}" style="max-width: 50px; margin-right: 15px;">
                             </div>
                         {% else %}
                             <div class="nk-forum-game-image">
@@ -117,14 +117,14 @@
                 <div class="reply-form-container" style="display: none;"></div>
             </li>
 
-            {% macro render_comments(comments, level = 0, is_reply = false) %}
+            {% macro render_comments(comments, level = 0, is_reply = false,image_base_url2='') %}
                 {% for comment in comments %}
                     {% set is_low_quality = comment.votes|default(0) < -5 %}
                     <li data-id="{{ comment.id }}" class="comment-card {{ is_reply ? 'reply-card' : '' }} {{ is_low_quality ? 'low-quality-comment' : '' }}" style="margin-left: {{ level * 20 }}px; position: relative;">
                         <div class="nk-forum-topic-author">
                             <a href="#">
-                                <img src="{{ comment.utilisateurId.getPhoto() ? 'http://localhost/img/games/' ~ comment.utilisateurId.getPhoto() : asset('images/one-piece-monkey-d-luffy.gif') }}" alt="{{ comment.utilisateurId.getNickname() }}">
-                            </a>
+                                <img src="{{ comment.utilisateurId and comment.utilisateurId.getPhoto() ? image_base_url2 ~ comment.utilisateurId.getPhoto() : asset('images/one-piece-monkey-d-luffy.gif') }}" alt="{{ comment.utilisateurId ? comment.utilisateurId.getNickname() : 'Unknown' }}">
+                             </a>
                             <div class="nk-forum-topic-author-name" title="{{ comment.utilisateurId.getNickname() }}">
                                 <a href="#">{{ comment.utilisateurId.getNickname() }}</a>
                             </div>
@@ -214,13 +214,13 @@
                     </li>
                     {% if comment.childCommentaires is defined and comment.childCommentaires is not empty %}
                         <ul class="child-comments" data-parent-id="{{ comment.id }}" style="display: block;">
-                            {{ _self.render_comments(comment.childCommentaires, level + 1, true) }}
+                            {{ _self.render_comments(comment.childCommentaires, level + 1, true,image_base_url2) }}
                         </ul>
                     {% endif %}
                 {% endfor %}
             {% endmacro %}
             {% if comments|length > 0 %}
-                {{ _self.render_comments(comments) }}
+                {{ _self.render_comments(comments,0,false,image_base_url2) }}
             {% else %}
                 <li class="text-center">{{ 'forum.no_comments'|trans }}</li>
             {% endif %}

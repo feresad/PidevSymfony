@@ -101,13 +101,13 @@
                             {% endif %}
                             {% if topic.image is defined and topic.image %}
                                 <div class="nk-forum-title-image mt-8">
-                                    <img src="http://localhost/img/games/{{ topic.image }}" alt="{{ 'forum.topic_media'|trans }}" style="max-width: 200px;">
+                                    <img src="{{ image_base_url2 ~ topic.image }}" alt="{{ 'forum.topic_media'|trans }}" style="max-width: 200px;">
                                 </div>
                             {% endif %}
                             {% if topic.video is defined and topic.video %}
                                 <div class="nk-forum-title-video mt-8">
                                     <video width="400" height="300" controls>
-                                        <source src="http://localhost/img/games/{{ topic.video }}" type="video/mp4">
+                                        <source src="{{ image_base_url2 ~ topic.video }}" type="video/mp4">
                                         {{ 'forum.video_unsupported'|trans }}
                                     </video>
                                 </div>
@@ -147,7 +147,7 @@
                         <div class="nk-forum-activity">
                             {% if topic.gameImage is defined and topic.gameImage %}
                                 <div class="nk-forum-game-image mb-2">
-                                    <img src="http://localhost/img/games/{{ topic.gameImage }}" alt="{{ 'forum.game_image'|trans }}" class="game-image">
+                                    <img src="{{ image_base_url2 ~ topic.gameImage }}" alt="{{ 'forum.game_image'|trans }}" class="game-image">
                                 </div>
                             {% else %}
                                 <div class="nk-forum-game-image mb-2">

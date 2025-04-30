@@ -184,7 +184,7 @@
                       <div class="nk-blog-post">
                           <a href="{{ path('evenement_detailles', {'id': evenement.id}) }}" class="nk-post-img">
                               <img src="{{ image_base_url ~ evenement.photoEvent }}" alt="{{ evenement.nomEvent }}">
-                              <span class="nk-post-comments-count">0</span>
+                              <span class="nk-post-comments-count">{{ evenement.maxPlacesEvent }}</span>
                               <span class="nk-post-categories">
                                   <span class="bg-main-5">{{ evenement.categorie ? evenement.categorie.nom : 'Non spécifiée' }}</span>
                               </span>
@@ -225,11 +225,11 @@
                                             <img class="nk-post-img" src="{{ asset('assets/images/default-game.jpg') }}" alt="{{ topic.title }}">
                                         {% elseif topic.mediaType == 'video' %}
                                             <video class="nk-post-img" controls>
-                                                <source src="http://localhost/img/games/{{ topic.mediaPath }}" type="video/mp4">
+                                                <source src="{{ image_base_url2 ~ topic.mediaPath }}" type="video/mp4">
                                                 Your browser does not support the video tag.
                                             </video>
                                         {% else %}
-                                            <img class="nk-post-img" src="http://localhost/img/games/{{ topic.mediaPath }}" alt="{{ topic.title }}">
+                                            <img class="nk-post-img" src="{{ image_base_url2 ~ topic.mediaPath }}" alt="{{ topic.title }}">
                                         {% endif %}
                                         <span class="nk-post-comments-count">{{ topic.postCount }}</span>
                                     </a>

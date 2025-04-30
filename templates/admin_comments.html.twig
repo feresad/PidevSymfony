@@ -24,13 +24,13 @@
                     <p class="card-text">{{ question.content }}</p>
                     {% if question.image %}
                         <div class="mt-2">
-                            <img src="http://localhost/img/games/{{ question.image }}" alt="Question Image" class="img-fluid rounded topic-media">
+                            <img src="{{ image_base_url2 ~ question.image }}" alt="Question Image" class="img-fluid rounded topic-media">
                         </div>
                     {% endif %}
                     {% if question.video %}
                         <div class="mt-2">
                             <video controls class="rounded topic-media">
-                                <source src="http://localhost/img/games/{{ question.video }}" type="video/mp4">
+                                <source src="{{ image_base_url2 ~ question.video }}" type="video/mp4">
                                 Your browser does not support the video tag.
                             </video>
                         </div>
@@ -85,7 +85,7 @@
                 </div>
                 <div class="activity-section text-center">
                     {% if question.gameImage %}
-                        <img src="http://localhost/img/games/{{ question.gameImage }}" alt="Game Image" class="rounded-circle mb-2" style="width: 50px; height: 50px;">
+                        <img src="{{ image_base_url2 ~ question.gameImage }}" alt="Game Image" class="rounded-circle mb-2" style="width: 50px; height: 50px;">
                     {% else %}
                         <img src="{{ asset('assets/images/default-game.jpg') }}" alt="Default Game Image" class="rounded-circle mb-2" style="width: 50px; height: 50px;">
                     {% endif %}

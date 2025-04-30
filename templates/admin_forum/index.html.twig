@@ -72,13 +72,13 @@ Ajouter sujet        </button>
                             {% endif %}
                             {% if topic.image is defined and topic.image %}
                                 <div class="mt-2">
-                                    <img src="http://localhost/img/games/{{ topic.image }}" alt="Topic Image" class="img-fluid rounded topic-media">
+                                    <img src="{{ image_base_url2 ~ topic.image }}" alt="Topic Image" class="img-fluid rounded topic-media">
                                 </div>
                             {% endif %}
                             {% if topic.video is defined and topic.video %}
                                 <div class="mt-2">
                                     <video controls class="rounded topic-media">
-                                        <source src="http://localhost/img/games/{{ topic.video }}" type="video/mp4">
+                                        <source src="{{ image_base_url2 ~ topic.video }}" type="video/mp4">
                                         Your browser does not support the video tag.
                                     </video>
                                 </div>
@@ -109,7 +109,7 @@ Ajouter sujet        </button>
                         </div>
                         <div class="activity-section text-center">
                             {% if topic.gameImage is defined and topic.gameImage %}
-                                <img src="http://localhost/img/games/{{ topic.gameImage }}" alt="Game Image" class="rounded-circle mb-2" style="width: 50px; height: 50px;">
+                                <img src="{{ image_base_url2 ~ topic.gameImage }}" alt="Game Image" class="rounded-circle mb-2" style="width: 50px; height: 50px;">
                             {% else %}
                                 <img src="{{ asset('assets/images/default-game.jpg') }}" alt="Default Game Image" class="rounded-circle mb-2" style="width: 50px; height: 50px;">
                             {% endif %}

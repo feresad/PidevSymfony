@@ -183,6 +183,8 @@ class AdminCommentsController extends AbstractController
         return $this->render('admin_comments.html.twig', [
             'question' => $questionData,
             'comments' => $commentData,
+            'image_base_url' => $this->getParameter('image_base_url'),
+            'image_base_url2' => $this->getParameter('image_base_url2'),
             'comment_form' => $commentForm->createView(),
             'pagination' => $pagination,
         ]);
@@ -434,14 +436,14 @@ class AdminCommentsController extends AbstractController
                 $comment->setCreationAt(new \DateTimeImmutable());
                 $entityManager->persist($comment);
                 $entityManager->flush();
-
+                $image_base_url = $this->getParameter('image_base_url');
                 $commentData = [
                     'id' => $comment->getCommentaireId(),
                     'content' => strip_tags($comment->getContenu()),
                     'createdAt' => $comment->getCreationAt()->format('F j, Y'),
                     'utilisateurId' => [
                         'nickname' => $comment->getUtilisateurId()->getNickname(),
-                        'photo' => $comment->getUtilisateurId()->getPhoto() ? 'http://localhost/img/users/' . $comment->getUtilisateurId()->getPhoto() : null,
+                        'photo' => $comment->getUtilisateurId()->getPhoto() ? $image_base_url . $comment->getUtilisateurId()->getPhoto() : null,
                     ],
                     'votes' => $comment->getVotes(),
                     'reactionCounts' => [],

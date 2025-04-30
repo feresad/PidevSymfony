@@ -388,9 +388,9 @@
             <div style="display: flex; align-items: center;">
                 <div class="user-avatar">
                     {% if user.photo %}
-                        <img src="http://localhost/img/{{ user.photo }}" alt="{{ user.prenom }} {{ user.nom }}">
+                        <img src="{{image_base_url ~ user.photo }}" alt="{{ user.prenom }} {{ user.nom }}">
                     {% else %}
-                        <img src="http://localhost/img/default-avatar.jpg" alt="Default Avatar">
+                        <img src="{{ image_base_url }}/default-avatar.jpg" alt="Default Avatar">
                     {% endif %}
                 </div>
                 <div class="user-info">

@@ -131,9 +131,9 @@
                 
                 <div class="cv-preview">
                     {% if demande.file ends with '.pdf' %}
-                        <embed src="{{ 'http://localhost/img/' ~ demande.file }}" type="application/pdf" width="100%" height="100%" style="cursor:pointer;" onclick="openPdfModal('{{ 'http://localhost/img/' ~ demande.file }}')">
+                        <embed src="{{ image_base_url ~ demande.file }}" type="application/pdf" width="100%" height="100%" style="cursor:pointer;" onclick="openPdfModal('{{ image_base_url ~ demande.file }}')">
                     {% else %}
-                        <img src="{{ 'http://localhost/img/' ~ demande.file }}" alt="CV Preview">
+                        <img src="{{ image_bsae_url ~ demande.file }}" alt="CV Preview">
                     {% endif %}
                 </div>
 

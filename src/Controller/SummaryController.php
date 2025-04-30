@@ -85,6 +85,7 @@ class SummaryController extends AbstractController
         return $this->render('summary/index.html.twig', [
             'totalReservations' => $totalReservations,
             'activeCustomers' => $activeCustomers,
+            'image_base_url' => $this->getParameter('image_base_url'),
             'topCoaches' => $topCoaches,
             'monthLabels' => json_encode($monthLabels),
             'monthlyRevenue' => json_encode($monthlyRevenue),

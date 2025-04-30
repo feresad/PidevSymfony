@@ -23,6 +23,7 @@ final class HomeController extends AbstractController
     {
         return $this->render('home/indexadmin.html.twig', [
             'controller_name' => 'HomeController',
+            'image_base_url' => $this->getParameter('image_base_url'),
         ]);
     }
     #[Route('/chatbot', name: 'chatbot', methods: ['POST'])]

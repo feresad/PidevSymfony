@@ -94,6 +94,7 @@ public function gettAll(EvenementRepository $repo, Request $request,
     
         return $this->render('evenement/ajouterEvenement.html.twig', [
             'form' => $form->createView(),
+            'image_base_url' => $this->getParameter('image_base_url'),
         ]);
     }
     #[Route('/delete/{id}', name: 'evenement_supprimer')]

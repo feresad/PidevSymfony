@@ -48,7 +48,8 @@ class AdminController extends AbstractController
 
         return $this->render('admin/dashboard.html.twig', [
             'users' => $users,
-            'searchQuery' => $searchQuery
+            'searchQuery' => $searchQuery,
+            'image_base_url' => $this->getParameter('image_base_url'),
         ]);
     }
 

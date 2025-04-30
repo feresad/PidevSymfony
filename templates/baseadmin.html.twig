@@ -165,21 +165,14 @@
 
     <!-- ========================= Main ==================== -->
     <div class="main">
-<<<<<<< HEAD
         <div class="topbar" style="display: flex; justify-content: flex-end;">
-=======
-        <div class="topbar">
-            <div class="search">
-               
-            </div>
->>>>>>> origin/Evenement
             <div class="user">
                 {% if app.user %}
                     <a href="{{ path('app_profile') }}" title="Mon Profil">
                         {% if app.user.photo %}
-                            <img src="http://localhost/img/{{ app.user.photo }}" alt="{{ app.user.prenom }} {{ app.user.nom }}">
+                            <img src="{{ image_base_url ~ app.user.photo }}" alt="{{ app.user.prenom }} {{ app.user.nom }}">
                         {% else %}
-                            <img src="http://localhost/img/default-avatar.jpg" alt="Default Avatar">
+                            <img src="{{ image_base_url }}/default-avatar.jpg" alt="Default Avatar">
                         {% endif %}
                     </a>
                 {% endif %}

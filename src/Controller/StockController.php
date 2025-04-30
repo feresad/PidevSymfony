@@ -48,12 +48,12 @@ class StockController extends AbstractController
                 
                 try {
                     $imageFile->move(
-                        $this->dossierUpload,  // Using the injected dossierUpload instead of images_directory
+                        $this->dossierUpload,
                         $filename
                     );
                     $stock->setImage($filename);
                 } catch (FileException $e) {
-                    $this->addFlash('error', 'Une erreur est survenue lors du téléchargement de l\'image');
+                    $this->addFlash('error', 'Une erreur est survenue lors du téléchargement de l\'image : ' . $e->getMessage());
                     return $this->redirectToRoute('app_stock_new');
                 }
             }
@@ -62,11 +62,8 @@ class StockController extends AbstractController
             $entityManager->flush();
 
             $this->addFlash('success', 'Stock ajouté avec succès');
+            return $this->redirectToRoute('app_stock_index',['image_base_url' => $this->getParameter('image_base_url')]);
         }
-
-        return $this->render('stock/new.html.twig', [
-            'form' => $form->createView(),
-        ]);
     }
 
     #[Route('/{id}/modifier', name: 'app_stock_edit', methods: ['GET', 'POST'])]
@@ -82,8 +79,8 @@ class StockController extends AbstractController
 
             if ($fichierImage) {
                 // Suppression de l'ancienne image
-                if ($ancienneImage && file_exists($this->dossierUpload.'\\'.$ancienneImage)) {
-                    unlink($this->dossierUpload.'\\'.$ancienneImage);
+                if ($ancienneImage && file_exists($this->dossierUpload.$ancienneImage)) {
+                    unlink($this->dossierUpload.$ancienneImage);
                 }
 
                 $nomOriginal = pathinfo($fichierImage->getClientOriginalName(), PATHINFO_FILENAME);
@@ -119,6 +116,9 @@ class StockController extends AbstractController
         if ($this->isCsrfTokenValid('delete'.$stock->getId(), $request->request->get('_token'))) {
             $entityManager->remove($stock);
             $entityManager->flush();
+            $this->addFlash('success', 'Stock supprimé avec succès');
         }
+
+        return $this->redirectToRoute('app_stock_index');
     }
 }

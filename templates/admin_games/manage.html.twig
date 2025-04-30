@@ -36,7 +36,7 @@
                         {{ form_widget(form.image_path) }}
                         {{ form_errors(form.image_path) }}
                         {% if game and game.getImagePath() %}
-                            <p>Image actuelle : <img src="http://localhost/img/games/{{ game.getImagePath() }}" alt="{{ game.getGameName() }}" style="max-width: 200px; margin-top: 10px; border-radius: 5px;"></p>
+                            <p>Image actuelle : <img src="{{ image_base_url2 ~ game.ImagePath }}" alt="{{ game.getGameName() }}" style="max-width: 200px; margin-top: 10px; border-radius: 5px;"></p>
                         {% endif %}
                     </div>
 
