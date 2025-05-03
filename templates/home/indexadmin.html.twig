@@ -116,6 +116,87 @@
             transform: translateY(-2px);
         }
 
+        /* Command Stats Section */
+        .command-stats-section {
+            background: #091221;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 15px rgba(5, 133, 198, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .command-stats-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(254, 3, 105, 0.1), transparent);
+            transition: all 0.3s ease;
+            z-index: 0;
+        }
+
+        .command-stats-section h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            color: #fe0369;
+            text-shadow: 0 0 10px rgba(254, 3, 105, 0.5);
+            margin-bottom: 15px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .command-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .command-stats-card {
+            background: rgba(9, 18, 33, 0.9);
+            border: 1px solid #0236a5;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .command-stats-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(254, 3, 105, 0.5);
+            border-color: #fe0369;
+        }
+
+        .command-stats-card .numbers {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            color: #ffffff;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .command-stats-card .cardName {
+            font-size: 0.9rem;
+            color: #0585c6;
+            text-transform: uppercase;
+        }
+
+        .command-stats-card .iconBx {
+            margin-top: 10px;
+        }
+
+        .command-stats-card .iconBx ion-icon {
+            font-size: 1.8rem;
+            color: #0585c6;
+            filter: drop-shadow(0 0 5px #0585c6);
+        }
+
         /* Ensure existing cardBox remains unaffected */
         .cardBox {
             display: grid;
@@ -174,6 +255,56 @@
         <!-- See More Button -->
         <div class="see-more-container">
             <a href="{{ path('forum_stats_dashboard') }}" class="see-more-btn">Voir plus</a>
+        </div>
+    </div>
+
+    <!-- ================ Command Stats Section ================= -->
+    <div class="command-stats-section">
+        <h2>Statistiques des Commandes</h2>
+        <div class="command-stats-grid">
+            <div class="command-stats-card">
+                <div class="numbers" id="totalRevenue">0</div>
+                <div class="cardName">Revenu Total</div>
+                <div class="iconBx">
+                    <ion-icon name="cash-outline"></ion-icon>
+                </div>
+            </div>
+
+            <div class="command-stats-card">
+                <div class="numbers" id="totalOrders">0</div>
+                <div class="cardName">Total des commandes</div>
+                <div class="iconBx">
+                    <ion-icon name="bag-check-outline"></ion-icon>
+                </div>
+            </div>
+
+            <div class="command-stats-card">
+                <div class="numbers" id="topProduct">-</div>
+                <div class="cardName">Produit le plus vendu</div>
+                <div class="iconBx">
+                    <ion-icon name="star-outline"></ion-icon>
+                </div>
+            </div>
+
+            <div class="command-stats-card">
+                <div class="numbers" id="avgOrderValue">0</div>
+                <div class="cardName">Panier moyen</div>
+                <div class="iconBx">
+                    <ion-icon name="calculator-outline"></ion-icon>
+                </div>
+            </div>
+
+            <div class="command-stats-card">
+                <div class="numbers" id="monthlyGrowth">0%</div>
+                <div class="cardName">Croissance mensuelle</div>
+                <div class="iconBx">
+                    <ion-icon name="trending-up-outline"></ion-icon>
+                </div>
+            </div>
+        </div>
+        <!-- See More Button -->
+        <div class="see-more-container">
+            <a href="{{ path('app_commande_stats') }}" class="see-more-btn">Voir plus</a>
         </div>
     </div>
 
@@ -288,6 +419,7 @@
     <script>
         // Fetch Forum Stats on page load
         document.addEventListener('DOMContentLoaded', () => {
+            // Fetch forum stats
             fetch('/api/forum/stats?timeRange=7')
                 .then(response => {
                     if (!response.ok) {
@@ -310,6 +442,35 @@
                 .catch(error => {
                     console.error('Error fetching forum stats:', error);
                 });
+                
+            // Fetch command stats
+            fetch('/commande/api/stats?timeRange=30')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to load command stats');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Update the command stats cards
+                        document.getElementById('totalRevenue').textContent = formatCurrency(data.stats.totalRevenue);
+                        document.getElementById('totalOrders').textContent = data.stats.totalOrders;
+                        document.getElementById('topProduct').textContent = data.stats.topProduct;
+                        document.getElementById('avgOrderValue').textContent = formatCurrency(data.stats.avgOrderValue);
+                        document.getElementById('monthlyGrowth').textContent = data.stats.monthlyGrowth + '%';
+                    } else {
+                        console.error('API Error:', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching command stats:', error);
+                });
         });
+        
+        // Helper function to format currency
+        function formatCurrency(value) {
+            return parseFloat(value).toFixed(2) + ' TND';
+        }
     </script>
 {% endblock %}

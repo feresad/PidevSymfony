@@ -3,112 +3,80 @@
 {% block title %}Statistiques des Commandes{% endblock %}
 
 {% block body %}
-    <div class="container-main mt-4 liste">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>Statistiques des Commandes</h1>
-            <div class="d-flex align-items-center">
-                <div class="mr-3">
-                    <a href="{{ path('app_commande_stats_pdf', {'year': year|default("now"|date("Y"))}) }}" class="btn btn-danger btn-lg" style="font-weight: bold; font-size: 16px; margin-right: 15px;">
+    <div class="cyber-container">
+        <div class="cyber-header">
+            <h1 class="cyber-title">Tableau de bord des statistiques de commandes</h1>
+            <div class="cyber-controls">
+                <div class="cyber-period">
+                    <span class="cyber-label">Période :</span>
+                    <form action="{{ path('app_commande_stats') }}" method="get" id="statFilterForm">
+                        <select name="year" class="cyber-select" onchange="this.form.submit()">
+                            {% for y in range(2023, "now"|date("Y")) %}
+                                <option value="{{ y }}" {{ year|default("now"|date("Y")) == y ? 'selected' : '' }}>{{ y }}</option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                </div>
+                <div class="cyber-export">
+                    <a href="{{ path('app_commande_stats_pdf', {'year': year|default("now"|date("Y"))}) }}" class="cyber-button">
                         <i class="fas fa-file-pdf"></i> EXPORTER PDF
                     </a>
                 </div>
-                <div class="mr-3">
-                    <form action="{{ path('app_commande_stats') }}" method="get" class="needs-validation" id="statFilterForm">
-                        <div class="input-group">
-                            <select name="year" class="form-control">
-                                {% for y in range(2023, "now"|date("Y")) %}
-                                    <option value="{{ y }}" {{ year|default("now"|date("Y")) == y ? 'selected' : '' }}>{{ y }}</option>
-                                {% endfor %}
-                            </select>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-filter"></i> Filtrer
-                            </button>
-                        </div>
-                    </form>
-                </div>
             </div>
         </div>
 
-        <!-- Export Section -->
-        <div class="export-section">
-            <p><strong>Téléchargez les statistiques complètes en PDF pour {{ year|default("now"|date("Y")) }}</strong></p>
-            <div class="export-button-container">
-                <a href="{{ path('app_commande_stats_pdf', {'year': year|default("now"|date("Y"))}) }}" class="btn btn-danger btn-export-pdf">
-                    <i class="fas fa-file-pdf export-icon"></i> EXPORTER EN PDF
-                </a>
-            </div>
-        </div>
-        
-        <div class="row">
-            <!-- Revenue and Orders Overview -->
-            <div class="col-md-6 mb-4">
-                <div class="card-main">
-                    <div class="card-header bg-success text-white">
-                        <h5 class="mb-0">Revenu Total</h5>
-                    </div>
-                    <div class="card-body p-4 text-center">
-                        <h2 class="display-4">{{ total_revenue|number_format(2, '.', ',') }} TND</h2>
-                        <p class="text-muted">Revenu total pour {{ year|default("now"|date("Y")) }}</p>
-                    </div>
+        <div class="cyber-stats-grid">
+            <!-- Revenue Card -->
+            <div class="cyber-stats-card">
+                <div class="cyber-stats-icon">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <div class="cyber-stats-content">
+                    <div class="cyber-stats-value">{{ total_revenue|number_format(2, '.', ',') }} TND</div>
+                    <div class="cyber-stats-label">Revenu Total</div>
                 </div>
             </div>
 
-            <div class="col-md-6 mb-4">
-                <div class="card-main">
-                    <div class="card-header bg-info text-white">
-                        <h5 class="mb-0">Nombre Total de Commandes</h5>
-                    </div>
-                    <div class="card-body p-4 text-center">
-                        <h2 class="display-4">{{ total_orders }}</h2>
-                        <p class="text-muted">Commandes pour {{ year|default("now"|date("Y")) }}</p>
-                    </div>
+            <!-- Orders Card -->
+            <div class="cyber-stats-card">
+                <div class="cyber-stats-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <div class="cyber-stats-content">
+                    <div class="cyber-stats-value">{{ total_orders }}</div>
+                    <div class="cyber-stats-label">Total des commandes</div>
                 </div>
             </div>
-        </div>
 
-        <!-- Most Sold Products -->
-        <div class="card-main mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Top Produits les Plus Vendus en {{ year|default("now"|date("Y")) }}</h5>
+            <!-- Average Order Value Card -->
+            <div class="cyber-stats-card">
+                <div class="cyber-stats-icon">
+                    <i class="fas fa-calculator"></i>
+                </div>
+                <div class="cyber-stats-content">
+                    <div class="cyber-stats-value">{{ total_orders > 0 ? (total_revenue / total_orders)|number_format(2, '.', ',') : '0.00' }} TND</div>
+                    <div class="cyber-stats-label">Panier moyen</div>
+                </div>
             </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover" id="products-table">
-                        <thead class="table-primary">
-                            <tr>
-                                <th>Rang</th>
-                                <th>Produit</th>
-                                <th>Quantité Vendue</th>
-                                <th>Revenu Total</th>
-                                <th>Prix Moyen</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        {% for product in top_products %}
-                            <tr>
-                                <td class="align-middle">{{ loop.index }}</td>
-                                <td class="align-middle">{{ product.name }}</td>
-                                <td class="align-middle">{{ product.quantity }}</td>
-                                <td class="align-middle">{{ product.revenue|number_format(2, '.', ',') }} TND</td>
-                                <td class="align-middle">{{ product.avg_price|number_format(2, '.', ',') }} TND</td>
-                            </tr>
-                        {% else %}
-                            <tr>
-                                <td colspan="5" class="text-center">Aucun produit vendu</td>
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
+
+            <!-- Top Product Card -->
+            <div class="cyber-stats-card">
+                <div class="cyber-stats-icon">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <div class="cyber-stats-content">
+                    <div class="cyber-stats-value">{{ top_products[0].name|default('-') }}</div>
+                    <div class="cyber-stats-label">Produit le plus vendu</div>
                 </div>
             </div>
         </div>
 
         <!-- Revenue by Month Chart -->
-        <div class="card-main mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Aperçu des Revenus par Mois</h5>
+        <div class="cyber-panel">
+            <div class="cyber-panel-header">
+                <h2 class="cyber-panel-title">Évolution des revenus mensuels</h2>
             </div>
-            <div class="card-body">
+            <div class="cyber-panel-body">
                 <canvas id="revenueChart" width="400" height="200"
                     data-labels="{{ monthly_data|map(month => month.month_name)|json_encode() }}"
                     data-values="{{ monthly_data|map(month => month.revenue)|json_encode() }}">
@@ -116,17 +84,56 @@
             </div>
         </div>
         
-        <!-- Product Quantity Distribution -->
-        <div class="card-main mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Distribution des Ventes par Produit</h5>
+        <div class="cyber-grid">
+            <!-- Top Products Table -->
+            <div class="cyber-panel">
+                <div class="cyber-panel-header">
+                    <h2 class="cyber-panel-title">Top produits les plus vendus</h2>
+                </div>
+                <div class="cyber-panel-body">
+                    <div class="cyber-table-container">
+                        <table class="cyber-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Produit</th>
+                                    <th>Quantité</th>
+                                    <th>Revenu</th>
+                                    <th>Prix Moyen</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for product in top_products %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td>{{ product.name }}</td>
+                                    <td>{{ product.quantity }}</td>
+                                    <td>{{ product.revenue|number_format(2, '.', ',') }} TND</td>
+                                    <td>{{ product.avg_price|number_format(2, '.', ',') }} TND</td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center">Aucun produit vendu</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="chart-container">
-                    <canvas id="productChart" width="200" height="200"
-                        data-labels="{{ top_products|map(product => product.name)|json_encode() }}"
-                        data-values="{{ top_products|map(product => product.quantity)|json_encode() }}">
-                    </canvas>
+            
+            <!-- Product Distribution Chart -->
+            <div class="cyber-panel">
+                <div class="cyber-panel-header">
+                    <h2 class="cyber-panel-title">Distribution des ventes par produit</h2>
+                </div>
+                <div class="cyber-panel-body">
+                    <div class="cyber-chart-container">
+                        <canvas id="productChart" width="200" height="200"
+                            data-labels="{{ top_products|map(product => product.name)|json_encode() }}"
+                            data-values="{{ top_products|map(product => product.quantity)|json_encode() }}">
+                        </canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -136,22 +143,28 @@
 {% block stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap">
     <style>
+        /* Cyberpunk Theme Variables */
         :root {
-            --primary-color: #6366f1; /* Indigo */
-            --success-color: #10b981; /* Emerald */
-            --info-color: #3b82f6; /* Blue */
-            --danger-color: #ef4444; /* Red */
-            --background-color: #f8fafc; /* Slate-50 */
-            --card-bg: #ffffff;
-            --text-color: #1e293b; /* Slate-800 */
-            --text-muted: #64748b; /* Slate-500 */
-            --border-color: #e2e8f0; /* Slate-200 */
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --transition: all 0.2s ease-in-out;
+            --cyber-bg-dark: #091221;
+            --cyber-bg-darker: #060d19;
+            --cyber-accent: #fe0369;
+            --cyber-accent-glow: rgba(254, 3, 105, 0.5);
+            --cyber-blue: #0585c6;
+            --cyber-blue-glow: rgba(5, 133, 198, 0.5);
+            --cyber-green: #10b981;
+            --cyber-border: #0236a5;
+            --cyber-text: #ffffff;
+            --cyber-text-secondary: #8a9cb3;
+            --cyber-panel-bg: rgba(9, 18, 33, 0.9);
+            --cyber-card-bg: rgba(9, 18, 33, 0.9);
+            --cyber-gradient: linear-gradient(45deg, transparent, rgba(254, 3, 105, 0.1), transparent);
+            --cyber-shadow: 0 0 15px rgba(5, 133, 198, 0.3);
+            --cyber-transition: all 0.3s ease;
         }
 
-        /* Reset and Base */
+        /* Reset & Base Styles */
         * {
             margin: 0;
             padding: 0;
@@ -159,299 +172,412 @@
         }
 
         body {
-            background-color: var(--background-color);
-            color: var(--text-color);
+            background-color: var(--cyber-bg-dark);
+            color: var(--cyber-text);
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             line-height: 1.5;
             -webkit-font-smoothing: antialiased;
+            position: relative;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        /* Container */
-        .container-main {
+        /* Neon Cyberpunk Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 15% 15%, rgba(254, 3, 105, 0.2), transparent 25%),
+                radial-gradient(circle at 85% 85%, rgba(5, 133, 198, 0.2), transparent 25%),
+                radial-gradient(circle at 85% 15%, rgba(16, 185, 129, 0.05), transparent 25%),
+                radial-gradient(circle at 15% 85%, rgba(254, 3, 105, 0.05), transparent 25%),
+                radial-gradient(circle at 50% 50%, var(--cyber-bg-darker), var(--cyber-bg-dark) 100%);
+            z-index: -1;
+        }
+
+        /* Animated Grid Lines */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(to right, rgba(5, 133, 198, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(5, 133, 198, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-repeat: repeat;
+            z-index: -1;
+            opacity: 0.5;
+        }
+
+        /* Cyberpunk Container */
+        .cyber-container {
             max-width: 1400px;
             margin: 2rem auto;
             padding: 0 1rem;
         }
 
-        /* Typography */
-        h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--text-color);
-            margin-bottom: 1rem;
-        }
-
-        h5 {
-            font-size: 1.125rem;
-            font-weight: 600;
-        }
-
-        .display-4 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--text-color);
-        }
-
-        .text-muted {
-            color: var(--text-muted);
-            font-size: 0.875rem;
-        }
-
-        /* Cards */
-        .card-main {
-            background-color: var(--card-bg);
-            border-radius: 12px;
-            box-shadow: var(--shadow);
-            transition: var(--transition);
-            overflow: hidden;
-        }
-
-        .card-main:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
-
-        .card-header {
-            padding: 1rem 1.5rem;
-            background-color: var(--primary-color);
-            color: white;
-            border-bottom: none;
-        }
-
-        .card-header.bg-success {
-            background-color: var(--success-color);
-        }
-
-        .card-header.bg-info {
-            background-color: var(--info-color);
-        }
-
-        .card-body {
-            padding: 1.5rem;
-        }
-
-        /* Buttons */
-        .btn {
-            display: inline-flex;
+        /* Header Section */
+        .cyber-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
             align-items: center;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            font-weight: 600;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: var(--cyber-panel-bg);
+            border-radius: 10px;
+            box-shadow: var(--cyber-shadow);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--cyber-border);
+        }
+
+        .cyber-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--cyber-gradient);
+            transition: var(--cyber-transition);
+            z-index: 0;
+        }
+
+        .cyber-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            color: var(--cyber-accent);
+            text-shadow: 0 0 10px var(--cyber-accent-glow);
+            margin: 0;
+            position: relative;
+            z-index: 1;
             text-transform: uppercase;
-            letter-spacing: 0.02em;
-            transition: var(--transition);
-            border: none;
+            letter-spacing: 1px;
         }
 
-        .btn-primary {
-            background-color: var(--primary-color);
-            color: white;
+        .cyber-controls {
+            display: flex;
+            gap: 1rem;
+            position: relative;
+            z-index: 1;
+            align-items: center;
         }
 
-        .btn-primary:hover {
-            background-color: #4f46e5;
-            transform: translateY(-2px);
-        }
-
-        .btn-danger {
-            background-color: var(--danger-color);
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background-color: #dc2626;
-            transform: translateY(-2px);
-        }
-
-        .btn-lg {
-            padding: 0.875rem 2rem;
-            font-size: 1rem;
-        }
-
-        /* Export Section */
-        .export-section {
-            background-color: var(--card-bg);
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: var(--shadow);
+        .cyber-period {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            margin-bottom: 2rem;
-            transition: var(--transition);
+            gap: 0.5rem;
         }
 
-        .export-section:hover {
-            box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.1);
+        .cyber-label {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--cyber-blue);
+            font-size: 0.9rem;
+            text-transform: uppercase;
         }
 
-        .export-section p {
-            font-size: 1rem;
-            font-weight: 500;
-            color: var(--text-color);
-            margin: 0;
+        .cyber-select {
+            background-color: var(--cyber-bg-darker);
+            color: var(--cyber-text);
+            border: 1px solid var(--cyber-border);
+            border-radius: 5px;
+            padding: 0.5rem 1rem;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--cyber-transition);
+            box-shadow: 0 0 5px var(--cyber-blue-glow);
         }
 
-        .btn-export-pdf {
-            padding: 0.75rem 1.5rem;
-            font-size: 0.875rem;
-            border-radius: 8px;
-        }
-
-        .export-icon {
-            margin-right: 0.5rem;
-        }
-
-        /* Table */
-        .table {
-            width: 100%;
-            background-color: var(--card-bg);
-            color: var(--text-color);
-            border-collapse: separate;
-            border-spacing: 0;
-        }
-
-        .table thead {
-            background-color: var(--primary-color);
-        }
-
-        .table thead th {
-            color: white;
-            font-weight: 600;
-            padding: 1rem;
-            text-align: left;
-            border: none;
-        }
-
-        .table tbody tr {
-            transition: var(--transition);
-        }
-
-        .table tbody tr:hover {
-            background-color: rgba(99, 102, 241, 0.05);
-        }
-
-        .table td {
-            padding: 1rem;
-            border-bottom: 1px solid var(--border-color);
-            vertical-align: middle;
-            color: var(--text-color);
-        }
-
-        .table-responsive {
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        /* Form */
-        .form-control {
-            padding: 0.75rem;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            background-color: white;
-            color: var(--text-color);
-            transition: var(--transition);
-        }
-
-        .form-control:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        .cyber-select:hover, .cyber-select:focus {
+            border-color: var(--cyber-accent);
+            box-shadow: 0 0 10px var(--cyber-accent-glow);
             outline: none;
         }
 
-        .input-group {
+        .cyber-button {
+            display: inline-block;
+            background-color: var(--cyber-accent);
+            color: var(--cyber-text);
+            border: none;
+            border-radius: 5px;
+            padding: 0.75rem 1.5rem;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            text-decoration: none;
+            letter-spacing: 1px;
+            transition: var(--cyber-transition);
+            box-shadow: 0 0 10px var(--cyber-accent-glow);
+            cursor: pointer;
+        }
+
+        .cyber-button:hover {
+            background-color: var(--cyber-blue);
+            box-shadow: 0 0 15px var(--cyber-blue-glow);
+            transform: translateY(-2px);
+            color: var(--cyber-text);
+            text-decoration: none;
+        }
+
+        /* Stats Grid */
+        .cyber-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .cyber-stats-card {
+            background-color: var(--cyber-card-bg);
+            border: 1px solid var(--cyber-border);
+            border-radius: 10px;
+            padding: 1.5rem;
             display: flex;
-            align-items: stretch;
+            align-items: center;
+            transition: var(--cyber-transition);
+            box-shadow: var(--cyber-shadow);
+            position: relative;
+            overflow: hidden;
         }
 
-        .input-group .btn {
-            border-radius: 0 8px 8px 0;
+        .cyber-stats-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--cyber-gradient);
+            transition: var(--cyber-transition);
+            z-index: 0;
         }
 
-        /* Charts */
-        canvas {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        .cyber-stats-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--cyber-accent);
+            box-shadow: 0 0 20px var(--cyber-accent-glow);
         }
 
-        /* Pie Chart Container */
-        .chart-container {
+        .cyber-stats-icon {
+            font-size: 2.5rem;
+            color: var(--cyber-blue);
+            margin-right: 1.5rem;
+            filter: drop-shadow(0 0 5px var(--cyber-blue-glow));
+            position: relative;
+            z-index: 1;
+        }
+
+        .cyber-stats-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .cyber-stats-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--cyber-text);
+            margin-bottom: 0.25rem;
+        }
+
+        .cyber-stats-label {
+            font-size: 0.9rem;
+            color: var(--cyber-blue);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Panels */
+        .cyber-panel {
+            background-color: var(--cyber-panel-bg);
+            border: 1px solid var(--cyber-border);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+            box-shadow: var(--cyber-shadow);
+            transition: var(--cyber-transition);
+            position: relative;
+        }
+
+        .cyber-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--cyber-gradient);
+            transition: var(--cyber-transition);
+            z-index: 0;
+        }
+
+        .cyber-panel:hover {
+            box-shadow: 0 0 20px var(--cyber-blue-glow);
+            border-color: var(--cyber-blue);
+        }
+
+        .cyber-panel-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--cyber-border);
+            position: relative;
+            z-index: 1;
+        }
+
+        .cyber-panel-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.25rem;
+            color: var(--cyber-accent);
+            text-shadow: 0 0 10px var(--cyber-accent-glow);
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .cyber-panel-body {
+            padding: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Grid Layout */
+        .cyber-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+        }
+
+        /* Table Styles */
+        .cyber-table-container {
+            overflow-x: auto;
+            max-width: 100%;
+        }
+
+        .cyber-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            color: var(--cyber-text);
+        }
+
+        .cyber-table thead {
+            background-color: rgba(5, 133, 198, 0.1);
+        }
+
+        .cyber-table th {
+            padding: 1rem;
+            text-align: left;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            color: var(--cyber-blue);
+            border-bottom: 1px solid var(--cyber-border);
+        }
+
+        .cyber-table td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(2, 54, 165, 0.3);
+            transition: var(--cyber-transition);
+        }
+
+        .cyber-table tbody tr {
+            transition: var(--cyber-transition);
+        }
+
+        .cyber-table tbody tr:hover {
+            background-color: rgba(254, 3, 105, 0.05);
+        }
+
+        .cyber-table tbody tr:hover td {
+            color: var(--cyber-accent);
+        }
+
+        /* Chart Container */
+        .cyber-chart-container {
             display: flex;
             justify-content: center;
             align-items: center;
-            max-width: 350px; /* Smaller container for the pie chart */
-            margin: 0 auto;
+            height: 100%;
+            min-height: 350px;
         }
 
-        /* Layout */
-        .row {
-            display: flex;
-            flex-wrap: wrap;
-            margin: -1rem;
-        }
-
-        .row > [class*="col-"] {
-            padding: 1rem;
-        }
-
-        /* Responsive Design */
+        /* Responsive Adjustments */
         @media (max-width: 992px) {
-            .row > [class*="col-"] {
-                flex: 0 0 100%;
-                max-width: 100%;
+            .cyber-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .cyber-stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             }
         }
 
         @media (max-width: 768px) {
-            .export-section {
+            .cyber-title {
+                font-size: 1.5rem;
+                margin-bottom: 1rem;
+            }
+
+            .cyber-header {
                 flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .cyber-controls {
+                width: 100%;
+                flex-direction: column;
+                align-items: flex-start;
                 gap: 1rem;
+            }
+
+            .cyber-period, .cyber-export {
+                width: 100%;
+            }
+
+            .cyber-button, .cyber-select {
+                width: 100%;
                 text-align: center;
             }
 
-            .export-button-container {
-                width: 100%;
+            .cyber-stats-card {
+                padding: 1rem;
             }
 
-            .btn-export-pdf {
-                width: 100%;
-                justify-content: center;
-            }
-
-            h1 {
-                font-size: 1.5rem;
-            }
-
-            .display-4 {
+            .cyber-stats-icon {
                 font-size: 2rem;
+                margin-right: 1rem;
             }
 
-            .btn-lg {
-                padding: 0.75rem 1.5rem;
-                font-size: 0.875rem;
-            }
-
-            .chart-container {
-                max-width: 300px;
+            .cyber-stats-value {
+                font-size: 1.5rem;
             }
         }
 
         @media (max-width: 576px) {
-            .container-main {
+            .cyber-container {
                 padding: 0 0.5rem;
+                margin: 1rem auto;
             }
 
-            .table-responsive {
-                margin: 0 -0.5rem;
+            .cyber-stats-grid {
+                grid-template-columns: 1fr;
             }
 
-            .card-body {
+            .cyber-panel-body {
                 padding: 1rem;
             }
 
-            .chart-container {
-                max-width: 250px;
+            .cyber-table th, .cyber-table td {
+                padding: 0.75rem 0.5rem;
+                font-size: 0.85rem;
             }
         }
     </style>
@@ -463,6 +589,10 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         $(document).ready(function() {
+            // Set cyberpunk color scheme
+            Chart.defaults.color = '#8a9cb3';
+            Chart.defaults.font.family = "'Orbitron', sans-serif";
+            
             // Initialize revenue chart
             var revenueCanvas = document.getElementById('revenueChart');
             var revenueCtx = revenueCanvas.getContext('2d');
@@ -471,6 +601,15 @@
             var revenueLabels = JSON.parse(revenueCanvas.getAttribute('data-labels') || '[]');
             var revenueData = JSON.parse(revenueCanvas.getAttribute('data-values') || '[]');
             
+            // Create glowing gradient for bars
+            var blueGradient = revenueCtx.createLinearGradient(0, 0, 0, 400);
+            blueGradient.addColorStop(0, 'rgba(5, 133, 198, 0.8)');
+            blueGradient.addColorStop(1, 'rgba(5, 133, 198, 0.2)');
+            
+            var pinkGradient = revenueCtx.createLinearGradient(0, 0, 0, 400);
+            pinkGradient.addColorStop(0, 'rgba(254, 3, 105, 0.8)');
+            pinkGradient.addColorStop(1, 'rgba(254, 3, 105, 0.2)');
+            
             new Chart(revenueCtx, {
                 type: 'bar',
                 data: {
@@ -478,50 +617,57 @@
                     datasets: [{
                         label: 'Revenu Mensuel (TND)',
                         data: revenueData,
-                        backgroundColor: 'rgba(99, 102, 241, 0.5)',
-                        borderColor: 'rgba(99, 102, 241, 1)',
-                        borderWidth: 1
+                        backgroundColor: blueGradient,
+                        borderColor: '#0585c6',
+                        borderWidth: 2,
+                        hoverBackgroundColor: pinkGradient,
+                        hoverBorderColor: '#fe0369',
+                        borderRadius: 4
                     }]
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     scales: {
                         y: {
                             beginAtZero: true,
+                            grid: {
+                                color: 'rgba(5, 133, 198, 0.1)',
+                                borderColor: 'rgba(5, 133, 198, 0.2)',
+                                tickColor: 'rgba(5, 133, 198, 0.2)'
+                            },
                             ticks: {
-                                color: '#1e293b',
+                                color: '#8a9cb3',
                                 callback: function(value) {
                                     return value + ' TND';
                                 }
-                            },
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.05)'
                             }
                         },
                         x: {
-                            ticks: {
-                                color: '#1e293b'
-                            },
                             grid: {
                                 display: false
+                            },
+                            ticks: {
+                                color: '#8a9cb3'
                             }
                         }
                     },
                     plugins: {
                         legend: {
-                            display: true,
-                            position: 'top',
                             labels: {
-                                color: '#1e293b',
+                                color: '#8a9cb3',
                                 font: {
+                                    family: "'Orbitron', sans-serif",
                                     size: 12
                                 }
                             }
                         },
                         tooltip: {
-                            backgroundColor: '#1e293b',
-                            titleColor: '#ffffff',
+                            backgroundColor: 'rgba(9, 18, 33, 0.9)',
+                            titleColor: '#fe0369',
                             bodyColor: '#ffffff',
+                            borderColor: '#0585c6',
+                            borderWidth: 1,
                             callbacks: {
                                 label: function(context) {
                                     return context.dataset.label + ': ' + context.raw + ' TND';
@@ -540,69 +686,59 @@
             var productLabels = JSON.parse(productCanvas.getAttribute('data-labels') || '[]');
             var productData = JSON.parse(productCanvas.getAttribute('data-values') || '[]');
             
-            // Use colors from the image
-            var backgroundColors = [
-                '#f28b82', // Steam Key (red)
-                '#fbbc04', // cs2 (orange)
-                '#fff475', // elden ring (yellow)
-                '#ccff90', // FC 25 (light green)
-                '#a7ffeb', // overwatch Battle pass (light teal)
-                '#80d8ff', // GTA 6 (light blue)
-                '#82b1ff', // giftCard (blue)
-                '#b388ff'  // Red dead redemption (purple)
+            // Cyberpunk neon colors
+            var neonColors = [
+                '#fe0369', // pink
+                '#0585c6', // blue
+                '#7928ca', // purple
+                '#10b981', // emerald
+                '#f59e0b', // amber
+                '#0ea5e9', // sky
+                '#ec4899', // fuchsia
+                '#14b8a6', // teal
+                '#8b5cf6', // violet
+                '#f43f5e'  // rose
             ];
-            var borderColors = backgroundColors.map(color => color.replace('0.7', '1'));
+            
+            var glowColors = neonColors.map(color => color + '80'); // adding 50% opacity
             
             new Chart(productCtx, {
-                type: 'pie',
+                type: 'doughnut',
                 data: {
                     labels: productLabels,
                     datasets: [{
                         data: productData,
-                        backgroundColor: backgroundColors,
-                        borderColor: borderColors,
-                        borderWidth: 1
+                        backgroundColor: neonColors,
+                        borderColor: glowColors,
+                        borderWidth: 2,
+                        hoverOffset: 15
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    cutout: '60%',
                     plugins: {
                         legend: {
                             position: 'right',
                             labels: {
-                                color: '#1e293b',
+                                color: '#8a9cb3',
                                 font: {
-                                    size: 12,
+                                    family: "'Orbitron', sans-serif",
+                                    size: 10,
                                     weight: '600'
                                 },
-                                boxWidth: 14,
-                                boxHeight: 14,
-                                padding: 10,
-                                generateLabels: function(chart) {
-                                    const data = chart.data;
-                                    if (data.labels.length && data.datasets.length) {
-                                        return data.labels.map((label, i) => {
-                                            const meta = chart.getDatasetMeta(0);
-                                            const style = meta.controller.getStyle(i);
-                                            return {
-                                                text: label,
-                                                fillStyle: style.backgroundColor,
-                                                strokeStyle: style.borderColor,
-                                                lineWidth: style.borderWidth,
-                                                hidden: !chart.getDataVisibility(i),
-                                                index: i
-                                            };
-                                        });
-                                    }
-                                    return [];
-                                }
+                                boxWidth: 12,
+                                boxHeight: 12,
+                                padding: 10
                             }
                         },
                         tooltip: {
-                            backgroundColor: '#1e293b',
-                            titleColor: '#ffffff',
+                            backgroundColor: 'rgba(9, 18, 33, 0.9)',
+                            titleColor: '#fe0369',
                             bodyColor: '#ffffff',
+                            borderColor: '#0585c6',
+                            borderWidth: 1,
                             callbacks: {
                                 label: function(context) {
                                     var label = context.label || '';

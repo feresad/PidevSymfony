@@ -27,8 +27,17 @@
             border-radius: 8px;
             margin-bottom: 30px;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: space-between;
+            gap: 30px;
+        }
+        
+        .product-image {
+            width: 250px;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #ddd;
         }
         
         .product-details {
@@ -46,6 +55,13 @@
             font-size: 20px;
             font-weight: 500;
             color: #0d6efd;
+            margin-bottom: 15px;
+        }
+        
+        .product-description {
+            margin-top: 15px;
+            color: #666;
+            line-height: 1.6;
         }
         
         .status-badge {
@@ -82,22 +98,31 @@
             color: #333;
         }
         
-        .action-buttons {
-            margin-top: 20px;
-            display: flex;
-            gap: 10px;
+        .client-section {
+            margin-top: 30px;
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
         }
         
-        .btn-delete {
-            padding: 8px 16px;
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
+        .client-info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        
+        .info-item {
+            margin-bottom: 15px;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            color: #333;
         }
         
         .header-flex {
@@ -105,6 +130,15 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 30px;
+        }
+        
+        .section-title {
+            margin-bottom: 20px;
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #0d6efd;
         }
         
         /* Users table styles */
@@ -136,18 +170,21 @@
             color: #444;
         }
         
-        .section-title {
-            margin-bottom: 20px;
-            font-size: 20px;
-            font-weight: 600;
-            color: #333;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #0d6efd;
-        }
-        
         .highlight-row {
             background-color: rgba(13, 110, 253, 0.1);
             font-weight: 500;
+        }
+
+        .nickname {
+            font-weight: 600;
+            color: #0d6efd;
+        }
+
+        .empty-message {
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            font-style: italic;
         }
     </style>
 {% endblock %}
@@ -155,75 +192,155 @@
 {% block body %}
     <div class="order-container">
         <div class="header-flex">
-            <h1>Détails du Produit</h1>
+            <h1>Détail de produit</h1>
             <a href="{{ path('app_commande_index') }}" class="back-link">
                 <i class="fas fa-arrow-left mr-2"></i> Retour à la liste
             </a>
         </div>
         
         <div class="product-info">
+            {% if stock and stock.image is defined and stock.image %}
+                <img src="{{ image_base_url ~ stock.image }}" 
+                     class="product-image" 
+                     alt="{{ commande.produit.nomProduit }}">
+            {% else %}
+                <img src="{{ asset('images/default-product.jpg') }}" 
+                     class="product-image" 
+                     alt="{{ commande.produit.nomProduit }}">
+            {% endif %}
+            
             <div class="product-details">
                 <div class="product-name">{{ commande.produit.nomProduit }}</div>
                 <div class="product-price">{{ stock ? stock.prixProduit : 'N/A' }} TND</div>
+                <div>
+                    <span class="status-badge {{ commande.status == 'terminé' ? '' : 
+                        (commande.status == 'pending_payment' ? 'pending' : 
+                        (commande.status == 'annulé' ? 'cancelled' : '')) }}">
+                        {{ commande.status }}
+                    </span>
+                </div>
+                <div class="product-description">
+                    {{ commande.produit.description }}
+                </div>
             </div>
         </div>
         
-        <h2 class="section-title">Commandes de ce produit</h2>
+        <h2 class="section-title">Détail de client</h2>
+        <div class="client-section">
+            {% for user in users %}
+                <div class="client-info" style="margin-bottom: 20px; padding: 15px; border-radius: 8px; border-bottom: 1px solid #eee;">
+                    <div class="info-item">
+                        <div class="info-label">Nom</div>
+                        <div class="info-value">{{ user.prenom }} {{ user.nom }}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Email</div>
+                        <div class="info-value">{{ user.email }}</div>
+                    </div>
+                    
+                    {% if user.nickname is defined %}
+                    <div class="info-item">
+                        <div class="info-label">Pseudo</div>
+                        <div class="info-value nickname">{{ user.nickname ?? 'Non renseigné' }}</div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if user.id == commande.utilisateur.id %}
+                        <div class="info-item">
+                            <div class="info-label">Date de commande</div>
+                            <div class="info-value">{{ commande.createdAt|date('d/m/Y H:i') }}</div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">Numéro de téléphone</div>
+                            <div class="info-value">{{ commande.utilisateur.telephone ?? 'Non renseigné' }}</div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">Adresse de livraison</div>
+                            <div class="info-value">{{ commande.utilisateur.adresse ?? 'Non renseignée' }}</div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">Total de commandes</div>
+                            <div class="info-value">{{ order_count }}</div>
+                        </div>
+                    {% else %}
+                        <div class="info-item">
+                            <div class="info-label">Total de commandes</div>
+                            <div class="info-value">{{ user.orderCount }}</div>
+                        </div>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="client-info">
+                    <div class="info-item">
+                        <div class="info-label">Nom</div>
+                        <div class="info-value">{{ commande.utilisateur.prenom }} {{ commande.utilisateur.nom }}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Email</div>
+                        <div class="info-value">{{ commande.utilisateur.email }}</div>
+                    </div>
+                    
+                    {% if commande.utilisateur.nickname is defined %}
+                    <div class="info-item">
+                        <div class="info-label">Pseudo</div>
+                        <div class="info-value nickname">{{ commande.utilisateur.nickname ?? 'Non renseigné' }}</div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="info-item">
+                        <div class="info-label">Date de commande</div>
+                        <div class="info-value">{{ commande.createdAt|date('d/m/Y H:i') }}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Numéro de téléphone</div>
+                        <div class="info-value">{{ commande.utilisateur.telephone ?? 'Non renseigné' }}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Adresse de livraison</div>
+                        <div class="info-value">{{ commande.utilisateur.adresse ?? 'Non renseignée' }}</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Total de commandes</div>
+                        <div class="info-value">{{ order_count }}</div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <h2 class="section-title">nombre d'achat par utilisateur</h2>
+        {% if users|length > 0 %}
         <div class="table-responsive">
             <table class="users-table">
                 <thead>
                     <tr>
                         <th>Nom</th>
-                        <th>Email</th>
-                        <th>Date</th>
-                        <th>Statut</th>
+                            <th>Pseudo</th>
                         <th>Commandes</th>
                         <th>Total dépensé</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% if users|length > 0 %}
                         {% for user in users %}
                             <tr {% if user.id == commande.utilisateur.id %}class="highlight-row"{% endif %}>
                                 <td>{{ user.prenom }} {{ user.nom }}</td>
-                                <td>{{ user.email }}</td>
-                                <td>{% if user.id == commande.utilisateur.id %}{{ commande.createdAt|date('d/m/Y H:i') }}{% else %}-{% endif %}</td>
-                                <td>
-                                    {% set status_class = user.lastStatus == 'terminé' ? '' : 
-                                        (user.lastStatus == 'pending_payment' ? 'pending' : 
-                                        (user.lastStatus == 'annulé' ? 'cancelled' : '')) %}
-                                    <span class="status-badge {{ status_class }}">{{ user.lastStatus }}</span>
-                                </td>
+                                <td class="nickname">{{ user.nickname ?? 'Non renseigné' }}</td>
                                 <td>{{ user.orderCount }}</td>
                                 <td>{{ user.totalPrice }} TND</td>
                             </tr>
                         {% endfor %}
-                    {% else %}
-                        <tr>
-                            <td>{{ commande.utilisateur.prenom }} {{ commande.utilisateur.nom }}</td>
-                            <td>{{ commande.utilisateur.email }}</td>
-                            <td>{{ commande.createdAt|date('d/m/Y H:i') }}</td>
-                            <td>
-                                {% set status_class = commande.status == 'terminé' ? '' : 
-                                    (commande.status == 'pending_payment' ? 'pending' : 
-                                    (commande.status == 'annulé' ? 'cancelled' : '')) %}
-                                <span class="status-badge {{ status_class }}">{{ commande.status }}</span>
-                            </td>
-                            <td>{{ order_count }}</td>
-                            <td>{{ total_price }} TND</td>
-                        </tr>
-                    {% endif %}
                 </tbody>
             </table>
         </div>
-        
-        <div class="action-buttons">
-            <form method="post" action="{{ path('app_commande_delete', {'id': commande.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette commande?');" style="display: inline-block;">
-                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ commande.id) }}">
-                <button class="btn-delete">
-                    <i class="fas fa-trash-alt mr-2"></i> Supprimer
-                </button>
-            </form>
-        </div>
+        {% else %}
+            <p class="empty-message">Aucun autre utilisateur n'a acheté ce produit.</p>
+        {% endif %}
     </div>
 {% endblock %}

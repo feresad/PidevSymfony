@@ -22,7 +22,8 @@ class StockRepository extends ServiceEntityRepository
 
         $qb = $this->createQueryBuilder('s')
             ->select('s.id as stock_id, s.image, s.prix_produit, s.quantity, p.nom_produit, p.id as produit_id, p.description')
-            ->join('s.produit', 'p');
+            ->join('s.produit', 'p')
+            ->groupBy('p.id');
         
         if (!empty($search)) {
             $qb->andWhere('p.nom_produit LIKE :search OR p.description LIKE :search')
@@ -97,7 +98,7 @@ class StockRepository extends ServiceEntityRepository
             ->addSelect('COUNT(c.id) as orderCount')
             ->join('s.produit', 'p')
             ->leftJoin('p.commandes', 'c')
-            ->groupBy('s.id')
+            ->groupBy('p.id')
             ->orderBy('orderCount', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
@@ -113,7 +114,24 @@ class StockRepository extends ServiceEntityRepository
             ->join('s.produit', 'p')
             ->where('p.id = :id')
             ->setParameter('id', $id)
+            ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    /**
+     * @return array Returns an array of featured products sorted by price
+     */
+    public function findFeaturedProductsByPrice(int $limit = 6): array
+    {
+        return $this->createQueryBuilder('s')
+            ->select('s.id as stock_id, s.image, s.prix_produit, s.quantity, p.nom_produit, p.id as produit_id, p.description')
+            ->join('s.produit', 'p')
+            ->where('s.quantity > 0')
+            ->groupBy('p.id')
+            ->orderBy('s.prix_produit', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
     }
 }

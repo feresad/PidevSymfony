@@ -5,8 +5,8 @@ parameters:
     uploads_directory2: 'C:/xampp/htdocs/img/'
 
     dossier_upload: 'C:/xampp/htdocs/img/'
-    image_base_url: 'http://192.168.1.229/img/'
-    image_base_url2: 'http://192.168.1.229/img/'
+    image_base_url: 'http://localhost/img/'
+    image_base_url2: 'http://localhost/img/'
     git_url: 'https://feresad.github.io/event-qr-code/'
     sightengine_api_user: '%env(SIGHTENGINE_API_USER)%'
     sightengine_api_secret: '%env(SIGHTENGINE_API_SECRET)%'
@@ -81,3 +81,8 @@ services:
             $security: '@security.helper'
         tags:
             - { name: kernel.event_subscriber }
+    App\EventListener\ExceptionListener:
+        arguments:
+            $twig: '@twig'
+        tags:
+            - { name: kernel.event_listener, event: kernel.exception, priority: 10 }
