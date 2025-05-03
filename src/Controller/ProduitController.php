@@ -43,6 +43,7 @@ class ProduitController extends AbstractController
             'produit' => $produit,
             'form' => $form->createView(),
             'success_message' => $successMessage,
+            'image_base_url' => $this->getParameter('image_base_url'),
         ]);
     }
 

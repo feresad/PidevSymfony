@@ -163,9 +163,9 @@
                 {% if app.user %}
                     <a href="{{ path('app_profile') }}" title="Mon Profil">
                         {% if app.user.photo %}
-                            <img src="http://localhost/img/{{ app.user.photo }}" alt="{{ app.user.prenom }} {{ app.user.nom }}">
+                            <img src="{{ image_base_url ~ app.user.photo }}" alt="{{ app.user.prenom }} {{ app.user.nom }}">
                         {% else %}
-                            <img src="http://localhost/img/default-avatar.jpg" alt="Default Avatar">
+                            <img src="{{ image_base_url }}/default-avatar.jpg" alt="Default Avatar">
                         {% endif %}
                     </a>
                 {% endif %}

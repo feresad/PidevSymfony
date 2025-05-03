@@ -30,6 +30,7 @@ final class CategorieEventController extends AbstractController
             'current_page' => $page,
             'max_pages' => $maxPages,
             'search' => $search,
+            'image_base_url' => $this->getParameter('image_base_url'),
         ]);
     }
     #[Route('/add', name: 'categorie_ajouter')]
@@ -49,6 +50,7 @@ final class CategorieEventController extends AbstractController
 
         return $this->render('categorie_event/ajouterCategorieEvent.html.twig', [
             'form' => $form->createView(),
+            'image_base_url' => $this->getParameter('image_base_url'),
         ]);
     }
 
@@ -114,6 +116,7 @@ final class CategorieEventController extends AbstractController
         $CategorieEvent = $repo->findAll();
         return $this->render('categorie_event/listeCategorieEventadmin.html.twig', [
             "CategorieEvent"=>$CategorieEvent,
+            'image_base_url' => $this->getParameter('image_base_url'),
         ]);
     }
     #[Route('/admin/show/{id}', name: 'categorie_voir_admin')]

@@ -29,6 +29,8 @@ class AdminGamesController extends AbstractController
         return $this->render('admin_games/index.html.twig', [
             'games' => $games,
             'searchTerm' => $searchTerm,
+            'image_base_url2' => $this->getParameter('image_base_url2'),
+            'image_base_url' => $this->getParameter('image_base_url'),
         ]);
     }
 
@@ -69,7 +71,7 @@ class AdminGamesController extends AbstractController
                     $newFilename = uniqid() . '.' . $imageFile->guessExtension();
                     try {
                         $imageFile->move(
-                            $this->getParameter('uploads_directory'),
+                            $this->getParameter('uploads_directory2'),
                             $newFilename
                         );
                         $game->setImagePath($newFilename);
@@ -78,6 +80,7 @@ class AdminGamesController extends AbstractController
                         return $this->render('admin_games/manage.html.twig', [
                             'form' => $form->createView(),
                             'game' => null,
+                            'image_base_url' => $this->getParameter('image_base_url'),
                         ]);
                     }
                 }
@@ -100,7 +103,8 @@ class AdminGamesController extends AbstractController
         return $this->render('admin_games/manage.html.twig', [
             'form' => $form->createView(),
             'game' => null,
-        ]);
+            'image_base_url' => $this->getParameter('image_base_url'),
+        ]); 
     }
 
     #[Route('/edit/{id}', name: 'admin_games_edit', methods: ['GET', 'POST'])]
@@ -137,7 +141,7 @@ class AdminGamesController extends AbstractController
             if (empty($errors)) {
                 if ($imageFile) {
                     if ($game->getImagePath()) {
-                        $oldImagePath = $this->getParameter('uploads_directory') . '/' . $game->getImagePath();
+                        $oldImagePath = $this->getParameter('image_base_url') . $game->getImagePath();
                         if (file_exists($oldImagePath)) {
                             unlink($oldImagePath);
                         }
@@ -176,6 +180,8 @@ class AdminGamesController extends AbstractController
         return $this->render('admin_games/manage.html.twig', [
             'form' => $form->createView(),
             'game' => $game,
+            'image_base_url' => $this->getParameter('image_base_url'),
+            'image_base_url2' => $this->getParameter('image_base_url2'),
         ]);
     }
 
@@ -201,6 +207,8 @@ class AdminGamesController extends AbstractController
             $this->addFlash('error', 'Invalid CSRF token.');
         }
 
-        return $this->redirectToRoute('admin_games_dashboard');
+        return $this->redirectToRoute('admin_games_dashboard',[
+            'image_base_url' => $this->getParameter('image_base_url'),
+        ]);
     }
 }

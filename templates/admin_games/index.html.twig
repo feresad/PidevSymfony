@@ -53,7 +53,7 @@
                         {% for game in games %}
                             <div class="gameCard">
                                 {% if game.getImagePath() %}
-                                    <img src="http://localhost/img/games/{{ game.getImagePath() }}" alt="{{ game.getGameName() }}" class="gameImage">
+                                    <img src="{{ image_base_url2 ~ game.imagePath }}" alt="{{ game.GameName }}" class="gameImage">
                                 {% else %}
                                     <img src="{{ asset('images/default-game.jpg') }}" alt="Image par défaut" class="gameImage">
                                 {% endif %}

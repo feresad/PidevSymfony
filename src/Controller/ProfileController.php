@@ -70,7 +70,8 @@ class ProfileController extends AbstractController
         return $this->render('profile/profile.html.twig', [
             'profileForm' => $profileForm->createView(),
             'passwordForm' => $passwordForm->createView(),
-            'user' => $user
+            'user' => $user,
+            'image_base_url' => $this->getParameter('image_base_url')
         ]);
     }
 

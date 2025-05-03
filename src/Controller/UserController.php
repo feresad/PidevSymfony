@@ -96,7 +96,9 @@ class UserController extends AbstractController
 
         // Check if user has ROLE_ADMIN using the security interface
         if (in_array('ROLE_ADMIN', $user->getRoles())) {
-            return $this->render('home/indexadmin.html.twig');
+            return $this->render('home/indexadmin.html.twig', [
+                'image_base_url' => $this->getParameter('image_base_url'),
+            ]);
         }
 
         $today = new \DateTime();
@@ -135,6 +137,7 @@ class UserController extends AbstractController
             'recentEvenements' => $recentEvenements,
             'featuredProducts' => $featuredProducts,
             'image_base_url' => $this->getParameter('image_base_url'),
+            'image_base_url2' => $this->getParameter('image_base_url2'),
             'trendingTopics' => $topicsData,
         ]);
     }

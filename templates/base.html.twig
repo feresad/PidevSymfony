@@ -343,15 +343,24 @@
 
             <!-- Navigation Links -->
             <div class="col-lg-6 col-md-6">
-                <h4 class="nk-footer-title">Sections</h4>
-                <ul class="nk-footer-links">
-                    <li><a href="{{ path('app_home') }}">Accueil</a></li>
-                    <li><a href="{{ path('forum_topics') }}">Forum</a></li>
-                    <li><a href="{{ path('evenement_list') }}">Événements</a></li>
-                    <li><a href="{{ path('app_store') }}">Boutique</a></li>
-                    <li><a href="{{ path('session_client_list') }}">Coach</a></li>
-                    <li><a href="{{ path('app_become_coach') }}">Rejoignez-nous</a></li>
-                </ul>
+                <div class="row">
+                    <div class="col-6">
+                        <h4 class="nk-footer-title">Navigation</h4>
+                        <ul class="nk-footer-links">
+                            <li><a href="{{ path('app_home') }}">Accueil</a></li>
+                            <li><a href="{{ path('forum_topics') }}">Forum</a></li>
+                            <li><a href="{{ path('evenement_list') }}">Événements</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="nk-footer-title">Plus</h4>
+                        <ul class="nk-footer-links">
+                            <li><a href="{{ path('app_store') }}">Boutique</a></li>
+                            <li><a href="{{ path('session_client_list') }}">Coach</a></li>
+                            <li><a href="{{ path('app_become_coach') }}">Rejoignez-nous</a></li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -452,6 +461,8 @@
 
                 $chatInput.val("");
                 $chatInput.css('height', `${inputInitHeight}px`);
+
+               
 
                 const outgoingChatLi = createChatLi(userMessage, "outgoing");
                 $chatbox.append(outgoingChatLi);

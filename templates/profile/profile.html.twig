@@ -290,10 +290,7 @@
         <div class="profile-content">
             <div class="profile-left">
                 <div class="profile-image-container">
-                    <img src="http://localhost/img/{% if user.photo %}{{ user.photo }}{% else %}default-avatar.jpg{% endif %}" 
-                         alt="Profile Image" 
-                         id="profileImage"
-                         class="profile-image">
+                    <img src="{{ image_base_url }}{% if user.photo %}{{ user.photo }}{% else %}default-avatar.jpg{% endif %}" alt="Profile Image" id="profileImage" class="profile-image">
                     <button type="button" class="btn-modify-photo" id="uploadTrigger">
                         <i class="fas fa-camera"></i> Modifier la photo
                     </button>

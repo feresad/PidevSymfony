@@ -225,6 +225,8 @@ class AdminForumController extends AbstractController
             'topics' => $topics,
             'newTopicForm' => $form->createView(),
             'trendingPosts' => $trendingPosts,
+            'image_base_url2' => $this->getParameter('image_base_url2'),
+            'image_base_url' => $this->getParameter('image_base_url'),
             'pagination' => [
                 'currentPage' => $page,
                 'totalPages' => $totalPages,
@@ -252,7 +254,7 @@ class AdminForumController extends AbstractController
 
         try {
             if ($question->getMediaPath()) {
-                $mediaPath = $this->getParameter('uploads_directory') . '\\' . $question->getMediaPath();
+                $mediaPath = $this->getParameter('uploads_directory') . $question->getMediaPath();
                 if (file_exists($mediaPath)) {
                     unlink($mediaPath);
                 }
@@ -326,7 +328,7 @@ class AdminForumController extends AbstractController
                 try {
                     if ($mediaFile) {
                         if ($question->getMediaPath()) {
-                            $oldMediaPath = $this->getParameter('uploads_directory') . '\\' . $question->getMediaPath();
+                            $oldMediaPath = $this->getParameter('uploads_directory') . $question->getMediaPath();
                             if (file_exists($oldMediaPath)) {
                                 unlink($oldMediaPath);
                             }
@@ -339,7 +341,7 @@ class AdminForumController extends AbstractController
                         $question->setMediaType($mediaType);
                     } elseif ($mediaType === null || $mediaType->value === null) {
                         if ($question->getMediaPath()) {
-                            $oldMediaPath = $this->getParameter('uploads_directory') . '\\' . $question->getMediaPath();
+                            $oldMediaPath = $this->getParameter('uploads_directory') . $question->getMediaPath();
                             if (file_exists($oldMediaPath)) {
                                 unlink($oldMediaPath);
                             }

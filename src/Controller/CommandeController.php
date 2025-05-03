@@ -63,6 +63,7 @@ class CommandeController extends AbstractController
         return $this->render('commande/index.html.twig', [
             'commandes' => $paginator,
             'current_page' => $page,
+            'image_base_url' => $this->getParameter('image_base_url'),
             'max_pages' => $maxPages,
             'search' => $search,
             'sort' => $sort,
@@ -200,6 +201,7 @@ class CommandeController extends AbstractController
         return $this->render('commande/stats.html.twig', [
             'monthly_data' => $formattedMonthlyData,
             'top_products' => $topProducts,
+            'image_base_url' => $this->getParameter('image_base_url'),
             'total_revenue' => $totalRevenue,
             'total_orders' => $totalOrders,
             'year' => $year,

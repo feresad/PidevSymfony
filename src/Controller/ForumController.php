@@ -122,7 +122,7 @@ class ForumController extends AbstractController
                         $mediaFile->move($uploadsDirectory, $mediaFilename);
                         $this->logger->info($this->translator->trans('log.media_file_uploaded'), [
                             'filename' => $mediaFilename,
-                            'path' => $uploadsDirectory . '\\' . $mediaFilename,
+                            'path' => $uploadsDirectory . $mediaFilename,
                         ]);
                         $question->setMediaPath($mediaFilename);
                         $question->setMediaType($mediaType);
@@ -264,6 +264,7 @@ class ForumController extends AbstractController
             'topics' => $topics,
             'newTopicForm' => $form->createView(),
             'trendingPosts' => $trendingPosts,
+            'image_base_url2' => $this->getParameter('image_base_url2'),
             'pagination' => [
                 'currentPage' => $page,
                 'totalPages' => $totalPages,
@@ -355,6 +356,8 @@ class ForumController extends AbstractController
 
         return $this->render('forum/recommended.html.twig', [
             'recommendedTopics' => $recommendedTopics,
+            'image_base_url2' => $this->getParameter('image_base_url2'),
+
         ]);
     }
 
@@ -494,7 +497,7 @@ class ForumController extends AbstractController
                 'utilisateurId' => $comment->getUtilisateurId(),
                 'childCommentaires' => array_map($mapComment, $childCommentaires),
                 'updateForm' => $this->createForm(CommentFormType::class, $comment, [
-                    'action' => $this->generateUrl('comment_update', ['id' => $comment->getCommentaireId()]),
+                    'action' => $this->generateUrl('comment_update', ['id' => $comment->getCommentaireId(),'image_base_url2' => $this->getParameter('image_base_url2')]),
                 ])->createView(),
                 'votes' => $comment->getVotes(),
                 'reactionCounts' => $reactionCounts,
@@ -520,6 +523,7 @@ class ForumController extends AbstractController
             'question' => $questionData,
             'comments' => $commentData,
             'comment_form' => $commentForm->createView(),
+            'image_base_url2' => $this->getParameter('image_base_url2'),
             'pagination' => $pagination,
             'is_subscribed' => $isSubscribed,
             'subscribe_button_label' => $subscribeButtonLabel,
@@ -571,7 +575,7 @@ class ForumController extends AbstractController
 
         try {
             if ($question->getMediaPath()) {
-                $mediaPath = $this->getParameter('uploads_directory') . '\\' . $question->getMediaPath();
+                $mediaPath = $this->getParameter('uploads_directory') . $question->getMediaPath();
                 if (file_exists($mediaPath)) {
                     unlink($mediaPath);
                     $this->logger->info($this->translator->trans('log.deleted_media_file'), ['path' => $mediaPath]);
@@ -586,7 +590,9 @@ class ForumController extends AbstractController
             $this->addFlash('error', $this->translator->trans('flash.error_deleting_topic', ['%error%' => $e->getMessage()]));
         }
 
-        return $this->redirectToRoute('forum_topics');
+        return $this->redirectToRoute('forum_topics',[
+            'image_base_url2' => $this->getParameter('image_base_url2'),
+        ]);
     }
 
     #[Route('/forum/topic/update/{id}', name: 'forum_update_topic', methods: ['POST'])]
@@ -654,7 +660,7 @@ class ForumController extends AbstractController
                 try {
                     if ($mediaFile) {
                         if ($question->getMediaPath()) {
-                            $oldMediaPath = $this->getParameter('uploads_directory') . '\\' . $question->getMediaPath();
+                            $oldMediaPath = $this->getParameter('uploads_directory') . $question->getMediaPath();
                             if (file_exists($oldMediaPath)) {
                                 unlink($oldMediaPath);
                                 $this->logger->info($this->translator->trans('log.deleted_old_media_file'), ['path' => $oldMediaPath]);
@@ -667,13 +673,13 @@ class ForumController extends AbstractController
                         $mediaFile->move($uploadsDirectory, $mediaFilename);
                         $this->logger->info($this->translator->trans('log.media_file_uploaded'), [
                             'filename' => $mediaFilename,
-                            'path' => $uploadsDirectory . '\\' . $mediaFilename,
+                            'path' => $uploadsDirectory . $mediaFilename,
                         ]);
                         $question->setMediaPath($mediaFilename);
                         $question->setMediaType($mediaType);
                     } elseif ($mediaType === null || $mediaType->value === null) {
                         if ($question->getMediaPath()) {
-                            $oldMediaPath = $this->getParameter('uploads_directory') . '\\' . $question->getMediaPath();
+                            $oldMediaPath = $this->getParameter('uploads_directory') . $question->getMediaPath();
                             if (file_exists($oldMediaPath)) {
                                 unlink($oldMediaPath);
                                 $this->logger->info($this->translator->trans('log.deleted_old_media_file_no_type'), ['path' => $oldMediaPath]);
@@ -700,7 +706,9 @@ class ForumController extends AbstractController
             }
         }
     
-        return $this->redirectToRoute('forum_topics');
+        return $this->redirectToRoute('forum_topics',[
+            'image_base_url2' => $this->getParameter('image_base_url2'),
+        ]);
     }
 
     #[Route('/ajax/vote', name: 'ajax_vote_action', methods: ['POST'])]
@@ -860,7 +868,7 @@ class ForumController extends AbstractController
 
         $topicUrl = $this->generateUrl('forum_single_topic', ['id' => $id], \Symfony\Component\Routing\Generator\UrlGeneratorInterface::ABSOLUTE_URL);
         $imageUrl = $question->getMediaType() && $question->getMediaType()->value === 'image' && $question->getMediaPath()
-            ? $this->generateUrl('app_home', [], \Symfony\Component\Routing\Generator\UrlGeneratorInterface::ABSOLUTE_URL) . 'img/games/' . $question->getMediaPath()
+            ? $this->getParameter('image_base_url2') . $question->getMediaPath()
             : $this->generateUrl('app_home', [], \Symfony\Component\Routing\Generator\UrlGeneratorInterface::ABSOLUTE_URL) . 'assets/images/default-game.jpg';
 
         $shareData = [

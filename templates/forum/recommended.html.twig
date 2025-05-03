@@ -8,10 +8,10 @@
                  data-content="{{ topic.content ? topic.content|lower : '' }}">
                 <div class="nk-forum-recommended-media">
                     {% if topic.image is defined and topic.image %}
-                        <img src="http://localhost/img/games/{{ topic.image }}" alt="{{ 'forum.topic_media'|trans }}" class="recommended-media">
+                        <img src="{{ image_base_url2 ~ topic.image }}" alt="{{ 'forum.topic_media'|trans }}" class="recommended-media">
                     {% elseif topic.video is defined and topic.video %}
                         <video class="recommended-media" muted loop>
-                            <source src="http://localhost/img/games/{{ topic.video }}" type="video/mp4">
+                            <source src="{{ image_base_url2 ~ topic.video }}" type="video/mp4">
                             {{ 'forum.video_unsupported'|trans }}
                         </video>
                     {% else %}

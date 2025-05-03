@@ -1,21 +1,22 @@
 # config/services.yaml
 parameters:
     #uploads_directory: 'C:\xampp\htdocs\uploads'
-    uploads_directory: 'C:\xampp\htdocs\img\games'
-    uploads_directory2: 'C:\xampp\htdocs\img'
+    uploads_directory: 'C:/xampp/htdocs/img/'
+    uploads_directory2: 'C:/xampp/htdocs/img/'
 
-    dossier_upload: 'C:\xampp\htdocs\img'
+    dossier_upload: 'C:/xampp/htdocs/img/'
     image_base_url: 'http://localhost/img/'
+    image_base_url2: 'http://localhost/img/'
     git_url: 'https://feresad.github.io/event-qr-code/'
     sightengine_api_user: '%env(SIGHTENGINE_API_USER)%'
     sightengine_api_secret: '%env(SIGHTENGINE_API_SECRET)%'
-    dossierUpload: 'C:\xampp\htdocs\img'
+    dossierUpload: 'C:/xampp/htdocs/img/'
     gemini.api_key: 'AIzaSyCjjlK6kTJXy8Kevcl8xoO0KhvZesakw3g'
     stripe_secret_key: '%env(STRIPE_SECRET_KEY)%'
     stripe_public_key: '%env(STRIPE_PUBLIC_KEY)%'
     stripe.public_key: '%env(STRIPE_PUBLIC_KEY)%'
     imgbb_api_key: '%env(IMGBB_API_KEY)%'
-    cv_directory: 'C:\xampp\htdocs\img'
+    cv_directory: 'C:/xampp/htdocs/img/'
     
 services:
     App\Service\TopicRecommendationService:
@@ -80,3 +81,8 @@ services:
             $security: '@security.helper'
         tags:
             - { name: kernel.event_subscriber }
+    App\EventListener\ExceptionListener:
+        arguments:
+            $twig: '@twig'
+        tags:
+            - { name: kernel.event_listener, event: kernel.exception, priority: 10 }

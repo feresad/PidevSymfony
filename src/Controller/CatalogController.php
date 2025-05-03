@@ -94,7 +94,7 @@ class CatalogController extends AbstractController
         return $this->render('catalog/editstock.html.twig', [
             'stock_form' => $stockForm->createView(),
             'product' => $stock,
-            'image_base_url' => $this->getParameter('image_base_url')
+            'image_base_url' => $this->getParameter('image_base_url'),
         ]);
     }
 
@@ -133,6 +133,7 @@ class CatalogController extends AbstractController
         return $this->render('catalog/editproduit.html.twig', [
             'produit_form' => $produitForm->createView(),
             'product' => $stock,
+            'image_base_url' => $this->getParameter('image_base_url'),
         ]);
     }
     

@@ -1243,7 +1243,6 @@ header h2 {
 .nk-footer-modern {
   background-color: #171e22;
   color: #d1d5db;
-  padding: 60px 0 40px;
   position: relative;
 }
 
@@ -1259,7 +1258,7 @@ header h2 {
 .nk-footer-logo {
   width: 150px;
   height: auto;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .nk-footer-description {
@@ -1313,7 +1312,8 @@ header h2 {
 
 .nk-footer-bottom {
   text-align: center;
-  padding-top: 40px;
+  padding-top: 2rem;
+  padding-bottom: 2rem;
   margin-top: 40px;
   border-top: 1px solid #293139;
 }
