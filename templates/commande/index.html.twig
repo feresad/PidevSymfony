@@ -9,9 +9,9 @@
             <div class="d-flex align-items-center">
                 <div class="mr-3">
                     <select name="sort" class="form-control" form="commandeFilterForm">
-                        <option value="date_asc" {{ sort|default('') == 'date_asc' ? 'selected' : '' }}>Date (Croissant)</option>
-                        <option value="date_desc" {{ sort|default('') == 'date_desc' ? 'selected' : '' }}>Date (Décroissant)</option>
-                        <option value="status_asc" {{ sort|default('') == 'status_asc' ? 'selected' : '' }}>Statut (A-Z)</option>
+                        <option value="date_desc" {{ sort|default('date_desc') == 'date_desc' ? 'selected' : '' }}>Date (Récente → Ancienne)</option>
+                        <option value="date_asc" {{ sort|default('date_desc') == 'date_asc' ? 'selected' : '' }}>Date (Ancienne → Récente)</option>
+                        <option value="status_asc" {{ sort|default('date_desc') == 'status_asc' ? 'selected' : '' }}>Statut (A-Z)</option>
                     </select>
                 </div>
                 <div class="mr-3">
@@ -42,20 +42,23 @@
         <div class="card-main">
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover" id="commandes-table">
+                    <table class="table table-hover table-striped w-100" id="commandes-table">
                         <thead class="table-primary">
                             <tr>
-                                <th>Produit</th>
-                                <th>Prix</th>
-                                <th>Statut</th>
-                                <th>Date</th>
-                                <th>Actions</th>
+                                <th>id</th>
+                                <th>nom produit</th>
+                                <th>date (latest)</th>
+                                <th>montant</th>
+                                <th>status</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
                         {% for commande in commandes %}
                             <tr>
+                                <td class="align-middle">{{ commande.id }}</td>
                                 <td class="align-middle">{{ commande.produit.nomProduit }}</td>
+                                <td class="align-middle">{{ commande.createdAt|date('d/m/Y H:i') }}</td>
                                 <td class="align-middle">
                                     {% if commande.produit.stocks|length > 0 %}
                                         {{ commande.produit.stocks[0].prixProduit|number_format(2, '.', ',') }} TND
@@ -64,29 +67,19 @@
                                     {% endif %}
                                 </td>
                                 <td class="align-middle">
-                                    <span class="badge {{ commande.status == 'terminé' ? 'bg-success' : (commande.status == 'pending_payment' ? 'bg-warning text-dark' : 'bg-info') }}">
+                                    <span class="badge {{ commande.status == 'terminé' ? 'bg-success' : (commande.status == 'pending_payment' ? 'bg-warning text-dark' : (commande.status == 'annulé' ? 'bg-danger' : 'bg-info')) }}">
                                         {{ commande.status }}
                                     </span>
                                 </td>
-                                <td class="align-middle">{{ commande.createdAt|date('d/m/Y H:i') }}</td>
                                 <td class="align-middle">
-                                    <div class="btn-group">
-                                        <a href="{{ path('app_commande_show', {'id': commande.id}) }}" class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-eye"></i> Voir
-                                        </a>
-                                        <form method="post" action="{{ path('app_commande_delete', {'id': commande.id}) }}" style="display: inline-block" 
-                                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette commande?');">
-                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ commande.id) }}">
-                                            <button class="btn btn-sm btn-outline-danger">
-                                                <i class="fas fa-trash"></i> Supprimer
-                                            </button>
-                                        </form>
-                                    </div>
+                                    <a href="{{ path('app_commande_show', {'id': commande.id}) }}" class="btn btn-sm btn-outline-primary w-100">
+                                        <i class="fas fa-eye"></i> Voir details
+                                    </a>
                                 </td>
                             </tr>
                         {% else %}
                             <tr>
-                                <td colspan="5" class="text-center">Aucune commande trouvée</td>
+                                <td colspan="6" class="text-center">Aucune commande trouvée</td>
                             </tr>
                         {% endfor %}
                         </tbody>
@@ -99,15 +92,15 @@
             <nav aria-label="Pagination des commandes" class="mt-4">
                 <ul class="pagination justify-content-center">
                     <li class="page-item {{ current_page|default(1) == 1 ? 'disabled' : '' }}">
-                        <a class="page-link" href="{{ path('app_commande_index', { page: (current_page|default(1)) - 1, search: search|default(''), sort: sort|default('') }) }}">Précédent</a>
+                        <a class="page-link" href="{{ path('app_commande_index', { page: (current_page|default(1)) - 1, search: search|default(''), sort: sort|default('date_desc') }) }}">Précédent</a>
                     </li>
                     {% for i in 1..max_pages %}
                         <li class="page-item {{ current_page|default(1) == i ? 'active' : '' }}">
-                            <a class="page-link" href="{{ path('app_commande_index', { page: i, search: search|default(''), sort: sort|default('') }) }}">{{ i }}</a>
+                            <a class="page-link" href="{{ path('app_commande_index', { page: i, search: search|default(''), sort: sort|default('date_desc') }) }}">{{ i }}</a>
                         </li>
                     {% endfor %}
                     <li class="page-item {{ current_page|default(1) == max_pages ? 'disabled' : '' }}">
-                        <a class="page-link" href="{{ path('app_commande_index', { page: (current_page|default(1)) + 1, search: search|default(''), sort: sort|default('') }) }}">Suivant</a>
+                        <a class="page-link" href="{{ path('app_commande_index', { page: (current_page|default(1)) + 1, search: search|default(''), sort: sort|default('date_desc') }) }}">Suivant</a>
                     </li>
                 </ul>
             </nav>
@@ -121,12 +114,15 @@
         #commandes-table {
             color: #000 !important;
             background-color: #fff;
+            width: 100%;
+            table-layout: fixed;
         }
         
         #commandes-table th,
         #commandes-table td {
             color: #000 !important;
             border-color: #dee2e6;
+            padding: 12px 15px;
         }
         
         #commandes-table thead {
@@ -148,11 +144,48 @@
             border-radius: 0.5rem;
             box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
             overflow: hidden;
+            width: 100%;
         }
         
         .badge {
             font-size: 0.85rem;
             padding: 0.35em 0.65em;
+        }
+        
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+        
+        /* Column widths */
+        #commandes-table th:nth-child(1), 
+        #commandes-table td:nth-child(1) {
+            width: 5%;
+        }
+        
+        #commandes-table th:nth-child(2), 
+        #commandes-table td:nth-child(2) {
+            width: 25%;
+        }
+        
+        #commandes-table th:nth-child(3), 
+        #commandes-table td:nth-child(3) {
+            width: 15%;
+        }
+        
+        #commandes-table th:nth-child(4), 
+        #commandes-table td:nth-child(4) {
+            width: 15%;
+        }
+        
+        #commandes-table th:nth-child(5), 
+        #commandes-table td:nth-child(5) {
+            width: 15%;
+        }
+        
+        #commandes-table th:nth-child(6), 
+        #commandes-table td:nth-child(6) {
+            width: 25%;
         }
     </style>
 {% endblock %}

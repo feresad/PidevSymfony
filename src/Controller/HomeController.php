@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Repository\EvenementRepository;
+use App\Repository\StockRepository;
 use App\Service\GeminiService;
 use App\Repository\UtilisateurRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -13,9 +14,18 @@ use Symfony\Component\Routing\Attribute\Route;
 final class HomeController extends AbstractController
 {
     #[Route('/', name: 'app_home')]
-    public function index(EvenementRepository $repo): Response
+    public function index(EvenementRepository $evenementRepo, StockRepository $stockRepo): Response
     {
-        return $this->render('index.html.twig', [
+        // Get recent events
+        $recentEvenements = $evenementRepo->findRecentEvents(new \DateTime(), 3);
+        
+        // Get featured products sorted by price (highest to lowest)
+        $featuredProducts = $stockRepo->findFeaturedProductsByPrice(6);
+        
+        return $this->render('home/index.html.twig', [
+            'recentEvenements' => $recentEvenements,
+            'featuredProducts' => $featuredProducts,
+            'image_base_url' => 'http://localhost/img'
         ]);
     }
     #[Route('/admin', name: 'app_home_admin')]

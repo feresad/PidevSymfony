@@ -8,6 +8,7 @@ use App\Form\LoginFormType;
 use App\Repository\EvenementRepository;
 use App\Repository\QuestionsRepository;
 use App\Repository\UtilisateurRepository;
+use App\Repository\StockRepository;
 use SebastianBergmann\Environment\Console;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -85,7 +86,7 @@ class UserController extends AbstractController
     }
 
     #[Route('/', name: 'app_home')]
-    public function home(EvenementRepository $repo, QuestionsRepository $questionsRepository): Response
+    public function home(EvenementRepository $repo, QuestionsRepository $questionsRepository, StockRepository $stockRepo): Response
     {
         /** @var Utilisateur $user */
         $user = $this->getUser();
@@ -100,6 +101,9 @@ class UserController extends AbstractController
 
         $today = new \DateTime();
         $recentEvenements = $repo->findRecentEvents($today, 3);
+        
+        // Get featured products sorted by price
+        $featuredProducts = $stockRepo->findFeaturedProductsByPrice(6);
 
         // Fetch top 2 trending topics based on votes
         $trendingTopics = $questionsRepository->createQueryBuilder('q')
@@ -129,6 +133,7 @@ class UserController extends AbstractController
         return $this->render('home/index.html.twig', [
             'user' => $user,
             'recentEvenements' => $recentEvenements,
+            'featuredProducts' => $featuredProducts,
             'image_base_url' => $this->getParameter('image_base_url'),
             'trendingTopics' => $topicsData,
         ]);

@@ -42,8 +42,7 @@ class CommandeController extends AbstractController
         $queryBuilder = $commandeRepository->createQueryBuilder('c')
             ->select('c, p, s')
             ->leftJoin('c.produit', 'p')
-            ->leftJoin('p.stocks', 's')
-            ->groupBy('p.id'); // Group by product to avoid duplicates
+            ->leftJoin('p.stocks', 's');
 
         if ($search) {
             $queryBuilder->andWhere('p.nom_produit LIKE :search')
@@ -204,6 +203,137 @@ class CommandeController extends AbstractController
             'total_revenue' => $totalRevenue,
             'total_orders' => $totalOrders,
             'year' => $year,
+        ]);
+    }
+
+    #[Route('/api/stats', name: 'app_commande_api_stats', methods: ['GET'])]
+    public function apiStats(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $year = $request->query->get('year', date('Y'));
+        $timeRange = $request->query->getInt('timeRange', 30); // Default to 30 days
+        
+        // Create date range based on timeRange
+        $endDate = new \DateTime();
+        $startDate = clone $endDate;
+        $startDate->modify("-{$timeRange} days");
+        
+        // Use year if timeRange is not specified
+        if (!$request->query->has('timeRange')) {
+            $startDate = new \DateTime($year . '-01-01 00:00:00');
+            $endDate = new \DateTime($year . '-12-31 23:59:59');
+        }
+        
+        // Get all commandes for the selected period
+        $commandesQuery = $entityManager->createQuery(
+            'SELECT c, p, s
+             FROM App\Entity\Commande c
+             JOIN c.produit p
+             JOIN p.stocks s
+             WHERE c.createdAt >= :startDate AND c.createdAt <= :endDate
+             ORDER BY c.createdAt ASC'
+        )
+        ->setParameter('startDate', $startDate)
+        ->setParameter('endDate', $endDate);
+        
+        $commandes = $commandesQuery->getResult();
+        
+        // Process data manually in PHP
+        $productData = [];
+        $totalRevenue = 0;
+        $totalOrders = count($commandes);
+        $previousPeriodRevenue = 0;
+        
+        // Process each commande
+        foreach ($commandes as $commande) {
+            $price = 0;
+            
+            // Get price from stock
+            if ($commande->getProduit() && $commande->getProduit()->getStocks() && !$commande->getProduit()->getStocks()->isEmpty()) {
+                $stock = $commande->getProduit()->getStocks()->first();
+                if ($stock) {
+                    $price = $stock->getPrixProduit();
+                }
+            }
+            
+            // Update total revenue
+            $totalRevenue += $price;
+            
+            // Update product data
+            $productName = $commande->getProduit() ? $commande->getProduit()->getNomProduit() : 'Inconnu';
+            if (!isset($productData[$productName])) {
+                $productData[$productName] = [
+                    'name' => $productName,
+                    'quantity' => 0,
+                    'revenue' => 0,
+                ];
+            }
+            
+            $productData[$productName]['quantity']++;
+            $productData[$productName]['revenue'] += $price;
+        }
+        
+        // Sort products by quantity sold (descending)
+        uasort($productData, function($a, $b) {
+            return $b['quantity'] - $a['quantity'];
+        });
+        
+        // Get top product name
+        $topProduct = count($productData) > 0 ? array_keys($productData)[0] : '-';
+        
+        // Calculate average order value
+        $avgOrderValue = $totalOrders > 0 ? $totalRevenue / $totalOrders : 0;
+        
+        // Get previous period data for growth calculation
+        $previousEndDate = clone $startDate;
+        $previousStartDate = clone $previousEndDate;
+        $previousStartDate->modify("-{$timeRange} days");
+        
+        $previousCommandesQuery = $entityManager->createQuery(
+            'SELECT c, p, s
+             FROM App\Entity\Commande c
+             JOIN c.produit p
+             JOIN p.stocks s
+             WHERE c.createdAt >= :startDate AND c.createdAt <= :endDate
+             ORDER BY c.createdAt ASC'
+        )
+        ->setParameter('startDate', $previousStartDate)
+        ->setParameter('endDate', $previousEndDate);
+        
+        $previousCommandes = $previousCommandesQuery->getResult();
+        
+        // Calculate previous period revenue
+        foreach ($previousCommandes as $commande) {
+            $price = 0;
+            if ($commande->getProduit() && $commande->getProduit()->getStocks() && !$commande->getProduit()->getStocks()->isEmpty()) {
+                $stock = $commande->getProduit()->getStocks()->first();
+                if ($stock) {
+                    $price = $stock->getPrixProduit();
+                }
+            }
+            $previousPeriodRevenue += $price;
+        }
+        
+        // Calculate growth percentage
+        $growthPercentage = 0;
+        if ($previousPeriodRevenue > 0) {
+            $growthPercentage = (($totalRevenue - $previousPeriodRevenue) / $previousPeriodRevenue) * 100;
+        }
+        
+        // Return JSON response
+        return $this->json([
+            'success' => true,
+            'stats' => [
+                'totalRevenue' => $totalRevenue,
+                'totalOrders' => $totalOrders,
+                'topProduct' => $topProduct,
+                'avgOrderValue' => $avgOrderValue,
+                'monthlyGrowth' => round($growthPercentage, 1)
+            ],
+            'period' => [
+                'start' => $startDate->format('Y-m-d'),
+                'end' => $endDate->format('Y-m-d'),
+                'timeRange' => $timeRange
+            ]
         ]);
     }
 
