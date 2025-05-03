@@ -2,6 +2,12 @@
 
 {% block title %}Dashboard{% endblock %}
 
+{% set totalReservations = totalReservations|default(0) %}
+{% set activeCustomers = activeCustomers|default([]) %}
+{% set topCoaches = topCoaches|default([]) %}
+{% set monthLabels = monthLabels|default('[]') %}
+{% set monthlyRevenue = monthlyRevenue|default('[]') %}
+
 {% block body %}
     <div class="cardBox">
         <div class="cardHome">
@@ -45,65 +51,55 @@
         </div>
     </div>
 
-    <!-- ================ Order Details List ================= -->
-    <div class="details">
-        <div class="recentOrders">
-            <div class="cardHeader">
-                <h2>Recent Orders</h2>
-                <a href="#" class="btn">View All</a>
-            </div>
-
-            <table>
-                <thead>
-                    <tr>
-                        <td>Name</td>
-                        <td>Price</td>
-                        <td>Payment</td>
-                        <td>Status</td>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Star Refrigerator</td>
-                        <td>$1200</td>
-                        <td>Paid</td>
-                        <td><span class="status delivered">Delivered</span></td>
-                    </tr>
-                    <tr>
-                        <td>Dell Laptop</td>
-                        <td>$110</td>
-                        <td>Due</td>
-                        <td><span class="status pending">Pending</span></td>
-                    </tr>
-                    <!-- Ajoutez d'autres lignes ici si nécessaire -->
-                </tbody>
-            </table>
-        </div>
-
-        <!-- ================= New Customers ================ -->
-        <div class="recentCustomers">
-            <div class="cardHeader">
-                <h2>Recent Customers</h2>
-            </div>
-            <table>
-                <tr>
-                    <td width="60px">
-                        <div class="imgBx"><img src="{{ asset('images/customer02.jpg') }}" alt=""></div>
-                    </td>
-                    <td>
-                        <h4>David <br> <span>Italy</span></h4>
-                    </td>
-                </tr>
-                <tr>
-                    <td width="60px">
-                        <div class="imgBx"><img src="{{ asset('images/customer01.jpg') }}" alt=""></div>
-                    </td>
-                    <td>
-                        <h4>Amit <br> <span>India</span></h4>
-                    </td>
-                </tr>
-                <!-- Ajoutez d'autres clients ici si nécessaire -->
-            </table>
-        </div>
-    </div>
+    <!-- ================ Summary Section ================= -->
+    {% include 'summary/_summary_content.html.twig' with {
+        totalReservations: totalReservations,
+        activeCustomers: activeCustomers,
+        topCoaches: topCoaches,
+        monthLabels: monthLabels,
+        monthlyRevenue: monthlyRevenue
+    } %}
+    
+    {% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const ctxMonthly = document.getElementById('monthlyRevenueChart').getContext('2d');
+        new Chart(ctxMonthly, {
+            type: 'line',
+            data: {
+                labels: {{ monthLabels|raw }},
+                datasets: [{
+                    label: 'Revenus Mensuels (€)',
+                    data: {{ monthlyRevenue|raw }},
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { labels: { color: 'white' }},
+                    title: { display: true, text: 'Tendance sur 12 mois', color: 'white' }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { color: 'white' },
+                        title: { display: true, text: 'Revenus (€)', color: 'white' }
+                    },
+                    x: {
+                        ticks: { color: 'white' },
+                        title: { display: true, text: 'Mois', color: 'white' }
+                    }
+                }
+            }
+        });
+    });
+    </script>
+    {% endblock %}
 {% endblock %}

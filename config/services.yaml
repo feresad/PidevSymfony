@@ -5,7 +5,7 @@ parameters:
     uploads_directory2: 'http://localhost/img/'
 
     dossier_upload: 'C:\xampp\htdocs\img'
-    image_base_url: 'http://localhost/img/'
+    image_base_url: 'http://192.168.1.15/img/'
     git_url: 'https://feresad.github.io/event-qr-code/'
     sightengine_api_user: '%env(SIGHTENGINE_API_USER)%'
     sightengine_api_secret: '%env(SIGHTENGINE_API_SECRET)%'

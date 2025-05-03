@@ -59,4 +59,35 @@ class Session_gameRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Returns all sessions with their reservation count
+     * @return array [ ['session' => Session_game, 'reservationCount' => int], ... ]
+     */
+    public function findAllWithReservationCount(): array
+    {
+        $qb = $this->createQueryBuilder('s')
+            ->select('s, COUNT(r.id) AS reservationCount')
+            ->leftJoin('App\\Entity\\Reservation', 'r', 'WITH', 'r.session = s')
+            ->groupBy('s.id');
+        $results = $qb->getQuery()->getResult();
+
+        // Doctrine returns a mixed array, so we need to format it
+        $sessions = [];
+        foreach ($results as $result) {
+            if (is_array($result)) {
+                $sessions[] = [
+                    'session' => $result[0],
+                    'reservationCount' => (int)$result['reservationCount']
+                ];
+            } else {
+                // In case Doctrine returns only the entity
+                $sessions[] = [
+                    'session' => $result,
+                    'reservationCount' => 0
+                ];
+            }
+        }
+        return $sessions;
+    }
 }

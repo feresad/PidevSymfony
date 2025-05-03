@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Reservation; // Ajout de l'importation manquante
 use App\Entity\Session_game;
 use App\Form\SessionType;
 use App\Repository\Session_gameRepository;
@@ -19,65 +20,98 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 class SessionController extends AbstractController
 {
     #[Route('/coach/sessions', name: 'session_list')]
-public function index(Request $request, Session_gameRepository $sessionRepository, \Knp\Component\Pager\PaginatorInterface $paginator): Response
-{
-    $user = $this->getUser();
-    if (!$user || !in_array('ROLE_COACH', $user->getRoles())) {
-        return $this->redirectToRoute('app_login_page');
+    public function index(Request $request, Session_gameRepository $sessionRepository, \Knp\Component\Pager\PaginatorInterface $paginator): Response
+    {
+        $user = $this->getUser();
+        if (!$user || !in_array('ROLE_COACH', $user->getRoles())) {
+            return $this->redirectToRoute('app_login_page');
+        }
+
+        $searchQuery = $request->query->get('search');
+        $queryBuilder = $searchQuery
+            ? $sessionRepository->findByGameNameAndCoach($searchQuery, $user)
+            : $sessionRepository->findBy(['coach' => $user]);
+
+        // Pagination
+        $sessions = $paginator->paginate(
+            $queryBuilder, // Query or QueryBuilder
+            $request->query->getInt('page', 1), // Current page number
+            10 // Limit per page
+        );
+
+        return $this->render('session/index.html.twig', [
+            'sessions' => $sessions,
+            'searchQuery' => $searchQuery,
+            'image_base_url' => $this->getParameter('image_base_url'),
+        ]);
     }
 
-    $searchQuery = $request->query->get('search');
-    $queryBuilder = $searchQuery
-        ? $sessionRepository->findByGameNameAndCoach($searchQuery, $user)
-        : $sessionRepository->findBy(['coach' => $user]);
+    #[Route('/session/{id}/expired', name: 'session_expired')]
+    public function expiredSession(Session_game $session): Response
+    {
+        if (!$session->isExpired()) {
+            return $this->redirectToRoute('session_client_list');
+        }
 
-    // Pagination
-    $sessions = $paginator->paginate(
-        $queryBuilder, // Query or QueryBuilder
-        $request->query->getInt('page', 1), // Current page number
-        10 // Limit per page
-    );
-
-    return $this->render('session/index.html.twig', [
-        'sessions' => $sessions,
-        'searchQuery' => $searchQuery,
-        'image_base_url' => $this->getParameter('image_base_url'),
-    ]);
-}
-
-
-#[Route('/sessions/available', name: 'session_client_list')]
-public function clientIndex(Request $request, Session_gameRepository $sessionRepository, ReservationRepository $reservationRepository, \Knp\Component\Pager\PaginatorInterface $paginator): Response
-{
-    $searchQuery = $request->query->get('search');
-    $queryBuilder = $searchQuery
-        ? $sessionRepository->findByGameName($searchQuery)
-        : $sessionRepository->findAll();
-
-    // Pagination
-    $sessions = $paginator->paginate(
-        $queryBuilder, // Query or QueryBuilder
-        $request->query->getInt('page', 1), // Current page number
-        10 // Limit per page
-    );
-
-    // Logic for checking reserved sessions
-    $reservedSessions = [];
-    foreach ($sessions as $session) {
-        $reservedSessions[$session->getId()] = $reservationRepository->findOneBy(['session' => $session]) !== null;
+        return $this->render('session/expired_session.html.twig', [
+            'session' => $session,
+            'image_base_url' => $this->getParameter('image_base_url'),
+        ]);
     }
 
-    return $this->render('session/client_index.html.twig', [
-        'sessions' => $sessions,
-        'searchQuery' => $searchQuery,
-        'image_base_url' => $this->getParameter('image_base_url'),
-        'reservedSessions' => $reservedSessions,
-    ]);
-}
+    #[Route('/session/{id}/request-reactivation', name: 'session_request_reactivation', methods: ['POST'])]
+    public function requestReactivation(Session_game $session, EntityManagerInterface $entityManager): Response
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->redirectToRoute('app_login_page');
+        }
 
+        $reservation = new Reservation();
+        $reservation->setClient($user);
+        $reservation->setSession($session);
+        $reservation->setDateReservation(new \DateTime());
+       
+
+        $entityManager->persist($reservation);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Votre demande de réactivation a été enregistrée avec succès.');
+
+        return $this->redirectToRoute('session_client_list');
+    }
+
+    #[Route('/sessions/available', name: 'session_client_list')]
+    public function clientIndex(Request $request, Session_gameRepository $sessionRepository, ReservationRepository $reservationRepository, \Knp\Component\Pager\PaginatorInterface $paginator): Response
+    {
+        $searchQuery = $request->query->get('search');
+        $queryBuilder = $searchQuery
+            ? $sessionRepository->findByGameName($searchQuery)
+            : $sessionRepository->findAll();
+
+        // Pagination
+        $sessions = $paginator->paginate(
+            $queryBuilder, // Query or QueryBuilder
+            $request->query->getInt('page', 1), // Current page number
+            10 // Limit per page
+        );
+
+        // Logic for checking reserved sessions
+        $reservedSessions = [];
+        foreach ($sessions as $session) {
+            $reservedSessions[$session->getId()] = $reservationRepository->findOneBy(['session' => $session]) !== null;
+        }
+
+        return $this->render('session/client_index.html.twig', [
+            'sessions' => $sessions,
+            'searchQuery' => $searchQuery,
+            'image_base_url' => $this->getParameter('image_base_url'),
+            'reservedSessions' => $reservedSessions,
+        ]);
+    }
 
     #[Route('/session/add', name: 'session_add', methods: ['GET', 'POST'])]
-    public function ajouter(Request $request, EntityManagerInterface $entityManager,UtilisateurRepository $utilisateurRepository): Response
+    public function ajouter(Request $request, EntityManagerInterface $entityManager, UtilisateurRepository $utilisateurRepository): Response
     {
         $user = $this->getUser();
         $email = $user->getUserIdentifier();
@@ -100,7 +134,7 @@ public function clientIndex(Request $request, Session_gameRepository $sessionRep
                     $photoFile->move('C:/xampp/htdocs/img', $newFilename);
                     $session->setImageName($newFilename);
                 } catch (FileException $e) {
-                    $this->addFlash('error', 'Erreur lors de lupload du fichier.');
+                    $this->addFlash('error', 'Erreur lors de l\'upload du fichier.');
                     return $this->redirectToRoute('session_add');
                 }
             }
@@ -108,7 +142,7 @@ public function clientIndex(Request $request, Session_gameRepository $sessionRep
             $entityManager->persist($session);
             $entityManager->flush();
 
-            $this->addFlash('success', 'session ajouté avec succès !');
+            $this->addFlash('success', 'Session ajoutée avec succès !');
             return $this->redirectToRoute('session_list');
         }
 
@@ -132,10 +166,10 @@ public function clientIndex(Request $request, Session_gameRepository $sessionRep
     public function edit(Request $request, Session_game $session, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
         $user = $this->getUser();
-       /* if (!$user || !in_array('ROLE_COACH', $user->getRoles()) || $session->getCoach() !== $user) {
+        /* if (!$user || !in_array('ROLE_COACH', $user->getRoles()) || $session->getCoach() !== $user) {
             throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à modifier cette session.');
-        }
-*/
+        } */
+
         $form = $this->createForm(SessionType::class, $session);
         $form->handleRequest($request);
 
@@ -173,9 +207,9 @@ public function clientIndex(Request $request, Session_gameRepository $sessionRep
     public function delete(Request $request, Session_game $session, EntityManagerInterface $entityManager): Response
     {
         $user = $this->getUser();
-       /* if (!$user || !in_array('ROLE_COACH', $user->getRoles()) || $session->getCoach() !== $user) {
+        /* if (!$user || !in_array('ROLE_COACH', $user->getRoles()) || $session->getCoach() !== $user) {
             throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à supprimer cette session.');
-        }*/
+        } */
 
         if ($this->isCsrfTokenValid('delete' . $session->getId(), $request->request->get('_token'))) {
             $entityManager->remove($session);

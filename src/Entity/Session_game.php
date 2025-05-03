@@ -33,6 +33,9 @@ class Session_game
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $imageName = null;
 
+    #[ORM\OneToMany(mappedBy: 'session', targetEntity: Reservation::class, cascade: ['remove'])]
+    private $reservations;
+
     // --- Getters & Setters ---
 
     public function getId(): ?int { return $this->id; }
@@ -54,4 +57,11 @@ class Session_game
 
     public function getImageName(): ?string { return $this->imageName; }
     public function setImageName(?string $imageName): self { $this->imageName = $imageName; return $this; }
+
+    public function isExpired(): bool
+    {
+        $now = new \DateTime();
+        $diff = $now->diff($this->dateCreation);
+        return $diff->days > 30;
+    }
 }

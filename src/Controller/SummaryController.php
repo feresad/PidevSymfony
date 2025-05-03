@@ -82,12 +82,16 @@ class SummaryController extends AbstractController
             $monthlyRevenue[] = isset($monthlyDataMap[$key]) ? (float)$monthlyDataMap[$key] : 0;
         }
 
+        // Fetch all sessions with their reservation count
+        $sessionsWithReservationCount = $sessionRepository->findAllWithReservationCount();
+
         return $this->render('summary/index.html.twig', [
             'totalReservations' => $totalReservations,
             'activeCustomers' => $activeCustomers,
             'topCoaches' => $topCoaches,
             'monthLabels' => json_encode($monthLabels),
             'monthlyRevenue' => json_encode($monthlyRevenue),
+            'sessionsWithReservationCount' => $sessionsWithReservationCount
         ]);
     }
 }
