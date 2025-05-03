@@ -32,6 +32,7 @@ class CoachApplicationController extends AbstractController
         
         return $this->render('coach/application.html.twig', [
             'games' => $games,
+            'image_base_url' => $this->getParameter('image_base_url'),
         ]);
     }
 

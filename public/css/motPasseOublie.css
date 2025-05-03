@@ -3,7 +3,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('http://192.168.1.95/img/omen.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;

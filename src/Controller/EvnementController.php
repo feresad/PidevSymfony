@@ -22,46 +22,47 @@ use Symfony\Component\Routing\Attribute\Route;
 final class EvnementController extends AbstractController
 {
     #[Route('/all', name: 'evenement_list')]
-public function gettAll(EvenementRepository $repo, Request $request, 
-                        ClientEvenementRepository $clientEvenementRepo,
-                        Categorie_eventRepository $categoryRepo): Response
-{
-    $search = $request->query->get('search', '');
-    $sort = $request->query->get('sort', 'reservations_desc');
-    $categoryId = $request->query->getInt('category', 0);
-    $page = $request->query->getInt('page', 1);
-    $limit = 3;
-    $evenements = $repo->findBySearchAndSort($search, $sort, $page, $limit,$categoryId ?: null);
-    $totalEvenements = $repo->countBySearch($search);
-    $maxPages = ceil($totalEvenements / $limit);
-    $categories = $categoryRepo->findAll();
-
-    $userReservations = [];
-    $reservationCounts = [];
-    if ($this->getUser()) {
-        $reservations = $clientEvenementRepo->findBy(['client' => $this->getUser()]);
-        foreach ($reservations as $reservation) {
-            $userReservations[$reservation->getEvenement()->getId()] = true;
+    public function gettAll(EvenementRepository $repo, Request $request, 
+                            ClientEvenementRepository $clientEvenementRepo,
+                            Categorie_eventRepository $categoryRepo): Response
+    {
+        $search = $request->query->get('search', '');
+        $categoryId = $request->query->getInt('category', 0);
+        $page = $request->query->getInt('page', 1);
+        $limit = 6;
+    
+        // Pas besoin de $sort, le tri est géré dans le repository
+        $evenements = $repo->findBySearchAndSort($search, 'custom', $page, $limit, $categoryId ?: null);
+        $totalEvenements = $repo->countBySearch($search);
+        $maxPages = ceil($totalEvenements / $limit);
+        $categories = $categoryRepo->findAll();
+    
+        $userReservations = [];
+        $reservationCounts = [];
+        if ($this->getUser()) {
+            $reservations = $clientEvenementRepo->findBy(['client' => $this->getUser()]);
+            foreach ($reservations as $reservation) {
+                $userReservations[$reservation->getEvenement()->getId()] = true;
+            }
         }
+        foreach ($evenements as $evenement) {
+            $reservationCounts[$evenement->getId()] = $repo->getReservationCountForEvent($evenement->getId());
+        }
+    
+        return $this->render('evenement/ListeEvenement.html.twig', [
+            'evenements' => $evenements,
+            'image_base_url' => $this->getParameter('image_base_url'),
+            'current_page' => $page,
+            'max_pages' => $maxPages,
+            'search' => $search,
+            'sort' => 'custom', // Valeur indicative
+            'userReservations' => $userReservations,
+            'now' => new \DateTime(),
+            'reservationCounts' => $reservationCounts,
+            'categories' => $categories,
+            'selected_category' => $categoryId,
+        ]);
     }
-    foreach ($evenements as $evenement) {
-        $reservationCounts[$evenement->getId()] = $repo->getReservationCountForEvent($evenement->getId());
-    }
-
-    return $this->render('evenement/ListeEvenement.html.twig', [
-        'evenements' => $evenements,
-        'image_base_url' => $this->getParameter('image_base_url'),
-        'current_page' => $page,
-        'max_pages' => $maxPages,
-        'search' => $search,
-        'sort' => $sort,
-        'userReservations' => $userReservations,
-        'now' => new \DateTime(),
-        'reservationCounts' => $reservationCounts,
-        'categories' => $categories,
-        'selected_category' => $categoryId,
-    ]);
-}
     #[Route('/add', name: 'evenement_ajouter')]
     public function ajouter(Request $request, EntityManagerInterface $entityManager): Response
     {
@@ -277,7 +278,7 @@ public function gettAll(EvenementRepository $repo, Request $request,
         $sort = $request->query->get('sort', 'nom_asc');
         $categoryId = $request->query->getInt('category', 0);
         $page = $request->query->getInt('page', 1);
-        $limit = 3;
+        $limit = 5;
 
        
         $evenements = $repo->findBySearchAndSort($search, $sort, $page, $limit,$categoryId ?: null);

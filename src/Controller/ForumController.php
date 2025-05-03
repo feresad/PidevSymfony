@@ -356,6 +356,7 @@ class ForumController extends AbstractController
 
         return $this->render('forum/recommended.html.twig', [
             'recommendedTopics' => $recommendedTopics,
+            'image_base_url2' => $this->getParameter('image_base_url2'),
         ]);
     }
 

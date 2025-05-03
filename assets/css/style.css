@@ -652,3 +652,87 @@ body {
     margin-left: 0;
   }
 }
+
+/* Modern Footer Styles */
+.admin-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: linear-gradient(135deg, rgba(42, 33, 133, 0.95) 0%, rgba(42, 33, 133, 0.85) 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: #e6e6ef;
+    padding: 20px 0;
+    text-align: center;
+    font-size: 0.9rem;
+    z-index: 1000;
+    transition: all 0.3s ease;
+    border-top: 1px solid rgba(230, 230, 239, 0.2);
+    box-shadow: 0 -4px 20px rgba(42, 33, 133, 0.2);
+}
+
+.admin-footer p {
+    margin: 0;
+    padding: 0;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.admin-footer .copyright {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.admin-footer .copyright i {
+    color: #e6e6ef;
+    font-size: 1.1rem;
+    transition: transform 0.3s ease;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.admin-footer .copyright:hover i {
+    transform: rotate(360deg);
+    color: #5e63ff;
+}
+
+.admin-footer .copyright span {
+    position: relative;
+    padding: 0 5px;
+}
+
+.admin-footer .copyright span::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: #5e63ff;
+    transition: width 0.3s ease;
+}
+
+.admin-footer .copyright:hover span::after {
+    width: 100%;
+}
+
+/* Adjust main content to account for footer */
+.main {
+    padding-bottom: 70px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .admin-footer {
+        padding: 15px 0;
+        font-size: 0.85rem;
+    }
+    
+    .admin-footer .copyright {
+        flex-direction: column;
+        gap: 8px;
+    }
+}

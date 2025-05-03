@@ -31,6 +31,7 @@ class UserController extends AbstractController
             'error' => $authenticationUtils->getLastAuthenticationError(),
             'form' => $form->createView(),
             'userId' => $userId,
+            'image_base_url' => $this->getParameter('image_base_url'),
         ]);
     }
 

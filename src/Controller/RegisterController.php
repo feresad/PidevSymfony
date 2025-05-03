@@ -80,6 +80,7 @@ class RegisterController extends AbstractController
 
         return $this->render('register/register.html.twig', [
             'registrationForm' => $form->createView(),
+            'image_base_url' => $this->getParameter('image_base_url'),
         ]);
     }
 
@@ -92,7 +93,9 @@ class RegisterController extends AbstractController
             return $this->redirectToRoute('app_register');
         }
 
-        return $this->render('register/verify_registration.html.twig');
+        return $this->render('register/verify_registration.html.twig',[
+            'image_base_url' => $this->getParameter('image_base_url'),
+        ]);
     }
 
     #[Route('/check-registration-otp', name: 'app_check_registration_otp', methods: ['POST'])]
