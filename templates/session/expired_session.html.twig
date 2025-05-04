@@ -1,0 +1,179 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Session Expirée - {{ session.game }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/expired_session.css') }}">
+    <style>
+        .nk-session-card {
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+        .nk-session-card:hover {
+            transform: scale(1.02);
+        }
+
+        .nk-session-image {
+            position: relative;
+        }
+
+        .nk-session-image img {
+            width: 100%;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            object-fit: cover;
+            height: 250px;
+        }
+
+        .expired-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ff3e3e;
+            color: #fff;
+            padding: 6px 12px;
+            font-weight: bold;
+            border-radius: 12px;
+            font-size: 14px;
+        }
+
+        .nk-session-content {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .nk-session-title {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .nk-session-price {
+            font-size: 20px;
+            color: #ffc107;
+            margin-bottom: 15px;
+        }
+
+        .nk-session-details p {
+            margin: 6px 0;
+            font-size: 15px;
+        }
+
+        .nk-btn-reactivate {
+            background: #28a745;
+            color: white;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 30px;
+            transition: background 0.3s ease;
+        }
+
+        .nk-btn-reactivate:hover {
+            background: #218838;
+        }
+
+        .nk-btn-outline {
+            border: 2px solid #ccc;
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        .nk-btn-outline:hover {
+            background: #fff;
+            color: #000;
+        }
+
+        .alert {
+            opacity: 0;
+            transform: translateY(-20px);
+            animation: fadeInDown 0.5s ease forwards;
+        }
+
+        @keyframes fadeInDown {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="nk-main">
+    <div class="container">
+        <div class="nk-gap-2"></div>
+        <h2 class="nk-title animate-title text-center">Session Expirée</h2>
+        <p class="nk-sub-title animate-subtitle text-center">Relancez l'aventure avec cette session !</p>
+
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label == 'success' ? 'success' : 'danger' }} text-center animate-flash" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8">
+                <div class="nk-session-card animate-card">
+                    {% if session.imageName %}
+                        <div class="nk-session-image">
+                            <img src="{{ image_base_url }}/{{ session.imageName }}" alt="{{ session.game }}">
+                            <span class="expired-badge">Expirée</span>
+                        </div>
+                    {% else %}
+                        <div class="nk-session-image placeholder-image">
+                            <span class="placeholder-text">Aucune image</span>
+                        </div>
+                    {% endif %}
+
+                    <div class="nk-session-content">
+                        <h3 class="nk-session-title">{{ session.game }}</h3>
+                        <div class="nk-session-price">{{ session.prix }} €</div>
+                        <div class="nk-session-details">
+                            <p><i class="fas fa-clock"></i> Durée : {{ session.dureeSession }}</p>
+                            <p><i class="fas fa-user"></i> Coach : {{ session.coach.nom }} {{ session.coach.prenom }}</p>
+                            <p><i class="fas fa-calendar-alt"></i> Créée le : {{ session.dateCreation|date('d/m/Y') }}</p>
+                        </div>
+
+                        <form action="{{ path('session_request_reactivation', {'id': session.id}) }}" method="post" class="text-center mt-3">
+                            <button type="submit" class="nk-btn nk-btn-reactivate" >
+                                <i class="fas fa-redo-alt mr-2"></i> Faire une demande
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-5">
+            <a href="{{ path('session_client_list') }}" class="nk-btn nk-btn-outline nk-btn-rounded">
+                <i class="fas fa-arrow-left mr-2"></i> Retour aux Sessions
+            </a>
+        </div>
+
+        <div class="nk-gap-2"></div>
+    </div>
+
+    <div class="nk-page-background-overlay"></div>
+    <img class="nk-page-background-top" src="{{ asset('images/bg-top.png') }}" alt="Background Top">
+    <img class="nk-page-background-bottom" src="{{ asset('images/bg-bottom.png') }}" alt="Background Bottom">
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const elements = document.querySelectorAll('.animate-title, .animate-subtitle, .animate-card, .animate-flash');
+            elements.forEach((el, index) => {
+                setTimeout(() => {
+                    el.classList.add('animate-in');
+                }, index * 200);
+            });
+        });
+    </script>
+{% endblock %}

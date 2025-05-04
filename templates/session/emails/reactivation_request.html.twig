@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Session Reactivation Request</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(to right, #dd163b, #ff5e62);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px;
+        }
+        .content {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .session-details {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Session Reactivation Request</h1>
+    </div>
+
+    <div class="content">
+        <p>Dear {{ coach.prenom }} {{ coach.nom }},</p>
+
+        <p>A user has requested to reactivate one of your expired gaming sessions. Here are the details:</p>
+
+        <div class="session-details">
+            <h3>Session Details:</h3>
+            <p><strong>Game:</strong> {{ session.game }}</p>
+            <p><strong>Duration:</strong> {{ session.dureeSession }}</p>
+            <p><strong>Price:</strong> {{ session.prix }} €</p>
+            <p><strong>Created on:</strong> {{ session.dateCreation|date('d/m/Y') }}</p>
+        </div>
+
+        <p>Please review this request and consider reactivating the session if possible.</p>
+    </div>
+
+    <div class="footer">
+        <p>This is an automated message from your Gaming Platform</p>
+    </div>
+</body>
+</html>

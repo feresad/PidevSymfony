@@ -7,6 +7,7 @@ use App\Entity\Utilisateur;
 use App\Form\LoginFormType;
 use App\Repository\EvenementRepository;
 use App\Repository\QuestionsRepository;
+use App\Repository\Session_gameRepository;
 use App\Repository\UtilisateurRepository;
 use App\Repository\StockRepository;
 use SebastianBergmann\Environment\Console;
@@ -87,7 +88,7 @@ class UserController extends AbstractController
     }
 
     #[Route('/', name: 'app_home')]
-    public function home(EvenementRepository $repo, QuestionsRepository $questionsRepository, StockRepository $stockRepo): Response
+    public function home(EvenementRepository $repo, QuestionsRepository $questionsRepository, Session_gameRepository $sessionRepository, StockRepository $stockRepo): Response
     {
         /** @var Utilisateur $user */
         $user = $this->getUser();
@@ -132,6 +133,10 @@ class UserController extends AbstractController
                 'postCount' => $question->getCommentaires()->count(),
             ];
         }, $trendingTopics);
+        
+
+        // Fetch promotional sessions
+        $promoSessions = $sessionRepository->getSessionsInPromo();
 
         return $this->render('home/index.html.twig', [
             'user' => $user,
@@ -140,6 +145,7 @@ class UserController extends AbstractController
             'image_base_url' => $this->getParameter('image_base_url'),
             'image_base_url2' => $this->getParameter('image_base_url2'),
             'trendingTopics' => $topicsData,
+            'promoSessions' => $promoSessions,
         ]);
     }
 }

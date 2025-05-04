@@ -192,6 +192,130 @@ body {
     padding: 8px 12px;
     border-radius: 6px;
 }
+.nk-btn.expired {
+    background: #666;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+/* Expired Session */
+.session-card.expired {
+    border: 2px solid #ff0000;
+    animation: expired-pulse 1.8s infinite;
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.6), 0 0 30px rgba(255, 0, 0, 0.3);
+    opacity: 0.8;
+    position: relative;
+}
+@keyframes expired-pulse {
+    0% {
+        box-shadow: 0 0 10px rgba(255, 0, 0, 0.3), 0 0 20px rgba(255, 0, 0, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(255, 0, 0, 0.6), 0 0 40px rgba(255, 0, 0, 0.3);
+    }
+    100% {
+        box-shadow: 0 0 10px rgba(255, 0, 0, 0.3), 0 0 20px rgba(255, 0, 0, 0.2);
+    }
+}
+.session-card.expired::before {
+    content: '⚠️ EXPIRED';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: linear-gradient(45deg, #ff0000, #ff4444);
+    color: white;
+    padding: 6px 12px;
+    font-size: 0.75em;
+    font-weight: bold;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    z-index: 2;
+}
+
+/* Fixed Navigation Bar */
+.fixed-navigation-bar {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px 15px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    transition: all 0.3s ease;
+}
+
+.fixed-navigation-bar:hover {
+    background: rgba(0, 0, 0, 0.9);
+    transform: translateY(-5px);
+}
+
+.fixed-navigation-bar .nk-btn {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* Creative Pagination Styles */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin: 40px 0 0 0;
+    padding-bottom: 30px;
+}
+.pagination > * {
+    margin: 0 2px;
+}
+.pagination .page-item {
+    display: inline-block;
+}
+.pagination .page-link, .pagination a, .pagination span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 38px;
+    min-height: 38px;
+    padding: 0 14px;
+    border-radius: 50px;
+    background: linear-gradient(135deg, #1a237e 0%, #dd163b 100%);
+    color: #fff !important;
+    font-weight: 600;
+    font-size: 1.1em;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: background 0.2s, color 0.2s, transform 0.2s;
+    cursor: pointer;
+    text-decoration: none;
+    margin: 0 2px;
+}
+.pagination .page-link:hover, .pagination a:hover, .pagination span:hover {
+    background: linear-gradient(135deg, #dd163b 0%, #1a237e 100%);
+    color: #fff !important;
+    transform: translateY(-2px) scale(1.08);
+}
+.pagination .active .page-link, .pagination .active span {
+    background: linear-gradient(135deg, #1565c0 0%, #ff3e3e 100%);
+    color: #fff !important;
+    box-shadow: 0 4px 16px rgba(221,22,59,0.18);
+    transform: scale(1.12);
+    border: none;
+}
+.pagination .disabled .page-link, .pagination .disabled span {
+    background: #333;
+    color: #888 !important;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+.pagination .page-link svg, .pagination a svg {
+    margin: 0 2px;
+    font-size: 1.2em;
+}
 </style>
 
 <div class="nk-main">
@@ -227,22 +351,26 @@ body {
             <button class="carousel-arrow left" onclick="scrollCarousel(-1)">❮</button>
             <div class="session-carousel" id="sessionCarousel">
                 {% for session in sessions %}
-                    <div class="session-card {% if session.prix < 60 %}promo{% endif %}" data-price="{{ session.prix }}">
+                    <div class="session-card {% if session.prix < 60 %}promo{% endif %} {% if session.isExpired %}expired{% endif %}" data-price="{{ session.prix }}">
                         {% if session.prix < 60 %}
                             <div class="promo-banner">En promo</div>
                         {% endif %}
                         {% if session.imageName %}
-                            <a href="{{ path('reservation_add', {'sessionId': session.id}) }}">
+                            {% if not session.isExpired %}
+                                <a href="{{ path('reservation_add', {'sessionId': session.id}) }}">
+                                    <img src="{{ image_base_url ~ session.imageName }}" alt="{{ session.game }}">
+                                </a>
+                            {% else %}
                                 <img src="{{ image_base_url ~ session.imageName }}" alt="{{ session.game }}">
-                            </a>
+                            {% endif %}
                         {% endif %}
                         <div class="session-info">
                             <div class="session-title">{{ session.game }}</div>
                             <div class="session-price">{{ session.prix }} DT</div>
                             <div class="session-meta"><i class="far fa-clock"></i> {{ session.dureeSession }} min</div>
                             <div class="session-meta">Coach : {{ session.coach.nom }} {{ session.coach.prenom }}</div>
-                            {% if reservedSessions[session.id] %}
-                                <button class="nk-btn nk-btn-rounded" disabled>Déjà réservée</button>
+                            {% if session.isExpired %}
+                                <a href="{{ path('session_expired', {'id': session.id}) }}" class="nk-btn nk-btn-rounded nk-btn-danger">Faire une demande</a>
                             {% else %}
                                 <a href="{{ path('reservation_add', {'sessionId': session.id}) }}" class="nk-btn nk-btn-rounded">Réserver</a>
                             {% endif %}
@@ -257,19 +385,19 @@ body {
         <div class="pagination">
             {{ knp_pagination_render(sessions) }}
         </div>
-
-        <!-- Boutons bas de page -->
-        <div class="navigation-buttons text-end">
-            {% if is_granted('ROLE_COACH') %}
-                <a href="{{ path('session_list') }}" class="nk-btn nk-btn-rounded me-2">
-                    <i class="fas fa-chalkboard-teacher"></i> Interface Coach
-                </a>
-            {% endif %}
-            <a href="{{ path('reservation_list') }}" class="nk-btn nk-btn-rounded">
-                <i class="fas fa-calendar-check"></i> Mes Réservations
-            </a>
-        </div>
     </div>
+</div>
+
+<!-- Fixed Navigation Bar that's always visible -->
+<div class="fixed-navigation-bar">
+    {% if is_granted('ROLE_COACH') %}
+        <a href="{{ path('session_list') }}" class="nk-btn nk-btn-rounded">
+            <i class="fas fa-chalkboard-teacher"></i> Interface Coach
+        </a>
+    {% endif %}
+    <a href="{{ path('reservation_list') }}" class="nk-btn nk-btn-rounded">
+        <i class="fas fa-calendar-check"></i> Mes Réservations
+    </a>
 </div>
 
 <img class="nk-page-background-top" src="{{ asset('images/bg-top.png') }}" alt="">

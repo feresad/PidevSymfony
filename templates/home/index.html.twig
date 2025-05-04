@@ -40,7 +40,6 @@
                 </div>
             </div>
 
-
             <div class="nk-image-slider-item">
                 <img src="{{asset('images/slide-5.jpg')}}" alt="" class="nk-image-slider-img" data-thumb="{{asset('images/slide-5-thumb.jpg')}}">
                 <div class="nk-image-slider-content">
@@ -172,41 +171,81 @@
             </div>
         </div>
 
-      <!-- START: Latest Events -->
-      <div class="nk-gap-2"></div>
-      <h3 class="nk-decorated-h-2"><span><span class="text-main-1">Les Dernieres</span> Evenements</span></h3>
-      <div class="nk-gap"></div>
-      <div class="nk-blog-grid">
-          <div class="row">
-              {% for evenement in recentEvenements %}
-                  <div class="col-md-6 col-lg-4">
-                      <!-- START: Event -->
-                      <div class="nk-blog-post">
-                          <a href="{{ path('evenement_detailles', {'id': evenement.id}) }}" class="nk-post-img">
-                              <img src="{{ image_base_url ~ evenement.photoEvent }}" alt="{{ evenement.nomEvent }}">
-                              <span class="nk-post-comments-count">{{ evenement.maxPlacesEvent }}</span>
-                              <span class="nk-post-categories">
-                                  <span class="bg-main-5">{{ evenement.categorie ? evenement.categorie.nom : 'Non spécifiée' }}</span>
-                              </span>
-                          </a>
-                          <div class="nk-gap"></div>
-                          <h2 class="nk-post-title h4"><a href="{{ path('evenement_detailles', {'id': evenement.id}) }}">{{ evenement.nomEvent }}</a></h2>
-                          <div class="nk-post-text">
-                              <p>{{ evenement.lieuEvent|length > 100 ? evenement.lieuEvent|slice(0, 100) ~ '...' : evenement.lieuEvent }}</p>
-                          </div>
-                          <div class="nk-gap"></div>
-                          <a href="{{ path('evenement_detailles', {'id': evenement.id}) }}" class="nk-btn nk-btn-rounded nk-btn-color-dark-3 nk-btn-hover-color-main-1">Read More</a>
-                          <div class="nk-post-date float-right"><span class="fa fa-calendar"></span> {{ evenement.dateEvent|date('M d, Y') }}</div>
-                      </div>
-                      <!-- END: Event -->
-                  </div>
-              {% else %}
-                  <div class="col-12">
-                      <p>Aucun événement récent trouvé.</p>
-                  </div>
-              {% endfor %}
-          </div>
-      </div>
+        <!-- START: Latest Events -->
+        <div class="nk-gap-2"></div>
+        <h3 class="nk-decorated-h-2"><span><span class="text-main-1">Les Dernieres</span> Evenements</span></h3>
+        <div class="nk-gap"></div>
+        <div class="nk-blog-grid">
+            <div class="row">
+                {% for evenement in recentEvenements %}
+                    <div class="col-md-6 col-lg-4">
+                        <!-- START: Event -->
+                        <div class="nk-blog-post">
+                            <a href="{{ path('evenement_detailles', {'id': evenement.id}) }}" class="nk-post-img">
+                                <img src="{{ image_base_url ~ evenement.photoEvent }}" alt="{{ evenement.nomEvent }}">
+                                <span class="nk-post-comments-count">{{ evenement.maxPlacesEvent }}</span>
+                                <span class="nk-post-categories">
+                                    <span class="bg-main-5">{{ evenement.categorie ? evenement.categorie.nom : 'Non spécifiée' }}</span>
+                                </span>
+                            </a>
+                            <div class="nk-gap"></div>
+                            <h2 class="nk-post-title h4"><a href="{{ path('evenement_detailles', {'id': evenement.id}) }}">{{ evenement.nomEvent }}</a></h2>
+                            <div class="nk-post-text">
+                                <p>{{ evenement.lieuEvent|length > 100 ? evenement.lieuEvent|slice(0, 100) ~ '...' : evenement.lieuEvent }}</p>
+                            </div>
+                            <div class="nk-gap"></div>
+                            <a href="{{ path('evenement_detailles', {'id': evenement.id}) }}" class="nk-btn nk-btn-rounded nk-btn-color-dark-3 nk-btn-hover-color-main-1">Read More</a>
+                            <div class="nk-post-date float-right"><span class="fa fa-calendar"></span> {{ evenement.dateEvent|date('M d, Y') }}</div>
+                        </div>
+                        <!-- END: Event -->
+                    </div>
+                {% else %}
+                    <div class="col-12">
+                        <p>Aucun événement récent trouvé.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+       <!-- START: Promotional Sessions -->
+<div class="nk-gap-2"></div>
+<h3 class="nk-decorated-h-2"><span><span class="text-main-1">Sessions</span> en Promotion</span></h3>
+<div class="nk-gap"></div>
+<div class="nk-blog-grid">
+    <div class="row">
+        {% for session in promoSessions %}
+            <div class="col-md-6 col-lg-4">
+                <!-- START: Session -->
+                <div class="nk-blog-post">
+                    <a href="{{ path('session_client_list') }}" class="nk-post-img">
+                        <img src="{{ image_base_url ~ session.imageName }}" alt="{{ session.game }}">
+                        <span class="nk-post-categories">
+                            <span class="bg-main-1">Promotion</span>
+                        </span>
+                    </a>
+                    <div class="nk-gap"></div>
+                    <h2 class="nk-post-title h4"><a href="{{ path('session_client_list') }}">{{ session.game }}</a></h2>
+                    <div class="nk-post-by">
+                        Coach: <a href="#">{{ session.coach.nickname }}</a>
+                    </div>
+                    <div class="nk-gap"></div>
+                    <div class="nk-post-text">
+                        <p>Durée: {{ session.dureeSession }} | Prix: {{ session.prix }} €</p>
+                    </div>
+                    <div class="nk-gap"></div>
+                    <a href="{{ path('session_client_list') }}" class="nk-btn nk-btn-rounded nk-btn-color-dark-3 nk-btn-hover-color-main-1">Book Now</a>
+                    <div class="nk-post-date float-right"><span class="fa fa-calendar"></span> {{ session.dateCreation|date('M d, Y') }}</div>
+                </div>
+                <!-- END: Session -->
+            </div>
+        {% else %}
+            <div class="col-12">
+                <p>Aucune session en promotion trouvée.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+<!-- END: Promotional Sessions -->
 
         <div class="nk-gap-2"></div>
         <div class="row vertical-gap">
@@ -753,17 +792,44 @@
                             </div>
                         </div>
                     </div>
-            </div>
-        </div>
-    </div>
-            </div>
-        </div>
-    </div>
 
-    <div class="nk-gap-2"></div>
-</div>
-<img class="nk-page-background-top" src="{{ asset('images/bg-top.png') }}" alt="">
-<img class="nk-page-background-bottom" src="{{ asset('images/bg-bottom.png') }}" alt="">
+                    <div class="nk-widget nk-widget-highlighted">
+                        <h4 class="nk-widget-title"><span><span class="text-main-1">Most</span> Popular</span></h4>
+                        <div class="nk-widget-content">
+                            <div class="nk-widget-post">
+                                <a href="#" class="nk-post-image">
+                                    <img src="{{asset('images/product-1-xs.jpg')}}" alt="So saying he unbuckled">
+                                </a>
+                                <h3 class="nk-post-title"><a href="#">So saying he unbuckled</a></h3>
+                                <div class="nk-product-rating" data-rating="4"> <i class="fa fa-star"></i> <i class="fa fa-star"></i> <i class="fa fa-star"></i> <i class="fa fa-star"></i> <i class="far fa-star"></i></div>
+                                <div class="nk-product-price">€ 23.00</div>
+                            </div>
+
+                            <div class="nk-widget-post">
+                                <a href="#" class="nk-post-image">
+                                    <img src="{{asset('images/product-2-xs.jpg')}}" alt="However, I have reason">
+                                </a>
+                                <h3 class="nk-post-title"><a href="#">However, I have reason</a></h3>
+                                <div class="nk-product-rating" data-rating="2.5"> <i class="fa fa-star"></i> <i class="fa fa-star"></i> <i class="fas fa-star-half"></i> <i class="far fa-star"></i> <i class="far fa-star"></i></div>
+                                <div class="nk-product-price">€ 32.00</div>
+                            </div>
+
+                            <div class="nk-widget-post">
+                                <a href="#" class="nk-post-image">
+                                    <img src="{{asset('images/product-3-xs.jpg')}}" alt="It was some time before">
+                                </a>
+                                <h3 class="nk-post-title"><a href="#">It was some time before</a></h3>
+                                <div class="nk-product-rating" data-rating="3"> <i class="fa fa-star"></i> <i class="fa fa-star"></i> <i class="fa fa-star"></i> <i class="far fa-star"></i> <i class="far fa-star"></i></div>
+                                <div class="nk-product-rating" data-rating="3"> <i class="fa fa-star"></i> <i class="fa fa-star"></i> <i class="fa fa-star"></i> <i class="far fa-star"></i> <i class="far fa-star"></i></div>
+                                <div class="nk-product-price">€ 14.00</div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+                <!-- END: Sidebar -->
+            </div>
+        </div>
+    </div>
     <div class="nk-gap-2"></div>
 </div>
 <img class="nk-page-background-top" src="{{ asset('images/bg-top.png') }}" alt="">
@@ -775,7 +841,7 @@
     <style>
         .nk-post-img {
             width: 350px !important;
-            height: 250 !important;
+            height: 250px !important;
             object-fit: cover;
             display: block;
         }

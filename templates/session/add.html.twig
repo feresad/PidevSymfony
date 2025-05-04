@@ -156,6 +156,39 @@
                                     firstErrorElement.focus();
                                 }
                             });
+                            
+                            // Empêcher la saisie de lettres dans le champ prix
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const prixInput = document.querySelector('input[name="session_game[prix]"]');
+                                if (prixInput) {
+                                    prixInput.addEventListener('input', function(e) {
+                                        // Remplacer toute entrée non numérique (sauf le point décimal)
+                                        this.value = this.value.replace(/[^0-9.]/g, '');
+                                        
+                                        // S'assurer qu'il n'y a qu'un seul point décimal
+                                        const parts = this.value.split('.');
+                                        if (parts.length > 2) {
+                                            this.value = parts[0] + '.' + parts.slice(1).join('');
+                                        }
+                                    });
+                                    
+                                    // Empêcher le collage de valeurs non numériques
+                                    prixInput.addEventListener('paste', function(e) {
+                                        // Accéder au texte collé
+                                        let pastedText = '';
+                                        if (window.clipboardData && window.clipboardData.getData) {
+                                            pastedText = window.clipboardData.getData('Text');
+                                        } else if (e.clipboardData && e.clipboardData.getData) {
+                                            pastedText = e.clipboardData.getData('text/plain');
+                                        }
+                                        
+                                        // Vérifier si le texte collé est un nombre valide
+                                        if (!/^\d*\.?\d*$/.test(pastedText)) {
+                                            e.preventDefault();
+                                        }
+                                    });
+                                }
+                            });
                         </script>
                     </div>
                 </div>

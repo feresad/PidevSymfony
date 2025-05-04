@@ -1,122 +1,254 @@
 {% extends 'baseadmin.html.twig' %}
 
-
 {% block title %}Dashboard Summary{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #23243a 0%, #4b0082 100%);
+        }
+        .dashboard-hero {
+            background: linear-gradient(90deg, #4b0082 0%, #0585c6 100%);
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(75,0,130,0.15);
+            padding: 2.5rem 2rem 2rem 2rem;
+            margin-bottom: 2.5rem;
+            color: #fff;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .dashboard-hero h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            letter-spacing: 2px;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 8px rgba(75,0,130,0.2);
+        }
+        .dashboard-hero p {
+            font-size: 1.2rem;
+            color: #e0e0e0;
+            margin-bottom: 0;
+        }
+        .dashboard-wrapper {
+            min-height: 100vh;
+            padding: 0 0 2rem 0;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2.5rem;
+        }
+        .summary-card {
+            background: linear-gradient(135deg, #23243a 60%, #4b0082 100%);
+            border-radius: 18px;
+            box-shadow: 0 4px 24px rgba(75,0,130,0.10);
+            padding: 2rem 1.5rem 1.5rem 1.5rem;
+            color: #fff;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .summary-card:hover {
+            transform: translateY(-6px) scale(1.03);
+            box-shadow: 0 8px 32px rgba(5,133,198,0.18);
+        }
+        .summary-card .icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.7rem;
+            color: #fe0369;
+            filter: drop-shadow(0 0 8px #0585c6);
+        }
+        .summary-card h5 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            color: #a3bffa;
+            margin-bottom: 0.5rem;
+        }
+        .summary-card .main-value {
+            font-size: 2.2rem;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 0.2rem;
+        }
+        .summary-card .sub-list {
+            margin-top: 1rem;
+            text-align: left;
+        }
+        .summary-card .sub-list .item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.3rem 0;
+            color: #e0e0e0;
+        }
+        .summary-card .sub-list .item .badge {
+            background: linear-gradient(90deg, #0585c6 0%, #fe0369 100%);
+            color: #fff;
+            border-radius: 12px;
+            padding: 0.2rem 0.7rem;
+            font-size: 0.95rem;
+        }
+        .analytics-section {
+            background: linear-gradient(135deg, #23243a 60%, #4b0082 100%);
+            border-radius: 18px;
+            box-shadow: 0 4px 24px rgba(75,0,130,0.10);
+            padding: 2rem 1.5rem 1.5rem 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+        .analytics-section h4 {
+            font-family: 'Orbitron', sans-serif;
+            color: #a3bffa;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .table-dark {
+            background: transparent;
+        }
+        .table thead th {
+            color: #a3bffa;
+            border-bottom: 2px solid #0585c6;
+        }
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: rgba(5,133,198,0.07);
+        }
+        .table-bordered td, .table-bordered th {
+            border: 1px solid #0585c6;
+        }
+        .nk-badge {
+            padding: 0.4rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            background: linear-gradient(90deg, #0585c6 0%, #fe0369 100%);
+            color: #fff;
+            font-family: 'Orbitron', sans-serif;
+        }
+        .chart-container {
+            background: rgba(36, 37, 58, 0.95);
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(5,133,198,0.08);
+            padding: 2rem 1.5rem 1.5rem 1.5rem;
+            margin-bottom: 2rem;
+        }
+        @media (max-width: 768px) {
+            .dashboard-hero {
+                padding: 1.5rem 0.5rem 1.5rem 0.5rem;
+            }
+            .summary-cards {
+                grid-template-columns: 1fr;
+            }
+            .analytics-section, .chart-container {
+                padding: 1rem 0.5rem 1rem 0.5rem;
+            }
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
-<style>
-    .dashboard-wrapper {
-        background-color: #f8f9fa;
-        min-height: 100vh;
-        padding: 2rem;
-        font-family: 'Segoe UI', sans-serif;
-    }
-
-    
-
-    .nk-sub-title {
-        font-size: 1.25rem;
-        color: #6c757d;
-    }
-
-    .nk-box-2 {
-        border-radius: 16px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        padding: 2rem;
-    }
-
-    .bg-main-1 {
-        background-color: #4b0082 !important;
-    }
-
-    .bg-dark-2 {
-        background-color: #343a40 !important;
-    }
-
-    .text-white {
-        color: white !important;
-    }
-
-    .list-group-item {
-        background-color: transparent;
-        color: #fff;
-        border: none;
-        padding: 0.75rem 1rem;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-
-    .nk-badge {
-        padding: 0.4rem 0.75rem;
-        border-radius: 20px;
-        font-size: 0.9rem;
-    }
-
-    canvas {
-        background-color: #1e1e2f;
-        border-radius: 12px;
-        padding: 1rem;
-    }
-
-</style>
-
 <div class="dashboard-wrapper container">
-    <h1 class="nk-title text-center text-black mb-4">Dashboard Administrateur</h1>
-    <h3 class="nk-sub-title text-center mb-5">Vue d'ensemble de l'activité</h3>
+    <div class="dashboard-hero mb-5">
+        <h1>Tableau de Bord Administrateur</h1>
+        <p>Vue d'ensemble créative et analytique de l'activité de la plateforme</p>
+    </div>
 
-    <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="nk-box-2 bg-main-1 text-white text-center">
-                <h5 class="nk-title">Total des Réservations</h5>
-                <h2>{{ totalReservations }}</h2>
+    <div class="summary-cards mb-5">
+        <div class="summary-card">
+            <div class="icon"><i class="fas fa-calendar-check"></i></div>
+            <h5>Total des Réservations</h5>
+            <div class="main-value">{{ totalReservations }}</div>
+        </div>
+        <div class="summary-card">
+            <div class="icon"><i class="fas fa-users"></i></div>
+            <h5>Clients les plus actifs</h5>
+            <div class="sub-list">
+                {% for client in activeCustomers %}
+                    <div class="item">
+                        <span>{{ client.nickname }}</span>
+                        <span class="badge">{{ client.reservationCount }} réservations</span>
+                    </div>
+                {% else %}
+                    <div class="item">Aucun client actif trouvé.</div>
+                {% endfor %}
             </div>
         </div>
-
-        <div class="col-md-4">
-            <div class="nk-box-2 bg-dark-2">
-                <h5 class="nk-title text-white">Clients les plus actifs</h5>
-                <div class="list-group mt-3">
-                    {% for client in activeCustomers %}
-                        <div class="list-group-item d-flex justify-content-between align-items-center">
-                            {{ client.nickname }}
-                            <span class="nk-badge bg-main-1">{{ client.reservationCount }} réservations</span>
-                        </div>
-                    {% else %}
-                        <div class="alert alert-info">Aucun client actif trouvé.</div>
-                    {% endfor %}
-                </div>
+        <div class="summary-card">
+            <div class="icon"><i class="fas fa-chalkboard-teacher"></i></div>
+            <h5>Coachs les plus populaires</h5>
+            <div class="sub-list">
+                {% for coach in topCoaches %}
+                    <div class="item">
+                        <span>{{ coach.nickname }}</span>
+                        <span class="badge">{{ coach.sessionCount }} sessions</span>
+                    </div>
+                {% else %}
+                    <div class="item">Aucun coach populaire trouvé.</div>
+                {% endfor %}
             </div>
-        </div>
-</div>
-        <div class="col-md-4">
-    <div class="nk-box-2 bg-dark-2">
-        <h5 class="nk-title text-white">Coachs les plus populaires</h5>
-        <div class="list-group mt-3">
-            {% for coach in topCoaches %}
-                <div class="list-group-item d-flex justify-content-between align-items-center">
-                    {{ coach.nickname }}
-                    <span class="nk-badge bg-main-1">{{ coach.sessionCount }} sessions</span>
-                </div>
-            {% else %}
-                <div class="alert alert-info">Aucun coach populaire trouvé.</div>
-            {% endfor %}
         </div>
     </div>
-</div>
-</div>
 
-    <!-- Revenus mensuels -->
-    <div class="nk-box-2 bg-dark-2">
-        <h5 class="nk-title text-white text-center">Revenus Mensuels (12 derniers mois)</h5>
-        <div class="nk-gap"></div>
-        <canvas id="monthlyRevenueChart"></canvas>
+    <div class="analytics-section mb-5">
+        <h4>Analyse des Réservations par Session</h4>
+        <div class="row">
+            <div class="col-lg-7 mb-4 mb-lg-0">
+                <div class="chart-container">
+                    <h5 class="nk-title text-white text-center mb-3">Histogramme des Réservations par Session</h5>
+                    <canvas id="sessionReservationsChart"></canvas>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="chart-container">
+                    <h5 class="nk-title text-white text-center mb-3">Détail des Sessions</h5>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped table-bordered mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Session</th>
+                                    <th>Coach</th>
+                                    <th>Jeu</th>
+                                    <th>Réservations</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in sessionsWithReservationCount %}
+                                    <tr>
+                                        <td>{{ item.session.nomSession is defined ? item.session.nomSession : (item.session.name is defined ? item.session.name : 'Session #' ~ item.session.id) }}</td>
+                                        <td>{{ item.session.coach ? item.session.coach.nickname : 'N/A' }}</td>
+                                        <td>{{ item.session.game ? item.session.game : 'N/A' }}</td>
+                                        <td><span class="nk-badge">{{ item.reservationCount }}</span></td>
+                                    </tr>
+                                {% else %}
+                                    <tr><td colspan="4" class="text-center">Aucune session trouvée.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="analytics-section">
+        <h4>Revenus Mensuels (12 derniers mois)</h4>
+        <div class="chart-container">
+            <canvas id="monthlyRevenueChart"></canvas>
+        </div>
     </div>
 </div>
 {% endblock %}
 
 {% block javascripts %}
+{{ parent() }}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://kit.fontawesome.com/2b8e97a1b7.js" crossorigin="anonymous"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    // Monthly Revenue Chart
     const ctxMonthly = document.getElementById('monthlyRevenueChart').getContext('2d');
     new Chart(ctxMonthly, {
         type: 'line',
@@ -134,18 +266,86 @@ document.addEventListener('DOMContentLoaded', function () {
         options: {
             responsive: true,
             plugins: {
-                legend: { labels: { color: 'white' }},
-                title: { display: true, text: 'Tendance sur 12 mois', color: 'white' }
+                legend: {
+                    position: 'top',
+                    labels: { color: '#fff' }
+                },
+                title: {
+                    display: true,
+                    text: 'Évolution des revenus mensuels',
+                    color: '#fff',
+                    font: { size: 18 }
+                }
             },
             scales: {
+                x: {
+                    ticks: { color: '#fff', font: { size: 12 } },
+                    grid: { color: 'rgba(255,255,255,0.1)' }
+                },
                 y: {
                     beginAtZero: true,
-                    ticks: { color: 'white' },
-                    title: { display: true, text: 'Revenus (€)', color: 'white' }
+                    ticks: { color: '#fff', stepSize: 1 },
+                    grid: { color: 'rgba(255,255,255,0.1)' }
+                }
+            }
+        }
+    });
+
+    // Histogram for Reservations per Session
+    const sessionLabels = [
+        {% for item in sessionsWithReservationCount %}
+            '{{ item.session.nomSession is defined ? item.session.nomSession : (item.session.name is defined ? item.session.name : 'Session #' ~ item.session.id) }}'{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+    const reservationCounts = [
+        {% for item in sessionsWithReservationCount %}
+            {{ item.reservationCount }}{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+    const ctxSession = document.getElementById('sessionReservationsChart').getContext('2d');
+    new Chart(ctxSession, {
+        type: 'bar',
+        data: {
+            labels: sessionLabels,
+            datasets: [{
+                label: 'Nombre de réservations',
+                data: reservationCounts,
+                backgroundColor: 'rgba(5, 133, 198, 0.7)',
+                borderColor: '#0585c6',
+                borderWidth: 2,
+                borderRadius: 8,
+                maxBarThickness: 40
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
                 },
+                title: {
+                    display: true,
+                    text: 'Nombre de réservations par session',
+                    color: '#fff',
+                    font: { size: 18 }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return ' ' + context.parsed.y + ' réservations';
+                        }
+                    }
+                }
+            },
+            scales: {
                 x: {
-                    ticks: { color: 'white' },
-                    title: { display: true, text: 'Mois', color: 'white' }
+                    ticks: { color: '#fff', font: { size: 12 } },
+                    grid: { color: 'rgba(255,255,255,0.1)' }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: { color: '#fff', stepSize: 1 },
+                    grid: { color: 'rgba(255,255,255,0.1)' }
                 }
             }
         }

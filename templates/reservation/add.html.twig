@@ -3,83 +3,274 @@
 {% block title %}Réserver une session{% endblock %}
 
 {% block body %}
+<style>
+    /* Enhanced styling for reservation page */
+    .reservation-container {
+        background: rgba(20, 20, 30, 0.8);
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .reservation-container:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(221, 22, 59, 0.3);
+    }
+    
+    .reservation-header {
+        padding: 2rem;
+        background: linear-gradient(135deg, #4b0082, #dd163b);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .reservation-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('{{ asset("images/bg-top-3.png") }}') no-repeat center center;
+        background-size: cover;
+        opacity: 0.2;
+        z-index: 0;
+    }
+    
+    .reservation-header h1, .reservation-header h3 {
+        position: relative;
+        z-index: 1;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    }
+    
+    .reservation-body {
+        padding: 2rem;
+    }
+    
+    .nk-image-box {
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        transition: transform 0.3s ease;
+    }
+    
+    .nk-image-box:hover {
+        transform: scale(1.02);
+    }
+    
+    .nk-img {
+        width: 100%;
+        height: auto;
+        transition: filter 0.3s ease;
+    }
+    
+    .nk-product-price {
+        font-size: 1.2rem;
+        font-weight: 600;
+        background: rgba(0, 0, 0, 0.3);
+        padding: 1rem;
+        border-radius: 10px;
+        border-left: 4px solid #dd163b;
+    }
+    
+    .price-tag {
+        display: inline-block;
+        background: #dd163b;
+        padding: 0.5rem 1rem;
+        border-radius: 30px;
+        margin: 0.5rem;
+        box-shadow: 0 5px 15px rgba(221, 22, 59, 0.3);
+    }
+    
+    .duration-tag {
+        display: inline-block;
+        background: #4b0082;
+        padding: 0.5rem 1rem;
+        border-radius: 30px;
+        margin: 0.5rem;
+        box-shadow: 0 5px 15px rgba(75, 0, 130, 0.3);
+    }
+    
+    .form-control {
+        background: rgba(30, 30, 40, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        color: #fff;
+        padding: 0.8rem 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        background: rgba(40, 40, 50, 0.9);
+        border-color: #dd163b;
+        box-shadow: 0 0 0 3px rgba(221, 22, 59, 0.25);
+    }
+    
+    .nk-form-label {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #fff;
+        font-size: 1.1rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .nk-btn {
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        z-index: 1;
+    }
+    
+    .nk-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: all 0.5s ease;
+        z-index: -1;
+    }
+    
+    .nk-btn:hover::before {
+        left: 100%;
+    }
+    
+    .nk-btn-color-main-1 {
+        box-shadow: 0 5px 15px rgba(221, 22, 59, 0.4);
+    }
+    
+    .nk-btn-color-white {
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .nk-info-box {
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        animation: fadeIn 0.5s ease;
+    }
+    
+    .text-danger {
+        background: rgba(220, 53, 69, 0.2);
+        border-left: 4px solid #dc3545;
+    }
+    
+    .text-success {
+        background: rgba(40, 167, 69, 0.2);
+        border-left: 4px solid #28a745;
+    }
+    
+    .nk-info-box-icon {
+        margin-right: 1rem;
+        font-size: 1.5rem;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
 <div class="nk-main">
     <div class="nk-gap-2"></div>
     <div class="container">
         <div class="nk-gap-2"></div>
-        <h1 class="nk-title text-center">Réserver une session</h1>
-        <h3 class="nk-sub-title text-center mb-30">{{ session.game }}</h3>
         
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="nk-box-2 bg-dark-2">
-                    {% if session.imageName %}
-                        <div class="nk-image-box">
-                            <img src="{{ image_base_url ~ session.imageName }}" 
-                                 alt="{{ session.game }}" 
-                                 class="nk-img">
-                        </div>
-                        <div class="nk-gap-1"></div>
-                    {% endif %}
-                    
-                    <div class="nk-product-price text-center">
-                        <span> Prix : {{ session.prix }} DT </span>
-                        <div class="nk-gap-1"></div>
-                            <span> Durée : {{ session.dureeSession }} min </span>
-                        </span>
-                    </div>
-                    
-                    <div class="nk-gap-2"></div>
-                    
-                    {% for message in app.flashes('error') %}
-                        <div class="nk-info-box text-danger">
-                            <div class="nk-info-box-icon">
-                                <i class="ion-close-round"></i>
+        <div class="reservation-container">
+            <div class="reservation-header text-center">
+                <h1 class="nk-title">Réserver une session</h1>
+                <h3 class="nk-sub-title mb-0">{{ session.game }}</h3>
+            </div>
+            
+            <div class="reservation-body">
+                <div class="row justify-content-center">
+                    <div class="col-lg-10">
+                        {% if session.imageName %}
+                            <div class="nk-image-box mb-4">
+                                <img src="{{ image_base_url ~ session.imageName }}" 
+                                     alt="{{ session.game }}" 
+                                     class="nk-img">
                             </div>
-                            {{ message }}
-                        </div>
-                        <div class="nk-gap-1"></div>
-                    {% endfor %}
-
-                    {% for message in app.flashes('success') %}
-                        <div class="nk-info-box text-success">
-                            <div class="nk-info-box-icon">
-                                <i class="ion-checkmark-round"></i>
-                            </div>
-                            {{ message }}
-                        </div>
-                        <div class="nk-gap-1"></div>
-                    {% endfor %}
-
-                    <form method="post" class="nk-form">
-                        <div class="row vertical-gap">
-                            <div class="col-md-12">
-                                <label for="date_reservation" class="nk-form-label">Date de réservation</label>
-                                <input type="date" 
-                                       class="form-control required" 
-                                       id="date_reservation" 
-                                       name="date_reservation" 
-                                       min="{{ 'now'|date('Y-m-d') }}" 
-                                       required>
-                                <div class="nk-form-helper text-white opacity-75">Choisissez une date pour votre session</div>
-                            </div>
+                        {% endif %}
+                        
+                        <div class="nk-product-price text-center mb-4">
+                            <span class="price-tag"> 
+                                <i class="fas fa-coins mr-2"></i> Prix : {{ session.prix }} DT 
+                            </span>
+                            <span class="duration-tag"> 
+                                <i class="fas fa-clock mr-2"></i> Durée : {{ session.dureeSession }} min 
+                            </span>
                         </div>
                         
                         <div class="nk-gap-1"></div>
                         
-                        <div class="text-center">
-                            <button type="submit" class="nk-btn nk-btn-rounded nk-btn-color-main-1">Confirmer la réservation</button>
+                        {% for message in app.flashes('error') %}
+                            <div class="nk-info-box text-danger">
+                                <div class="nk-info-box-icon">
+                                    <i class="ion-close-round"></i>
+                                </div>
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+
+                        {% for message in app.flashes('success') %}
+                            <div class="nk-info-box text-success">
+                                <div class="nk-info-box-icon">
+                                    <i class="ion-checkmark-round"></i>
+                                </div>
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+
+                        <form method="post" class="nk-form">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group mb-4">
+                                        <label for="date_reservation" class="nk-form-label">
+                                            <i class="fas fa-calendar-alt mr-2"></i> Date de réservation
+                                        </label>
+                                        <input type="date" 
+                                               class="form-control required" 
+                                               id="date_reservation" 
+                                               name="date_reservation" 
+                                               min="{{ 'now'|date('Y-m-d') }}" 
+                                               required>
+                                        <div class="nk-form-helper text-white opacity-75 mt-2">
+                                            <small>Choisissez une date pour votre session</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <div class="nk-gap-1"></div>
-                            <a href="{{ path('session_client_list') }}" class="nk-btn nk-btn-rounded nk-btn-color-white">Retour aux sessions</a>
-                        </div>
-                    </form>
+                            
+                            <div class="text-center mt-4">
+                                <button type="submit" class="nk-btn nk-btn-rounded nk-btn-color-main-1 btn-lg">
+                                    <i class="fas fa-check-circle mr-2"></i> Confirmer la réservation
+                                </button>
+                                <div class="nk-gap-1"></div>
+                                <a href="{{ path('session_client_list') }}" class="nk-btn nk-btn-rounded nk-btn-color-white">
+                                    <i class="fas fa-arrow-left mr-2"></i> Retour aux sessions
+                                </a>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="nk-gap-2"></div>
+    <div class="nk-gap-4"></div>
 </div>
- <!-- Background de la page d'accueil -->
-    <img class="nk-page-background-top" src="{{ asset('images/bg-top.png') }}" alt="">
-    <img class="nk-page-background-bottom" src="{{ asset('images/bg-bottom.png') }}" alt="">
+
+<!-- Background de la page d'accueil -->
+<img class="nk-page-background-top" src="{{ asset('images/bg-top.png') }}" alt="">
+<img class="nk-page-background-bottom" src="{{ asset('images/bg-bottom.png') }}" alt="">
 {% endblock %}

@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Réservations des Sessions{% endblock %}
+{% block title %}Demandes de Sessions{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
@@ -52,7 +52,7 @@
         }
         
         .nk-table thead th {
-            background-color: rgba(75, 0, 130, 0.7);
+            background: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%);
             color: #fff;
             font-weight: 600;
             text-transform: uppercase;
@@ -68,7 +68,7 @@
         }
         
         .nk-table tbody tr:hover {
-            background-color: rgba(75, 0, 130, 0.2);
+            background: linear-gradient(135deg, rgba(221, 22, 59, 0.1) 0%, rgba(255, 62, 62, 0.1) 100%);
             transform: translateY(-2px);
         }
         
@@ -76,6 +76,20 @@
             padding: 15px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             vertical-align: middle;
+        }
+        
+        /* Status badge */
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: linear-gradient(135deg, rgba(221, 22, 59, 0.2) 0%, rgba(255, 62, 62, 0.2) 100%);
+            color: #ff3e3e;
+            border: 1px solid rgba(255, 62, 62, 0.3);
         }
         
         /* Button styling */
@@ -111,12 +125,30 @@
             box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
         }
         
-        .nk-btn-color-main-1 {
+        .nk-btn-color-success {
+            background: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%);
+        }
+        
+        .nk-btn-color-success:hover {
+            background: linear-gradient(135deg, #0d47a1 0%, #1565c0 100%);
+        }
+        
+        .nk-btn-color-danger {
             background: linear-gradient(135deg, #ff3e3e 0%, #e02b2b 100%);
         }
         
-        .nk-btn-color-main-1:hover {
+        .nk-btn-color-danger:hover {
             background: linear-gradient(135deg, #e02b2b 0%, #c82333 100%);
+        }
+        
+        .nk-btn-color-dark-3 {
+            background: linear-gradient(135deg, #1a237e 0%, #0d47a1 100%);
+            opacity: 0.8;
+        }
+        
+        .nk-btn-color-dark-3:hover {
+            background: linear-gradient(135deg, #0d47a1 0%, #1565c0 100%);
+            opacity: 1;
         }
         
         /* Alert styling */
@@ -133,18 +165,18 @@
         }
         
         .alert-success {
-            background: rgba(40, 167, 69, 0.2);
-            border-left: 5px solid #28a745;
+            background: linear-gradient(135deg, rgba(26, 35, 126, 0.2) 0%, rgba(13, 71, 161, 0.2) 100%);
+            border-left: 5px solid #1a237e;
         }
         
         .alert-danger {
-            background: rgba(221, 22, 59, 0.2);
+            background: linear-gradient(135deg, rgba(221, 22, 59, 0.2) 0%, rgba(255, 62, 62, 0.2) 100%);
             border-left: 5px solid #ff3e3e;
         }
         
         .alert-info {
-            background: rgba(23, 162, 184, 0.2);
-            border-left: 5px solid #17a2b8;
+            background: linear-gradient(135deg, rgba(26, 35, 126, 0.2) 0%, rgba(13, 71, 161, 0.2) 100%);
+            border-left: 5px solid #1a237e;
         }
         
         /* Animations */
@@ -200,7 +232,8 @@
                 margin-bottom: 5px;
             }
         }
-        
+
+        /* Custom Modal and Toast for actions */
         .custom-modal {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -222,7 +255,7 @@
             position: fixed;
             top: 30px;
             right: 30px;
-            background: linear-gradient(135deg, #ff3e3e 0%, #e02b2b 100%);
+            background: linear-gradient(135deg, #1a237e 0%, #dd163b 100%);
             color: #fff;
             padding: 18px 30px;
             border-radius: 10px;
@@ -249,8 +282,21 @@
     <div class="nk-gap-2"></div>
     <div class="container">
         <div class="nk-gap-2"></div>
-        <h1 class="nk-title">Réservations des Sessions</h1>
-        <h3 class="nk-sub-title">Liste des réservations de coaching</h3>
+        <h1 class="nk-title">Demandes de Sessions</h1>
+        <h3 class="nk-sub-title">Liste des demandes de coaching</h3>
+
+        <!-- Custom Modal and Toast -->
+        <div id="requestModal" class="custom-modal" style="display:none;">
+            <div class="custom-modal-content">
+                <p id="requestModalMessage"></p>
+                <button class="nk-btn nk-btn-color-main-1" onclick="confirmRequestAction()">Oui, confirmer</button>
+                <button class="nk-btn nk-btn-color-main-1" onclick="closeRequestModal()">Annuler</button>
+            </div>
+        </div>
+        <div id="requestToast" class="custom-toast" style="display:none;">
+            <i class="fas fa-check-circle"></i>
+            <span id="requestToastMsg"></span>
+        </div>
 
         {# Affichage des messages flash #}
         {% for label, messages in app.flashes %}
@@ -261,23 +307,14 @@
             {% endfor %}
         {% endfor %}
         
-        <div class="text-right mb-3">
-            <a href="{{ path('coach_reservations_export_pdf') }}" class="nk-btn nk-btn-rounded nk-btn-color-main-1" target="_blank">
-                <i class="fas fa-file-pdf"></i> Exporter en PDF
-            </a>
-        </div>
-        
         <div class="reservation-table-container">
             <div class="table-responsive">
                 <table class="nk-table">
                     <thead>
                         <tr>
                             <th>Client</th>
-                            <th>Email</th>
                             <th>Jeu</th>
-                            <th>Prix</th>
-                            <th>Date</th>
-                            <th>Durée</th>
+                            <th>Statut</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -285,30 +322,32 @@
                         {% for reservation in reservations %}
                             <tr>
                                 <td>{{ reservation.client.nom }} {{ reservation.client.prenom }}</td>
-                                <td>{{ reservation.client.email }}</td>
                                 <td>{{ reservation.session.game }}</td>
-                                <td>{{ reservation.session.prix }} DT</td>
-                                <td>{{ reservation.dateReservation|date('d/m/Y') }}</td>
-                                <td>{{ reservation.session.dureeSession }} min</td>
+                                <td><span class="status-badge">En attente</span></td>
                                 <td>
                                     <div class="action-buttons">
-                                        <form action="{{ path('send_meet_link', {'id': reservation.id}) }}" method="post">
-                                            <button type="submit" class="nk-btn nk-btn-color-main-1">
-                                                <i class="fas fa-video"></i> Envoyer le lien
-                                            </button>
-                                        </form>
-                                        <button type="button" class="nk-btn nk-btn-color-main-1" onclick="showRefuseModal(this)">
-                                            <i class="fas fa-times"></i> Refuser
+                                        <button type="button" class="nk-btn nk-btn-color-success" onclick="showRequestModal(this, 'accept')">
+                                            <i class="fas fa-check"></i> Accepter
                                         </button>
-                                        <form action="{{ path('refuse_reservation', {'id': reservation.id}) }}" method="post" class="refuse-form" style="display:none;"></form>
+                                        <form action="{{ path('accept_request', {'id': reservation.id}) }}" method="post" class="request-form-accept" style="display:none;"></form>
+
+                                        <button type="button" class="nk-btn nk-btn-color-danger" onclick="showRequestModal(this, 'reject')">
+                                            <i class="fas fa-times"></i> Rejeter
+                                        </button>
+                                        <form action="{{ path('reject_request', {'id': reservation.id}) }}" method="post" class="request-form-reject" style="display:none;"></form>
+
+                                        <button type="button" class="nk-btn nk-btn-color-dark-3" onclick="showRequestModal(this, 'delete')">
+                                            <i class="fas fa-trash"></i> Supprimer
+                                        </button>
+                                        <form action="{{ path('reservation_cancel', {'id': reservation.id}) }}" method="get" class="request-form-delete" style="display:none;"></form>
                                     </div>
                                 </td>
                             </tr>
                         {% else %}
                             <tr>
-                                <td colspan="7" class="text-center">
+                                <td colspan="4" class="text-center">
                                     <div class="alert alert-info">
-                                        <i class="fas fa-info-circle mr-2"></i> Aucune réservation trouvée.
+                                        <i class="fas fa-info-circle mr-2"></i> Aucune demande en attente
                                     </div>
                                 </td>
                             </tr>
@@ -325,43 +364,53 @@
         </div>
     </div>
     <div class="nk-gap-2"></div>
-    
+
     <!-- Background de la page d'accueil -->
     <img class="nk-page-background-top" src="{{ asset('images/bg-top.png') }}" alt="">
     <img class="nk-page-background-bottom" src="{{ asset('images/bg-bottom.png') }}" alt="">
 </div>
 
-<div id="refuseModal" class="custom-modal" style="display:none;">
-    <div class="custom-modal-content">
-        <p>Êtes-vous sûr de vouloir refuser cette réservation ?</p>
-        <button class="nk-btn nk-btn-color-main-1" onclick="confirmRefuse()">Oui, refuser</button>
-        <button class="nk-btn nk-btn-color-main-1" onclick="closeRefuseModal()">Annuler</button>
-    </div>
-</div>
-<div id="refuseToast" class="custom-toast" style="display:none;">
-    <i class="fas fa-times-circle"></i>
-    <span>Réservation refusée avec succès.</span>
-</div>
-
 <script>
-let refuseFormToSubmit = null;
-function showRefuseModal(button) {
-    refuseFormToSubmit = button.parentElement.querySelector('.refuse-form');
-    document.getElementById('refuseModal').style.display = 'flex';
+let requestFormToSubmit = null;
+let requestActionType = '';
+function showRequestModal(button, action) {
+    requestActionType = action;
+    let msg = '';
+    if (action === 'accept') {
+        requestFormToSubmit = button.parentElement.querySelector('.request-form-accept');
+        msg = 'Êtes-vous sûr de vouloir accepter cette demande avec une augmentation de 10% du prix ?';
+    } else if (action === 'reject') {
+        requestFormToSubmit = button.parentElement.querySelector('.request-form-reject');
+        msg = 'Êtes-vous sûr de vouloir rejeter cette demande ?';
+    } else if (action === 'delete') {
+        requestFormToSubmit = button.parentElement.querySelector('.request-form-delete');
+        msg = 'Êtes-vous sûr de vouloir supprimer cette demande ?';
+    }
+    document.getElementById('requestModalMessage').textContent = msg;
+    document.getElementById('requestModal').style.display = 'flex';
 }
-function closeRefuseModal() {
-    document.getElementById('refuseModal').style.display = 'none';
-    refuseFormToSubmit = null;
+function closeRequestModal() {
+    document.getElementById('requestModal').style.display = 'none';
+    requestFormToSubmit = null;
+    requestActionType = '';
 }
-function confirmRefuse() {
-    if (refuseFormToSubmit) {
-        refuseFormToSubmit.submit();
-        closeRefuseModal();
-        showRefuseToast();
+function confirmRequestAction() {
+    if (requestFormToSubmit) {
+        requestFormToSubmit.submit();
+        closeRequestModal();
+        showRequestToast(requestActionType);
     }
 }
-function showRefuseToast() {
-    const toast = document.getElementById('refuseToast');
+function showRequestToast(action) {
+    const toast = document.getElementById('requestToast');
+    const msg = document.getElementById('requestToastMsg');
+    if (action === 'accept') {
+        msg.textContent = 'Demande acceptée avec succès.';
+    } else if (action === 'reject') {
+        msg.textContent = 'Demande rejetée avec succès.';
+    } else if (action === 'delete') {
+        msg.textContent = 'Demande supprimée avec succès.';
+    }
     toast.style.display = 'flex';
     toast.classList.add('show');
     setTimeout(() => {
