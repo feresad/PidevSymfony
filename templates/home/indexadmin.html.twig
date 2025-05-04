@@ -108,7 +108,7 @@
             font-family: 'Orbitron', sans-serif;
             font-size: 1rem;
             text-transform: uppercase;
-            border: 2px solidrgb(255, 111, 185);
+            border: 2px solid rgb(255, 111, 185);
             border-radius: 5px;
             text-decoration: none;
             transition: all 0.3s ease;
@@ -203,161 +203,165 @@
             filter: drop-shadow(0 0 5px #0585c6);
         }
 
-        /* Ensure existing cardBox remains unaffected */
+        /* Existing CardBox */
         .cardBox {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 15px;
             margin-bottom: 20px;
         }
+
+        /* Chart Container */
+        .chart-container {
+            background: #091221;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 15px rgba(5, 133, 198, 0.3);
+            position: relative;
+            z-index: 1;
+        }
     </style>
 {% endblock %}
 
 {% block body %}
-    <!-- ================ Forum Stats Section ================= -->
-    <div class="forum-stats-section">
-        <h2>Statistiques du Forum</h2>
+    <!-- Forum Stats Section -->
+    <section class="forum-stats-section" aria-labelledby="forum-stats-title">
+        <h2 id="forum-stats-title">Statistiques du Forum</h2>
         <div class="forum-stats-grid">
             <div class="forum-stats-card">
                 <div class="numbers" id="totalTopics">0</div>
                 <div class="cardName">Total des sujets</div>
                 <div class="iconBx">
-                    <ion-icon name="chatbox-outline"></ion-icon>
+                    <ion-icon name="chatbox-outline" aria-hidden="true"></ion-icon>
                 </div>
             </div>
-
             <div class="forum-stats-card">
                 <div class="numbers" id="totalComments">0</div>
                 <div class="cardName">Total des commentaires</div>
                 <div class="iconBx">
-                    <ion-icon name="chatbubbles-outline"></ion-icon>
+                    <ion-icon name="chatbubbles-outline" aria-hidden="true"></ion-icon>
                 </div>
             </div>
-
             <div class="forum-stats-card">
                 <div class="numbers" id="activeUsers">0</div>
                 <div class="cardName">Utilisateurs actifs</div>
                 <div class="iconBx">
-                    <ion-icon name="people-outline"></ion-icon>
+                    <ion-icon name="people-outline" aria-hidden="true"></ion-icon>
                 </div>
             </div>
-
             <div class="forum-stats-card">
                 <div class="numbers" id="totalReactions">0</div>
                 <div class="cardName">Total des réactions</div>
                 <div class="iconBx">
-                    <ion-icon name="heart-outline"></ion-icon>
+                    <ion-icon name="heart-outline" aria-hidden="true"></ion-icon>
                 </div>
             </div>
-
             <div class="forum-stats-card">
                 <div class="numbers" id="engagementRate">0</div>
                 <div class="cardName">Taux d'engagement</div>
                 <div class="iconBx">
-                    <ion-icon name="trending-up-outline"></ion-icon>
+                    <ion-icon name="trending-up-outline" aria-hidden="true"></ion-icon>
                 </div>
             </div>
         </div>
-        <!-- See More Button -->
         <div class="see-more-container">
             <a href="{{ path('forum_stats_dashboard') }}" class="see-more-btn">Voir plus</a>
         </div>
-    </div>
+    </section>
 
-    <!-- ================ Command Stats Section ================= -->
-    <div class="command-stats-section">
-        <h2>Statistiques des Commandes</h2>
+    <!-- Command Stats Section -->
+    <section class="command-stats-section" aria-labelledby="command-stats-title">
+        <h2 id="command-stats-title">Statistiques des Commandes</h2>
         <div class="command-stats-grid">
             <div class="command-stats-card">
                 <div class="numbers" id="totalRevenue">0</div>
                 <div class="cardName">Revenu Total</div>
                 <div class="iconBx">
-                    <ion-icon name="cash-outline"></ion-icon>
+                    <ion-icon name="cash-outline" aria-hidden="true"></ion-icon>
                 </div>
             </div>
-
             <div class="command-stats-card">
                 <div class="numbers" id="totalOrders">0</div>
                 <div class="cardName">Total des commandes</div>
                 <div class="iconBx">
-                    <ion-icon name="bag-check-outline"></ion-icon>
+                    <ion-icon name="bag-check-outline" aria-hidden="true"></ion-icon>
                 </div>
             </div>
-
             <div class="command-stats-card">
                 <div class="numbers" id="topProduct">-</div>
                 <div class="cardName">Produit le plus vendu</div>
                 <div class="iconBx">
-                    <ion-icon name="star-outline"></ion-icon>
+                    <ion-icon name="star-outline" aria-hidden="true"></ion-icon>
                 </div>
             </div>
-
             <div class="command-stats-card">
                 <div class="numbers" id="avgOrderValue">0</div>
                 <div class="cardName">Panier moyen</div>
                 <div class="iconBx">
-                    <ion-icon name="calculator-outline"></ion-icon>
+                    <ion-icon name="calculator-outline" aria-hidden="true"></ion-icon>
                 </div>
             </div>
-
             <div class="command-stats-card">
                 <div class="numbers" id="monthlyGrowth">0%</div>
                 <div class="cardName">Croissance mensuelle</div>
                 <div class="iconBx">
-                    <ion-icon name="trending-up-outline"></ion-icon>
+                    <ion-icon name="trending-up-outline" aria-hidden="true"></ion-icon>
                 </div>
             </div>
         </div>
-        <!-- See More Button -->
         <div class="see-more-container">
             <a href="{{ path('app_commande_stats') }}" class="see-more-btn">Voir plus</a>
         </div>
-    </div>
+    </section>
 
-    <!-- ================ Existing CardBox Section ================= -->
-    <div class="cardBox">
+    <!-- Chart Section -->
+    <section class="chart-container" aria-labelledby="chart-title">
+        <h2 id="chart-title">Revenus Mensuels</h2>
+        <canvas id="monthlyRevenueChart" aria-label="Graphique des revenus mensuels"></canvas>
+    </section>
+
+    <!-- Existing CardBox Section -->
+    <div class="cardBox" role="region" aria-label="Statistiques générales">
         <div class="cardHome">
             <div>
                 <div class="numbers">1,504</div>
-                <div class="cardName">Daily Views</div>
+                <div class="cardName">Vues quotidiennes</div>
             </div>
             <div class="iconBx">
-                <ion-icon name="eye-outline"></ion-icon>
+                <ion-icon name="eye-outline" aria-hidden="true"></ion-icon>
             </div>
         </div>
-
         <div class="cardHome">
             <div>
                 <div class="numbers">80</div>
-                <div class="cardName">Sales</div>
+                <div class="cardName">Ventes</div>
             </div>
             <div class="iconBx">
-                <ion-icon name="cart-outline"></ion-icon>
+                <ion-icon name="cart-outline" aria-hidden="true"></ion-icon>
             </div>
         </div>
-
         <div class="cardHome">
             <div>
                 <div class="numbers">284</div>
-                <div class="cardName">Comments</div>
+                <div class="cardName">Commentaires</div>
             </div>
             <div class="iconBx">
-                <ion-icon name="chatbubbles-outline"></ion-icon>
+                <ion-icon name="chatbubbles-outline" aria-hidden="true"></ion-icon>
             </div>
         </div>
-
         <div class="cardHome">
             <div>
                 <div class="numbers">$7,842</div>
-                <div class="cardName">Earning</div>
+                <div class="cardName">Gains</div>
             </div>
             <div class="iconBx">
-                <ion-icon name="cash-outline"></ion-icon>
+                <ion-icon name="cash-outline" aria-hidden="true"></ion-icon>
             </div>
         </div>
     </div>
 
-    <!-- ================ Summary Section ================= -->
+    <!-- Summary Section -->
     {% include 'summary/_summary_content.html.twig' with {
         totalReservations: totalReservations,
         activeCustomers: activeCustomers,
@@ -365,169 +369,104 @@
         monthLabels: monthLabels,
         monthlyRevenue: monthlyRevenue
     } %}
-    
-    {% block javascripts %}
+{% endblock %}
+
+{% block javascripts %}
     {{ parent() }}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const ctxMonthly = document.getElementById('monthlyRevenueChart').getContext('2d');
-        new Chart(ctxMonthly, {
-            type: 'line',
-            data: {
-                labels: {{ monthLabels|raw }},
-                datasets: [{
-                    label: 'Revenus Mensuels (€)',
-                    data: {{ monthlyRevenue|raw }},
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                    tension: 0.3,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: { labels: { color: 'white' }},
-                    title: { display: true, text: 'Tendance sur 12 mois', color: 'white' }
+        // Helper function to sanitize input
+        function sanitizeInput(value) {
+            const div = document.createElement('div');
+            div.textContent = value;
+            return div.innerHTML;
+        }
+
+        // Helper function to format currency
+        function formatCurrency(value) {
+            if (isNaN(value)) return '0.00 TND';
+            return parseFloat(value).toFixed(2) + ' TND';
+        }
+
+        // Fetch stats on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Fetch forum stats
+            fetch('/api/forum/stats?timeRange=7')
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to load forum stats');
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('totalTopics').textContent = sanitizeInput(data.stats.totalTopics || 0);
+                        document.getElementById('totalComments').textContent = sanitizeInput(data.stats.totalComments || 0);
+                        document.getElementById('activeUsers').textContent = sanitizeInput(data.stats.activeUsers || 0);
+                        document.getElementById('totalReactions').textContent = sanitizeInput(data.stats.totalReactions || 0);
+                        document.getElementById('engagementRate').textContent = sanitizeInput(data.stats.engagementRate || 0);
+                    } else {
+                        console.error('API Error:', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching forum stats:', error);
+                });
+
+            // Fetch command stats
+            fetch('/commande/api/stats?timeRange=30')
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to load command stats');
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('totalRevenue').textContent = formatCurrency(data.stats.totalRevenue || 0);
+                        document.getElementById('totalOrders').textContent = sanitizeInput(data.stats.totalOrders || 0);
+                        document.getElementById('topProduct').textContent = sanitizeInput(data.stats.topProduct || '-');
+                        document.getElementById('avgOrderValue').textContent = formatCurrency(data.stats.avgOrderValue || 0);
+                        document.getElementById('monthlyGrowth').textContent = sanitizeInput(data.stats.monthlyGrowth || 0) + '%';
+                    } else {
+                        console.error('API Error:', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching command stats:', error);
+                });
+
+            // Initialize Chart.js
+            const ctxMonthly = document.getElementById('monthlyRevenueChart').getContext('2d');
+            new Chart(ctxMonthly, {
+                type: 'line',
+                data: {
+                    labels: {{ monthLabels|raw }},
+                    datasets: [{
+                        label: 'Revenus Mensuels (€)',
+                        data: {{ monthlyRevenue|raw }},
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        tension: 0.3,
+                        fill: true
+                    }]
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: { color: 'white' },
-                        title: { display: true, text: 'Revenus (€)', color: 'white' }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { labels: { color: 'white' } },
+                        title: { display: true, text: 'Tendance sur 12 mois', color: 'white' }
                     },
-                    x: {
-                        ticks: { color: 'white' },
-                        title: { display: true, text: 'Mois', color: 'white' }
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: 'white' },
+                            title: { display: true, text: 'Revenus (€)', color: 'white' }
+                        },
+                        x: {
+                            ticks: { color: 'white' },
+                            title: { display: true, text: 'Mois', color: 'white' }
+                        }
                     }
                 }
-            }
+            });
         });
-    });
-    </script>
-    {% endblock %}
-{% endblock %}
-
-{% block javascripts %}
-    {{ parent() }}
-    <script>
-        // Fetch Forum Stats on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            // Fetch forum stats
-            fetch('/api/forum/stats?timeRange=7')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Failed to load forum stats');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        // Update the forum stats cards
-                        document.getElementById('totalTopics').textContent = data.stats.totalTopics;
-                        document.getElementById('totalComments').textContent = data.stats.totalComments;
-                        document.getElementById('activeUsers').textContent = data.stats.activeUsers;
-                        document.getElementById('totalReactions').textContent = data.stats.totalReactions;
-                        document.getElementById('engagementRate').textContent = data.stats.engagementRate;
-                    } else {
-                        console.error('API Error:', data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching forum stats:', error);
-                });
-                
-            // Fetch command stats
-            fetch('/commande/api/stats?timeRange=30')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Failed to load command stats');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        // Update the command stats cards
-                        document.getElementById('totalRevenue').textContent = formatCurrency(data.stats.totalRevenue);
-                        document.getElementById('totalOrders').textContent = data.stats.totalOrders;
-                        document.getElementById('topProduct').textContent = data.stats.topProduct;
-                        document.getElementById('avgOrderValue').textContent = formatCurrency(data.stats.avgOrderValue);
-                        document.getElementById('monthlyGrowth').textContent = data.stats.monthlyGrowth + '%';
-                    } else {
-                        console.error('API Error:', data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching command stats:', error);
-                });
-        });
-        
-        // Helper function to format currency
-        function formatCurrency(value) {
-            return parseFloat(value).toFixed(2) + ' TND';
-        }
-    </script>
-{% endblock %}
-
-{% block javascripts %}
-    {{ parent() }}
-    <script>
-        // Fetch Forum Stats on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            // Fetch forum stats
-            fetch('/api/forum/stats?timeRange=7')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Failed to load forum stats');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        // Update the forum stats cards
-                        document.getElementById('totalTopics').textContent = data.stats.totalTopics;
-                        document.getElementById('totalComments').textContent = data.stats.totalComments;
-                        document.getElementById('activeUsers').textContent = data.stats.activeUsers;
-                        document.getElementById('totalReactions').textContent = data.stats.totalReactions;
-                        document.getElementById('engagementRate').textContent = data.stats.engagementRate;
-                    } else {
-                        console.error('API Error:', data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching forum stats:', error);
-                });
-                
-            // Fetch command stats
-            fetch('/commande/api/stats?timeRange=30')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Failed to load command stats');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        // Update the command stats cards
-                        document.getElementById('totalRevenue').textContent = formatCurrency(data.stats.totalRevenue);
-                        document.getElementById('totalOrders').textContent = data.stats.totalOrders;
-                        document.getElementById('topProduct').textContent = data.stats.topProduct;
-                        document.getElementById('avgOrderValue').textContent = formatCurrency(data.stats.avgOrderValue);
-                        document.getElementById('monthlyGrowth').textContent = data.stats.monthlyGrowth + '%';
-                    } else {
-                        console.error('API Error:', data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching command stats:', error);
-                });
-        });
-        
-        // Helper function to format currency
-        function formatCurrency(value) {
-            return parseFloat(value).toFixed(2) + ' TND';
-        }
     </script>
 {% endblock %}

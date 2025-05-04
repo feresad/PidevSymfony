@@ -53,8 +53,11 @@ class EvenementRepository extends ServiceEntityRepository
             $queryBuilder->orderBy('e.lieuEvent', 'DESC');
             break;
         default:
-            $queryBuilder->addSelect('COUNT(ce.evenement) as HIDDEN reservation_count')
-            ->orderBy('reservation_count', 'DESC');
+        $queryBuilder->addSelect('COUNT(ce.evenement) as HIDDEN reservation_count')
+        ->addSelect('CASE WHEN e.dateEvent >= :today THEN 1 ELSE 0 END as HIDDEN is_future')
+        ->setParameter('today', (new \DateTime())->format('Y-m-d'))
+        ->orderBy('is_future', 'DESC')
+        ->addOrderBy('reservation_count', 'DESC');
     }
 
     // Pagination

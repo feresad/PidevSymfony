@@ -183,10 +183,10 @@
                         <div class="nk-blog-post">
                             <a href="{{ path('evenement_detailles', {'id': evenement.id}) }}" class="nk-post-img">
                                 <img src="{{ image_base_url ~ evenement.photoEvent }}" alt="{{ evenement.nomEvent }}">
-                                <span class="nk-post-comments-count">{{ evenement.maxPlacesEvent }}</span>
                                 <span class="nk-post-categories">
                                     <span class="bg-main-5">{{ evenement.categorie ? evenement.categorie.nom : 'Non spécifiée' }}</span>
                                 </span>
+                                <span class="nk-post-comments-count">{{ evenement.maxPlacesEvent }}</span>
                             </a>
                             <div class="nk-gap"></div>
                             <h2 class="nk-post-title h4"><a href="{{ path('evenement_detailles', {'id': evenement.id}) }}">{{ evenement.nomEvent }}</a></h2>

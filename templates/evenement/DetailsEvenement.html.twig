@@ -8,8 +8,8 @@
             <h1>{{ evenement.nomEvent }}</h1>
 
             <div class="nk-event-detail-card">
-                <div class="nk-event-img">
-                    <img src="{{ image_base_url ~ evenement.photoEvent }}" alt="{{ evenement.nomEvent }}">
+                <div class="nk-event-img" style="max-width: 600px; margin: 0 auto;">
+                    <img src="{{ image_base_url ~ evenement.photoEvent }}" alt="{{ evenement.nomEvent }}" class="img-fluid rounded" style="max-height: 400px; object-fit: cover;">
                 </div>
                 <div class="card-body">
                     <h5 class="card-title">Détails de l'événement</h5>
