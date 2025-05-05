@@ -51,6 +51,16 @@ class Session_gameRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    public function getSessionsInPromoHome(): array
+    {
+        return $this->createQueryBuilder('s')
+            ->where('s.prix < :prix')
+            ->setParameter('prix', 60)
+            ->getQuery()
+            ->setMaxResults(6)
+            ->getResult();
+    }
+
     public function findByGameName(string $gameName): array
     {
         return $this->createQueryBuilder('s')

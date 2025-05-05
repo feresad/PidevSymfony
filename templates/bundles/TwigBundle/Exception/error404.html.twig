@@ -34,7 +34,7 @@
             color: #A3DFFF;
             font-family: 'Press Start 2P', monospace;
             font-size: 12px;
-            text-shadow: 2px 2px #2A4859;
+            text-shadow: 2px 2px #2A4859, 0 0 8px rgba(163, 223, 255, 0.5); /* Subtle glow */
             z-index: 1001;
             user-select: none;
         }
@@ -65,6 +65,7 @@
             border: 2px solid #A3DFFF;
             background-color: #2A4859;
             border-radius: 4px;
+            box-shadow: 0 0 8px rgba(163, 223, 255, 0.4); /* Glow effect */
         }
         #healthBarInner {
             height: 100%;
@@ -72,6 +73,7 @@
             border-radius: 2px;
             width: 100%;
             transition: width 0.3s ease;
+            box-shadow: inset 0 0 5px rgba(255, 102, 102, 0.6); /* Inner glow */
         }
         .home-button {
             display: inline-block;
@@ -81,14 +83,17 @@
             border-radius: 5px;
             color: #A3DFFF;
             text-decoration: none;
-            transition: background-color 0.3s, transform 0.1s;
+            transition: background-color 0.3s, transform 0.1s, box-shadow 0.3s;
+            box-shadow: 0 0 8px rgba(5, 133, 230, 0.5); /* Button glow */
         }
         .home-button:hover {
             background-color: #0268b5;
             transform: scale(1.05);
+            box-shadow: 0 0 12px rgba(5, 133, 230, 0.8);
         }
         .home-button:active {
             transform: scale(0.95);
+            box-shadow: 0 0 5px rgba(5, 133, 230, 0.3);
         }
         @font-face {
             font-family: 'Press Start 2P';
@@ -160,26 +165,35 @@
             }
 
             // Game State
-            let state = {
-                scaleX: 1,
-                scaleY: 1,
-                scale: 1,
-                gameStarted: false,
-                gameOver: false,
-                lastSpawnTime: 0,
-                gameTime: 0,
-                score: 0,
-                combo: 0,
-                level: 1,
-                enemiesDestroyed: 0,
-                highScore: parseInt(localStorage.getItem('highScore')) || 0,
-                leaderboard: JSON.parse(localStorage.getItem('leaderboard')) || [],
-                achievements: JSON.parse(localStorage.getItem('achievements')) || {
-                    collector: false,
-                    survivor: false,
-                    sharpshooter: false
-                }
-            };
+         let state = {
+    scaleX: 1,
+    scaleY: 1,
+    scale: 1,
+    gameStarted: false,
+    gameOver: false,
+    bossDefeated: false, // New flag to prevent boss respawn
+    spawnTimes: {
+        packet: 0,
+        asteroid: 0,
+        comet: 0,
+        blackHole: 0,
+        drone: 0,
+        kamikazeDrone: 0,
+        buff: 0
+    },
+    gameTime: 0,
+    score: 0,
+    combo: 0,
+    level: 1,
+    enemiesDestroyed: 0,
+    highScore: parseInt(localStorage.getItem('highScore')) || 0,
+    leaderboard: JSON.parse(localStorage.getItem('leaderboard')) || [],
+    achievements: JSON.parse(localStorage.getItem('achievements')) || {
+        collector: false,
+        survivor: false,
+        sharpshooter: false
+    }
+};
 
             // Game Objects
             let astronaut = {
@@ -214,9 +228,11 @@
             };
 
             let bossState = {
-                health: 100,
-                phase: 1
-            };
+        health: 300, // Increased health for more challenging boss
+        phase: 1,
+        attackCooldown: 0,
+        lastBarrageTime: 0
+    };
 
             let ui = {
                 showUpgradeMenu: false,
@@ -238,7 +254,8 @@
                     openUpgradeMenu: false
                 },
                 lastInputType: null,
-                fireMode: 'single'
+                fireMode: 'single',
+                uKeyPressed: false // New flag to track 'U' key state
             };
 
             let upgrades = {
@@ -248,10 +265,15 @@
                 dash: { level: 1, cost: 15, maxLevel: 3 }
             };
 
+            // Enhanced Backgrounds with Particles
             let backgrounds = [
-                { x: 0, y: 0, speed: 10, elements: [] },
-                { x: 0, y: 0, speed: 5, elements: [] }
+                { x: 0, y: 0, speed: 10, elements: [], type: 'stars' },
+                { x: 0, y: 0, speed: 5, elements: [], type: 'nebula' },
+                { x: 0, y: 0, speed: 15, elements: [], type: 'particles' }
             ];
+
+            // Particle Effects
+            let particles = [];
 
             // Audio
             let audioCtx = null;
@@ -336,6 +358,43 @@
                 });
             }
 
+            // Particle System
+            function spawnParticles(x, y, count, type) {
+                for (let i = 0; i < count; i++) {
+                    particles.push({
+                        x: x,
+                        y: y,
+                        vx: (Math.random() - 0.5) * 100 * state.scale,
+                        vy: (Math.random() - 0.5) * 100 * state.scale,
+                        size: Math.random() * 3 * state.scale + 1,
+                        life: type === 'explosion' ? 0.5 : 1,
+                        color: type === 'explosion' ? '#FF6633' : '#A3DFFF',
+                        type: type
+                    });
+                }
+            }
+
+            function updateParticles(deltaTime) {
+                particles = particles.filter(p => p.life > 0);
+                particles.forEach(p => {
+                    p.x += p.vx * deltaTime;
+                    p.y += p.vy * deltaTime;
+                    p.life -= deltaTime;
+                    p.size *= 0.95; // Shrink over time
+                });
+            }
+
+            function drawParticles() {
+                particles.forEach(p => {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fillStyle = p.color;
+                    ctx.globalAlpha = p.life * (p.type === 'explosion' ? 0.8 : 0.5);
+                    ctx.fill();
+                    ctx.globalAlpha = 1;
+                });
+            }
+
             // Initialization
             function resizeCanvas() {
                 canvas.width = window.innerWidth * window.devicePixelRatio;
@@ -357,17 +416,29 @@
             }
 
             function initBackgrounds() {
-                backgrounds[0].elements = Array.from({ length: 30 }, () => ({
+                // Stars
+                backgrounds[0].elements = Array.from({ length: 50 }, () => ({
                     x: Math.random() * canvas.width,
                     y: Math.random() * canvas.height,
-                    size: Math.random() * 2 * state.scale,
-                    color: palette.secondary
+                    size: Math.random() * 2 * state.scale + 1,
+                    color: palette.secondary,
+                    glow: Math.random() * 0.5 + 0.3
                 }));
-                backgrounds[1].elements = Array.from({ length: 3 }, () => ({
+                // Nebula clouds
+                backgrounds[1].elements = Array.from({ length: 5 }, () => ({
                     x: Math.random() * canvas.width,
                     y: Math.random() * canvas.height,
-                    size: 50 * state.scale,
-                    color: `rgba(107, 158, 191, ${Math.random() * 0.3 + 0.1})`
+                    size: 100 * state.scale * (Math.random() * 0.5 + 0.5),
+                    color: `rgba(107, 158, 191, ${Math.random() * 0.2 + 0.1})`
+                }));
+                // Cosmic dust particles
+                backgrounds[2].elements = Array.from({ length: 20 }, () => ({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 1.5 * state.scale + 0.5,
+                    color: `rgba(163, 223, 255, ${Math.random() * 0.3 + 0.2})`,
+                    vx: (Math.random() - 0.5) * 20 * state.scale,
+                    vy: (Math.random() - 0.5) * 20 * state.scale
                 }));
             }
 
@@ -498,10 +569,35 @@
                     layer.x -= layer.speed * deltaTime;
                     if (layer.x < -canvas.width) layer.x += canvas.width;
                     layer.elements.forEach(el => {
-                        ctx.beginPath();
-                        ctx.arc(el.x + layer.x, el.y, el.size, 0, Math.PI * 2);
-                        ctx.fillStyle = el.color;
-                        ctx.fill();
+                        if (layer.type === 'stars') {
+                            ctx.beginPath();
+                            ctx.arc(el.x + layer.x, el.y, el.size, 0, Math.PI * 2);
+                            ctx.fillStyle = el.color;
+                            ctx.globalAlpha = el.glow * (1 + 0.2 * Math.sin(state.gameTime * 0.001)); // Subtle glow pulse
+                            ctx.fill();
+                            ctx.globalAlpha = 1;
+                        } else if (layer.type === 'nebula') {
+                            const gradient = ctx.createRadialGradient(el.x + layer.x, el.y, 0, el.x + layer.x, el.y, el.size);
+                            gradient.addColorStop(0, el.color);
+                            gradient.addColorStop(1, 'rgba(10, 28, 43, 0)');
+                            ctx.fillStyle = gradient;
+                            ctx.beginPath();
+                            ctx.arc(el.x + layer.x, el.y, el.size, 0, Math.PI * 2);
+                            ctx.fill();
+                        } else if (layer.type === 'particles') {
+                            el.x += el.vx * deltaTime;
+                            el.y += el.vy * deltaTime;
+                            if (el.x < 0) el.x += canvas.width;
+                            if (el.x > canvas.width) el.x -= canvas.width;
+                            if (el.y < 0) el.y += canvas.height;
+                            if (el.y > canvas.height) el.y -= canvas.height;
+                            ctx.beginPath();
+                            ctx.arc(el.x + layer.x, el.y, el.size, 0, Math.PI * 2);
+                            ctx.fillStyle = el.color;
+                            ctx.globalAlpha = 0.5 * (1 + 0.3 * Math.sin(state.gameTime * 0.002));
+                            ctx.fill();
+                            ctx.globalAlpha = 1;
+                        }
                     });
                 });
             }
@@ -538,13 +634,29 @@
                     accent: '#FF6666',
                     exhaust: '#FFD700',
                     visor: '#1A2C38',
-                    detail: '#FFFFFF'
+                    detail: '#FFFFFF',
+                    glow: 'rgba(163, 223, 255, 0.4)'
                 };
 
-                // Helmet with gradient and reflective visor
+                // Dash trail effect
+                if (astronaut.isDashing) {
+                    const trailGradient = ctx.createLinearGradient(0, 0, -PIXEL_GRID * 1.5 * state.scale, 0);
+                    trailGradient.addColorStop(0, colors.glow);
+                    trailGradient.addColorStop(1, 'rgba(163, 223, 255, 0)');
+                    ctx.fillStyle = trailGradient;
+                    ctx.beginPath();
+                    ctx.moveTo(PIXEL_GRID * 0.5 * state.scale, -PIXEL_GRID * 0.5 * state.scale);
+                    ctx.lineTo(-PIXEL_GRID * 1.5 * state.scale, -PIXEL_GRID * 0.3 * state.scale);
+                    ctx.lineTo(-PIXEL_GRID * 1.5 * state.scale, PIXEL_GRID * 0.3 * state.scale);
+                    ctx.lineTo(PIXEL_GRID * 0.5 * state.scale, PIXEL_GRID * 0.5 * state.scale);
+                    ctx.fill();
+                }
+
+                // Helmet with enhanced gradient
                 const gradientHelmet = ctx.createLinearGradient(-PIXEL_GRID / 2 * state.scale, -PIXEL_GRID / 2 * state.scale, PIXEL_GRID / 2 * state.scale, PIXEL_GRID / 2 * state.scale);
                 gradientHelmet.addColorStop(0, colors.helmet);
-                gradientHelmet.addColorStop(1, colors.helmetShade);
+                gradientHelmet.addColorStop(0.5, colors.helmetShade);
+                gradientHelmet.addColorStop(1, colors.helmet);
                 ctx.fillStyle = gradientHelmet;
                 ctx.beginPath();
                 ctx.arc(0, -PIXEL_GRID * 0.3 * state.scale, PIXEL_GRID * 0.6 * state.scale, 0, Math.PI * 2);
@@ -553,8 +665,9 @@
                 ctx.fillRect(-PIXEL_GRID * 0.4 * state.scale, -PIXEL_GRID * 0.5 * state.scale, PIXEL_GRID * 0.8 * state.scale, PIXEL_GRID * 0.4 * state.scale);
                 ctx.fillStyle = colors.detail;
                 ctx.fillRect(-PIXEL_GRID * 0.3 * state.scale, -PIXEL_GRID * 0.4 * state.scale, PIXEL_GRID * 0.2 * state.scale, PIXEL_GRID * 0.1 * state.scale); // Visor highlight
+                ctx.fillRect(PIXEL_GRID * 0.1 * state.scale, -PIXEL_GRID * 0.4 * state.scale, PIXEL_GRID * 0.1 * state.scale, PIXEL_GRID * 0.05 * state.scale); // Extra detail
 
-                // Body with layered details
+                // Body with detailed shading
                 ctx.fillStyle = colors.body;
                 ctx.fillRect(-PIXEL_GRID * 0.4 * state.scale, -PIXEL_GRID * 0.1 * state.scale, PIXEL_GRID * 0.8 * state.scale, PIXEL_GRID * 0.9 * state.scale);
                 drawDitheredRect(
@@ -562,7 +675,7 @@
                     -PIXEL_GRID * 0.4 * state.scale,
                     -PIXEL_GRID * 0.1 * state.scale,
                     PIXEL_GRID * 0.8 * state.scale,
-                    PIXEL_GRID * 0.3 * state.scale,
+                    PIXEL_GRID * 0.4 * state.scale,
                     colors.body,
                     colors.bodyShade,
                     state.scale
@@ -570,28 +683,31 @@
                 ctx.fillStyle = colors.accent;
                 ctx.fillRect(-PIXEL_GRID * 0.5 * state.scale, PIXEL_GRID * 0.2 * state.scale, PIXEL_GRID * 0.2 * state.scale, PIXEL_GRID * 0.3 * state.scale); // Left panel
                 ctx.fillRect(PIXEL_GRID * 0.3 * state.scale, PIXEL_GRID * 0.2 * state.scale, PIXEL_GRID * 0.2 * state.scale, PIXEL_GRID * 0.3 * state.scale); // Right panel
+                ctx.fillStyle = colors.detail;
+                ctx.fillRect(-PIXEL_GRID * 0.3 * state.scale, PIXEL_GRID * 0.3 * state.scale, PIXEL_GRID * 0.1 * state.scale, PIXEL_GRID * 0.1 * state.scale); // Small detail
 
                 // Legs with animation
                 ctx.fillStyle = colors.bodyShade;
                 ctx.fillRect(-PIXEL_GRID * 0.3 * state.scale, PIXEL_GRID * 0.6 * state.scale, PIXEL_GRID * 0.25 * state.scale, PIXEL_GRID * 0.4 * state.scale);
                 ctx.fillRect(PIXEL_GRID * 0.05 * state.scale, PIXEL_GRID * 0.6 * state.scale, PIXEL_GRID * 0.25 * state.scale, PIXEL_GRID * 0.4 * state.scale);
 
-                // Exhaust animation
+                // Enhanced exhaust animation
                 if (astronaut.state === 'moving' && astronaut.frame % 4 < 2) {
-                    const exhaustGradient = ctx.createRadialGradient(0, PIXEL_GRID * 0.9 * state.scale, 0, 0, PIXEL_GRID * 0.9 * state.scale, PIXEL_GRID * 0.3 * state.scale);
+                    const exhaustGradient = ctx.createRadialGradient(0, PIXEL_GRID * 0.9 * state.scale, 0, 0, PIXEL_GRID * 0.9 * state.scale, PIXEL_GRID * 0.4 * state.scale);
                     exhaustGradient.addColorStop(0, colors.exhaust);
+                    exhaustGradient.addColorStop(0.5, 'rgba(255, 215, 0, 0.6)');
                     exhaustGradient.addColorStop(1, 'rgba(255, 215, 0, 0.2)');
                     ctx.fillStyle = exhaustGradient;
                     ctx.beginPath();
-                    ctx.moveTo(-PIXEL_GRID * 0.2 * state.scale, PIXEL_GRID * 0.9 * state.scale);
-                    ctx.lineTo(PIXEL_GRID * 0.2 * state.scale, PIXEL_GRID * 0.9 * state.scale);
-                    ctx.lineTo(0, PIXEL_GRID * 1.2 * state.scale);
+                    ctx.moveTo(-PIXEL_GRID * 0.25 * state.scale, PIXEL_GRID * 0.9 * state.scale);
+                    ctx.lineTo(PIXEL_GRID * 0.25 * state.scale, PIXEL_GRID * 0.9 * state.scale);
+                    ctx.lineTo(0, PIXEL_GRID * (1.2 + 0.1 * Math.sin(state.gameTime * 0.01)) * state.scale); // Flicker effect
                     ctx.closePath();
                     ctx.fill();
                 }
 
                 if (astronaut.isDashing) {
-                    ctx.fillStyle = 'rgba(163, 223, 255, 0.4)';
+                    ctx.fillStyle = colors.glow;
                     ctx.beginPath();
                     ctx.arc(0, 0, PIXEL_GRID * 0.8 * state.scale, 0, Math.PI * 2);
                     ctx.fill();
@@ -606,11 +722,12 @@
             function drawPacket(packet) {
                 ctx.save();
                 ctx.translate(packet.x + packet.width / 2, packet.y + packet.height / 2);
-                ctx.rotate(Math.sin(packet.x * 0.01) * 0.1); // Subtle wobble
+                ctx.rotate(Math.sin(packet.x * 0.01 + state.gameTime * 0.001) * 0.1); // Enhanced wobble
 
                 // Core packet with glowing effect
                 const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, PIXEL_GRID * 0.6 * state.scale);
                 gradient.addColorStop(0, '#FF99FF');
+                gradient.addColorStop(0.5, '#FF66CC');
                 gradient.addColorStop(1, '#FF33CC');
                 ctx.fillStyle = gradient;
                 ctx.fillRect(-PIXEL_GRID * 0.5 * state.scale, -PIXEL_GRID * 0.5 * state.scale, PIXEL_GRID * state.scale, PIXEL_GRID * state.scale);
@@ -619,19 +736,20 @@
                     -PIXEL_GRID * 0.5 * state.scale,
                     -PIXEL_GRID * 0.5 * state.scale,
                     PIXEL_GRID * state.scale,
-                    PIXEL_GRID * 0.2 * state.scale,
+                    PIXEL_GRID * 0.3 * state.scale,
                     '#FF33CC',
                     '#CC0099',
                     state.scale
                 );
 
-                // Data core
+                // Data core with pulse
                 ctx.fillStyle = '#66FFFF';
                 ctx.beginPath();
-                ctx.arc(0, 0, PIXEL_GRID * 0.3 * state.scale, 0, Math.PI * 2);
+                ctx.arc(0, 0, PIXEL_GRID * 0.3 * state.scale * (1 + 0.1 * Math.sin(state.gameTime * 0.002)), 0, Math.PI * 2);
                 ctx.fill();
                 ctx.fillStyle = '#FFFFFF';
                 ctx.fillRect(-PIXEL_GRID * 0.1 * state.scale, -PIXEL_GRID * 0.1 * state.scale, PIXEL_GRID * 0.2 * state.scale, PIXEL_GRID * 0.2 * state.scale); // Sparkle
+                ctx.fillRect(PIXEL_GRID * 0.05 * state.scale, PIXEL_GRID * 0.05 * state.scale, PIXEL_GRID * 0.1 * state.scale, PIXEL_GRID * 0.1 * state.scale); // Extra sparkle
 
                 ctx.restore();
             }
@@ -641,36 +759,40 @@
                 ctx.translate(asteroid.x + asteroid.width / 2, asteroid.y + asteroid.height / 2);
                 ctx.rotate(asteroid.rotation);
 
-                // Jagged asteroid shape
+                // Enhanced jagged asteroid shape
                 const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, PIXEL_GRID * state.scale);
-                gradient.addColorStop(0, '#777777');
+                gradient.addColorStop(0, '#888888');
+                gradient.addColorStop(0.7, '#666666');
                 gradient.addColorStop(1, '#444444');
                 ctx.fillStyle = gradient;
                 ctx.beginPath();
-                ctx.moveTo(-PIXEL_GRID * 0.8 * state.scale, -PIXEL_GRID * 0.9 * state.scale);
-                ctx.lineTo(0, -PIXEL_GRID * 1.1 * state.scale);
-                ctx.lineTo(PIXEL_GRID * 0.9 * state.scale, -PIXEL_GRID * 0.7 * state.scale);
-                ctx.lineTo(PIXEL_GRID * 1.1 * state.scale, 0);
-                ctx.lineTo(PIXEL_GRID * 0.8 * state.scale, PIXEL_GRID * 0.9 * state.scale);
-                ctx.lineTo(0, PIXEL_GRID * 1.1 * state.scale);
-                ctx.lineTo(-PIXEL_GRID * 0.9 * state.scale, PIXEL_GRID * 0.8 * state.scale);
-                ctx.lineTo(-PIXEL_GRID * 1.1 * state.scale, 0);
+                ctx.moveTo(-PIXEL_GRID * 0.9 * state.scale, -PIXEL_GRID * 0.8 * state.scale);
+                ctx.lineTo(-PIXEL_GRID * 0.3 * state.scale, -PIXEL_GRID * 1.2 * state.scale);
+                ctx.lineTo(PIXEL_GRID * 0.7 * state.scale, -PIXEL_GRID * 0.9 * state.scale);
+                ctx.lineTo(PIXEL_GRID * 1.2 * state.scale, -PIXEL_GRID * 0.2 * state.scale);
+                ctx.lineTo(PIXEL_GRID * 0.9 * state.scale, PIXEL_GRID * 0.8 * state.scale);
+                ctx.lineTo(PIXEL_GRID * 0.3 * state.scale, PIXEL_GRID * 1.2 * state.scale);
+                ctx.lineTo(-PIXEL_GRID * 0.7 * state.scale, PIXEL_GRID * 0.9 * state.scale);
+                ctx.lineTo(-PIXEL_GRID * 1.2 * state.scale, PIXEL_GRID * 0.2 * state.scale);
                 ctx.closePath();
                 ctx.fill();
 
-                // Surface details
-                ctx.fillStyle = '#999999';
+                // Detailed craters
+                ctx.fillStyle = '#AAAAAA';
                 ctx.beginPath();
-                ctx.arc(PIXEL_GRID * 0.4 * state.scale, PIXEL_GRID * 0.3 * state.scale, PIXEL_GRID * 0.3 * state.scale, 0, Math.PI * 2);
+                ctx.arc(PIXEL_GRID * 0.5 * state.scale, PIXEL_GRID * 0.3 * state.scale, PIXEL_GRID * 0.3 * state.scale, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.beginPath();
-                ctx.arc(-PIXEL_GRID * 0.3 * state.scale, -PIXEL_GRID * 0.4 * state.scale, PIXEL_GRID * 0.2 * state.scale, 0, Math.PI * 2);
+                ctx.arc(-PIXEL_GRID * 0.4 * state.scale, -PIXEL_GRID * 0.5 * state.scale, PIXEL_GRID * 0.2 * state.scale, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(PIXEL_GRID * 0.2 * state.scale, -PIXEL_GRID * 0.6 * state.scale, PIXEL_GRID * 0.15 * state.scale, 0, Math.PI * 2);
                 ctx.fill();
                 drawDitheredRect(
                     ctx,
-                    -PIXEL_GRID * 0.5 * state.scale,
+                    -PIXEL_GRID * 0.6 * state.scale,
                     -PIXEL_GRID * 0.9 * state.scale,
-                    PIXEL_GRID * state.scale,
+                    PIXEL_GRID * 1.2 * state.scale,
                     PIXEL_GRID * 0.3 * state.scale,
                     '#777777',
                     '#555555',
@@ -688,19 +810,23 @@
 
                 // Fiery comet core
                 const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, PIXEL_GRID * 0.5 * state.scale);
-                gradient.addColorStop(0, '#FF6633');
+                gradient.addColorStop(0, '#FF9933');
+                gradient.addColorStop(0.5, '#FF6633');
                 gradient.addColorStop(1, '#CC3300');
                 ctx.fillStyle = gradient;
                 ctx.beginPath();
                 ctx.arc(0, 0, PIXEL_GRID * 0.5 * state.scale, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Tail effect
-                ctx.fillStyle = 'rgba(255, 153, 51, 0.5)';
+                // Enhanced glowing tail
+                const tailGradient = ctx.createLinearGradient(PIXEL_GRID * 0.5 * state.scale, 0, PIXEL_GRID * 1.5 * state.scale, 0);
+                tailGradient.addColorStop(0, 'rgba(255, 153, 51, 0.8)');
+                tailGradient.addColorStop(1, 'rgba(255, 153, 51, 0.1)');
+                ctx.fillStyle = tailGradient;
                 ctx.beginPath();
                 ctx.moveTo(PIXEL_GRID * 0.5 * state.scale, 0);
-                ctx.lineTo(PIXEL_GRID * 1.2 * state.scale, -PIXEL_GRID * 0.3 * state.scale);
-                ctx.lineTo(PIXEL_GRID * 1.2 * state.scale, PIXEL_GRID * 0.3 * state.scale);
+                ctx.lineTo(PIXEL_GRID * 1.5 * state.scale, -PIXEL_GRID * 0.4 * state.scale);
+                ctx.lineTo(PIXEL_GRID * 1.5 * state.scale, PIXEL_GRID * 0.4 * state.scale);
                 ctx.closePath();
                 ctx.fill();
 
@@ -708,6 +834,9 @@
                 ctx.fillStyle = '#FFCC99';
                 ctx.beginPath();
                 ctx.arc(-PIXEL_GRID * 0.2 * state.scale, 0, PIXEL_GRID * 0.2 * state.scale, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(-PIXEL_GRID * 0.1 * state.scale, PIXEL_GRID * 0.2 * state.scale, PIXEL_GRID * 0.15 * state.scale, 0, Math.PI * 2);
                 ctx.fill();
                 drawDitheredRect(
                     ctx,
@@ -724,112 +853,126 @@
                 comet.rotation += comet.rotationSpeed;
             }
 
-            function drawBlackHole(blackHole) {
-                ctx.save();
-                ctx.translate(blackHole.x + blackHole.width / 2, blackHole.y + blackHole.height / 2);
-                ctx.rotate(blackHole.rotation);
+          function drawBlackHole(blackHole) {
+    ctx.save();
+    ctx.translate(blackHole.x + blackHole.width / 2, blackHole.y + blackHole.height / 2);
+    ctx.rotate(blackHole.rotation);
 
-                // Swirling core
-                const coreGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, PIXEL_GRID * 0.7 * state.scale);
-                coreGradient.addColorStop(0, '#FFFFFF');
-                coreGradient.addColorStop(0.3, '#9933FF');
-                coreGradient.addColorStop(1, '#330066');
-                ctx.fillStyle = coreGradient;
-                ctx.beginPath();
-                ctx.arc(0, 0, PIXEL_GRID * 0.7 * state.scale * (1 + 0.1 * Math.sin(blackHole.rotation * 2)), 0, Math.PI * 2);
-                ctx.fill();
+    // Enhanced swirling core (unchanged)
+    const coreGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, PIXEL_GRID * 0.7 * state.scale);
+    coreGradient.addColorStop(0, '#FFFFFF');
+    coreGradient.addColorStop(0.2, '#CC99FF');
+    coreGradient.addColorStop(0.5, '#9933FF');
+    coreGradient.addColorStop(1, '#330066');
+    ctx.fillStyle = coreGradient;
+    ctx.beginPath();
+    ctx.arc(0, 0, PIXEL_GRID * 0.7 * state.scale * (1 + 0.1 * Math.sin(blackHole.rotation * 2)), 0, Math.PI * 2);
+    ctx.fill();
 
-                // Accretion disk
-                ctx.strokeStyle = 'rgba(163, 223, 255, 0.7)';
-                ctx.lineWidth = 4 * state.scale;
-                for (let i = 0; i < 4; i++) {
-                    ctx.beginPath();
-                    ctx.moveTo(0, 0);
-                    const angle = (Math.PI / 2) * i + blackHole.rotation * 2;
-                    const radius = blackHole.pullRadius * (1 - i * 0.2);
-                    ctx.quadraticCurveTo(
-                        Math.cos(angle) * radius * 0.5,
-                        Math.sin(angle) * radius * 0.5,
-                        Math.cos(angle + Math.PI / 2) * radius,
-                        Math.sin(angle + Math.PI / 2) * radius
-                    );
-                    ctx.stroke();
-                }
+    // Reduced visual pull radius for accretion disk and outer ring
+    const visualPullRadius = blackHole.pullRadius * 0.5; // 50% of original pullRadius (150 * state.scale)
 
-                // Outer ring
-                ctx.strokeStyle = '#A3DFFF';
-                ctx.lineWidth = 5 * state.scale;
-                ctx.beginPath();
-                ctx.arc(0, 0, blackHole.pullRadius * 0.9, 0, Math.PI * 2);
-                ctx.stroke();
+    // Detailed accretion disk with reduced radius
+    ctx.strokeStyle = 'rgba(163, 223, 255, 0.7)';
+    ctx.lineWidth = 4 * state.scale;
+    for (let i = 0; i < 6; i++) {
+        ctx.beginPath();
+        const angle = (Math.PI / 3) * i + blackHole.rotation * 3;
+        const radius = visualPullRadius * (1 - i * 0.15); // Scale accretion disk to visual radius
+        ctx.quadraticCurveTo(
+            Math.cos(angle) * radius * 0.5,
+            Math.sin(angle) * radius * 0.5,
+            Math.cos(angle + Math.PI / 2) * radius,
+            Math.sin(angle + Math.PI / 2) * radius
+        );
+        ctx.stroke();
+    }
 
-                ctx.restore();
-                blackHole.rotation += blackHole.rotationSpeed;
-            }
+    // Outer ring with glow, reduced radius
+    const ringGradient = ctx.createRadialGradient(0, 0, visualPullRadius * 0.8, 0, 0, visualPullRadius);
+    ringGradient.addColorStop(0, 'rgba(163, 223, 255, 0.6)');
+    ringGradient.addColorStop(1, 'rgba(163, 223, 255, 0.2)');
+    ctx.strokeStyle = ringGradient;
+    ctx.lineWidth = 6 * state.scale;
+    ctx.beginPath();
+    ctx.arc(0, 0, visualPullRadius * 0.9, 0, Math.PI * 2);
+    ctx.stroke();
 
-            function drawBoss() {
-                if (!entities.boss) return;
-                ctx.save();
-                ctx.translate(entities.boss.x + entities.boss.width / 2, entities.boss.y + entities.boss.height / 2);
-                ctx.rotate(entities.boss.rotation);
+    ctx.restore();
+    blackHole.rotation += blackHole.rotationSpeed;
+}
 
-                // Core with pulsing effect
-                const coreGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, entities.boss.width / 2);
-                coreGradient.addColorStop(0, '#9933FF');
-                coreGradient.addColorStop(1, '#660099');
-                ctx.fillStyle = coreGradient;
-                ctx.beginPath();
-                ctx.arc(0, 0, entities.boss.width / 2 * (1 + 0.05 * Math.sin(entities.boss.rotation * 3)), 0, Math.PI * 2);
-                ctx.fill();
+         function drawBoss() {
+        if (!entities.boss) return;
+        ctx.save();
+        ctx.translate(entities.boss.x + entities.boss.width / 2, entities.boss.y + entities.boss.height / 2);
+        ctx.rotate(entities.boss.rotation);
 
-                // Energy nodes
-                ctx.fillStyle = '#FFCC00';
-                for (let i = 0; i < 4; i++) {
-                    const angle = (Math.PI / 2) * i + entities.boss.rotation;
-                    ctx.beginPath();
-                    ctx.arc(
-                        Math.cos(angle) * (entities.boss.width * 0.4),
-                        Math.sin(angle) * (entities.boss.width * 0.4),
-                        PIXEL_GRID * 0.3 * state.scale,
-                        0,
-                        Math.PI * 2
-                    );
-                    ctx.fill();
-                }
+        const coreGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, entities.boss.width / 2);
+        coreGradient.addColorStop(0, '#FF33CC');
+        coreGradient.addColorStop(0.5, '#CC00FF');
+        coreGradient.addColorStop(1, '#660099');
+        ctx.fillStyle = coreGradient;
+        ctx.beginPath();
+        ctx.arc(0, 0, entities.boss.width / 2 * (1 + 0.05 * Math.sin(state.gameTime * 0.003)), 0, Math.PI * 2);
+        ctx.fill();
 
-                // Eyes with animation
-                if (astronaut.frame % 4 < 2) {
-                    ctx.fillStyle = '#FF3333';
-                    ctx.beginPath();
-                    ctx.arc(PIXEL_GRID * 0.5 * state.scale, -PIXEL_GRID * 0.5 * state.scale, PIXEL_GRID * 0.4 * state.scale, 0, Math.PI * 2);
-                    ctx.arc(-PIXEL_GRID * 0.5 * state.scale, -PIXEL_GRID * 0.5 * state.scale, PIXEL_GRID * 0.4 * state.scale, 0, Math.PI * 2);
-                    ctx.fill();
-                }
+        ctx.fillStyle = '#FFCC00';
+        for (let i = 0; i < 6; i++) { // More energy cores
+            const angle = (Math.PI / 3) * i + entities.boss.rotation;
+            ctx.beginPath();
+            ctx.arc(
+                Math.cos(angle) * (entities.boss.width * 0.4),
+                Math.sin(angle) * (entities.boss.width * 0.4),
+                PIXEL_GRID * 0.4 * state.scale * (1 + 0.1 * Math.sin(state.gameTime * 0.002 + i)),
+                0,
+                Math.PI * 2
+            );
+            ctx.fill();
+        }
 
-                // Outer energy field
-                ctx.strokeStyle = 'rgba(163, 223, 255, 0.6)';
-                ctx.lineWidth = 3 * state.scale;
-                for (let i = 0; i < 8; i++) {
-                    ctx.beginPath();
-                    ctx.arc(0, 0, entities.boss.width / 2 + 15 * state.scale, i * (Math.PI / 4) + entities.boss.rotation, i * (Math.PI / 4) + Math.PI / 8 + entities.boss.rotation);
-                    ctx.stroke();
-                }
+        if (astronaut.frame % 4 < 2) {
+            const eyeGradient = ctx.createRadialGradient(PIXEL_GRID * 0.7 * state.scale, -PIXEL_GRID * 0.7 * state.scale, 0, PIXEL_GRID * 0.7 * state.scale, -PIXEL_GRID * 0.7 * state.scale, PIXEL_GRID * 0.5 * state.scale);
+            eyeGradient.addColorStop(0, '#FF6666');
+            eyeGradient.addColorStop(1, '#FF3333');
+            ctx.fillStyle = eyeGradient;
+            ctx.beginPath();
+            ctx.arc(PIXEL_GRID * 0.7 * state.scale, -PIXEL_GRID * 0.7 * state.scale, PIXEL_GRID * 0.5 * state.scale, 0, Math.PI * 2);
+            ctx.arc(-PIXEL_GRID * 0.7 * state.scale, -PIXEL_GRID * 0.7 * state.scale, PIXEL_GRID * 0.5 * state.scale, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.arc(PIXEL_GRID * 0.7 * state.scale, -PIXEL_GRID * 0.7 * state.scale, PIXEL_GRID * 0.15 * state.scale, 0, Math.PI * 2);
+            ctx.arc(-PIXEL_GRID * 0.7 * state.scale, -PIXEL_GRID * 0.7 * state.scale, PIXEL_GRID * 0.15 * state.scale, 0, Math.PI * 2);
+            ctx.fill();
+        }
 
-                ctx.restore();
-                entities.boss.rotation += entities.boss.rotationSpeed;
+        ctx.strokeStyle = 'rgba(163, 223, 255, 0.8)';
+        ctx.lineWidth = 6 * state.scale;
+        for (let i = 0; i < 12; i++) {
+            ctx.beginPath();
+            ctx.arc(0, 0, entities.boss.width / 2 + 20 * state.scale, i * (Math.PI / 6) + entities.boss.rotation * 2, i * (Math.PI / 6) + Math.PI / 12 + entities.boss.rotation * 2);
+            ctx.stroke();
+        }
 
-                // Health bar
-                ctx.fillStyle = '#FF3333';
-                ctx.fillRect(entities.boss.x, entities.boss.y - 25 * state.scale, (bossState.health / 100) * entities.boss.width, 12 * state.scale);
-                ctx.strokeStyle = '#A3DFFF';
-                ctx.lineWidth = 2 * state.scale;
-                ctx.strokeRect(entities.boss.x, entities.boss.y - 25 * state.scale, entities.boss.width, 12 * state.scale);
-            }
+        ctx.restore();
+        entities.boss.rotation += entities.boss.rotationSpeed;
 
+        const healthGradient = ctx.createLinearGradient(entities.boss.x, 0, entities.boss.x + entities.boss.width, 0);
+        healthGradient.addColorStop(0, '#FF6666');
+        healthGradient.addColorStop(1, '#FF3333');
+        ctx.fillStyle = healthGradient;
+        ctx.fillRect(entities.boss.x, entities.boss.y - 30 * state.scale, (bossState.health / 300) * entities.boss.width, 15 * state.scale);
+        ctx.strokeStyle = '#A3DFFF';
+        ctx.lineWidth = 3 * state.scale;
+        ctx.strokeRect(entities.boss.x, entities.boss.y - 30 * state.scale, entities.boss.width, 15 * state.scale);
+        ctx.fillStyle = 'rgba(163, 223, 255, 0.4)';
+        ctx.fillRect(entities.boss.x, entities.boss.y - 30 * state.scale, entities.boss.width, 15 * state.scale);
+    }
             function drawDrone(drone) {
                 ctx.save();
                 ctx.translate(drone.x + drone.width / 2, drone.y + drone.height / 2);
-                ctx.rotate(Math.sin(drone.x * 0.02) * 0.05); // Subtle oscillation
+                ctx.rotate(Math.sin(drone.x * 0.02 + state.gameTime * 0.001) * 0.05); // Enhanced oscillation
 
                 // Drone body
                 const bodyColor = drone.type === 'kamikaze' ? '#FF5533' : drone.type === 'micro' ? '#999999' : '#666666';
@@ -845,11 +988,17 @@
                 ctx.closePath();
                 ctx.fill();
 
-                // Core detail
+                // Core detail with blinking light
                 ctx.fillStyle = drone.type === 'kamikaze' ? '#FFCC00' : '#FF3333';
                 ctx.beginPath();
                 ctx.arc(0, 0, PIXEL_GRID * 0.25 * state.scale, 0, Math.PI * 2);
                 ctx.fill();
+                if (astronaut.frame % 8 < 4) {
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.beginPath();
+                    ctx.arc(PIXEL_GRID * 0.2 * state.scale, 0, PIXEL_GRID * 0.1 * state.scale, 0, Math.PI * 2);
+                    ctx.fill(); // Blinking light
+                }
                 drawDitheredRect(
                     ctx,
                     -PIXEL_GRID * 0.3 * state.scale,
@@ -867,7 +1016,7 @@
             function drawBuff(buff) {
                 ctx.save();
                 ctx.translate(buff.x + buff.width / 2, buff.y + buff.height / 2);
-                ctx.rotate(Math.sin(buff.x * 0.01) * 0.1); // Gentle rotation
+                ctx.rotate(Math.sin(buff.x * 0.01 + state.gameTime * 0.001) * 0.1); // Enhanced rotation
 
                 if (buff.type === 'speed') {
                     // Speed buff with lightning bolt
@@ -918,9 +1067,12 @@
                     );
                 }
 
-                // Outline
+                // Enhanced outline with glow
                 ctx.strokeStyle = '#FFFFFF';
                 ctx.lineWidth = 2 * state.scale;
+                ctx.strokeRect(-PIXEL_GRID * 0.5 * state.scale, -PIXEL_GRID * 0.5 * state.scale, PIXEL_GRID * state.scale, PIXEL_GRID * state.scale);
+                ctx.strokeStyle = 'rgba(163, 223, 255, 0.4)';
+                ctx.lineWidth = 4 * state.scale;
                 ctx.strokeRect(-PIXEL_GRID * 0.5 * state.scale, -PIXEL_GRID * 0.5 * state.scale, PIXEL_GRID * state.scale, PIXEL_GRID * state.scale);
 
                 ctx.restore();
@@ -952,12 +1104,19 @@
                     projectile.isEnemy ? '#FF6600' : '#CC3333',
                     state.scale
                 );
+                // Trail effect
+                const trailGradient = ctx.createLinearGradient(0, 0, -projectile.width * 2, 0);
+                trailGradient.addColorStop(0, 'rgba(255, 102, 102, 0.5)');
+                trailGradient.addColorStop(1, 'rgba(255, 102, 102, 0)');
+                ctx.fillStyle = trailGradient;
+                ctx.fillRect(-projectile.width * 2, -projectile.height / 4, projectile.width * 2, projectile.height / 2);
                 ctx.restore();
             }
 
             function drawIntroScreen() {
                 ctx.fillStyle = palette.background;
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
+                drawBackgrounds(0); // Show background in intro
                 ctx.fillStyle = palette.secondary;
                 ctx.font = `20px 'Press Start 2P', monospace`;
                 ctx.textAlign = 'center';
@@ -977,8 +1136,14 @@
 
             function drawUpgradeMenu() {
                 if (!ui.showUpgradeMenu) return;
-                ctx.fillStyle = 'rgba(10, 28, 43, 0.9)';
+                // Sci-fi panel effect
+                ctx.fillStyle = 'rgba(10, 28, 43, 0.95)';
                 ctx.fillRect(canvas.width / 4, canvas.height / 4, canvas.width / 2, canvas.height / 2);
+                ctx.strokeStyle = 'rgba(163, 223, 255, 0.6)';
+                ctx.lineWidth = 4 * state.scale;
+                ctx.strokeRect(canvas.width / 4, canvas.height / 4, canvas.width / 2, canvas.height / 2);
+                ctx.fillStyle = 'rgba(163, 223, 255, 0.2)';
+                ctx.fillRect(canvas.width / 4, canvas.height / 4, canvas.width / 2, canvas.height / 2); // Glow overlay
                 ctx.fillStyle = palette.secondary;
                 ctx.font = `16px 'Press Start 2P', monospace`;
                 ctx.textAlign = 'center';
@@ -1002,6 +1167,9 @@
                 ctx.arc(input.joystick.x, input.joystick.y, 20 * state.scale, 0, Math.PI * 2);
                 ctx.fillStyle = palette.secondary;
                 ctx.fill();
+                ctx.strokeStyle = 'rgba(163, 223, 255, 0.6)';
+                ctx.lineWidth = 2 * state.scale;
+                ctx.stroke(); // Glow outline
             }
 
             function drawReplayButton() {
@@ -1014,6 +1182,8 @@
                 ctx.strokeStyle = palette.secondary;
                 ctx.lineWidth = 4 * state.scale;
                 ctx.strokeRect(buttonX, buttonY, buttonWidth, buttonHeight);
+                ctx.fillStyle = 'rgba(163, 223, 255, 0.4)';
+                ctx.fillRect(buttonX, buttonY, buttonWidth, buttonHeight); // Glow overlay
                 ctx.fillStyle = palette.secondary;
                 ctx.font = `20px 'Press Start 2P', monospace`;
                 ctx.textAlign = 'center';
@@ -1038,6 +1208,7 @@
                     playSound('damage');
                     ui.shakeTime = 300;
                     ui.shakeIntensity = 5 * state.scale;
+                    spawnParticles(astronaut.x + astronaut.width / 2, astronaut.y + astronaut.height / 2, 10, 'explosion');
                 }
             }
 
@@ -1076,144 +1247,233 @@
                 }
             }
 
-            function generateEntity(type, currentTime) {
-                const spawnInterval = {
-                    packet: 1500 / (state.level + Math.min(state.combo / 10, 2)),
-                    asteroid: 2000 / (state.level + 1 + Math.min(state.combo / 10, 2)),
-                    comet: 2500 / (state.level + 1 + Math.min(state.combo / 10, 2)),
-                    blackHole: 4000 / (state.level + 1),
-                    drone: 5000 / (state.level + 1),
-                    kamikazeDrone: 6000 / (state.level + 1),
-                    buff: 5000 / state.level
-                };
+       function generateEntity(type, currentTime) {
+        // If boss is active, significantly reduce spawn rates for packets and buffs
+        // and prevent other dangerous entities from spawning
+        const spawnInterval = {
+            packet: entities.boss ? 5000 : 1500 / (state.level + Math.min(state.combo / 10, 2)),
+            asteroid: entities.boss ? Infinity : 2000 / (state.level + 1 + Math.min(state.combo / 10, 2)),
+            comet: entities.boss ? Infinity : 2500 / (state.level + 1 + Math.min(state.combo / 10, 2)),
+            blackHole: entities.boss ? Infinity : (state.level >= 5 ? 8000 / (state.level + 1) : Infinity), // Reduced frequency, only from level 5
+            drone: entities.boss ? Infinity : 5000 / (state.level + 1),
+            kamikazeDrone: entities.boss ? Infinity : 6000 / (state.level + 1),
+            buff: entities.boss ? 10000 : 5000 / state.level
+        };
 
-                if (currentTime - state.lastSpawnTime < spawnInterval[type]) return;
+        if (currentTime - state.spawnTimes[type] < spawnInterval[type]) return;
 
-                switch (type) {
-                    case 'packet':
-                        if (entities.packets.length < 10) {
-                            entities.packets.push({
-                                x: canvas.width,
-                                y: Math.random() * (canvas.height - PIXEL_GRID * state.scale),
-                                width: PIXEL_GRID * state.scale,
-                                height: PIXEL_GRID * state.scale,
-                                speed: 50 * state.scale / state.level,
-                                id: generateUUID()
-                            });
-                            state.lastSpawnTime = currentTime;
-                        }
-                        break;
-                    case 'asteroid':
-                        if (entities.asteroids.length < 5 + state.level) {
-                            entities.asteroids.push({
-                                x: canvas.width,
-                                y: Math.random() * (canvas.height - 2 * PIXEL_GRID * state.scale),
-                                width: 2 * PIXEL_GRID * state.scale,
-                                height: 2 * PIXEL_GRID * state.scale,
-                                speed: 40 * state.scale * state.level,
-                                rotation: 0,
-                                rotationSpeed: (Math.random() - 0.5) * 0.05,
-                                id: generateUUID()
-                            });
-                            state.lastSpawnTime = currentTime;
-                        }
-                        break;
-                    case 'comet':
-                        if (entities.comets.length < 3 + state.level) {
-                            entities.comets.push({
-                                x: canvas.width,
-                                y: Math.random() * (canvas.height - PIXEL_GRID * state.scale),
-                                width: PIXEL_GRID * state.scale,
-                                height: PIXEL_GRID * state.scale,
-                                speed: 70 * state.scale * state.level,
-                                rotation: 0,
-                                rotationSpeed: (Math.random() - 0.5) * 0.07,
-                                id: generateUUID()
-                            });
-                            state.lastSpawnTime = currentTime;
-                        }
-                        break;
-                    case 'blackHole':
-                        if (entities.blackHoles.length < 2 + state.level) {
-                            entities.blackHoles.push({
-                                x: canvas.width,
-                                y: Math.random() * (canvas.height - 2 * PIXEL_GRID * state.scale),
-                                width: 2 * PIXEL_GRID * state.scale,
-                                height: 2 * PIXEL_GRID * state.scale,
-                                pullRadius: 200 * state.scale,
-                                rotation: 0,
-                                rotationSpeed: 0.05,
-                                id: generateUUID(),
-                                lastDroneSpawn: currentTime
-                            });
-                            state.lastSpawnTime = currentTime;
-                        }
-                        break;
-                    case 'drone':
-                        if (entities.drones.length < 1 + Math.floor(state.level / 2)) {
-                            entities.drones.push({
-                                x: canvas.width,
-                                y: Math.random() * (canvas.height - PIXEL_GRID * state.scale),
-                                width: PIXEL_GRID * state.scale,
-                                height: PIXEL_GRID * state.scale,
-                                speed: 60 * state.scale * state.level,
-                                id: generateUUID()
-                            });
-                            state.lastSpawnTime = currentTime;
-                        }
-                        break;
-                    case 'kamikazeDrone':
-                        if (entities.drones.length < 1 + Math.floor(state.level / 3)) {
-                            entities.drones.push({
-                                x: canvas.width,
-                                y: Math.random() * (canvas.height - PIXEL_GRID * state.scale),
-                                width: PIXEL_GRID * state.scale,
-                                height: PIXEL_GRID * state.scale,
-                                speed: 100 * state.scale * state.level,
-                                id: generateUUID(),
-                                type: 'kamikaze',
-                                chargeDelay: 2000
-                            });
-                            state.lastSpawnTime = currentTime;
-                        }
-                        break;
-                    case 'buff':
-                        if (entities.buffs.length < 2) {
-                            const buffType = Math.random() > 0.5 ? 'speed' : 'health';
-                            entities.buffs.push({
-                                x: canvas.width,
-                                y: Math.random() * (canvas.height - PIXEL_GRID * state.scale),
-                                width: PIXEL_GRID * state.scale,
-                                height: PIXEL_GRID * state.scale,
-                                speed: 40 * state.scale / state.level,
-                                type: buffType,
-                                id: generateUUID()
-                            });
-                            state.lastSpawnTime = currentTime;
-                        }
-                        break;
+        switch (type) {
+            case 'packet':
+                if (entities.packets.length < (entities.boss ? 5 : 10)) {
+                    entities.packets.push({
+                        x: canvas.width,
+                        y: Math.random() * (canvas.height - PIXEL_GRID * state.scale),
+                        width: PIXEL_GRID * state.scale,
+                        height: PIXEL_GRID * state.scale,
+                        speed: 50 * state.scale / state.level,
+                        id: generateUUID()
+                    });
+                    state.spawnTimes.packet = currentTime;
                 }
-            }
-
-            function generateBoss(currentTime) {
-                if (state.score >= 90 && !entities.boss) {
-                    entities.boss = {
-                        x: canvas.width - 100 * state.scale,
-                        y: canvas.height / 2,
-                        width: 4 * PIXEL_GRID * state.scale,
-                        height: 4 * PIXEL_GRID * state.scale,
-                        pullRadius: 250 * state.scale,
+                break;
+            case 'asteroid':
+                if (entities.asteroids.length < 5 + state.level) {
+                    entities.asteroids.push({
+                        x: canvas.width,
+                        y: Math.random() * (canvas.height - 2 * PIXEL_GRID * state.scale),
+                        width: 2 * PIXEL_GRID * state.scale,
+                        height: 2 * PIXEL_GRID * state.scale,
+                        speed: 40 * state.scale * state.level,
                         rotation: 0,
-                        rotationSpeed: 0.02,
-                        id: 'boss',
-                        spawnTime: currentTime,
-                        speed: 50 * state.scale,
-                        phaseChangeTime: currentTime
-                    };
-                    bossState.health = 100;
-                    bossState.phase = 1;
+                        rotationSpeed: (Math.random() - 0.5) * 0.05,
+                        id: generateUUID()
+                    });
+                    state.spawnTimes.asteroid = currentTime;
                 }
+                break;
+            case 'comet':
+                if (entities.comets.length < 3 + state.level) {
+                    entities.comets.push({
+                        x: canvas.width,
+                        y: Math.random() * (canvas.height - PIXEL_GRID * state.scale),
+                        width: PIXEL_GRID * state.scale,
+                        height: PIXEL_GRID * state.scale,
+                        speed: 70 * state.scale * state.level,
+                        rotation: 0,
+                        rotationSpeed: (Math.random() - 0.5) * 0.07,
+                        id: generateUUID()
+                    });
+                    state.spawnTimes.comet = currentTime;
+                }
+                break;
+            case 'blackHole':
+                if (state.level >= 5 && entities.blackHoles.length < 2 + state.level) {
+                    entities.blackHoles.push({
+                        x: canvas.width,
+                        y: Math.random() * (canvas.height - 2 * PIXEL_GRID * state.scale),
+                        width: 2 * PIXEL_GRID * state.scale,
+                        height: 2 * PIXEL_GRID * state.scale,
+                        pullRadius: 300 * state.scale, // Increased pull radius for more danger
+                        rotation: 0,
+                        rotationSpeed: 0.07, // Faster rotation
+                        id: generateUUID(),
+                        lastDroneSpawn: currentTime,
+                        damage: 75 // Increased damage on collision
+                    });
+                    state.spawnTimes.blackHole = currentTime;
+                }
+                break;
+            case 'drone':
+                if (entities.drones.length < 1 + Math.floor(state.level / 2)) {
+                    entities.drones.push({
+                        x: canvas.width,
+                        y: Math.random() * (canvas.height - PIXEL_GRID * state.scale),
+                        width: PIXEL_GRID * state.scale,
+                        height: PIXEL_GRID * state.scale,
+                        speed: 60 * state.scale * state.level,
+                        id: generateUUID()
+                    });
+                    state.spawnTimes.drone = currentTime;
+                }
+                break;
+            case 'kamikazeDrone':
+                if (entities.drones.length < 1 + Math.floor(state.level / 3)) {
+                    entities.drones.push({
+                        x: canvas.width,
+                        y: Math.random() * (canvas.height - PIXEL_GRID * state.scale),
+                        width: PIXEL_GRID * state.scale,
+                        height: PIXEL_GRID * state.scale,
+                        speed: 100 * state.scale * state.level,
+                        id: generateUUID(),
+                        type: 'kamikaze',
+                        chargeDelay: 2000
+                    });
+                    state.spawnTimes.kamikazeDrone = currentTime;
+                }
+                break;
+            case 'buff':
+                if (entities.buffs.length < (entities.boss ? 1 : 2)) {
+                    const buffType = Math.random() > 0.5 ? 'speed' : 'health';
+                    entities.buffs.push({
+                        x: canvas.width,
+                        y: Math.random() * (canvas.height - PIXEL_GRID * state.scale),
+                        width: PIXEL_GRID * state.scale,
+                        height: PIXEL_GRID * state.scale,
+                        speed: 40 * state.scale / state.level,
+                        type: buffType,
+                        id: generateUUID()
+                    });
+                    state.spawnTimes.buff = currentTime;
+                }
+                break;
+        }
+    }
+       function generateBoss(currentTime) {
+    if (state.score >= 100 && !entities.boss && !state.bossDefeated) {
+        entities.boss = {
+            x: canvas.width - 100 * state.scale,
+            y: canvas.height / 2,
+            width: 6 * PIXEL_GRID * state.scale,
+            height: 6 * PIXEL_GRID * state.scale,
+            pullRadius: 350 * state.scale,
+            rotation: 0,
+            rotationSpeed: 0.03,
+            id: 'boss',
+            spawnTime: currentTime,
+            speed: 80 * state.scale,
+            phaseChangeTime: currentTime,
+            attackPattern: 'circle'
+        };
+        bossState.health = 300;
+        bossState.phase = 1;
+        bossState.attackCooldown = 0;
+        // Clear existing dangerous entities
+        entities.asteroids = [];
+        entities.comets = [];
+        entities.blackHoles = [];
+        entities.drones = [];
+    }
+}
+function updateBoss(deltaTime, currentTime) {
+    if (!entities.boss) return;
+    const boss = entities.boss;
+    bossState.attackCooldown -= deltaTime * 1000;
+
+    // Movement logic based on phase
+    if (bossState.phase === 1) {
+        // Phase 1: Sinusoidal movement
+        boss.y += Math.sin(state.gameTime * 0.002) * 80 * state.scale * deltaTime;
+        if (bossState.attackCooldown <= 0) {
+            // Circular projectile barrage
+            for (let i = 0; i < 12; i++) {
+                const angle = (Math.PI / 6) * i;
+                entities.projectiles.push({
+                    x: boss.x + boss.width / 2,
+                    y: boss.y + boss.height / 2,
+                    width: PIXEL_GRID / 2 * state.scale,
+                    height: PIXEL_GRID / 4 * state.scale,
+                    speed: Math.cos(angle) * 200 * state.scale,
+                    speedY: Math.sin(angle) * 200 * state.scale,
+                    isEnemy: true,
+                    id: generateUUID()
+                });
             }
+            bossState.attackCooldown = 1500;
+            playSound('shoot');
+        }
+    } else {
+        // Phase 2: Chase astronaut
+        const dx = astronaut.x - boss.x;
+        const dy = astronaut.y - boss.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance > 0) {
+            boss.x += (dx / distance) * boss.speed * deltaTime;
+            boss.y += (dy / distance) * boss.speed * deltaTime;
+        }
+        if (bossState.attackCooldown <= 0) {
+            // Targeted spread shot
+            const angle = Math.atan2(astronaut.y - boss.y, astronaut.x - boss.x);
+            for (let i = -1; i <= 1; i++) {
+                const spreadAngle = angle + (i * Math.PI / 12);
+                entities.projectiles.push({
+                    x: boss.x + boss.width / 2,
+                    y: boss.y + boss.height / 2,
+                    width: PIXEL_GRID / 2 * state.scale,
+                    height: PIXEL_GRID / 4 * state.scale,
+                    speed: Math.cos(spreadAngle) * 250 * state.scale,
+                    speedY: Math.sin(spreadAngle) * 250 * state.scale,
+                    isEnemy: true,
+                    id: generateUUID()
+                });
+            }
+            bossState.attackCooldown = 800;
+            playSound('shoot');
+        }
+    }
+
+    // Phase transition
+    if (bossState.health <= 150 && bossState.phase === 1) {
+        bossState.phase = 2;
+        boss.phaseChangeTime = currentTime;
+        boss.speed *= 1.5;
+        spawnParticles(boss.x + boss.width / 2, boss.y + boss.height / 2, 20, 'explosion');
+    }
+
+    // Apply pull effect to astronaut
+    const dx = boss.x + boss.width / 2 - (astronaut.x + astronaut.width / 2);
+    const dy = boss.y + boss.height / 2 - (astronaut.y + astronaut.height / 2);
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    if (distance < boss.pullRadius && distance > 0) {
+        const force = (boss.pullRadius - distance) / boss.pullRadius * 150 * state.scale;
+        astronaut.x += (dx / distance) * force * deltaTime;
+        astronaut.y += (dy / distance) * force * deltaTime;
+    }
+
+    boss.y = clamp(boss.y, 0, canvas.height - boss.height);
+    boss.x = clamp(boss.x, 0, canvas.width - boss.width);
+    addToGrid(boss, boss.x, boss.y, boss.width, boss.height);
+}
+
 
             function updateInputState() {
                 input.state.direction = { x: 0, y: 0 };
@@ -1253,470 +1513,406 @@
                 }
             }
 
-            function updateAstronaut(deltaTime) {
-                updateInputState();
-                astronaut.velocity = { x: 0, y: 0 };
-                astronaut.state = 'idle';
+          function updateAstronaut(deltaTime) {
+    updateInputState();
+    astronaut.velocity = { x: 0, y: 0 };
+    astronaut.state = 'idle';
 
-                if (input.state.shoot && !state.gameOver && state.gameStarted) {
-                    shootProjectile();
+    if (input.state.shoot && !state.gameOver && state.gameStarted) {
+        shootProjectile();
+    }
+    if (input.state.toggleFireMode) {
+        input.fireMode = input.fireMode === 'single' ? 'spread' : 'single';
+        input.keys.set('Shift', false);
+    }
+    if (input.state.dash && astronaut.dashCooldown <= 0 && !astronaut.isDashing) {
+        astronaut.isDashing = true;
+        astronaut.dashTime = DASH_DURATION;
+        astronaut.dashCooldown = 3000 - (upgrades.dash.level - 1) * 500;
+        astronaut.dashDirection = {
+            x: input.state.direction.x || astronaut.dashDirection.x || 1,
+            y: input.state.direction.y || astronaut.dashDirection.y || 0
+        };
+        const magnitude = Math.sqrt(astronaut.dashDirection.x ** 2 + astronaut.dashDirection.y ** 2);
+        if (magnitude > 0) {
+            astronaut.dashDirection.x /= magnitude;
+            astronaut.dashDirection.y /= magnitude;
+        }
+        input.keys.set('e', false);
+        input.keys.set('E', false);
+    }
+
+    if (astronaut.isDashing) {
+        astronaut.velocity.x = astronaut.dashDirection.x * DASH_SPEED * state.scale;
+        astronaut.velocity.y = astronaut.dashDirection.y * DASH_SPEED * state.scale;
+        astronaut.dashTime -= deltaTime * 1000;
+        if (astronaut.dashTime <= 0) {
+            astronaut.isDashing = false;
+        }
+    } else if (!ui.showUpgradeMenu) {
+        astronaut.velocity.x = input.state.direction.x * astronaut.speed;
+        astronaut.velocity.y = input.state.direction.y * astronaut.speed;
+        if (input.state.direction.x !== 0 || input.state.direction.y !== 0) {
+            astronaut.state = 'moving';
+        }
+    }
+
+    astronaut.x += astronaut.velocity.x * deltaTime;
+    astronaut.y += astronaut.velocity.y * deltaTime;
+
+    astronaut.x = clamp(astronaut.x, 0, canvas.width - astronaut.width);
+    astronaut.y = clamp(astronaut.y, 0, canvas.height - astronaut.height);
+
+    astronaut.shootCooldown -= deltaTime * 1000;
+    astronaut.invincibility -= deltaTime * 1000;
+    astronaut.dashCooldown -= deltaTime * 1000;
+
+    if (astronaut.health <= 0 && !state.gameOver) {
+        state.gameOver = true;
+        state.leaderboard.push(state.score);
+        state.leaderboard.sort((a, b) => b - a);
+        state.leaderboard = state.leaderboard.slice(0, 5);
+        localStorage.setItem('leaderboard', JSON.stringify(state.leaderboard));
+        if (state.score > state.highScore) {
+            state.highScore = state.score;
+            localStorage.setItem('highScore', state.highScore);
+        }
+        stopBackgroundMusic();
+    }
+}
+
+    function applyBlackHolePull(entity, blackHole, deltaTime) {
+        // Only apply pull to the astronaut
+        if (entity !== astronaut) return;
+        const dx = blackHole.x + blackHole.width / 2 - (entity.x + entity.width / 2);
+        const dy = blackHole.y + blackHole.height / 2 - (entity.y + entity.height / 2);
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance < blackHole.pullRadius && distance > 0) {
+            const force = (blackHole.pullRadius - distance) / blackHole.pullRadius * 100 * state.scale;
+            entity.x += (dx / distance) * force * deltaTime;
+            entity.y += (dy / distance) * force * deltaTime;
+        }
+    }
+
+
+ function updateEntities(deltaTime) {
+    clearGrid();
+
+    entities.packets.forEach(packet => {
+        packet.x -= packet.speed * deltaTime;
+        addToGrid(packet, packet.x, packet.y, packet.width, packet.height);
+    });
+    entities.packets = entities.packets.filter(p => p.x + p.width > 0);
+
+    entities.asteroids.forEach(asteroid => {
+        asteroid.x -= asteroid.speed * deltaTime;
+        addToGrid(asteroid, asteroid.x, asteroid.y, asteroid.width, asteroid.height);
+    });
+    entities.asteroids = entities.asteroids.filter(a => a.x + a.width > 0);
+
+    entities.comets.forEach(comet => {
+        comet.x -= comet.speed * deltaTime;
+        addToGrid(comet, comet.x, comet.y, comet.width, comet.height);
+    });
+    entities.comets = entities.comets.filter(c => c.x + c.width > 0);
+
+    entities.blackHoles.forEach(blackHole => {
+        blackHole.x -= 10 * state.scale * deltaTime;
+        addToGrid(blackHole, blackHole.x, blackHole.y, blackHole.width, blackHole.height);
+    });
+    entities.blackHoles = entities.blackHoles.filter(b => b.x + b.width > 0);
+
+    entities.buffs.forEach(buff => {
+        buff.x -= buff.speed * deltaTime;
+        addToGrid(buff, buff.x, buff.y, buff.width, buff.height);
+    });
+    entities.buffs = entities.buffs.filter(b => b.x + b.width > 0);
+
+    entities.drones.forEach(drone => {
+        if (drone.type === 'kamikaze') {
+            drone.chargeDelay -= deltaTime * 1000;
+            if (drone.chargeDelay <= 0) {
+                const dx = astronaut.x - drone.x;
+                const dy = astronaut.y - drone.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance > 0) {
+                    drone.x += (dx / distance) * drone.speed * deltaTime;
+                    drone.y += (dy / distance) * drone.speed * deltaTime;
                 }
-                if (input.state.openUpgradeMenu && !state.gameOver && state.gameStarted) {
-                    ui.showUpgradeMenu = !ui.showUpgradeMenu;
-                    input.keys.set('u', false);
-                    input.keys.set('U', false);
-                }
-                if (input.state.toggleFireMode) {
-                    input.fireMode = input.fireMode === 'single' ? 'spread' : 'single';
-                    input.keys.set('Shift', false);
-                }
-                if (input.state.dash && astronaut.dashCooldown <= 0 && !astronaut.isDashing) {
-                    astronaut.isDashing = true;
-                    astronaut.dashTime = DASH_DURATION;
-                    astronaut.dashCooldown = 3000 - (upgrades.dash.level - 1) * 500;
-                    astronaut.dashDirection = {
-                        x: input.state.direction.x || 1,
-                        y: input.state.direction.y
-                    };
-                    const magnitude = Math.sqrt(astronaut.dashDirection.x ** 2 + astronaut.dashDirection.y ** 2);
-                    if (magnitude > 0) {
-                        astronaut.dashDirection.x /= magnitude;
-                        astronaut.dashDirection.y /= magnitude;
-                    }
-                }
-
-                let currentSpeed = astronaut.speed;
-
-                if (astronaut.isDashing) {
-                    astronaut.dashTime -= deltaTime * 1000;
-                    if (astronaut.dashTime <= 0) {
-                        astronaut.isDashing = false;
-                        astronaut.dashDirection = { x: 0, y: 0 };
-                        astronaut.velocity = { x: 0, y: 0 };
-                    }
-                    currentSpeed = DASH_SPEED * state.scale;
-                    astronaut.velocity.x = astronaut.dashDirection.x * currentSpeed;
-                    astronaut.velocity.y = astronaut.dashDirection.y * currentSpeed;
-                    astronaut.state = 'dashing';
-                } else if (!ui.showUpgradeMenu) {
-                    if (input.state.direction.x !== 0 || input.state.direction.y !== 0) {
-                        astronaut.velocity.x = input.state.direction.x * currentSpeed;
-                        astronaut.velocity.y = input.state.direction.y * currentSpeed;
-                        astronaut.state = 'moving';
-                    }
-                }
-
-                let nearBlackHole = false;
-                entities.blackHoles.forEach(bh => {
-                    const dx = bh.x + bh.width / 2 - astronaut.x - astronaut.width / 2;
-                    const dy = bh.y + bh.height / 2 - astronaut.y - astronaut.height / 2;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    if (distance < bh.pullRadius && !astronaut.isDashing) {
-                        nearBlackHole = true;
-                        const pullForce = (bh.pullRadius - distance) * 0.012 * state.level * (bh.pullRadius / distance);
-                        const pullX = (dx / distance) * pullForce;
-                        const pullY = (dy / distance) * pullForce;
-                        astronaut.velocity.x = astronaut.velocity.x * 0.7 + pullX;
-                        astronaut.velocity.y = astronaut.velocity.y * 0.7 + pullY;
-                        if (distance < PIXEL_GRID * state.scale) {
-                            takeDamage(5 * deltaTime * 1000);
-                        }
-                    }
-                });
-
-                if (entities.boss) {
-                    const pullDx = entities.boss.x + entities.boss.width / 2 - astronaut.x - astronaut.width / 2;
-                    const pullDy = entities.boss.y + entities.boss.height / 2 - astronaut.y - astronaut.height / 2;
-                    const pullDistance = Math.sqrt(pullDx * pullDx + pullDy * pullDy);
-                    if (pullDistance < entities.boss.pullRadius && !astronaut.isDashing) {
-                        nearBlackHole = true;
-                        const pullForce = (entities.boss.pullRadius - pullDistance) * 0.015;
-                        const pullX = (pullDx / pullDistance) * pullForce;
-                        const pullY = (pullDy / pullDistance) * pullForce;
-                        astronaut.velocity.x = astronaut.velocity.x * 0.7 + pullX;
-                        astronaut.velocity.y = astronaut.velocity.y * 0.7 + pullY;
-                    }
-                }
-
-                astronaut.x += astronaut.velocity.x * deltaTime;
-                astronaut.y += astronaut.velocity.y * deltaTime;
-
-                const buffer = 2 * state.scale;
-                astronaut.x = clamp(astronaut.x, buffer, canvas.width - astronaut.width - buffer);
-                astronaut.y = clamp(astronaut.y, buffer, canvas.height - astronaut.height - buffer);
-
-                if (astronaut.invincibility > 0) {
-                    astronaut.invincibility -= deltaTime * 1000;
-                }
-                astronaut.dashCooldown = Math.max(0, astronaut.dashCooldown - deltaTime * 1000);
-                astronaut.shootCooldown = Math.max(0, astronaut.shootCooldown - deltaTime * 1000);
-
-                if (ui.showUpgradeMenu && !state.gameOver) {
-                    if (input.keys.get('1') && state.score >= upgrades.speed.cost && upgrades.speed.level < upgrades.speed.maxLevel) {
-                        state.score -= upgrades.speed.cost;
-                        upgrades.speed.level++;
-                        upgrades.speed.cost += 5;
-                        astronaut.baseSpeed += 50 * state.scale;
-                        astronaut.speed = ui.speedBoostActive ? astronaut.baseSpeed * 2 : astronaut.baseSpeed;
-                        input.keys.set('1', false);
-                    }
-                    if (input.keys.get('2') && state.score >= upgrades.health.cost && upgrades.health.level < upgrades.health.maxLevel) {
-                        state.score -= upgrades.health.cost;
-                        upgrades.health.level++;
-                        upgrades.health.cost += 5;
-                        astronaut.health = Math.min(200 + upgrades.health.level * 50, astronaut.health + 50);
-                        updateHealthBar();
-                        input.keys.set('2', false);
-                    }
-                    if (input.keys.get('3') && state.score >= upgrades.fireRate.cost && upgrades.fireRate.level < upgrades.fireRate.maxLevel) {
-                        state.score -= upgrades.fireRate.cost;
-                        upgrades.fireRate.level++;
-                        upgrades.fireRate.cost += 5;
-                        input.keys.set('3', false);
-                    }
-                    if (input.keys.get('4') && state.score >= upgrades.dash.cost && upgrades.dash.level < upgrades.dash.maxLevel) {
-                        state.score -= upgrades.dash.cost;
-                        upgrades.dash.level++;
-                        upgrades.dash.cost += 5;
-                        input.keys.set('4', false);
-                    }
-                }
+            } else {
+                drone.x -= drone.speed * deltaTime;
             }
+        } else {
+            drone.x -= drone.speed * deltaTime;
+        }
+        addToGrid(drone, drone.x, drone.y, drone.width, drone.height);
+    });
+    entities.drones = entities.drones.filter(d => d.x + d.width > 0);
 
-            function updateEntities(deltaTime, currentTime) {
-                clearGrid();
+    entities.projectiles.forEach(projectile => {
+        projectile.x += projectile.speed * deltaTime;
+        if (projectile.speedY) {
+            projectile.y += projectile.speedY * deltaTime;
+        }
+        addToGrid(projectile, projectile.x, projectile.y, projectile.width, projectile.height);
+    });
+    entities.projectiles = entities.projectiles.filter(p => p.x < canvas.width && p.x + p.width > 0);
 
-                entities.projectiles.forEach((p, i) => {
-                    if (p.speedX && p.speedY) {
-                        p.x += p.speedX * deltaTime;
-                        p.y += p.speedY * deltaTime;
-                    } else {
-                        p.x += p.speed * deltaTime;
-                    }
-                    if (p.x > canvas.width || p.x < 0 || p.y > canvas.height || p.y < 0) {
-                        entities.projectiles.splice(i, 1);
-                    } else {
-                        addToGrid(p, p.x, p.y, p.width, p.height);
-                    }
-                });
-
-                entities.packets.forEach((packet, i) => {
-                    packet.x -= packet.speed * deltaTime;
-                    if (packet.x < -packet.width) {
-                        entities.packets.splice(i, 1);
-                    } else {
-                        addToGrid(packet, packet.x, packet.y, packet.width, packet.height);
-                    }
-                });
-
-                entities.asteroids.forEach((asteroid, i) => {
-                    asteroid.x -= asteroid.speed * deltaTime;
-                    if (asteroid.x < -asteroid.width) {
-                        entities.asteroids.splice(i, 1);
-                    } else {
-                        addToGrid(asteroid, asteroid.x, asteroid.y, asteroid.width, asteroid.height);
-                    }
-                });
-
-                entities.comets.forEach((comet, i) => {
-                    comet.x -= comet.speed * deltaTime;
-                    if (comet.x < -comet.width) {
-                        entities.comets.splice(i, 1);
-                    } else {
-                        addToGrid(comet, comet.x, comet.y, comet.width, comet.height);
-                    }
-                });
-
-                entities.blackHoles.forEach((bh, i) => {
-                    bh.x -= 20 * state.scale * deltaTime;
-                    if (bh.x < -bh.width) {
-                        entities.blackHoles.splice(i, 1);
-                    } else {
-                        if (currentTime - bh.lastDroneSpawn > 10000 / state.level) {
-                            entities.drones.push({
-                                x: bh.x,
-                                y: bh.y,
-                                width: PIXEL_GRID * 0.5 * state.scale,
-                                height: PIXEL_GRID * 0.5 * state.scale,
-                                speed: 80 * state.scale,
-                                id: generateUUID(),
-                                type: 'micro'
-                            });
-                            bh.lastDroneSpawn = currentTime;
-                        }
-                        addToGrid(bh, bh.x, bh.y, bh.width, bh.height);
-                    }
-                });
-
-                entities.drones.forEach((drone, i) => {
-                    if (drone.type === 'kamikaze') {
-                        if (drone.chargeDelay > 0) {
-                            drone.chargeDelay -= deltaTime * 1000;
-                        } else {
-                            const dx = astronaut.x - drone.x;
-                            const dy = astronaut.y - drone.y;
-                            const distance = Math.sqrt(dx * dx + dy * dy);
-                            drone.x += (dx / distance) * drone.speed * 2 * deltaTime;
-                            drone.y += (dy / distance) * drone.speed * 2 * deltaTime;
-                        }
-                    } else if (drone.type === 'micro') {
-                        const dx = astronaut.x - drone.x;
-                        const dy = astronaut.y - drone.y;
-                        const distance = Math.sqrt(dx * dx + dy * dy);
-                        drone.x += (dx / distance) * drone.speed * 1.5 * deltaTime;
-                        drone.y += (dy / distance) * drone.speed * 1.5 * deltaTime;
-                    } else {
-                        const dx = astronaut.x - drone.x;
-                        const dy = astronaut.y - drone.y;
-                        const distance = Math.sqrt(dx * dx + dy * dy);
-                        drone.x += (dx / distance) * drone.speed * deltaTime;
-                        drone.y += (dy / distance) * drone.speed * deltaTime;
-                        if (Math.random() < 0.01 * state.level) {
-                            entities.projectiles.push({
-                                x: drone.x,
-                                y: drone.y,
-                                width: PIXEL_GRID / 4 * state.scale,
-                                height: PIXEL_GRID / 4 * state.scale,
-                                speed: -200 * state.scale,
-                                id: generateUUID(),
-                                isEnemy: true
-                            });
-                            playSound('shoot');
-                        }
-                    }
-                    if (drone.x < -drone.width || drone.x > canvas.width + drone.width || drone.y < -drone.height || drone.y > canvas.height + drone.height) {
-                        entities.drones.splice(i, 1);
-                    } else {
-                        addToGrid(drone, drone.x, drone.y, drone.width, drone.height);
-                    }
-                });
-
-                entities.buffs.forEach((buff, i) => {
-                    buff.x -= buff.speed * deltaTime;
-                    if (buff.x < -buff.width) {
-                        entities.buffs.splice(i, 1);
-                    } else {
-                        addToGrid(buff, buff.x, buff.y, buff.width, buff.height);
-                    }
-                });
-
-                if (entities.boss) {
-                    const dx = astronaut.x - entities.boss.x;
-                    const dy = astronaut.y - entities.boss.y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    if (distance > entities.boss.width) {
-                        entities.boss.x += (dx / distance) * entities.boss.speed * deltaTime;
-                        entities.boss.y += (dy / distance) * entities.boss.speed * deltaTime;
-                    }
-
-                    if (bossState.health <= 75 && bossState.phase === 1) {
-                        bossState.phase = 2;
-                        entities.boss.speed *= 1.5;
-                        entities.boss.phaseChangeTime = currentTime;
-                    } else if (bossState.health <= 50 && bossState.phase === 2) {
-                        bossState.phase = 3;
-                        entities.boss.speed *= 1.5;
-                        entities.boss.phaseChangeTime = currentTime;
-                    }
-
-                    let spawnInterval = bossState.phase === 1 ? 4000 : bossState.phase === 2 ? 3000 : 2000;
-                    if (currentTime - entities.boss.spawnTime > spawnInterval) {
-                        entities.drones.push({
-                            x: entities.boss.x,
-                            y: entities.boss.y,
-                            width: PIXEL_GRID * state.scale,
-                            height: PIXEL_GRID * state.scale,
-                            speed: 100 * state.scale,
-                            id: generateUUID()
-                        });
-                        entities.boss.spawnTime = currentTime;
-                    }
-
-                    if (bossState.phase >= 2 && currentTime - entities.boss.phaseChangeTime > 1500) {
-                        for (let i = 0; i < 12; i++) {
-                            const angle = (Math.PI / 6) * i;
-                            entities.projectiles.push({
-                                x: entities.boss.x + entities.boss.width / 2,
-                                y: entities.boss.y + entities.boss.height / 2,
-                                width: PIXEL_GRID / 4 * state.scale,
-                                height: PIXEL_GRID / 4 * state.scale,
-                                speed: 200 * state.scale,
-                                speedX: Math.cos(angle) * 200 * state.scale,
-                                speedY: Math.sin(angle) * 200 * state.scale,
-                                id: generateUUID(),
-                                isEnemy: true
-                            });
-                        }
-                        entities.boss.phaseChangeTime = currentTime;
-                    }
-
-                    if (bossState.phase === 3 && currentTime - entities.boss.phaseChangeTime > 10000) {
-                        entities.blackHoles.push({
-                            x: entities.boss.x,
-                            y: entities.boss.y,
-                            width: PIXEL_GRID * state.scale,
-                            height: PIXEL_GRID * state.scale,
-                            pullRadius: 100 * state.scale,
-                            rotation: 0,
-                            rotationSpeed: 0.05,
-                            id: generateUUID(),
-                            lastDroneSpawn: currentTime
-                        });
-                        entities.boss.phaseChangeTime = currentTime;
-                    }
-                }
-
-                // Collision Detection
-                const nearbyEntities = getNearbyEntities(astronaut.x, astronaut.y, astronaut.width, astronaut.height);
-                nearbyEntities.forEach(entity => {
-                    if (entity === astronaut) return;
-
-                    if (entities.packets.includes(entity) && checkCollision(astronaut, entity) && !collidedThisFrame.has(entity.id)) {
-                        state.combo++;
-                        state.score += 1 * Math.min(state.combo, 5);
-                        clearTimeout(ui.comboTimeout);
-                        ui.comboTimeout = setTimeout(() => state.combo = 0, 3000);
-                        playSound('collect');
-                        entities.packets.splice(entities.packets.indexOf(entity), 1);
-                        collidedThisFrame.add(entity.id);
-                    }
-
-                    if ((entities.asteroids.includes(entity) || entities.comets.includes(entity)) && checkCollision(astronaut, entity) && !collidedThisFrame.has(entity.id)) {
-                        takeDamage(20);
-                        if (entities.asteroids.includes(entity)) {
-                            entities.asteroids.splice(entities.asteroids.indexOf(entity), 1);
-                        } else {
-                            entities.comets.splice(entities.comets.indexOf(entity), 1);
-                        }
-                        collidedThisFrame.add(entity.id);
-                    }
-
-                    if (entities.drones.includes(entity) && checkCollision(astronaut, entity) && !collidedThisFrame.has(entity.id)) {
-                        takeDamage(entity.type === 'kamikaze' ? 40 : entity.type === 'micro' ? 15 : 30);
-                        entities.drones.splice(entities.drones.indexOf(entity), 1);
-                        collidedThisFrame.add(entity.id);
-                    }
-
-                    if (entities.buffs.includes(entity) && checkCollision(astronaut, entity) && !collidedThisFrame.has(entity.id)) {
-                        if (entity.type === 'speed') {
-                            astronaut.speed = astronaut.baseSpeed * 2;
-                            ui.speedBoostActive = true;
-                            clearTimeout(ui.speedBoostTimeout);
-                            ui.speedBoostTimeout = setTimeout(() => {
-                                astronaut.speed = astronaut.baseSpeed;
-                                ui.speedBoostActive = false;
-                            }, 5000);
-                        } else if (entity.type === 'health') {
-                            astronaut.health = Math.min(200 + (upgrades.health.level - 1) * 50, astronaut.health + 30);
-                            updateHealthBar();
-                        }
-                        entities.buffs.splice(entities.buffs.indexOf(entity), 1);
-                        collidedThisFrame.add(entity.id);
-                    }
-
-                    if (entities.projectiles.includes(entity) && entity.isEnemy && checkCollision(astronaut, entity) && !collidedThisFrame.has(entity.id)) {
-                        takeDamage(10);
-                        entities.projectiles.splice(entities.projectiles.indexOf(entity), 1);
-                        collidedThisFrame.add(entity.id);
-                    }
-
-                    if ((entities.asteroids.includes(entity) || entities.comets.includes(entity) || entities.drones.includes(entity)) && !entity.isEnemy) {
-                        entities.projectiles.forEach((p, j) => {
-                            if (checkCollision(p, entity) && !p.isEnemy) {
-                                if (entities.asteroids.includes(entity)) {
-                                    entities.asteroids.splice(entities.asteroids.indexOf(entity), 1);
-                                } else if (entities.comets.includes(entity)) {
-                                    entities.comets.splice(entities.comets.indexOf(entity), 1);
-                                } else {
-                                    entities.drones.splice(entities.drones.indexOf(entity), 1);
-                                }
-                                entities.projectiles.splice(j, 1);
-                                state.enemiesDestroyed++;
-                            }
-                        });
-                    }
-
-                    if (entities.boss && entity === entities.boss && checkCollision(astronaut, entity) && !collidedThisFrame.has(entity.id)) {
-                        takeDamage(60);
-                        collidedThisFrame.add(entity.id);
-                    }
-
-                    if (entities.boss && entities.projectiles.includes(entity) && checkCollision(entity, entities.boss) && !entity.isEnemy) {
-                        bossState.health -= 5;
-                        entities.projectiles.splice(entities.projectiles.indexOf(entity), 1);
-                        if (bossState.health <= 0) {
-                            entities.boss = null;
-                            state.enemiesDestroyed += 5;
-                        }
-                    }
-                });
+    if (entities.boss) {
+        const boss = entities.boss;
+        if (bossState.phase === 1) {
+            boss.y += Math.sin(state.gameTime * 0.001) * 50 * state.scale * deltaTime;
+        } else {
+            const dx = astronaut.x - boss.x;
+            const dy = astronaut.y - boss.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance > 0) {
+                boss.x += (dx / distance) * boss.speed * deltaTime;
+                boss.y += (dy / distance) * boss.speed * deltaTime;
             }
+        }
+        boss.y = clamp(boss.y, 0, canvas.height - boss.height);
+        addToGrid(boss, boss.x, boss.y, boss.width, boss.height);
 
-            function updateScreenShake(deltaTime) {
-                if (ui.shakeTime > 0) {
-                    ui.shakeTime -= deltaTime * 1000;
-                    const shakeX = (Math.random() - 0.5) * ui.shakeIntensity;
-                    const shakeY = (Math.random() - 0.5) * ui.shakeIntensity;
-                    ctx.translate(shakeX, shakeY);
-                } else {
-                    ui.shakeTime = 0;
-                    ui.shakeIntensity = 0;
-                    ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
-                }
-            }
+        if (state.gameTime - boss.phaseChangeTime > 10000) {
+            bossState.phase = bossState.phase === 1 ? 2 : 1;
+            boss.phaseChangeTime = state.gameTime;
+        }
+    }
 
-            function updateAchievements() {
-                if (state.score >= 100 && !state.achievements.collector) {
+    entities.blackHoles.forEach(blackHole => applyBlackHolePull(astronaut, blackHole, deltaTime));
+}
+
+
+ function checkCollisions() {
+    collidedThisFrame.clear();
+    const nearbyEntities = getNearbyEntities(astronaut.x, astronaut.y, astronaut.width, astronaut.height);
+
+    nearbyEntities.forEach(entity => {
+        if (checkCollision(astronaut, entity) && !collidedThisFrame.has(entity.id)) {
+            collidedThisFrame.add(entity.id);
+            if (entity.speed !== undefined && entities.packets.includes(entity)) {
+                state.score += 1 + Math.floor(state.combo / 5);
+                state.combo++;
+                entities.packets = entities.packets.filter(p => p !== entity);
+                playSound('collect');
+                spawnParticles(entity.x + entity.width / 2, entity.y + entity.height / 2, 5, 'collect');
+                clearTimeout(ui.comboTimeout);
+                ui.comboTimeout = setTimeout(() => state.combo = 0, 3000);
+                if (state.score >= 100 && !entities.boss) {
                     state.achievements.collector = true;
                     localStorage.setItem('achievements', JSON.stringify(state.achievements));
                 }
-                if (astronaut.health >= 200 && !state.achievements.survivor) {
-                    state.achievements.survivor = true;
-                    localStorage.setItem('achievements', JSON.stringify(state.achievements));
+            } else if (entities.buffs.includes(entity)) {
+                if (entity.type === 'speed') {
+                    astronaut.speed = astronaut.baseSpeed * (1 + 0.2 * upgrades.speed.level);
+                    ui.speedBoostActive = true;
+                    clearTimeout(ui.speedBoostTimeout);
+                    ui.speedBoostTimeout = setTimeout(() => {
+                        astronaut.speed = astronaut.baseSpeed;
+                        ui.speedBoostActive = false;
+                    }, 5000);
+                } else if (entity.type === 'health') {
+                    astronaut.health = Math.min(astronaut.health + 50, 200 + (upgrades.health.level - 1) * 50);
+                    updateHealthBar();
                 }
-                if (state.enemiesDestroyed >= 50 && !state.achievements.sharpshooter) {
-                    state.achievements.sharpshooter = true;
-                    localStorage.setItem('achievements', JSON.stringify(state.achievements));
+                entities.buffs = entities.buffs.filter(b => b !== entity);
+                spawnParticles(entity.x + entity.width / 2, entity.y + entity.height / 2, 5, 'collect');
+            } else if (entities.asteroids.includes(entity) || entities.comets.includes(entity) || entities.drones.includes(entity)) {
+                takeDamage(entities.comets.includes(entity) ? 50 : entities.drones.includes(entity) && entity.type === 'kamikaze' ? 75 : 25);
+                if (entities.asteroids.includes(entity)) {
+                    entities.asteroids = entities.asteroids.filter(a => a !== entity);
+                } else if (entities.comets.includes(entity)) {
+                    entities.comets = entities.comets.filter(c => c !== entity);
+                } else {
+                    entities.drones = entities.drones.filter(d => d !== entity);
+                }
+                spawnParticles(entity.x + entity.width / 2, entity.y + entity.height / 2, 10, 'explosion');
+            } else if (entities.blackHoles.includes(entity)) {
+                takeDamage(entity.damage || 75);
+                spawnParticles(astronaut.x + astronaut.width / 2, astronaut.y + astronaut.height / 2, 20, 'explosion');
+                entities.blackHoles = entities.blackHoles.filter(b => b !== entity);
+                respawnAstronaut();
+            } else if (entities.boss === entity) {
+                collidedThisFrame.add(entity.id);
+                takeDamage(75);
+                spawnParticles(astronaut.x + astronaut.width / 2, astronaut.y + astronaut.height / 2, 15, 'explosion');
+                respawnAstronaut();
+            }
+        }
+    });
+
+    entities.projectiles.forEach(projectile => {
+        if (!projectile.isEnemy) {
+            const nearby = getNearbyEntities(projectile.x, projectile.y, projectile.width, projectile.height);
+            nearby.forEach(entity => {
+                if ((entities.asteroids.includes(entity) || entities.comets.includes(entity) || entities.drones.includes(entity) || entities.boss === entity) && checkCollision(projectile, entity) && !collidedThisFrame.has(projectile.id)) {
+                    collidedThisFrame.add(projectile.id);
+                    if (entities.asteroids.includes(entity)) {
+                        entities.asteroids = entities.asteroids.filter(a => a !== entity);
+                        state.enemiesDestroyed++;
+                    } else if (entities.comets.includes(entity)) {
+                        entities.comets = entities.comets.filter(c => c !== entity);
+                        state.enemiesDestroyed++;
+                    } else if (entities.drones.includes(entity)) {
+                        entities.drones = entities.drones.filter(d => d !== entity);
+                        state.enemiesDestroyed++;
+                    } else if (entities.boss === entity) {
+    bossState.health -= 5;
+    if (bossState.health <= 0) {
+        entities.boss = null;
+        state.bossDefeated = true; // Prevent respawn
+        state.score += 100;
+        state.enemiesDestroyed += 10;
+        spawnParticles(entity.x + entity.width / 2, entity.y + entity.height / 2, 50, 'explosion');
+    }
+}
+                    entities.projectiles = entities.projectiles.filter(p => p !== projectile);
+                    spawnParticles(projectile.x + projectile.width / 2, projectile.y + projectile.height / 2, 5, 'explosion');
+                }
+            });
+        } else {
+            if (checkCollision(projectile, astronaut) && !collidedThisFrame.has(projectile.id)) {
+                collidedThisFrame.add(projectile.id);
+                takeDamage(25);
+                entities.projectiles = entities.projectiles.filter(p => p !== projectile);
+                spawnParticles(projectile.x + projectile.width / 2, projectile.y + projectile.height / 2, 5, 'explosion');
+            }
+        }
+    });
+
+    if (state.enemiesDestroyed >= 50 && !state.achievements.sharpshooter) {
+        state.achievements.sharpshooter = true;
+        localStorage.setItem('achievements', JSON.stringify(state.achievements));
+    }
+}
+     function respawnAstronaut() {
+        // Find a safe respawn location
+        let safe = false;
+        let newX, newY;
+        while (!safe) {
+            newX = Math.random() * (canvas.width - astronaut.width);
+            newY = Math.random() * (canvas.height - astronaut.height);
+            safe = true;
+            // Check if the new position is too close to any black hole
+            for (let blackHole of entities.blackHoles) {
+                const dx = blackHole.x + blackHole.width / 2 - (newX + astronaut.width / 2);
+                const dy = blackHole.y + blackHole.height / 2 - (newY + astronaut.height / 2);
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < blackHole.pullRadius) {
+                    safe = false;
+                    break;
                 }
             }
+        }
+        // Respawn the astronaut
+        astronaut.x = newX;
+        astronaut.y = newY;
+        astronaut.velocity = { x: 0, y: 0 };
+        astronaut.invincibility = 2000; // 2 seconds of invincibility
+        astronaut.isDashing = false;
+        astronaut.dashTime = 0;
+        playSound('damage');
+        ui.shakeTime = 300;
+        ui.shakeIntensity = 5 * state.scale;
+    }
 
-            function updateLeaderboard() {
-                if (state.score > state.highScore) {
-                    state.highScore = state.score;
-                    localStorage.setItem('highScore', state.highScore);
-                }
-                state.leaderboard.push(state.score);
-                state.leaderboard.sort((a, b) => b - a);
-                state.leaderboard = state.leaderboard.slice(0, 5);
-                localStorage.setItem('leaderboard', JSON.stringify(state.leaderboard));
+ function updateGame(deltaTime) {
+        if (!state.gameStarted || state.gameOver || ui.showUpgradeMenu) return;
+
+        state.gameTime += deltaTime * 1000;
+        state.level = Math.min(Math.floor(state.score / 20) + 1, 10);
+
+        updateAstronaut(deltaTime);
+        updateEntities(deltaTime);
+        updateParticles(deltaTime);
+
+        if (!entities.boss) {
+            generateEntity('packet', state.gameTime);
+            generateEntity('asteroid', state.gameTime);
+            generateEntity('comet', state.gameTime);
+            if (state.level >= 5) {
+                generateEntity('blackHole', state.gameTime);
             }
+            generateEntity('drone', state.gameTime);
+            generateEntity('kamikazeDrone', state.gameTime);
+            generateEntity('buff', state.gameTime);
+        } else {
+            // Only spawn packets and buffs during boss fight
+            generateEntity('packet', state.gameTime);
+            generateEntity('buff', state.gameTime);
+        }
+        generateBoss(state.gameTime);
 
-            function checkGameOver() {
-                if (astronaut.health <= 0 && !state.gameOver) {
-                    state.gameOver = true;
-                    updateLeaderboard();
-                    stopBackgroundMusic();
-                }
-                if (state.score >= 100 && !state.gameOver) {
-                    state.gameOver = true;
-                    updateLeaderboard();
-                    stopBackgroundMusic();
-                }
-            }
+        checkCollisions();
 
-            function updateLevel(currentTime) {
-                const levelThreshold = 30 * state.level;
-                if (state.score >= levelThreshold) {
-                    state.level = Math.min(state.level + 1, 10);
-                }
-                scoreLevelDisplay.textContent = `Score: ${state.score} | Level: ${state.level} | Combo: ${state.combo}`;
-            }
+        if (ui.shakeTime > 0) {
+            ui.shakeTime -= deltaTime * 1000;
+            ui.shakeIntensity = Math.max(ui.shakeIntensity * 0.9, 0);
+        }
 
-       function gameLoop(currentTime) {
-    const deltaTime = Math.min((currentTime - lastTime) / 1000, 1 / 30);
+        scoreLevelDisplay.textContent = `Score: ${state.score} | Level: ${state.level} | High Score: ${state.highScore} | Combo: ${state.combo}`;
+    }
+
+function render() {
+    ctx.save();
+    if (ui.shakeTime > 0) {
+        ctx.translate(
+            (Math.random() - 0.5) * ui.shakeIntensity,
+            (Math.random() - 0.5) * ui.shakeIntensity
+        );
+    }
+
+    if (!state.gameStarted) {
+        drawIntroScreen();
+    } else {
+        drawBackgrounds(FRAME_TIME / 1000);
+        drawParticles();
+        drawAstronaut();
+        entities.packets.forEach(drawPacket);
+        entities.asteroids.forEach(drawAsteroid);
+        entities.comets.forEach(drawComet);
+        entities.blackHoles.forEach(drawBlackHole);
+        entities.buffs.forEach(drawBuff);
+        entities.drones.forEach(drawDrone);
+        entities.projectiles.forEach(drawProjectile);
+        drawBoss();
+        drawUpgradeMenu();
+        drawJoystick();
+
+        if (state.gameOver) {
+            ctx.fillStyle = 'rgba(10, 28, 43, 0.95)';
+            ctx.fillRect(canvas.width / 4, canvas.height / 4, canvas.width / 2, canvas.height / 2);
+            ctx.strokeStyle = 'rgba(163, 223, 255, 0.6)';
+            ctx.lineWidth = 4 * state.scale;
+            ctx.strokeRect(canvas.width / 4, canvas.height / 4, canvas.width / 2, canvas.height / 2);
+            ctx.fillStyle = 'rgba(163, 223, 255, 0.2)';
+            ctx.fillRect(canvas.width / 4, canvas.height / 4, canvas.width / 2, canvas.height / 2);
+            ctx.fillStyle = palette.accent;
+            ctx.font = `24px 'Press Start 2P', monospace`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2 - 80 * state.scale);
+            ctx.fillStyle = palette.secondary;
+            ctx.font = `16px 'Press Start 2P', monospace`;
+            ctx.fillText(`Score: ${state.score}`, canvas.width / 2, canvas.height / 2 - 40 * state.scale);
+            ctx.fillText(`High Score: ${state.highScore}`, canvas.width / 2, canvas.height / 2 - 20 * state.scale);
+            ctx.fillText('Achievements:', canvas.width / 2, canvas.height / 2);
+            ctx.font = `12px 'Press Start 2P', monospace`;
+            ctx.fillText(state.achievements.collector ? 'Collector: Earned' : 'Collector: Collect 100 packets', canvas.width / 2, canvas.height / 2 + 20 * state.scale);
+            ctx.fillText(state.achievements.survivor ? 'Survivor: Earned' : 'Survivor: Survive 5 minutes', canvas.width / 2, canvas.height / 2 + 40 * state.scale);
+            ctx.fillText(state.achievements.sharpshooter ? 'Sharpshooter: Earned' : 'Sharpshooter: Destroy 50 enemies', canvas.width / 2, canvas.height / 2 + 60 * state.scale);
+            drawReplayButton();
+        }
+    }
+
+    ctx.restore();
+}
+
+function gameLoop(currentTime) {
+    const deltaTime = Math.min((currentTime - lastTime) / 1000, FRAME_TIME / 1000);
     lastTime = currentTime;
 
-    // FPS calculation
     frameCount++;
     if (currentTime - lastFpsTime >= 1000) {
         fps = frameCount;
@@ -1724,213 +1920,181 @@
         lastFpsTime = currentTime;
     }
 
-    collidedThisFrame.clear();
-
-    if (!state.gameStarted) {
-        drawIntroScreen();
-        if (input.keys.get(' ')) {
-            state.gameStarted = true;
-            state.gameTime = currentTime;
-            startBackgroundMusic();
-        }
-        requestAnimationFrame(gameLoop);
-        return;
-    }
-
-    if (state.gameOver) {
-        ctx.fillStyle = palette.background;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = palette.secondary;
-        ctx.font = `20px 'Press Start 2P', monospace`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(state.score >= 100 ? 'Victory!' : 'Game Over', canvas.width / 2, canvas.height / 2 - 60 * state.scale);
-        ctx.font = `12px 'Press Start 2P', monospace`;
-        ctx.fillText(`Score: ${state.score}`, canvas.width / 2, canvas.height / 2 - 20 * state.scale);
-        ctx.fillText(`High Score: ${state.highScore}`, canvas.width / 2, canvas.height / 2);
-        ctx.fillText('Achievements:', canvas.width / 2, canvas.height / 2 + 20 * state.scale);
-        ctx.fillText(`${state.achievements.collector ? '✓' : '✗'} Collector`, canvas.width / 2, canvas.height / 2 + 40 * state.scale);
-        ctx.fillText(`${state.achievements.survivor ? '✓' : '✗'} Survivor`, canvas.width / 2, canvas.height / 2 + 60 * state.scale);
-        ctx.fillText(`${state.achievements.sharpshooter ? '✓' : '✗'} Sharpshooter`, canvas.width / 2, canvas.height / 2 + 80 * state.scale);
-        const replayButton = drawReplayButton();
-        requestAnimationFrame(gameLoop);
-        return;
-    }
-
-    state.gameTime = currentTime;
-
-    // Update game state
-    updateAstronaut(deltaTime);
-    updateEntities(deltaTime, currentTime);
-    generateEntity('packet', currentTime);
-    generateEntity('asteroid', currentTime);
-    generateEntity('comet', currentTime);
-    generateEntity('blackHole', currentTime);
-    generateEntity('drone', currentTime);
-    generateEntity('kamikazeDrone', currentTime);
-    generateEntity('buff', currentTime);
-    generateBoss(currentTime);
-    updateLevel(currentTime);
-    updateAchievements();
-    checkGameOver();
-
-    // Render
-    updateScreenShake(deltaTime);
-    drawBackgrounds(deltaTime);
-    drawAstronaut();
-    entities.packets.forEach(drawPacket);
-    entities.asteroids.forEach(drawAsteroid);
-    entities.comets.forEach(drawComet);
-    entities.blackHoles.forEach(drawBlackHole);
-    entities.drones.forEach(drawDrone);
-    entities.buffs.forEach(drawBuff);
-    entities.projectiles.forEach(drawProjectile);
-    drawBoss();
-    drawUpgradeMenu();
-    drawJoystick();
+    updateGame(deltaTime);
+    render();
 
     requestAnimationFrame(gameLoop);
 }
 
-// Event Listeners
-function initEventListeners() {
-    window.addEventListener('resize', debounce(resizeCanvas, 100));
-    window.addEventListener('keydown', e => {
-        input.keys.set(e.key, true);
-        if (e.key === ' ' && !state.gameStarted) {
-            state.gameStarted = true;
-            startBackgroundMusic();
+// Event Handlers
+function handleUpgradeInput(event) {
+    if (!ui.showUpgradeMenu || state.gameOver || !state.gameStarted) return;
+    event.preventDefault();
+    let upgrade = null;
+    switch (event.key) {
+        case '1': upgrade = upgrades.speed; break;
+        case '2': upgrade = upgrades.health; break;
+        case '3': upgrade = upgrades.fireRate; break;
+        case '4': upgrade = upgrades.dash; break;
+    }
+    if (upgrade && upgrade.level < upgrade.maxLevel && state.score >= upgrade.cost) {
+        state.score -= upgrade.cost;
+        upgrade.level++;
+        upgrade.cost = Math.floor(upgrade.cost * 1.5);
+        if (upgrade === upgrades.speed) {
+            astronaut.baseSpeed = 200 * state.scale * (1 + 0.2 * upgrade.level);
+            astronaut.speed = ui.speedBoostActive ? astronaut.baseSpeed * (1 + 0.2 * upgrades.speed.level) : astronaut.baseSpeed;
+        } else if (upgrade === upgrades.health) {
+            astronaut.health = Math.min(astronaut.health + 50, 200 + (upgrade.level - 1) * 50);
+            updateHealthBar();
         }
-    });
-    window.addEventListener('keyup', e => input.keys.set(e.key, false));
-
-    canvas.addEventListener('touchstart', e => {
-        e.preventDefault();
-        const touch = e.touches[0];
-        input.joystick.active = true;
-        input.joystick.baseX = touch.clientX * window.devicePixelRatio;
-        input.joystick.baseY = touch.clientY * window.devicePixelRatio;
-        input.joystick.x = input.joystick.baseX;
-        input.joystick.y = input.joystick.baseY;
-        input.lastInputType = 'joystick';
-    });
-
-    canvas.addEventListener('touchmove', e => {
-        e.preventDefault();
-        if (input.joystick.active) {
-            const touch = e.touches[0];
-            input.joystick.x = touch.clientX * window.devicePixelRatio;
-            input.joystick.y = touch.clientY * window.devicePixelRatio;
-            const dx = input.joystick.x - input.joystick.baseX;
-            const dy = input.joystick.y - input.joystick.baseY;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            if (distance > JOYSTICK_MAX_DISTANCE * state.scale) {
-                const angle = Math.atan2(dy, dx);
-                input.joystick.x = input.joystick.baseX + Math.cos(angle) * JOYSTICK_MAX_DISTANCE * state.scale;
-                input.joystick.y = input.joystick.baseY + Math.sin(angle) * JOYSTICK_MAX_DISTANCE * state.scale;
-            }
-        }
-    });
-
-    canvas.addEventListener('touchend', e => {
-        e.preventDefault();
-        input.joystick.active = false;
-        input.state.direction = { x: 0, y: 0 };
-    });
-
-    canvas.addEventListener('click', e => {
-        if (state.gameOver) {
-            const rect = canvas.getBoundingClientRect();
-            const x = (e.clientX - rect.left) * window.devicePixelRatio;
-            const y = (e.clientY - rect.top) * window.devicePixelRatio;
-            const buttonWidth = 200 * state.scale;
-            const buttonHeight = 60 * state.scale;
-            const buttonX = canvas.width / 2 - buttonWidth / 2;
-            const buttonY = canvas.height / 2 + 140 * state.scale;
-            if (x >= buttonX && x <= buttonX + buttonWidth && y >= buttonY && y <= buttonY + buttonHeight) {
-                resetGame();
-            }
-        }
-    });
-
-    canvas.addEventListener('contextmenu', e => {
-        e.preventDefault();
-        if (!astronaut.isDashing && astronaut.dashCooldown <= 0) {
-            input.state.dash = true;
-        }
-    });
+    }
 }
 
-function resetGame() {
-    state.gameStarted = true;
-    state.gameOver = false;
-    state.score = 0;
-    state.combo = 0;
-    state.level = 1;
-    state.enemiesDestroyed = 0;
-    state.lastSpawnTime = performance.now();
-    astronaut = {
-        x: canvas.width / 4,
-        y: canvas.height / 2,
-        width: PIXEL_GRID * state.scale,
-        height: PIXEL_GRID * state.scale,
-        baseSpeed: 200 * state.scale,
-        speed: 200 * state.scale,
-        health: 200,
-        invincibility: 0,
-        shootCooldown: 0,
-        dashDirection: { x: 0, y: 0 },
-        velocity: { x: 0, y: 0 },
-        state: 'idle',
-        frame: 0,
-        frameCount: 0,
-        isDashing: false,
-        dashTime: 0,
-        dashCooldown: 0
-    };
-    entities = {
-        packets: [],
-        asteroids: [],
-        comets: [],
-        blackHoles: [],
-        buffs: [],
-        drones: [],
-        projectiles: [],
-        boss: null
-    };
-    bossState = {
-        health: 100,
-        phase: 1
-    };
-    ui = {
-        showUpgradeMenu: false,
-        shakeTime: 0,
-        shakeIntensity: 0,
-        comboTimeout: null,
-        speedBoostActive: false,
-        speedBoostTimeout: null
-    };
-    input = {
-        keys: new Map(),
-        joystick: { active: false, x: 0, y: 0, baseX: 0, baseY: 0 },
-        state: {
-            direction: { x: 0, y: 0 },
-            shoot: false,
-            dash: false,
-            toggleFireMode: false,
-            openUpgradeMenu: false
-        },
-        lastInputType: null,
-        fireMode: 'single'
-    };
-    upgrades = {
-        speed: { level: 1, cost: 10, maxLevel: 3 },
-        health: { level: 1, cost: 15, maxLevel: 3 },
-        fireRate: { level: 1, cost: 12, maxLevel: 3 },
-        dash: { level: 1, cost: 15, maxLevel: 3 }
-    };
-    updateHealthBar();
-    startBackgroundMusic();
+function initEventListeners() {
+    const debouncedResize = debounce(resizeCanvas, 100);
+    window.addEventListener('resize', debouncedResize);
+    window.addEventListener('orientationchange', debouncedResize);
+
+    window.addEventListener('keydown', event => {
+        input.keys.set(event.key, true);
+        if (!state.gameStarted && event.key === ' ' && !state.gameOver) {
+            state.gameStarted = true;
+            astronaut.health = 200;
+            state.score = 0;
+            state.combo = 0;
+            state.level = 1;
+            state.enemiesDestroyed = 0;
+            entities.packets = [];
+            entities.asteroids = [];
+            entities.comets = [];
+            entities.blackHoles = [];
+            entities.buffs = [];
+            entities.drones = [];
+            entities.projectiles = [];
+            entities.boss = null;
+            astronaut.x = canvas.width / 4;
+            astronaut.y = canvas.height / 2;
+            updateHealthBar();
+            if (soundEnabled) startBackgroundMusic();
+        }
+        if ((event.key === 'u' || event.key === 'U') && !state.gameOver && state.gameStarted && !input.uKeyPressed) {
+            ui.showUpgradeMenu = !ui.showUpgradeMenu; // Toggle the menu
+            input.uKeyPressed = true; // Prevent further toggles until key release
+        }
+        if (ui.showUpgradeMenu && ['1', '2', '3', '4'].includes(event.key)) {
+            handleUpgradeInput(event);
+        }
+    });
+
+    window.addEventListener('keyup', event => {
+        input.keys.set(event.key, false);
+        if (event.key === 'u' || event.key === 'U') {
+            input.uKeyPressed = false; // Allow toggling again after key release
+        }
+    });
+
+    window.addEventListener('keyup', event => {
+        input.keys.set(event.key, false);
+    });
+
+    function getTouchPos(event) {
+        const rect = canvas.getBoundingClientRect();
+        return {
+            x: (event.touches[0].clientX - rect.left) * window.devicePixelRatio,
+            y: (event.touches[0].clientY - rect.top) * window.devicePixelRatio
+        };
+    }
+
+    canvas.addEventListener('touchstart', event => {
+        event.preventDefault();
+        const pos = getTouchPos(event);
+        input.joystick.active = true;
+        input.joystick.baseX = pos.x;
+        input.joystick.baseY = pos.y;
+        input.joystick.x = pos.x;
+        input.joystick.y = pos.y;
+    });
+
+    canvas.addEventListener('touchmove', event => {
+        event.preventDefault();
+        if (input.joystick.active) {
+            const pos = getTouchPos(event);
+            const dx = pos.x - input.joystick.baseX;
+            const dy = pos.y - input.joystick.baseY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const maxDistance = JOYSTICK_MAX_DISTANCE * state.scale;
+            if (distance > maxDistance) {
+                input.joystick.x = input.joystick.baseX + (dx / distance) * maxDistance;
+                input.joystick.y = input.joystick.baseY + (dy / distance) * maxDistance;
+            } else {
+                input.joystick.x = pos.x;
+                input.joystick.y = pos.y;
+            }
+        }
+    });
+
+    canvas.addEventListener('touchend', event => {
+        event.preventDefault();
+        input.joystick.active = false;
+        if (state.gameOver) {
+            const pos = getTouchPos(event);
+            const button = drawReplayButton();
+            if (pos.x >= button.x && pos.x <= button.x + button.width &&
+                pos.y >= button.y && pos.y <= button.y + button.height) {
+                state.gameOver = false;
+                state.gameStarted = false;
+                astronaut.health = 200;
+                state.score = 0;
+                state.combo = 0;
+                state.level = 1;
+                state.enemiesDestroyed = 0;
+                entities.packets = [];
+                entities.asteroids = [];
+                entities.comets = [];
+                entities.blackHoles = [];
+                entities.buffs = [];
+                entities.drones = [];
+                entities.projectiles = [];
+                entities.boss = null;
+                astronaut.x = canvas.width / 4;
+                astronaut.y = canvas.height / 2;
+                updateHealthBar();
+            }
+        }
+    });
+
+    canvas.addEventListener('mousedown', event => {
+        if (state.gameOver) {
+            const rect = canvas.getBoundingClientRect();
+            const pos = {
+                x: (event.clientX - rect.left) * window.devicePixelRatio,
+                y: (event.clientY - rect.top) * window.devicePixelRatio
+            };
+            const button = drawReplayButton();
+            if (pos.x >= button.x && pos.x <= button.x + button.width &&
+                pos.y >= button.y && pos.y <= button.y + button.height) {
+                state.gameOver = false;
+                state.gameStarted = false;
+                astronaut.health = 200;
+                state.score = 0;
+                state.combo = 0;
+                state.level = 1;
+                state.enemiesDestroyed = 0;
+                entities.packets = [];
+                entities.asteroids = [];
+                entities.comets = [];
+                entities.blackHoles = [];
+                entities.buffs = [];
+                entities.drones = [];
+                entities.projectiles = [];
+                entities.boss = null;
+                astronaut.x = canvas.width / 4;
+                astronaut.y = canvas.height / 2;
+                updateHealthBar();
+            }
+        }
+    });
 }
 
 // Initialization
@@ -1943,7 +2107,7 @@ function init() {
 
 init();
 })();
-</script>
+    </script>
 {% endblock %}
 {% block javascripts %}
     {{ parent() }}

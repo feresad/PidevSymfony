@@ -136,7 +136,7 @@ class UserController extends AbstractController
         
 
         // Fetch promotional sessions
-        $promoSessions = $sessionRepository->getSessionsInPromo();
+        $promoSessions = $sessionRepository->getSessionsInPromoHome();
 
         return $this->render('home/index.html.twig', [
             'user' => $user,
