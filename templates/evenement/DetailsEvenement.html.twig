@@ -7,8 +7,20 @@
         <div class="container mt-4 nk-event-details">
             <h1>{{ evenement.nomEvent }}</h1>
 
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success">
+                    {{ message }}
+                </div>
+            {% endfor %}
+
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger">
+                    {{ message }}
+                </div>
+            {% endfor %}
+
             <div class="nk-event-detail-card">
-                <div class="nk-event-img" style="max-width: 600px; margin: 0 auto;">
+                <div class="nk-event-img" style="max-width: 500px; margin: 0 auto;">
                     <img src="{{ image_base_url ~ evenement.photoEvent }}" alt="{{ evenement.nomEvent }}" class="img-fluid rounded" style="max-height: 400px; object-fit: cover;">
                 </div>
                 <div class="card-body">
@@ -26,17 +38,63 @@
                         <li class="list-group-item">
                             <strong>Places maximum :</strong> {{ evenement.maxPlacesEvent }}
                         </li>
+                        <li class="list-group-item">
+                            <strong>Places restantes :</strong> {{ evenement.maxPlacesEvent - reservationCount|default(0) }}
+                        </li>
                     </ul>
                     <div class="nk-qr-code">
                         <h5 class="mt-3" style="color:white">QR Code</h5>
                         <img src="{{ path('evenement_qrcode', {id: evenement.id}) }}" alt="QR Code de l'événement">
                         <p style="color:white">Scannez ce QR Code pour voir les détails de l'événement.</p>
                     </div>
+
+                    <div class="reservation-section mt-4">
+                        {% if app.user %}
+                            {% if is_granted('ROLE_ADMIN') %}
+                                <div class="alert alert-info mt-3" style="background: rgba(23, 162, 184, 0.1); border: 1px solid #17a2b8; color: #17a2b8;">
+                                    <i class="fas fa-info-circle"></i> En tant qu'administrateur, vous n'avez pas besoin de réserver cet événement.
+                                </div>
+                            {% else %}
+                                {% if isReserved %}
+                                    <div class="alert alert-success mt-3" style="background: rgba(40, 167, 69, 0.1); border: 1px solid #28a745; color: #28a745;">
+                                        <i class="fas fa-check-circle"></i> Vous êtes déjà inscrit à cet événement !
+                                    </div>
+                                    <form action="{{ path('evenement_annuler_reservation', {id: evenement.id}) }}" method="POST" class="mt-3">
+                                        <button type="submit" class="nk-btn nk-btn-outline-danger" style="background: transparent; border: 2px solid #dc3545; color: #dc3545; padding: 10px 20px; border-radius: 5px; transition: all 0.3s ease;" onmouseover="this.style.backgroundColor='#dc3545'; this.style.color='white';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#dc3545';" onclick="return confirm('Êtes-vous sûr de vouloir annuler votre réservation ?');">
+                                            <i class="fas fa-times"></i> Annuler la réservation
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    {% if evenement.dateEvent > date() %}
+                                        {% if evenement.maxPlacesEvent > reservationCount|default(0) %}
+                                            <form action="{{ path('reserver_evenement', {id: evenement.id}) }}" method="POST" class="mt-3">
+                                                <button type="submit" class="nk-btn nk-btn-outline-primary" style="background: linear-gradient(45deg, #007bff, #0056b3); border: none; color: white; padding: 12px 30px; border-radius: 5px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0, 123, 255, 0.2);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(0, 123, 255, 0.3)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0, 123, 255, 0.2)';">
+                                                    <i class="fas fa-calendar-check"></i> Réserver maintenant
+                                                </button>
+                                            </form>
+                                        {% else %}
+                                            <div class="alert alert-warning mt-3" style="background: rgba(255, 193, 7, 0.1); border: 1px solid #ffc107; color: #856404;">
+                                                <i class="fas fa-exclamation-triangle"></i> Désolé, cet événement est complet !
+                                            </div>
+                                        {% endif %}
+                                    {% else %}
+                                        <div class="alert alert-warning mt-3" style="background: rgba(255, 193, 7, 0.1); border: 1px solid #ffc107; color: #856404;">
+                                            <i class="fas fa-clock"></i> Cet événement est déjà passé.
+                                        </div>
+                                    {% endif %}
+                                {% endif %}
+                            {% endif %}
+                        {% else %}
+                            <div class="alert alert-info mt-3" style="background: rgba(23, 162, 184, 0.1); border: 1px solid #17a2b8; color: #17a2b8;">
+                                <i class="fas fa-sign-in-alt"></i> <a href="{{ path('app_login') }}" style="color: #17a2b8; text-decoration: underline;">Connectez-vous</a> pour réserver cet événement.
+                            </div>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
 
             <div class="mt-3">
-                <a href="{{ path('evenement_list') }}" class="nk-btn nk-btn-outline-primary">
+                <a href="{{ path('evenement_list') }}" class="nk-btn nk-btn-outline-primary" style="background: transparent; border: 2px solid #007bff; color: #007bff; padding: 10px 20px; border-radius: 5px; transition: all 0.3s ease;" onmouseover="this.style.backgroundColor='#007bff'; this.style.color='white';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#007bff';">
                     <i class="fas fa-arrow-left"></i> Retour à la liste
                 </a>
             </div>

@@ -202,7 +202,7 @@ final class EvnementController extends AbstractController
         ]);
     }
     #[Route('/show/{id}', name: 'evenement_detailles')]
-    public function Detaills(int $id, EvenementRepository $repo): Response
+    public function Detaills(int $id, EvenementRepository $repo, ClientEvenementRepository $clientEvenementRepo): Response
     {
         $evenement = $repo->find($id);
 
@@ -211,9 +211,24 @@ final class EvnementController extends AbstractController
             return $this->redirectToRoute('evenement_list');
         }
 
+        $isReserved = false;
+        $reservationCount = 0;
+
+        if ($this->getUser()) {
+            $reservation = $clientEvenementRepo->findOneBy([
+                'client' => $this->getUser(),
+                'evenement' => $evenement
+            ]);
+            $isReserved = $reservation !== null;
+        }
+
+        $reservationCount = $repo->getReservationCountForEvent($evenement->getId());
+
         return $this->render('evenement/DetailsEvenement.html.twig', [
             'evenement' => $evenement,
             'image_base_url' => $this->getParameter('image_base_url'),
+            'isReserved' => $isReserved,
+            'reservationCount' => $reservationCount
         ]);
     }
     #[Route('/qrcode/{id}', name: 'evenement_qrcode')]
