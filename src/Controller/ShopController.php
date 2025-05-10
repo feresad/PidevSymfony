@@ -103,6 +103,21 @@ class ShopController extends AbstractController
             $recommendedSpecs = null;
         }
 
+        // FPS estimation for all GPUs
+        $fpsEstimates = null;
+        try {
+            if (!empty($systemSpecs['cpu']['name']) && !empty($systemSpecs['ram']['total']) && !empty($systemSpecs['gpus'])) {
+                $fpsEstimates = $this->geminiFpsService->estimateFps([
+                    'cpu' => $systemSpecs['cpu']['name'],
+                    'ram' => $systemSpecs['ram']['total'],
+                    'gpu' => $systemSpecs['gpus'],
+                    'game_name' => $product->getNomProduit(),
+                ]);
+            }
+        } catch (\Exception $e) {
+            $fpsEstimates = null;
+        }
+
         $user = $this->getUser();
         if ($user) {
             $completedOrders = $commandeRepository->createQueryBuilder('c')
@@ -147,6 +162,7 @@ class ShopController extends AbstractController
             'reviews' => $reviews,
             'reviewCount' => $reviewCount,
             'canReview' => $canReview,
+            'fpsEstimates' => $fpsEstimates,
         ]);
     }
 

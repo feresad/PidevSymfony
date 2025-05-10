@@ -20,45 +20,54 @@ class GeminiFpsService
     {
         try {
             $osInfo = php_uname('s') . ' ' . php_uname('m');
-            $prompt = sprintf(
-                "You are an expert gaming performance analyst with deep knowledge of hardware benchmarking and game optimization. " .
-                "Based on extensive benchmarking data and real-world testing, provide accurate FPS estimates for the following configuration:\n\n" .
-                "Game: %s\n" .
-                "System Configuration:\n" .
-                "- Operating System: %s\n" .
-                "- CPU: %s\n" .
-                "- RAM: %s GB\n" .
-                "- GPU: %s\n" .
-                "- Resolution: 1920x1080 (1080p)\n\n" .
-                "Consider these factors in your estimation:\n" .
-                "1. CPU single-core and multi-core performance\n" .
-                "2. GPU memory and architecture capabilities\n" .
-                "3. RAM speed and capacity impact\n" .
-                "4. Game engine optimization\n" .
-                "5. DirectX/Vulkan API overhead\n\n" .
-                "Provide realistic FPS ranges for three quality presets at 1080p:\n" .
-                "1. Low Settings (Shadows Low, Textures Low, Effects Low)\n" .
-                "2. Medium Settings (Balanced preset)\n" .
-                "3. High Settings (Maximum quality, with RT if supported)\n\n" .
-                "Format your response exactly like this:\n" .
-                "Low: [min]-[max] FPS\n" .
-                "Medium: [min]-[max] FPS\n" .
-                "High: [min]-[max] FPS\n\n" .
-                "Ensure the estimates are realistic and account for:\n" .
-                "- Frame time consistency\n" .
-                "- CPU/GPU bottlenecks\n" .
-                "- Game optimization level\n" .
-                "- Similar hardware benchmarks\n\n" .
-                "Only provide the FPS numbers in the exact format specified. No additional text.",
-                $specs['game_name'] ?? 'Unknown Game',
-                $osInfo,
-                $specs['cpu'],
-                $specs['ram'],
-                $specs['gpu']
-            );
+            $results = [];
+            
+            // Handle multiple GPUs
+            $gpus = is_array($specs['gpu']) ? $specs['gpu'] : [$specs['gpu']];
+            
+            foreach ($gpus as $gpu) {
+                $prompt = sprintf(
+                    "You are an expert gaming performance analyst with deep knowledge of hardware benchmarking and game optimization. " .
+                    "Based on extensive benchmarking data and real-world testing, provide accurate FPS estimates for the following configuration:\n\n" .
+                    "Game: %s\n" .
+                    "System Configuration:\n" .
+                    "- Operating System: %s\n" .
+                    "- CPU: %s\n" .
+                    "- RAM: %s GB\n" .
+                    "- GPU: %s\n" .
+                    "- Resolution: 1920x1080 (1080p)\n\n" .
+                    "Consider these factors in your estimation:\n" .
+                    "1. CPU single-core and multi-core performance\n" .
+                    "2. GPU memory and architecture capabilities\n" .
+                    "3. RAM speed and capacity impact\n" .
+                    "4. Game engine optimization\n" .
+                    "5. DirectX/Vulkan API overhead\n\n" .
+                    "Provide realistic FPS ranges for three quality presets at 1080p:\n" .
+                    "1. Low Settings (Shadows Low, Textures Low, Effects Low)\n" .
+                    "2. Medium Settings (Balanced preset)\n" .
+                    "3. High Settings (Maximum quality, with RT if supported)\n\n" .
+                    "Format your response exactly like this:\n" .
+                    "Low: [min]-[max] FPS\n" .
+                    "Medium: [min]-[max] FPS\n" .
+                    "High: [min]-[max] FPS\n\n" .
+                    "Ensure the estimates are realistic and account for:\n" .
+                    "- Frame time consistency\n" .
+                    "- CPU/GPU bottlenecks\n" .
+                    "- Game optimization level\n" .
+                    "- Similar hardware benchmarks\n\n" .
+                    "Only provide the FPS numbers in the exact format specified. No additional text.",
+                    $specs['game_name'] ?? 'Unknown Game',
+                    $osInfo,
+                    $specs['cpu'],
+                    $specs['ram'],
+                    $gpu
+                );
 
-            $response = $this->callGeminiApi($prompt);
-            return $this->parseResponse($response);
+                $response = $this->callGeminiApi($prompt);
+                $results[$gpu] = $this->parseResponse($response);
+            }
+
+            return $results;
         } catch (\Exception $e) {
             throw new \Exception('FPS Estimation failed: ' . $e->getMessage());
         }

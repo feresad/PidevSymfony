@@ -284,6 +284,43 @@
             color: #808080;
         }
 
+        .gpu-list {
+            margin-top: 5px;
+            padding-left: 10px;
+        }
+
+        .gpu-item {
+            margin-bottom: 5px;
+            padding: 3px 0;
+            border-bottom: 1px solid rgba(128, 128, 128, 0.1);
+        }
+
+        .gpu-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .gpu-fps-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+        }
+
+        .gpu-name {
+            color: #ffffff;
+            font-size: 16px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .gpu-separator {
+            height: 1px;
+            background: rgba(221, 22, 59, 0.3);
+            margin: 20px 0;
+        }
+
         @media (max-width: 992px) {
             .col-lg-5, .col-lg-4 {
                 width: 100%;
@@ -719,8 +756,14 @@
                         <span class="specs-value">{{ systemSpecs.ram.total }} GB</span>
                     </div>
                     <div class="specs-item">
-                        <span class="specs-label">Carte graphique:</span>
-                        <span class="specs-value">{{ systemSpecs.gpus[0] }}</span>
+                        <span class="specs-label">Cartes graphiques:</span>
+                        <div class="gpu-list">
+                            {% for gpu in systemSpecs.gpus %}
+                                <div class="gpu-item">
+                                    <span class="specs-value">GPU {{ loop.index }}: {{ gpu }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
                 <button id="estimateFpsBtn" class="fps-estimate-button" data-url="{{ path('app_estimate_fps') }}" style="background: #dd163b; color: #ffffff; border: none; border-radius: 5px; padding: 12px 20px; font-size: 14px; cursor: pointer; width: 100%; margin: 20px 0; text-transform: uppercase; font-weight: bold;">
@@ -732,18 +775,36 @@
                 </div>
                 <div id="fpsResults" class="fps-results">
                     <h3 class="fps-title" style="color: #dd163b;">ESTIMATIONS FPS</h3>
-                    <div class="fps-setting">
-                        <span class="fps-setting-label">Qualité Basse:</span>
-                        <span id="lowFps" class="fps-range" style="color: #dd163b;">--</span>
-                    </div>
-                    <div class="fps-setting">
-                        <span class="fps-setting-label">Qualité Moyenne:</span>
-                        <span id="mediumFps" class="fps-range" style="color: #dd163b;">--</span>
-                    </div>
-                    <div class="fps-setting">
-                        <span class="fps-setting-label">Qualité Haute:</span>
-                        <span id="highFps" class="fps-range" style="color: #dd163b;">--</span>
-                    </div>
+                    {% if fpsEstimates is defined and fpsEstimates %}
+                        {% for gpu, fps in fpsEstimates %}
+                            <div class="gpu-fps-section">
+                                <h4 class="gpu-name">{{ gpu }}</h4>
+                                <div class="fps-setting">
+                                    <span class="fps-setting-label">Qualité Basse:</span>
+                                    <span class="fps-range" style="color: #dd163b;">
+                                        {{ (fps.low.min is defined ? fps.low.min : '--') }}-{{ (fps.low.max is defined ? fps.low.max : '--') }} FPS
+                                    </span>
+                                </div>
+                                <div class="fps-setting">
+                                    <span class="fps-setting-label">Qualité Moyenne:</span>
+                                    <span class="fps-range" style="color: #dd163b;">
+                                        {{ (fps.medium.min is defined ? fps.medium.min : '--') }}-{{ (fps.medium.max is defined ? fps.medium.max : '--') }} FPS
+                                    </span>
+                                </div>
+                                <div class="fps-setting">
+                                    <span class="fps-setting-label">Qualité Haute:</span>
+                                    <span class="fps-range" style="color: #dd163b;">
+                                        {{ (fps.high.min is defined ? fps.high.min : '--') }}-{{ (fps.high.max is defined ? fps.high.max : '--') }} FPS
+                                    </span>
+                                </div>
+                            </div>
+                            {% if not loop.last %}
+                                <div class="gpu-separator"></div>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <div style="color: #dd163b; text-align: center;">Aucune estimation FPS disponible.</div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -803,6 +864,7 @@
                     });
                 });
             }
+            
             // Modal functionality
             const modal = document.getElementById('fpsModal');
             const overlay = document.getElementById('modalOverlay');
@@ -811,6 +873,7 @@
             const estimateBtn = document.getElementById('estimateFpsBtn');
             const loadingSpinner = document.getElementById('loadingSpinner');
             const fpsResults = document.getElementById('fpsResults');
+
             btn.onclick = function() {
                 modal.style.display = 'block';
                 overlay.style.display = 'block';
@@ -823,18 +886,21 @@
                 modal.style.display = 'none';
                 overlay.style.display = 'none';
             }
+
             // FPS Estimation functionality
             if (estimateBtn) {
                 estimateBtn.addEventListener('click', function() {
                     loadingSpinner.style.display = 'block';
                     fpsResults.style.display = 'none';
+
                     // Prepare the data
                     const data = {
                         cpu: '{{ systemSpecs.cpu.name }}',
                         ram: '{{ systemSpecs.ram.total }}',
                         gpu: '{{ systemSpecs.gpus[0] }}',
-                        game_name: '{{ product.nomProduit }}'
+                        game_name: '{{ stock.produit.nomProduit }}'
                     };
+
                     // Make API call
                     const url = this.getAttribute('data-url');
                     fetch(url, {
@@ -849,12 +915,36 @@
                     .then(data => {
                         loadingSpinner.style.display = 'none';
                         fpsResults.style.display = 'block';
+
                         if (data.error) {
                             throw new Error(data.message || 'Failed to estimate FPS');
                         }
-                        document.getElementById('lowFps').textContent = `${data.low.min}-${data.low.max} FPS`;
-                        document.getElementById('mediumFps').textContent = `${data.medium.min}-${data.medium.max} FPS`;
-                        document.getElementById('highFps').textContent = `${data.high.min}-${data.high.max} FPS`;
+
+                        const lowFpsElement = document.getElementById('lowFps');
+                        const mediumFpsElement = document.getElementById('mediumFps');
+                        const highFpsElement = document.getElementById('highFps');
+
+                        if (lowFpsElement) {
+                            if (data.low && data.low.min !== undefined && data.low.max !== undefined) {
+                                lowFpsElement.textContent = `${data.low.min}-${data.low.max} FPS`;
+                            } else {
+                                lowFpsElement.textContent = '--';
+                            }
+                        }
+                        if (mediumFpsElement) {
+                            if (data.medium && data.medium.min !== undefined && data.medium.max !== undefined) {
+                                mediumFpsElement.textContent = `${data.medium.min}-${data.medium.max} FPS`;
+                            } else {
+                                mediumFpsElement.textContent = '--';
+                            }
+                        }
+                        if (highFpsElement) {
+                            if (data.high && data.high.min !== undefined && data.high.max !== undefined) {
+                                highFpsElement.textContent = `${data.high.min}-${data.high.max} FPS`;
+                            } else {
+                                highFpsElement.textContent = '--';
+                            }
+                        }
                     })
                     .catch(error => {
                         loadingSpinner.style.display = 'none';
