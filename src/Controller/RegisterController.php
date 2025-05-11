@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Utilisateur;
 use App\Entity\Role;
+use App\Entity\Client;
 use App\Form\RegisterFormType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -149,8 +150,15 @@ class RegisterController extends AbstractController
         $user->setRole(Role::CLIENT);
 
         try {
+            // Persist the user first to get the ID
             $entityManager->persist($user);
             $entityManager->flush();
+
+            // Add the user ID to the client table
+            $connection = $entityManager->getConnection();
+            $sql = 'INSERT INTO client (id) VALUES (:id)';
+            $stmt = $connection->prepare($sql);
+            $stmt->executeStatement(['id' => $user->getId()]);
 
             // Clear session data
             $session->remove('registration_data');
