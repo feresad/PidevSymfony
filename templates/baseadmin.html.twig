@@ -57,7 +57,37 @@
             height: 100%;
             object-fit: cover;
         }
+        #sidebar {
+    width: 250px; /* Full width when open */
+    transition: width 0.3s ease;
+}
+
+#sidebar.close {
+    width: 80px; /* Width for icons-only mode */
+}
+
+#sidebar ul li span {
+    display: inline-block;
+}
+
+#sidebar.close ul li span {
+    display: none; /* Hide text labels in icons-only mode */
+}
+
+#sidebar.close ul li ion-icon {
+    margin-right: 0; /* Adjust icon spacing if needed */
+}
+
+.main {
+    margin-left: 250px; /* Match the sidebar width */
+    transition: margin-left 0.3s ease;
+}
+
+.main.close {
+    margin-left: 80px; /* Adjust for icons-only sidebar width */
+}
     </style>
+    
     {% endblock %}
 </head>
 <body>
@@ -194,19 +224,58 @@
         });
     </script>
     <script>
-        function toggleSidebar() {
-            const sidebar = document.getElementById("sidebar");
-            const main = document.querySelector(".main");
-            sidebar.classList.toggle("close");
-            main.classList.toggle("close");
-        }
+    // Toggle sidebar function (already in your code)
+    function toggleSidebar() {
+        const sidebar = document.getElementById("sidebar");
+        const main = document.querySelector(".main");
+        sidebar.classList.toggle("close");
+        main.classList.toggle("close");
+    }
 
-        function toggleSubMenu(button) {
-            const subMenu = button.nextElementSibling;
-            subMenu.classList.toggle("show");
-            button.classList.toggle("rotate");
+    // Toggle submenu function (already in your code)
+    function toggleSubMenu(button) {
+        const subMenu = button.nextElementSibling;
+        subMenu.classList.toggle("show");
+        button.classList.toggle("rotate");
+    }
+
+    // Function to handle window resize
+    function handleResize() {
+        const sidebar = document.getElementById("sidebar");
+        const main = document.querySelector(".main");
+        const windowWidth = window.innerWidth;
+
+        // Define the threshold for switching to icons-only mode (e.g., 768px for mobile/tablet)
+        const threshold = 768;
+
+        if (windowWidth <= threshold) {
+            // Switch to icons-only mode
+            if (!sidebar.classList.contains("close")) {
+                sidebar.classList.add("close");
+                main.classList.add("close");
+            }
+        } else {
+            // Switch back to full sidebar mode
+            if (sidebar.classList.contains("close")) {
+                sidebar.classList.remove("close");
+                main.classList.remove("close");
+            }
         }
-    </script>
+    }
+
+    // Add event listener for window resize
+    window.addEventListener("resize", handleResize);
+
+    // Call handleResize on page load to set the initial state
+    document.addEventListener("DOMContentLoaded", handleResize);
+
+    // Existing logout button logic
+    document.getElementById('logout-button').addEventListener('click', function (e) {
+        e.preventDefault();
+        localStorage.clear();
+        window.location.href = '/logout';
+    });
+</script>
     <script src="{{ asset('js/main.js') }}"></script>
     <!-- ====== ionicons ======= -->
     <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
