@@ -1,34 +1,44 @@
-# Utiliser une image PHP avec Apache
-FROM php:8.2-apache
+# Use PHP 8.2 with FPM
+FROM php:8.2-fpm
 
-# Installer les dépendances nécessaires
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
-    libicu-dev \
-    libzip-dev \
-    && docker-php-ext-install pdo pdo_mysql intl zip \
-    && pecl install apcu && docker-php-ext-enable apcu
+    libpq-dev \
+    && docker-php-ext-install pdo pdo_pgsql \
+    && rm -rf /var/lib/apt/lists/*
 
-# Installer Composer
+# Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Configurer Apache
-RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
-COPY ./vhosts.conf /etc/apache2/sites-enabled/000-default.conf
+# Set working directory
+WORKDIR /app
 
-# Définir le répertoire de travail
-WORKDIR /var/www/html
+# Create a non-root user
+RUN useradd -m myuser
 
-# Copier le code de l'application
+# Copy application files as root
 COPY . .
 
-# Installer les dépendances Composer
+# Fix ownership of the /app directory and its contents
+RUN chown -R myuser:myuser /app
+
+# Switch to non-root user
+USER myuser
+
+# Mark /app as a safe directory for Git
+RUN git config --global --add safe.directory /app
+
+# Install Composer dependencies
 RUN composer install --optimize-autoloader --no-dev
 
-# Donner les permissions appropriées
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html
+# Switch back to root for permissions (if needed)
+USER root
+RUN chown -R myuser:myuser /app
 
-# Exposer le port 80
-EXPOSE 80
+# Expose port (optional, Render handles this)
+EXPOSE 9000
+
+# Start PHP-FPM
+CMD ["php-fpm"]
