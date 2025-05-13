@@ -14,7 +14,6 @@
         "doctrine/orm": "^3.3",
         "dompdf/dompdf": "^3.1",
         "endroid/qr-code": "^6.0",
-        "endroid/qrcode": "^6.0",
         "knplabs/knp-paginator-bundle": "^6.8",
         "knplabs/knp-snappy-bundle": "^1.10",
         "knpuniversity/oauth2-client-bundle": "*",
