@@ -21,7 +21,8 @@ WORKDIR /var/www/html
 COPY . .
 
 # Installer les dépendances Composer
-RUN composer install --optimize-autoloader --no-dev --no-scripts
+RUN composer install --optimize-autoloader --no-dev \
+    && test -f /var/www/html/vendor/autoload_runtime.php || echo "Warning: autoload_runtime.php not found"
 
 # Donner les permissions appropriées
 RUN chown -R www-data:www-data /var/www/html \
