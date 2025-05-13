@@ -1,44 +1,41 @@
-# Use PHP 8.2 with FPM
+# Utiliser l'image PHP-FPM
 FROM php:8.2-fpm
 
-# Install system dependencies
+# Installer les dépendances nécessaires, y compris Nginx
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
-    libpq-dev \
-    && docker-php-ext-install pdo pdo_pgsql \
-    && rm -rf /var/lib/apt/lists/*
+    libicu-dev \
+    libzip-dev \
+    nginx \
+    && docker-php-ext-install pdo pdo_mysql intl zip \
+    && pecl install apcu && docker-php-ext-enable apcu
 
-# Install Composer
+# Installer Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Set working directory
-WORKDIR /app
+# Définir le répertoire de travail
+WORKDIR /var/www/html
 
-# Create a non-root user
-RUN useradd -m myuser
-
-# Copy application files as root
+# Copier le code de l'application
 COPY . .
 
-# Fix ownership of the /app directory and its contents
-RUN chown -R myuser:myuser /app
-
-# Switch to non-root user
-USER myuser
-
-# Mark /app as a safe directory for Git
-RUN git config --global --add safe.directory /app
-
-# Install Composer dependencies
+# Installer les dépendances Composer
 RUN composer install --optimize-autoloader --no-dev
 
-# Switch back to root for permissions (if needed)
-USER root
-RUN chown -R myuser:myuser /app
+# Donner les permissions appropriées
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html
 
-# Expose port (optional, Render handles this)
-EXPOSE 9000
+# Copier la configuration Nginx
+COPY ./nginx/nginx.conf /etc/nginx/nginx.conf
 
-# Start PHP-FPM
-CMD ["php-fpm"]
+# Script de démarrage pour lancer PHP-FPM et Nginx
+COPY ./start.sh /start.sh
+RUN chmod +x /start.sh
+
+# Exposer le port 80 pour Nginx
+EXPOSE 80
+
+# Commande de démarrage
+CMD ["/start.sh"]

@@ -1,0 +1,7 @@
+.env
+.git
+vendor
+var/cache
+var/log
+node_modules
+docker-compose.yml
