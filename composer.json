@@ -11,14 +11,14 @@
         "doctrine/dbal": "^3",
         "doctrine/doctrine-bundle": "^2.14",
         "doctrine/doctrine-migrations-bundle": "^3.4",
-        "doctrine/orm": "^3.3",
+        "doctrine/orm": "2.17",
         "dompdf/dompdf": "^3.1",
         "endroid/qr-code": "^6.0",
         "knplabs/knp-paginator-bundle": "^6.8",
         "knplabs/knp-snappy-bundle": "^1.10",
         "knpuniversity/oauth2-client-bundle": "*",
         "league/oauth2-google": "^4.0",
-        "lexik/translation-bundle": "^6.0",
+        "lexik/translation-bundle": "6.0",
         "php-ai/php-ml": "^0.10.0",
         "php-flasher/flasher-symfony": "^1.15",
         "phpdocumentor/reflection-docblock": "^5.6",
@@ -110,6 +110,11 @@
         "symfony": {
             "allow-contrib": false,
             "require": "6.4.*"
+        },
+        "patches": {
+            "lexik/translation-bundle": {
+            "Fix count method signature": "fix-transunit-count-signature.patch"
+            }
         }
     },
     "require-dev": {

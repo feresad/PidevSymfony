@@ -1,0 +1,33 @@
+--- a/Entity/TransUnitRepository.php
++++ b/Entity/TransUnitRepository.php
+@@ public function count(?array $locales = null, ?array $filters = null)
+-    /**
+-     * Count the number of trans unit.
+-     *
+-     * @param array|null $locales
+-     * @param array|null $filters
+-     * @return int
+-     */
+-    public function count(?array $locales = null, ?array $filters = null)
+-    {
+-        // Ancienne logique supprimée
+-    }
++    /**
++     * Count the number of trans unit.
++     *
++     * @param array $criteria
++     * @return int
++     */
++    public function count(array $criteria = []): int
++    {
++        $qb = $this->createQueryBuilder('tu')
++            ->select('COUNT(DISTINCT tu.id) AS number');
++
++        // Ajout des critères Doctrine classiques
++        foreach ($criteria as $field => $value) {
++            $qb->andWhere("tu.$field = :$field")
++                ->setParameter($field, $value);
++        }
++
++        return (int) $qb->getQuery()->getSingleScalarResult();
++    }
