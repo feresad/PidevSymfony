@@ -936,7 +936,7 @@ Ajouter sujet        </button>
                     if (sentimentMap.neutral.length < 10) sentimentMap.neutral = ['🤔', '😐', '🙂', '👀', '🤷', '😶', '🤝', '🙄', '😴', '🤓'];
 
                     $.ajax({
-                        url: '{{ path('api_update_sentiment_map') }}',
+                        url: "{{ path('api_update_sentiment_map') }}",
                         method: 'POST',
                         contentType: 'application/json',
                         data: JSON.stringify({ sentimentMap: sentimentMap }),
@@ -958,7 +958,7 @@ Ajouter sujet        </button>
 
             function fetchReactions(id, type, $display) {
                 $.ajax({
-                    url: '{{ path('react_action') }}',
+                    url: "{{ path('react_action') }}",
                     method: 'POST',
                     data: { id: id, type: type, action: 'fetch' },
                     success: function(response) {
@@ -1092,7 +1092,7 @@ Ajouter sujet        </button>
                     const $picker = $('.emoji-picker-container');
 
                     $.ajax({
-                        url: '{{ path('react_action') }}',
+                        url: "{{ path('react_action') }}",
                         method: 'POST',
                         data: { id: id, type: type, emoji: emoji, action: 'react' },
                         success: function(response) {
@@ -1162,7 +1162,7 @@ Ajouter sujet        </button>
                 const $voteCount = $voteSection.find('.vote-count');
 
                 $.ajax({
-                    url: '{{ path('ajax_vote_action') }}',
+                    url: "{{ path('ajax_vote_action') }}",
                     method: 'POST',
                     data: { id: id, type: type, vote_type: voteType },
                     success: function(response) {
@@ -1234,7 +1234,7 @@ Ajouter sujet        </button>
                 if (!platform) return;
 
                 $.ajax({
-                    url: '{{ path('api_share_topic') }}',
+                    url: "{{ path('api_share_topic') }}",
                     method: 'GET',
                     data: { id: topicId },
                     success: function(response) {
@@ -1290,7 +1290,7 @@ Ajouter sujet        </button>
                 const $btn = $(this);
                 const topicId = $btn.data('id');
                 const topicTitle = $btn.data('title');
-                const deleteUrl = '{{ path('admin_forum_delete_topic', { id: 'PLACEHOLDER' }) }}'.replace('PLACEHOLDER', topicId);
+                const deleteUrl = "{{ path('admin_forum_delete_topic', { id: 'PLACEHOLDER' }) }}".replace('PLACEHOLDER', topicId);
 
                 Swal.fire({
                     title: 'Delete Topic',
@@ -1321,7 +1321,7 @@ Ajouter sujet        </button>
                 $submitButton.prop('disabled', true);
 
                 $.ajax({
-                    url: '{{ path('api_check_profanity') }}',
+                    url: "{{ path('api_check_profanity') }}",
                     method: 'POST',
                     data: { content: combinedContent },
                     success: function(response) {

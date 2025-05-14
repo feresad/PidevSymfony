@@ -333,7 +333,7 @@ body {
                             <div class="session-meta"><i class="far fa-clock"></i> {{ session.dureeSession }} min</div>
                             <div class="d-flex gap-2 mt-3">
                                 <a href="{{ path('session_edit', {'id': session.id}) }}" class="nk-btn nk-btn-rounded">Modifier</a>
-                                <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-main-5" onclick="showDeleteModal({{ session.id }})">Supprimer</button>
+                                <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-main-5" onclick="showDeleteModal('{{ session.id }}')">Supprimer</button>
                             </div>
                         </div>
                     </div>
@@ -389,7 +389,7 @@ function showDeleteModal(sessionId) {
         const tokenInput = document.createElement('input');
         tokenInput.type = 'hidden';
         tokenInput.name = '_token';
-        tokenInput.value = '{{ csrf_token('delete') }}';
+        tokenInput.value = "{{ csrf_token('delete') }}";
         
         form.appendChild(tokenInput);
         document.body.appendChild(form);

@@ -31,7 +31,7 @@
                 const $row = $(this).closest('.bg-white');
 
                 $.ajax({
-                    url: '{{ path('ajax_unsubscribe_topic', {'id': '__ID__'}) }}'.replace('__ID__', topicId),
+                    url: "{{ path('ajax_unsubscribe_topic', {'id': '__ID__'}) }}".replace('__ID__', topicId),
                     method: 'POST',
                     headers: {'X-Requested-With': 'XMLHttpRequest'},
                     success: function(response) {

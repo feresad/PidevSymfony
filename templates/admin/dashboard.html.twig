@@ -1,6 +1,6 @@
 {% extends 'baseadmin.html.twig' %}
 
-{% block title %}Admin Dashboard{% endblock %}
+{% block title %}Tableau de bord administrateur{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
@@ -33,11 +33,6 @@
             height: 100%;
             object-fit: cover;
         }
-        .user-avatar .default-initials {
-            font-size: 24px;
-            color: #666;
-            text-transform: uppercase;
-        }
         .user-info h3 {
             margin: 0;
             font-size: 18px;
@@ -69,6 +64,20 @@
         }
         .user-actions .report-btn:hover {
             background-color: #fde68a;
+        }
+        .user-actions .ban-btn {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+        .user-actions .ban-btn:hover {
+            background-color: #fecaca;
+        }
+        .user-actions .unban-btn {
+            background-color: #dcfce7;
+            color: #15803d;
+        }
+        .user-actions .unban-btn:hover {
+            background-color: #bbf7d0;
         }
         .user-actions ion-icon {
             font-size: 18px;
@@ -116,7 +125,6 @@
             gap: 20px;
             padding: 20px;
         }
-        /* Custom Pagination Styles */
         .pagination-container {
             margin: 20px;
             padding: 20px;
@@ -163,7 +171,6 @@
             color: #6c757d;
             font-size: 0.9rem;
         }
-        /* Modal Styles */
         .modal {
             display: none;
             position: fixed;
@@ -174,7 +181,6 @@
             background-color: rgba(0, 0, 0, 0.5);
             z-index: 1000;
         }
-
         .modal-content {
             position: relative;
             background-color: #fff;
@@ -185,7 +191,6 @@
             border-radius: 10px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
         }
-
         .close-modal {
             position: absolute;
             right: 20px;
@@ -194,85 +199,69 @@
             cursor: pointer;
             color: #666;
         }
-
         .reports-list {
             margin-top: 20px;
             max-height: 400px;
             overflow-y: auto;
         }
-
         .report-item {
             padding: 15px;
             border-bottom: 1px solid #eee;
         }
-
         .report-item:last-child {
             border-bottom: none;
         }
-
         .report-header {
             display: flex;
             justify-content: space-between;
             margin-bottom: 10px;
         }
-
         .report-reason {
             font-weight: bold;
             color: #f59e0b;
         }
-
         .report-status {
             padding: 4px 8px;
             border-radius: 4px;
             font-size: 0.9em;
         }
-
         .status-pending {
             background-color: #fef3c7;
             color: #d97706;
         }
-
         .status-reviewed {
             background-color: #dbeafe;
             color: #1d4ed8;
         }
-
         .status-resolved {
             background-color: #dcfce7;
             color: #15803d;
         }
-
         .report-details {
             color: #666;
             font-size: 0.9em;
         }
-
         .report-date {
             color: #999;
             font-size: 0.8em;
             margin-top: 5px;
         }
-
         .reporter-info {
             margin-bottom: 10px;
             color: #666;
         }
-
         .reporter-label {
             font-weight: 500;
             color: #4b5563;
         }
-
         .reporter-name {
             color: #1f2937;
             font-weight: 500;
         }
-
         .reporter-nickname {
             color: #6b7280;
             font-size: 0.9em;
         }
-
         .report-evidence {
             margin-top: 8px;
             padding: 8px;
@@ -280,23 +269,12 @@
             border-radius: 4px;
             color: #4b5563;
         }
-
-        .ban-btn {
-            background-color: #fee2e2;
-            color: #dc2626;
-        }
-
-        .ban-btn:hover {
-            background-color: #fecaca;
-        }
-
         .ban-options {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 10px;
             margin: 20px 0;
         }
-
         .ban-option {
             padding: 12px;
             border: none;
@@ -306,24 +284,20 @@
             cursor: pointer;
             transition: all 0.2s;
         }
-
         .ban-option:hover {
             background-color: #e5e7eb;
         }
-
         .ban-confirm {
             margin-top: 20px;
             padding: 15px;
             background-color: #f3f4f6;
             border-radius: 6px;
         }
-
         .ban-buttons {
             display: flex;
             gap: 10px;
             margin-top: 15px;
         }
-
         .confirm-ban {
             background-color: #dc2626;
             color: white;
@@ -332,11 +306,9 @@
             border-radius: 4px;
             cursor: pointer;
         }
-
         .confirm-ban:hover {
             background-color: #b91c1c;
         }
-
         .cancel-ban {
             background-color: #6b7280;
             color: white;
@@ -345,20 +317,9 @@
             border-radius: 4px;
             cursor: pointer;
         }
-
         .cancel-ban:hover {
             background-color: #4b5563;
         }
-
-        .unban-btn {
-            background-color: #dcfce7;
-            color: #15803d;
-        }
-
-        .unban-btn:hover {
-            background-color: #bbf7d0;
-        }
-
         .ban-info {
             margin-top: 10px;
             padding: 8px;
@@ -372,12 +333,13 @@
 
 {% block body %}
 <div class="search-container">
-    <form action="{{ path('admin_dashboard') }}" method="get" class="search-form">
-        <input type="text" name="q" value="{{ searchQuery|default('') }}" 
-               class="search-input" placeholder="Search by nickname...">
-        <button type="submit" class="search-button">
+    <form action="{{ path('admin_dashboard') }}" method="get" class="search-form" role="search">
+        <input type="text" name="q" value="{{ searchQuery|default('')|e('html_attr') }}" 
+               class="search-input" placeholder="Rechercher par pseudo..." 
+               aria-label="Rechercher des utilisateurs par pseudo">
+        <button type="submit" class="search-button" aria-label="Lancer la recherche">
             <ion-icon name="search-outline"></ion-icon>
-            Search
+            Rechercher
         </button>
     </form>
 </div>
@@ -388,73 +350,90 @@
             <div style="display: flex; align-items: center;">
                 <div class="user-avatar">
                     {% if user.photo %}
-                        <img src="{{image_base_url ~ user.photo }}" alt="{{ user.prenom }} {{ user.nom }}">
+                        <img src="{{ asset('uploads/' ~ user.photo|e('url') ) }}" alt="{{ (user.prenom ~ ' ' ~ user.nom)|e('html_attr') }}">
                     {% else %}
-                        <img src="{{ image_base_url }}/default-avatar.jpg" alt="Default Avatar">
+                        <img src="{{ asset('uploads/default-avatar.jpg') }}" alt="Avatar par défaut">
                     {% endif %}
                 </div>
                 <div class="user-info">
-                    <h3>{{ user.prenom }} {{ user.nom }}</h3>
-                    <h3>{{ user.nickname }}</h3>
-                    <p>{{ user.email }}</p>
+                    <h3>{{ user.prenom|e }} {{ user.nom|e }}</h3>
+                    <h3>{{ user.nickname|e }}</h3>
+                    <p>{{ user.email|e }}</p>
                 </div>
             </div>
             <div class="user-actions">
-                <button class="report-btn" title="Reports" onclick="showReports({{ user.id }}, '{{ user.prenom }} {{ user.nom }}')">
+                <button class="report-btn" 
+                        title="Voir les rapports" 
+                        aria-label="Voir les rapports pour {{ (user.prenom ~ ' ' ~ user.nom)|e('html_attr') }}" 
+                        data-user-id="{{ user.id }}" 
+                        data-user-name="{{ (user.prenom ~ ' ' ~ user.nom)|e('js') }}"
+                        data-csrf-token="{{ csrf_token('report_' ~ user.id) }}">
                     <ion-icon name="warning-outline"></ion-icon>
-                    Rapports ({{ user.getReportCount() }})
+                    Rapports ({{ user.reportCount|default(0) }})
                 </button>
-                {% if user.isBan() %}
-                    <button class="unban-btn" title="Unban User" onclick="unbanUser({{ user.id }}, '{{ user.prenom }} {{ user.nom }}')">
+                {% if user.isBanned %}
+                    <button class="unban-btn" 
+                            title="Débannir l'utilisateur" 
+                            aria-label="Débannir {{ (user.prenom ~ ' ' ~ user.nom)|e('html_attr') }}" 
+                            data-user-id="{{ user.id }}" 
+                            data-user-name="{{ (user.prenom ~ ' ' ~ user.nom)|e('js') }}"
+                            data-csrf-token="{{ csrf_token('unban_' ~ user.id) }}">
                         <ion-icon name="checkmark-circle-outline"></ion-icon>
                         Débannir
                     </button>
                 {% else %}
-                    <button class="ban-btn" title="Ban User" onclick="showBanOptions({{ user.id }}, '{{ user.prenom }} {{ user.nom }}')">
+                    <button class="ban-btn" 
+                            title="Bannir l'utilisateur" 
+                            aria-label="Bannir {{ (user.prenom ~ ' ' ~ user.nom)|e('html_attr') }}" 
+                            data-user-id="{{ user.id }}" 
+                            data-user-name="{{ (user.prenom ~ ' ' ~ user.nom)|e('js') }}"
+                            data-csrf-token="{{ csrf_token('ban_' ~ user.id) }}">
                         <ion-icon name="ban-outline"></ion-icon>
                         Bannir
                     </button>
                 {% endif %}
             </div>
         </div>
+    {% else %}
+        <p>Aucun utilisateur trouvé.</p>
     {% endfor %}
 </div>
 
 <div class="pagination-container">
     <div class="pagination-info">
-        Showing {{ users.getCurrentPageNumber() }} of {{ users.getPageCount() }} pages
-        ({{ users.getTotalItemCount() }} total users)
+        Affichage de la page {{ users.getCurrentPageNumber() }} sur {{ users.getPageCount() }} 
+        ({{ users.getTotalItemCount() }} utilisateurs au total)
     </div>
-    {{ knp_pagination_render(users) }}
+    {{ knp_pagination_render(users, null, {}, {'align': 'center'}) }}
 </div>
 
-<!-- Modal for Reports -->
-<div id="reportsModal" class="modal">
+<!-- Modal pour les rapports -->
+<div id="reportsModal" class="modal" role="dialog" aria-labelledby="reportsModalTitle">
     <div class="modal-content">
-        <span class="close-modal">&times;</span>
-        <h2>Rapports pour <span id="userName"></span></h2>
+        <span class="close-modal" id="closeReportsModal" aria-label="Fermer la fenêtre des rapports">×</span>
+        <h2 id="reportsModalTitle">Rapports pour <span id="userName"></span></h2>
         <div class="reports-list" id="reportsList">
-            <!-- Reports will be loaded here -->
+            <!-- Les rapports seront chargés ici -->
         </div>
     </div>
 </div>
 
-<!-- Ban Modal -->
-<div id="banModal" class="modal">
+<!-- Modal pour le bannissement -->
+<div id="banModal" class="modal" role="dialog" aria-labelledby="banModalTitle">
     <div class="modal-content">
-        <span class="close-modal">&times;</span>
-        <h2>Bannir l'utilisateur <span id="banUserName"></span></h2>
+        <span class="close-modal" id="closeBanModal" aria-label="Fermer la fenêtre de bannissement">×</span>
+        <h2 id="banModalTitle">Bannir l'utilisateur <span id="banUserName"></span></h2>
         <div class="ban-options">
-            <button class="ban-option" data-duration="1">1 Jour</button>
-            <button class="ban-option" data-duration="7">1 Semaine</button>
-            <button class="ban-option" data-duration="30">1 Mois</button>
-            <button class="ban-option" data-duration="0">Permanent</button>
+            <button class="ban-option" data-duration="1" aria-label="Bannir pour 1 jour">1 Jour</button>
+            <button class="ban-option" data-duration="7" aria-label="Bannir pour 1 semaine">1 Semaine</button>
+            <button class="ban-option" data-duration="30" aria-label="Bannir pour 1 mois">1 Mois</button>
+            <button class="ban-option" data-duration="0" aria-label="Bannir de façon permanente">Permanent</button>
         </div>
         <div class="ban-confirm" style="display: none;">
             <p>Êtes-vous sûr de vouloir bannir cet utilisateur pour <span id="selectedDuration"></span> ?</p>
             <div class="ban-buttons">
-                <button class="confirm-ban">Confirmer</button>
-                <button class="cancel-ban">Annuler</button>
+                <button class="confirm-ban" aria-label="Confirmer le bannissement">Confirmer</button>
+                <button class="cancel-ban" aria-label="Annuler le bannissement">Annuler</button>
             </div>
         </div>
     </div>
@@ -464,75 +443,16 @@
 
 {% block javascripts %}
     {{ parent() }}
+    <script type="module" src="https://unpkg.com/ionicons@7.4.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.4.0/dist/ionicons/ionicons.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const modal = document.getElementById('reportsModal');
-            const closeBtn = document.querySelector('.close-modal');
-            const reportsList = document.getElementById('reportsList');
-            const userName = document.getElementById('userName');
-
-            // Function to open modal and load reports
-            window.showReports = function(userId, userFullName) {
-                userName.textContent = userFullName;
-                modal.style.display = 'block';
-                
-                // Fetch reports for the user
-                fetch(`/admin/user/${userId}/reports`)
-                    .then(response => response.json())
-                    .then(reports => {
-                        reportsList.innerHTML = '';
-                        if (reports.length === 0) {
-                            reportsList.innerHTML = '<p>Aucun rapport pour cet utilisateur.</p>';
-                            return;
-                        }
-                        
-                        reports.forEach(report => {
-                            const reportItem = document.createElement('div');
-                            reportItem.className = 'report-item';
-                            
-                            const statusClass = `status-${report.status.toLowerCase()}`;
-                            
-                            reportItem.innerHTML = `
-                                <div class="report-header">
-                                    <span class="report-reason">${report.reason}</span>
-                                    <span class="report-status ${statusClass}">${report.status}</span>
-                                </div>
-                                <div class="report-details">
-                                    <div class="reporter-info">
-                                        <span class="reporter-label">Signalé par:</span>
-                                        <span class="reporter-name">${report.reporter.name}</span>
-                                        <span class="reporter-nickname">(${report.reporter.nickname})</span>
-                                    </div>
-                                    ${report.evidence ? `<p class="report-evidence">Preuve: ${report.evidence}</p>` : ''}
-                                </div>
-                                <div class="report-date">
-                                    Date: ${new Date(report.created_at).toLocaleDateString()}
-                                </div>
-                            `;
-                            
-                            reportsList.appendChild(reportItem);
-                        });
-                    })
-                    .catch(error => {
-                        console.error('Error loading reports:', error);
-                        reportsList.innerHTML = '<p>Erreur lors du chargement des rapports.</p>';
-                    });
-            };
-
-            // Close modal when clicking the close button
-            closeBtn.onclick = function() {
-                modal.style.display = 'none';
-            };
-
-            // Close modal when clicking outside
-            window.onclick = function(event) {
-                if (event.target == modal) {
-                    modal.style.display = 'none';
-                }
-            };
-
-            // Ban Modal functionality
+            const reportsModal = document.getElementById('reportsModal');
+            const closeReportsBtn = document.getElementById('closeReportsModal');
             const banModal = document.getElementById('banModal');
+            const closeBanBtn = document.getElementById('closeBanModal');
+            const reportsList = document.getElementById('reportsList');
+            const userNameSpan = document.getElementById('userName');
             const banUserName = document.getElementById('banUserName');
             const banOptions = document.querySelectorAll('.ban-option');
             const banConfirm = document.querySelector('.ban-confirm');
@@ -542,100 +462,201 @@
             let currentUserId = null;
             let selectedBanDuration = null;
 
-            window.showBanOptions = function(userId, userName) {
-                currentUserId = userId;
-                banUserName.textContent = userName;
-                banModal.style.display = 'block';
-                banConfirm.style.display = 'none';
-            };
+            // Show reports modal
+            document.querySelectorAll('.report-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const userId = this.dataset.userId;
+                    const userName = this.dataset.userName;
+                    const csrfToken = this.dataset.csrfToken;
 
+                    userNameSpan.textContent = userName;
+                    reportsModal.style.display = 'block';
+                    reportsModal.focus();
+
+                    fetch(`{{ path('admin_user_reports') }}/${userId}`, {
+                        headers: {
+                            'X-CSRF-Token': csrfToken
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(reports => {
+                            reportsList.innerHTML = '';
+                            if (reports.length === 0) {
+                                reportsList.innerHTML = '<p>Aucun rapport pour cet utilisateur.</p>';
+                                return;
+                            }
+                            reports.forEach(report => {
+                                const reportItem = document.createElement('div');
+                                reportItem.className = 'report-item';
+                                const statusClass = `status-${report.status.toLowerCase()}`;
+                                reportItem.innerHTML = `
+                                    <div class="report-header">
+                                        <span class="report-reason">${report.reason}</span>
+                                        <span class="report-status ${statusClass}">${report.status}</span>
+                                    </div>
+                                    <div class="report-details">
+                                        <div class="reporter-info">
+                                            <span class="reporter-label">Signalé par :</span>
+                                            <span class="reporter-name">${report.reporter.name}</span>
+                                            <span class="reporter-nickname">(${report.reporter.nickname})</span>
+                                        </div>
+                                        ${report.evidence ? `<p class="report-evidence">Preuve : ${report.evidence}</p>` : ''}
+                                    </div>
+                                    <div class="report-date">
+                                        Date : ${new Date(report.created_at).toLocaleDateString('fr-FR')}
+                                    </div>
+                                `;
+                                reportsList.appendChild(reportItem);
+                            });
+                        })
+                        .catch(error => {
+                            console.error('Erreur lors du chargement des rapports :', error);
+                            reportsList.innerHTML = '<p>Erreur lors du chargement des rapports.</p>';
+                        });
+                });
+            });
+
+            // Show ban modal
+            document.querySelectorAll('.ban-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    currentUserId = this.dataset.userId;
+                    banUserName.textContent = this.dataset.userName;
+                    banModal.style.display = 'block';
+                    banConfirm.style.display = 'none';
+                    banModal.focus();
+                });
+            });
+
+            // Handle ban options
             banOptions.forEach(option => {
                 option.addEventListener('click', function() {
-                    const duration = parseInt(this.dataset.duration);
-                    selectedBanDuration = duration;
-                    
+                    selectedBanDuration = parseInt(this.dataset.duration);
                     let durationText = '';
-                    switch(duration) {
-                        case 1:
-                            durationText = '1 jour';
-                            break;
-                        case 7:
-                            durationText = '1 semaine';
-                            break;
-                        case 30:
-                            durationText = '1 mois';
-                            break;
-                        case 0:
-                            durationText = 'permanent';
-                            break;
+                    switch(selectedBanDuration) {
+                        case 1: durationText = '1 jour'; break;
+                        case 7: durationText = '1 semaine'; break;
+                        case 30: durationText = '1 mois'; break;
+                        case 0: durationText = 'permanent'; break;
                     }
-                    
                     selectedDuration.textContent = durationText;
                     banConfirm.style.display = 'block';
                 });
             });
 
+            // Confirm ban
             confirmBan.addEventListener('click', function() {
                 if (currentUserId && selectedBanDuration !== null) {
-                    fetch(`/admin/user/${currentUserId}/ban`, {
+                    const csrfToken = document.querySelector(`.ban-btn[data-user-id="${currentUserId}"]`).dataset.csrfToken;
+                    fetch(`{{ path('admin_user_ban') }}/${currentUserId}`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
+                            'X-CSRF-Token': csrfToken
                         },
-                        body: JSON.stringify({
-                            duration: selectedBanDuration
+                        body: JSON.stringify({ duration: selectedBanDuration })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                window.location.reload();
+                            } else {
+                                alert('Erreur lors du bannissement : ' + (data.message || 'Erreur inconnue'));
+                            }
                         })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            
-                            window.location.reload();
-                        } else {
-                            console.error('Erreur lors du bannissement');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                    });
+                        .catch(error => {
+                            console.error('Erreur :', error);
+                            alert('Erreur lors du bannissement');
+                        });
                 }
                 banModal.style.display = 'none';
             });
 
+            // Cancel ban
             cancelBan.addEventListener('click', function() {
                 banModal.style.display = 'none';
             });
 
-            // Close ban modal when clicking outside
-            window.onclick = function(event) {
-                if (event.target == modal) {
-                    modal.style.display = 'none';
+            // Unban user
+            document.querySelectorAll('.unban-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const userId = this.dataset.userId;
+                    const userName = this.dataset.userName;
+                    const csrfToken = this.dataset.csrfToken;
+                    if (confirm(`Voulez-vous débannir ${userName} ?`)) {
+                        fetch(`{{ path('admin_user_unban') }}/${userId}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-Token': csrfToken
+                            }
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    window.location.reload();
+                                } else {
+                                    alert('Erreur lors du débannissement : ' + (data.message || 'Erreur inconnue'));
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Erreur :', error);
+                                alert('Erreur lors du débannissement');
+                            });
+                    }
+                });
+            });
+
+            // Close modals
+            closeReportsBtn.addEventListener('click', () => {
+                reportsModal.style.display = 'none';
+            });
+            closeBanBtn.addEventListener('click', () => {
+                banModal.style.display = 'none';
+            });
+
+            // Close modals on outside click
+            window.addEventListener('click', function(event) {
+                if (event.target === reportsModal) {
+                    reportsModal.style.display = 'none';
                 }
-                if (event.target == banModal) {
+                if (event.target === banModal) {
                     banModal.style.display = 'none';
                 }
-            };
+            });
 
-            window.unbanUser = function(userId, userName) {
-                // Remove confirmation dialog, unban immediately
-                fetch(`/admin/user/${userId}/unban`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
+            // Close modals with Escape key
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    reportsModal.style.display = 'none';
+                    banModal.style.display = 'none';
+                }
+            });
+
+            // Trap focus in modals
+            function trapFocus(modal) {
+                const focusableElements = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+                const firstElement = focusableElements[0];
+                const lastElement = focusableElements[focusableElements.length - 1];
+
+                modal.addEventListener('keydown', function(event) {
+                    if (event.key === 'Tab') {
+                        if (event.shiftKey) {
+                            if (document.activeElement === firstElement) {
+                                lastElement.focus();
+                                event.preventDefault();
+                            }
+                        } else {
+                            if (document.activeElement === lastElement) {
+                                firstElement.focus();
+                                event.preventDefault();
+                            }
+                        }
                     }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        window.location.reload();
-                    } else {
-                        console.error('Erreur lors du débannissement');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
                 });
-            };
+            }
+
+            trapFocus(reportsModal);
+            trapFocus(banModal);
         });
     </script>
-{% endblock %} 
+{% endblock %}

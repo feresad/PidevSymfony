@@ -32,39 +32,46 @@ class StockController extends AbstractController
         ]);
     }
 
-    #[Route('/new', name: 'app_stock_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
-    {
-        $stock = new Stock();
-        $form = $this->createForm(StockType::class, $stock);
-        $form->handleRequest($request);
+   #[Route('/new', name: 'app_stock_new', methods: ['GET', 'POST'])]
+public function new(Request $request, EntityManagerInterface $entityManager): Response
+{
+    $stock = new Stock();
+    $form = $this->createForm(StockType::class, $stock);
+    $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            // Handle file upload if there's an image
-            $imageFile = $form->get('fichierImage')->getData();
-            if ($imageFile) {
-                // Get original filename
-                $filename = $imageFile->getClientOriginalName();
-                
-                try {
-                    $imageFile->move(
-                        $this->dossierUpload,
-                        $filename
-                    );
-                    $stock->setImage($filename);
-                } catch (FileException $e) {
-                    $this->addFlash('error', 'Une erreur est survenue lors du téléchargement de l\'image : ' . $e->getMessage());
-                    return $this->redirectToRoute('app_stock_new');
-                }
+    if ($form->isSubmitted() && $form->isValid()) {
+        // Handle file upload if there's an image
+        $imageFile = $form->get('fichierImage')->getData();
+        if ($imageFile) {
+            // Get original filename
+            $filename = $imageFile->getClientOriginalName();
+            
+            try {
+                $imageFile->move(
+                    $this->dossierUpload,
+                    $filename
+                );
+                $stock->setImage($filename);
+            } catch (FileException $e) {
+                $this->addFlash('error', 'Une erreur est survenue lors du téléchargement de l\'image : ' . $e->getMessage());
+                return $this->redirectToRoute('app_stock_new');
             }
-
-            $entityManager->persist($stock);
-            $entityManager->flush();
-
-            $this->addFlash('success', 'Stock ajouté avec succès');
-            return $this->redirectToRoute('app_stock_index',['image_base_url' => $this->getParameter('image_base_url')]);
         }
+
+        $entityManager->persist($stock);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Stock ajouté avec succès');
+        return $this->redirectToRoute('app_stock_index', ['image_base_url' => $this->getParameter('image_base_url')]);
     }
+
+    // Render the form for GET requests or invalid form submissions
+    return $this->render('stock/new.html.twig', [
+        'stock' => $stock,
+        'form' => $form->createView(),
+        'image_base_url' => $this->getParameter('image_base_url'),
+    ]);
+}
 
     #[Route('/{id}/modifier', name: 'app_stock_edit', methods: ['GET', 'POST'])]
     public function modifier(Request $request, Stock $stock, EntityManagerInterface $entityManager): Response

@@ -394,7 +394,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         body {
-            background: url('{{ asset('images/arcane.jpg') }}') no-repeat center center fixed;
+            background: url("{{ asset('images/arcane.jpg') }}") no-repeat center center fixed;
             background-size: cover;
             position: relative;
         }
@@ -1030,7 +1030,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // Load recommended topics via AJAX
-            fetch('{{ path('forum_recommended') }}', {
+            fetch("{{ path('forum_recommended') }}", {
                 method: 'GET',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
@@ -1042,7 +1042,7 @@
             })
             .catch(error => {
                 console.error('Error loading recommended topics:', error);
-                document.getElementById('recommended-topics').innerHTML = '<p>{{ 'forum.recommended.error'|trans }}</p>';
+                document.getElementById('recommended-topics').innerHTML = "<p>{{ 'forum.recommended.error'|trans }}</p>";
             });
         });
 
@@ -1067,7 +1067,7 @@
 
             // Fetch sentiment map from API
             $.ajax({
-                url: '{{ path('api_get_sentiment_map') }}',
+                url: "{{ path('api_get_sentiment_map') }}",
                 method: 'GET',
                 success: function(response) {
                     if (response.success && response.sentimentMap) {
@@ -1097,7 +1097,7 @@
 
             function fetchReactions(id, type, $display) {
                 $.ajax({
-                    url: '{{ path('react_action') }}',
+                    url: "{{ path('react_action') }}",
                     method: 'POST',
                     data: { id: id, type: type, action: 'fetch' },
                     success: function(response) {
@@ -1190,7 +1190,7 @@
                 if (topicIds.length === 0) return;
 
                 $.ajax({
-                    url: '{{ path('ajax_fetch_user_votes') }}',
+                    url: "{{ path('ajax_fetch_user_votes') }}",
                     method: 'POST',
                     data: { topicIds: topicIds },
                     success: function(response) {
@@ -1268,7 +1268,7 @@
                 const $picker = $('.emoji-picker-container');
 
                 $.ajax({
-                    url: '{{ path('react_action') }}',
+                    url: "{{ path('react_action') }}",
                     method: 'POST',
                     data: { id: id, type: type, emoji: emoji, action: 'react' },
                     success: function(response) {
@@ -1281,7 +1281,7 @@
                             Swal.fire({
                                 title: '{{ "forum.alert.error"|trans }}',
                                 text: response.message,
-                                imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
+                                imageUrl: '{{ asset("images/one-piece-luffy.gif") }}',
                                 imageWidth: 100,
                                 imageHeight: 100,
                                 background: '#1c2526',
@@ -1294,7 +1294,7 @@
                         Swal.fire({
                             title: '{{ "forum.alert.error"|trans }}',
                             text: '{{ "forum.alert.reaction_error"|trans }}',
-                            imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
+                            imageUrl: "{{ asset('images/one-piece-luffy.gif') }}",
                             imageWidth: 100,
                             imageHeight: 100,
                             background: '#1c2526',
@@ -1341,7 +1341,7 @@
                 }
 
                 $.ajax({
-                    url: '{{ path('ajax_vote_action') }}',
+                    url: "{{ path('ajax_vote_action') }}",
                     method: 'POST',
                     data: { id: id, type: type, vote_type: voteType },
                     success: function(response) {
@@ -1359,7 +1359,7 @@
                             Swal.fire({
                                 title: '{{ "forum.voting_error"|trans }}',
                                 text: response.message,
-                                imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
+                                imageUrl: "{{ asset('images/one-piece-luffy.gif') }}",
                                 imageWidth: 100,
                                 imageHeight: 100,
                                 background: '#1c2526',
@@ -1372,7 +1372,7 @@
                         Swal.fire({
                             title: '{{ "forum.voting_error"|trans }}',
                             text: '{{ "forum.error_voting"|trans }}',
-                            imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
+                            imageUrl: '{{ asset("images/one-piece-luffy.gif") }}',
                             imageWidth: 100,
                             imageHeight: 100,
                             background: '#1c2526',
@@ -1394,7 +1394,7 @@
                 if (!platform) return;
 
                 $.ajax({
-                    url: '{{ path('api_share_topic') }}',
+                    url: "{{ path('api_share_topic') }}",
                     method: 'GET',
                     data: { id: topicId },
                     success: function(response) {
@@ -1424,7 +1424,7 @@
                             Swal.fire({
                                 title: '{{ "forum.alert.error"|trans }}',
                                 text: response.message || '{{ "forum.alert.share_error"|trans }}',
-                                imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
+                                imageUrl: "{{ asset('images/one-piece-luffy.gif') }}",
                                 imageWidth: 100,
                                 imageHeight: 100,
                                 background: '#1c2526',
@@ -1438,7 +1438,7 @@
                         Swal.fire({
                             title: '{{ "forum.alert.error"|trans }}',
                             text: '{{ "forum.alert.share_error"|trans }}',
-                            imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
+                            imageUrl: '{{ asset("images/one-piece-luffy.gif") }}',
                             imageWidth: 100,
                             imageHeight: 100,
                             background: '#1c2526',
@@ -1460,7 +1460,7 @@
                 $submitButton.prop('disabled', true);
 
                 $.ajax({
-                    url: '{{ path('api_check_profanity') }}',
+                    url: "{{ path('api_check_profanity') }}",
                     method: 'POST',
                     data: { content: combinedContent },
                     success: function(response) {
@@ -1469,7 +1469,7 @@
                             Swal.fire({
                                 title: '{{ "forum.inappropriate_content"|trans }}',
                                 html: '{{ "forum.revise_content"|trans }}<br><strong>{{ "forum.detected"|trans }}:</strong> ' + (profanityList || 'N/A'),
-                                imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
+                                imageUrl: "{{ asset('images/one-piece-luffy.gif') }}",
                                 imageWidth: 100,
                                 imageHeight: 100,
                                 background: '#1c2526',
@@ -1488,7 +1488,7 @@
                         Swal.fire({
                             title: '{{ "forum.alert.error"|trans }}',
                             text: '{{ "forum.error_checking_profanity"|trans }}',
-                            imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
+                            imageUrl: "{{ asset('images/one-piece-luffy.gif') }}",
                             imageWidth: 100,
                             imageHeight: 100,
                             background: '#1c2526',
@@ -1524,7 +1524,7 @@ $(document).on('mouseenter', '.nk-forum-recommended-item', function() {
                     Swal.fire({
                         title: '{{ "forum.alert.error"|trans }}',
                         text: '{{ "forum.invalid_user_id"|trans }}',
-                        imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
+                        imageUrl: "{{ asset('images/one-piece-luffy.gif') }}",
                         imageWidth: 100,
                         imageHeight: 100,
                         background: '#1c2526',
@@ -1579,7 +1579,7 @@ $(document).on('mouseenter', '.nk-forum-recommended-item', function() {
                     console.log('Sending report data:', data);
 
                     $.ajax({
-                        url: '{{ path('report_create') }}',
+                        url: "{{ path('report_create') }}",
                         method: 'POST',
                         contentType: 'application/json',
                         data: JSON.stringify(data),
@@ -1588,7 +1588,7 @@ $(document).on('mouseenter', '.nk-forum-recommended-item', function() {
                                 Swal.fire({
                                     title: '{{ "forum.alert.success"|trans }}',
                                     text: '{{ "forum.report_submitted"|trans }}',
-                                    imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
+                                    imageUrl: "{{ asset('images/one-piece-luffy.gif') }}",
                                     imageWidth: 100,
                                     imageHeight: 100,
                                     background: '#1c2526',
@@ -1600,7 +1600,7 @@ $(document).on('mouseenter', '.nk-forum-recommended-item', function() {
                                 Swal.fire({
                                     title: '{{ "forum.alert.error"|trans }}',
                                     text: response.message || '{{ "forum.error_submitting_report"|trans }}',
-                                    imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
+                                    imageUrl: "{{ asset('images/one-piece-luffy.gif') }}",
                                     imageWidth: 100,
                                     imageHeight: 100,
                                     background: '#1c2526',
@@ -1614,7 +1614,7 @@ $(document).on('mouseenter', '.nk-forum-recommended-item', function() {
                             Swal.fire({
                                 title: '{{ "forum.alert.error"|trans }}',
                                 text: '{{ "forum.error_submitting_report"|trans }}: ' + (xhr.responseJSON?.message || '{{ "general.server_error"|trans }}'),
-                                imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
+                                imageUrl: "{{ asset('images/one-piece-luffy.gif') }}",
                                 imageWidth: 100,
                                 imageHeight: 100,
                                 background: '#1c2526',

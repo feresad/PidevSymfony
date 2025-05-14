@@ -486,9 +486,9 @@ class CommentController extends AbstractController
             return new JsonResponse(['success' => false, 'message' => 'No comment IDs provided.'], 400);
         }
     
-        $voteRepository = $entityManager->getRepository(CommentaireVotes::class);
-        $qb = $voteRepository->createQueryBuilder('v')
+        $qb = $entityManager->createQueryBuilder()
             ->select('v')
+            ->from(CommentaireVotes::class, 'v')
             ->where('v.user_id = :user')
             ->andWhere('v.commentaire_id IN (:commentIds)')
             ->setParameter('user', $utilisateur)

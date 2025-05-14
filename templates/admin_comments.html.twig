@@ -779,7 +779,7 @@
                     if (sentimentMap.neutral.length < 10) sentimentMap.neutral = ['🤔', '😐', '🙂', '👀', '🤷', '😶', '🤝', '🙄', '😴', '🤓'];
 
                     $.ajax({
-                        url: '{{ path('api_update_sentiment_map') }}',
+                        url: "{{ path('api_update_sentiment_map') }}",
                         method: 'POST',
                         contentType: 'application/json',
                         data: JSON.stringify({ sentimentMap: sentimentMap }),
@@ -801,7 +801,7 @@
 
             function fetchReactions(id, type, $display) {
                 $.ajax({
-                    url: '{{ path('react_action') }}',
+                    url: "{{ path('react_action') }}",
                     method: 'POST',
                     data: { id: id, type: type, action: 'fetch' },
                     success: function(response) {
@@ -935,7 +935,7 @@
                     const $picker = $('.emoji-picker-container');
 
                     $.ajax({
-                        url: '{{ path('react_action') }}',
+                        url: "{{ path('react_action') }}",
                         method: 'POST',
                         data: { id: id, type: type, emoji: emoji, action: 'react' },
                         success: function(response) {
@@ -979,7 +979,7 @@
                 const $voteCount = $voteSection.find('.vote-count');
 
                 $.ajax({
-                    url: '{{ path('ajax_vote_action') }}',
+                    url: "{{ path('ajax_vote_action') }}",
                     method: 'POST',
                     data: { id: id, type: type, vote_type: voteType },
                     success: function(response) {
@@ -1051,7 +1051,7 @@
                 if (!platform) return;
 
                 $.ajax({
-                    url: '{{ path('api_share_topic') }}',
+                    url: "{{ path('api_share_topic') }}",
                     method: 'GET',
                     data: { id: questionId },
                     success: function(response) {
@@ -1107,7 +1107,7 @@
                 const $btn = $(this);
                 const questionId = $btn.data('id');
                 const questionTitle = $btn.data('title');
-                const deleteUrl = '{{ path('admin_comments_delete_question', { id: 'PLACEHOLDER' }) }}'.replace('PLACEHOLDER', questionId);
+                const deleteUrl = "{{ path('admin_comments_delete_question', { id: 'PLACEHOLDER' }) }}".replace('PLACEHOLDER', questionId);
 
                 Swal.fire({
                     title: 'Delete Question',
@@ -1130,7 +1130,7 @@
                 e.preventDefault();
                 const $btn = $(this);
                 const commentId = $btn.data('id');
-                const baseUrl = '{{ path('admin_comments_delete_comment', { id: 0 }) }}';
+                const baseUrl = "{{ path('admin_comments_delete_comment', { id: 0 }) }}";
                 const deleteUrl = baseUrl.replace('/0', '/' + commentId);
 
                 Swal.fire({
@@ -1384,7 +1384,7 @@
     $submitButton.prop('disabled', true);
 
     $.ajax({
-        url: '{{ path('api_check_profanity') }}',
+        url: "{{ path('api_check_profanity') }}",
         method: 'POST',
         data: { content: combinedContent },
         xhrFields: { withCredentials: true },

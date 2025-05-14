@@ -35,9 +35,9 @@
                     <div class="nk-forum-topic-content">
                         <h3>{{ 'trivia.question_label'|trans({'%number%': index + 1}) }}: {{ question.question }}</h3>
                         <div class="nk-gap-1"></div>
-                        <div class="answer-options">
+                        <div class="answer-options{% if app.request.locale == 'ar' %} ar{% endif %}">
                             {% for answer in question.all_answers %}
-                                <button class="nk-btn nk-btn-rounded nk-btn-color-main-1 answer-btn" data-answer="{{ answer }}">{{ answer }}</button>
+                                <button class="nk-btn nk-btn-rounded nk-btn-color-main-1 answer-btn {{ app.request.locale == 'ar' ? 'text-right' : 'text-left' }}" data-answer="{{ answer }}">{{ answer }}</button>
                             {% endfor %}
                         </div>
                         <input type="hidden" class="correct-answer" value="{{ question.correct_answer }}">
@@ -72,17 +72,22 @@
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
-            {% if app.request.locale == 'ar' %}
-                flex-direction: row-reverse;
-            {% endif %}
+        }
+        .answer-options.ar {
+            flex-direction: row-reverse;
         }
         .answer-btn {
             flex: 1 1 45%;
-            text-align: {{ app.request.locale == 'ar' ? 'right' : 'left' }};
             white-space: normal;
             word-wrap: break-word;
             background-color: #0585e6;
             color: #fff;
+        }
+        .answer-btn.text-right {
+            text-align: right;
+        }
+        .answer-btn.text-left {
+            text-align: left;
         }
         .answer-btn.correct {
             background-color: #28a745 !important;
@@ -152,21 +157,21 @@
 
             function getPersonalizedMessage(score) {
                 if (score <= 3) {
-                    return '{{ 'trivia.low_score_message'|trans }}';
+                    return "{{ 'trivia.low_score_message'|trans }}";
                 } else if (score <= 6) {
-                    return '{{ 'trivia.medium_score_message'|trans }}';
+                    return "{{ 'trivia.medium_score_message'|trans }}";
                 } else if (score <= 9) {
-                    return '{{ 'trivia.high_score_message'|trans }}';
+                    return "{{ 'trivia.high_score_message'|trans }}";
                 } else {
-                    return '{{ 'trivia.perfect_score_message'|trans }}';
+                    return "{{ 'trivia.perfect_score_message'|trans }}";
                 }
             }
 
             function getScoreboardGif(score) {
                 if (score < 5) {
-                    return '{{ asset('images/one-piece-luffy.gif') }}';
+                    return "{{ asset('images/one-piece-luffy.gif') }}";
                 } else {
-                    return '{{ asset('images/one-piece-monkey-d-luffy.gif') }}';
+                    return "{{ asset('images/one-piece-monkey-d-luffy.gif') }}";
                 }
             }
 
@@ -205,7 +210,7 @@
                 }
 
                 $.ajax({
-                    url: '{{ path('api_trivia_validate') }}',
+                    url: "{{ path('api_trivia_validate') }}",
                     method: 'POST',
                     data: {
                         questionIndex: index,
@@ -229,7 +234,7 @@
                             updateNavigation();
                         } else {
                             Swal.fire({
-                                title: '{{ 'trivia.error_title'|trans }}',
+                                title: "{{ 'trivia.error_title'|trans }}",
                                 text: response.message,
                                 icon: 'error',
                                 background: '#1c2526',
@@ -240,8 +245,8 @@
                     },
                     error: function() {
                         Swal.fire({
-                            title: '{{ 'trivia.error_title'|trans }}',
-                            text: '{{ 'trivia.error_message'|trans }}',
+                            title: "{{ 'trivia.error_title'|trans }}",
+                            text: "{{ 'trivia.error_message'|trans }}",
                             icon: 'error',
                             background: '#1c2526',
                             color: '#d1d5db',
@@ -269,7 +274,7 @@
                 const message = getPersonalizedMessage(score);
                 const gifPath = getScoreboardGif(score);
                 Swal.fire({
-                    title: '{{ 'trivia.quiz_finished_title'|trans }}',
+                    title: "{{ 'trivia.quiz_finished_title'|trans }}",
                     html: '{{ 'trivia.score_message'|trans({'%score%': "' + score + '", '%total%': "' + totalQuestions + '"}) }}<br><br>' + message,
                     imageUrl: gifPath,
                     imageWidth: 100,
@@ -277,7 +282,7 @@
                     background: '#1c2526',
                     color: '#d1d5db',
                     confirmButtonColor: '#fe0369',
-                    confirmButtonText: '{{ 'trivia.confirm_button_text'|trans }}',
+                    confirmButtonText: "{{ 'trivia.confirm_button_text'|trans }}",
                     customClass: {
                         container: 'nk-gaming-swal',
                         title: 'nk-gaming-swal-title',
@@ -285,7 +290,7 @@
                         image: 'swal2-image'
                     }
                 }).then(() => {
-                    window.location.href = '{{ path('forum_topics') }}';
+                    window.location.href = "{{ path('forum_topics') }}";
                 });
             });
 

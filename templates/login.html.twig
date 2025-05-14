@@ -220,7 +220,7 @@
 					// Clear local storage and redirect to logout
 					localStorage.clear();
 					setTimeout(() => {
-						window.location.href = '{{ path('app_logout') }}';
+						window.location.href = "{{ path('app_logout') }}";
 					}, 5000); // Redirect after 5 seconds
 				</script>
 			{% else %}

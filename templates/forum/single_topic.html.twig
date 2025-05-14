@@ -319,7 +319,7 @@
         }
         {% endif %}
         body {
-            background: url('{{ asset('images/jinx.jpg') }}') no-repeat center center fixed;
+            background: url("{{ asset('images/jinx.jpg') }}") no-repeat center center fixed;
             background-size: cover;
             position: relative;
         }
@@ -862,7 +862,7 @@
                     if (sentimentMap.neutral.length < 10) sentimentMap.neutral = ['🤔', '😐', '🙂', '👀', '🤷', '😶', '🤝', '🙄', '😴', '🤓'];
 
                     $.ajax({
-                        url: '{{ path('api_update_sentiment_map') }}',
+                        url: "{{ path('api_update_sentiment_map') }}",
                         method: 'POST',
                         contentType: 'application/json',
                         data: JSON.stringify({ sentimentMap: sentimentMap }),
@@ -884,7 +884,7 @@
 
             function fetchReactions(id, type, $display) {
                 $.ajax({
-                    url: '{{ path('react_action') }}',
+                    url: "{{ path('react_action') }}",
                     method: 'POST',
                     data: { id: id, type: type, action: 'fetch' },
                     success: function(response) {
@@ -926,19 +926,19 @@
 
                 let pickerHtml = '<div class="emoji-picker-container">';
                 
-                pickerHtml += '<div class="emoji-section"><h4>{{ 'positive'|trans }}</h4><div class="emoji-grid">';
+                pickerHtml += "<div class=\"emoji-section\"><h4>{{ 'positive'|trans }}</h4><div class=\"emoji-grid\">";
                 sentimentMap.positive.forEach(emoji => {
                     pickerHtml += `<span class="emoji-option" data-emoji="${emoji}" data-id="${id}" data-type="${type}">${emoji}</span>`;
                 });
                 pickerHtml += '</div></div>';
 
-                pickerHtml += '<div class="emoji-section"><h4>{{ 'negative'|trans }}</h4><div class="emoji-grid">';
+                pickerHtml += "<div class=\"emoji-section\"><h4>{{ 'negative'|trans }}</h4><div class=\"emoji-grid\">";
                 sentimentMap.negative.forEach(emoji => {
                     pickerHtml += `<span class="emoji-option" data-emoji="${emoji}" data-id="${id}" data-type="${type}">${emoji}</span>`;
                 });
                 pickerHtml += '</div></div>';
 
-                pickerHtml += '<div class="emoji-section"><h4>{{ 'neutral'|trans }}</h4><div class="emoji-grid">';
+                pickerHtml += "<div class=\"emoji-section\"><h4>{{ 'neutral'|trans }}</h4><div class=\"emoji-grid\">";
                 sentimentMap.neutral.forEach(emoji => {
                     pickerHtml += `<span class="emoji-option" data-emoji="${emoji}" data-id="${id}" data-type="${type}">${emoji}</span>`;
                 });
@@ -975,7 +975,7 @@
                 if (topicIds.length === 0) return;
 
                 $.ajax({
-                    url: '{{ path('ajax_fetch_user_votes') }}',
+                    url: "{{ path('ajax_fetch_user_votes') }}",
                     method: 'POST',
                     data: { topicIds: topicIds },
                     success: function(response) {
@@ -1011,7 +1011,7 @@
                 if (commentIds.length === 0) return;
 
                 $.ajax({
-                    url: '{{ path('ajax_fetch_user_comment_votes') }}',
+                    url: "{{ path('ajax_fetch_user_comment_votes') }}",
                     method: 'POST',
                     data: { commentIds: commentIds },
                     success: function(response) {
@@ -1040,7 +1040,7 @@
             // Subscription handling
             function updateSubscribeButton(isSubscribed) {
                 const $btn = $('#subscribe-btn');
-                $btn.text(isSubscribed ? '{{ 'forum.unsubscribe'|trans }}' : '{{ 'forum.follow'|trans }}');
+                $btn.text(isSubscribed ? "{{ 'forum.unsubscribe'|trans }}" : "{{ 'forum.follow'|trans }}");
                 $btn.toggleClass('subscribed', isSubscribed);
             }
 
@@ -1048,8 +1048,8 @@
                 $('#subscribe-btn').on('click', function() {
                     const topicId = $(this).data('topic-id');
                     const isSubscribed = $(this).hasClass('subscribed');
-                    const url = isSubscribed ? '{{ path('ajax_unsubscribe_topic', {'id': '__ID__'}) }}'.replace('__ID__', topicId)
-                                             : '{{ path('ajax_subscribe_topic', {'id': '__ID__'}) }}'.replace('__ID__', topicId);
+                    const url = isSubscribed ? "{{ path('ajax_unsubscribe_topic', {'id': '__ID__'}) }}".replace('__ID__', topicId)
+                                             : "{{ path('ajax_subscribe_topic', {'id': '__ID__'}) }}".replace('__ID__', topicId);
 
                     $.ajax({
                         url: url,
@@ -1059,7 +1059,7 @@
                             if (response.success) {
                                 updateSubscribeButton(response.isSubscribed);
                                 Swal.fire({
-                                    title: '{{ 'forum.alert.success'|trans }}',
+                                    title: "{{ 'forum.alert.success'|trans }}",
                                     text: response.message,
                                     icon: 'success',
                                     background: '#1c2526',
@@ -1068,7 +1068,7 @@
                                 });
                             } else {
                                 Swal.fire({
-                                    title: '{{ 'forum.alert.error'|trans }}',
+                                    title: "{{ 'forum.alert.error'|trans }}",
                                     text: response.message,
                                     icon: 'error',
                                     background: '#1c2526',
@@ -1079,8 +1079,8 @@
                         },
                         error: function() {
                             Swal.fire({
-                                title: '{{ 'forum.alert.error'|trans }}',
-                                text: '{{ 'forum.alert.subscribe_error'|trans }}',
+                                title: "{{ 'forum.alert.error'|trans }}",
+                                text: "{{ 'forum.alert.subscribe_error'|trans }}",
                                 icon: 'error',
                                 background: '#1c2526',
                                 color: '#d1d5db',
@@ -1144,7 +1144,7 @@
                     const $picker = $('.emoji-picker-container');
 
                     $.ajax({
-                        url: '{{ path('react_action') }}',
+                        url: "{{ path('react_action') }}",
                         method: 'POST',
                         data: { id: id, type: type, emoji: emoji, action: 'react' },
                         success: function(response) {
@@ -1155,7 +1155,7 @@
                                 });
                             } else {
                                 Swal.fire({
-                                    title: '{{ 'forum.alert.error'|trans }}',
+                                    title: "{{ 'forum.alert.error'|trans }}",
                                     text: response.message,
                                     icon: 'error',
                                     background: '#1c2526',
@@ -1166,8 +1166,8 @@
                         },
                         error: function() {
                             Swal.fire({
-                                title: '{{ 'forum.alert.error'|trans }}',
-                                text: '{{ 'forum.alert.reaction_error'|trans }}',
+                                title: "{{ 'forum.alert.error'|trans }}",
+                                text: "{{ 'forum.alert.reaction_error'|trans }}",
                                 icon: 'error',
                                 background: '#1c2526',
                                 color: '#d1d5db',
@@ -1234,7 +1234,7 @@
                         ['misc', ['codeview']]
                     ],
                     fontSizes: ['8', '9', '10', '11', '12', '14', '16', '18', '20', '22', '24', '28', '30', '36', '48', '64'],
-                    placeholder: '{{ 'forum.reply_placeholder'|trans }}'
+                    placeholder: "{{ 'forum.reply_placeholder'|trans }}"
                 });
             });
 
@@ -1286,7 +1286,7 @@
                         ['misc', ['codeview']]
                     ],
                     fontSizes: ['8', '9', '10', '11', '12', '14', '16', '18', '20', '22', '24', '28', '30', '36', '48', '64'],
-                    placeholder: '{{ 'forum.edit_placeholder'|trans }}'
+                    placeholder: "{{ 'forum.edit_placeholder'|trans }}"
                 });
 
                 $summernote.summernote('code', currentContent);
@@ -1306,7 +1306,7 @@
                 const $voteCount = $voteSection.find('.vote-count');
                 const $otherBtn = $voteSection.find(`.vote-btn[data-vote-type="${voteType === 'UP' ? 'DOWN' : 'UP'}"]`);
 
-                const voteUrl = type === 'question' ? '{{ path('ajax_vote_action') }}' : '{{ path('ajax_vote_comment_action') }}';
+                const voteUrl = type === 'question' ? "{{ path('ajax_vote_action') }}" : "{{ path('ajax_vote_comment_action') }}";
 
                 $.ajax({
                     url: voteUrl,
@@ -1328,7 +1328,7 @@
                             }
                         } else {
                             Swal.fire({
-                                title: '{{ 'forum.alert.voting_error'|trans }}',
+                                title: "{{ 'forum.alert.voting_error'|trans }}",
                                 text: response.message,
                                 icon: 'error',
                                 background: '#1c2526',
@@ -1339,8 +1339,8 @@
                     },
                     error: function() {
                         Swal.fire({
-                            title: '{{ 'forum.alert.voting_error'|trans }}',
-                            text: '{{ 'forum.alert.vote_error'|trans }}',
+                            title: "{{ 'forum.alert.voting_error'|trans }}",
+                            text: "{{ 'forum.alert.vote_error'|trans }}",
                             icon: 'error',
                             background: '#1c2526',
                             color: '#d1d5db',
@@ -1358,14 +1358,14 @@
                 $submitButton.prop('disabled', true);
 
                 $.ajax({
-                    url: '{{ path('api_check_profanity') }}',
+                    url: "{{ path('api_check_profanity') }}",
                     method: 'POST',
                     data: { content: content },
                     success: function(response) {
                         if (response.isProfane) {
                             const profanityList = response.details ? response.details.map(m => m['text']).join(', ') : '';
                             Swal.fire({
-                                title: '{{ 'forum.alert.profanity_title'|trans }}',
+                                title: "{{ 'forum.alert.profanity_title'|trans }}",
                                 html: '{{ 'forum.alert.profanity_message'|trans }}<br><strong>{{ 'forum.alert.detected'|trans }}:</strong> ' + (profanityList || 'N/A'),
                                 icon: 'warning',
                                 background: '#1c2526',
@@ -1381,8 +1381,8 @@
                     },
                     error: function() {
                         Swal.fire({
-                            title: '{{ 'forum.alert.error'|trans }}',
-                            text: '{{ 'forum.alert.profanity_error'|trans }}',
+                            title: "{{ 'forum.alert.error'|trans }}",
+                            text: "{{ 'forum.alert.profanity_error'|trans }}",
                             icon: 'error',
                             background: '#1c2526',
                             color: '#d1d5db',
@@ -1403,8 +1403,8 @@
 
                 if (!userId || isNaN(userId) || parseInt(userId) <= 0) {
                     Swal.fire({
-                        title: '{{ 'forum.alert.error'|trans }}',
-                        text: '{{ 'forum.alert.invalid_user'|trans }}',
+                        title: "{{ 'forum.alert.error'|trans }}",
+                        text: "{{ 'forum.alert.invalid_user'|trans }}",
                         icon: 'error',
                         background: '#1c2526',
                         color: '#d1d5db',
@@ -1458,15 +1458,15 @@
                     formData.forEach(item => data[item.name] = item.value);
 
                     $.ajax({
-                        url: '{{ path('report_create') }}',
+                        url: "{{ path('report_create') }}",
                         method: 'POST',
                         contentType: 'application/json',
                         data: JSON.stringify(data),
                         success: function(response) {
                             if (response.success) {
                                 Swal.fire({
-                                    title: '{{ 'forum.alert.success'|trans }}',
-                                    text: '{{ 'forum.alert.report_success'|trans }}',
+                                    title: "{{ 'forum.alert.success'|trans }}",
+                                    text: "{{ 'forum.alert.report_success'|trans }}",
                                     icon: 'success',
                                     background: '#1c2526',
                                     color: '#d1d5db',
@@ -1475,8 +1475,8 @@
                                 $('.report-modal, .report-modal-backdrop').remove();
                             } else {
                                 Swal.fire({
-                                    title: '{{ 'forum.alert.error'|trans }}',
-                                    text: response.message || '{{ 'forum.alert.report_error'|trans }}',
+                                    title: "{{ 'forum.alert.error'|trans }}",
+                                    text: response.message || "{{ 'forum.alert.report_error'|trans }}",
                                     icon: 'error',
                                     background: '#1c2526',
                                     color: '#d1d5db',
@@ -1486,8 +1486,8 @@
                         },
                         error: function(xhr, status, error) {
                             Swal.fire({
-                                title: '{{ 'forum.alert.error'|trans }}',
-                                text: '{{ 'forum.alert.report_error'|trans }}: ' + (xhr.responseJSON?.message || '{{ 'forum.alert.server_error'|trans }}'),
+                                title: "{{ 'forum.alert.error'|trans }}",
+                                text: "{{ 'forum.alert.report_error'|trans }}: ' + (xhr.responseJSON?.message || '{{ 'forum.alert.server_error'|trans }}')",
                                 icon: 'error',
                                 background: '#1c2526',
                                 color: '#d1d5db',
@@ -1511,11 +1511,11 @@
                     const csrfToken = $btn.data('csrf-token');
 
                     Swal.fire({
-                        title: '{{ 'forum.alert.delete_title'|trans }}',
+                        title: "{{ 'forum.alert.delete_title'|trans }}",
                         html: `{{ 'forum.alert.delete_confirm'|trans({'%content%': ''})|raw }}<strong>${commentContent}</strong>"? {{ 'forum.alert.delete_warning'|trans }}`,
                         showCancelButton: true,
-                        confirmButtonText: '{{ 'forum.delete'|trans }}',
-                        cancelButtonText: '{{ 'cancel'|trans }}',
+                        confirmButtonText: "{{ 'forum.delete'|trans }}",
+                        cancelButtonText: "{{ 'cancel'|trans }}",
                         background: 'rgba(35, 41, 48, 0.95)',
                         color: '#d1d5db',
                         confirmButtonColor: '#fe0369',
@@ -1537,22 +1537,9 @@
                                 success: function(response) {
                                     $(`li[data-id="${commentId}"]`).remove();
                                     Swal.fire({
-                                        title: '{{ 'forum.alert.success'|trans }}',
-                                        text: '{{ 'forum.alert.delete_success'|trans }}',
+                                        title: "{{ 'forum.alert.success'|trans }}",
+                                        text: "{{ 'forum.alert.delete_success'|trans }}",
                                         icon: 'success',
-                                        background: '#1c2526',
-                                        color: '#d1d5db',
-                                        confirmButtonColor: '#fe0369'
-                                    });
-                                },
-                                error: function(xhr, status, error) {
-                                    console.error('Deletion error:', status, error);
-                                    Swal.fire({
-                                        title: '{{ 'forum.alert.error'|trans }}',
-                                        text: '{{ 'forum.alert.delete_error'|trans }}',
-                                        imageUrl: '{{ asset('images/one-piece-luffy.gif') }}',
-                                        imageWidth: 100,
-                                        imageHeight: 100,
                                         background: '#1c2526',
                                         color: '#d1d5db',
                                         confirmButtonColor: '#fe0369'
@@ -1562,7 +1549,7 @@
                         }
                     });
                 });
-
+    
                 fetchUserVotes();
                 fetchUserCommentVotes();
             });
