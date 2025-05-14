@@ -19,7 +19,7 @@ WORKDIR /var/www/html
 
 # Copier le code de l'application
 COPY . .
-
+RUN rm -r /var/www/html/vendor  
 # Installer les dépendances Composer
 RUN composer install --optimize-autoloader --no-dev \
     && test -f /var/www/html/vendor/autoload_runtime.php || echo "Warning: autoload_runtime.php not found"
