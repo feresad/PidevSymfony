@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y \
     libicu-dev \
     libzip-dev \
     nginx \
+    cron \
     && docker-php-ext-install pdo pdo_mysql intl zip \
     && pecl install apcu && docker-php-ext-enable apcu \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -35,6 +36,13 @@ COPY ./nginx/nginx.conf /etc/nginx/nginx.conf
 # Script de démarrage pour lancer PHP-FPM, Nginx, et vider le cache
 COPY ./start.sh /start.sh
 RUN chmod +x /start.sh
+
+COPY ./messenger-cron /etc/cron.d/messenger-cron
+RUN chmod 0644 /etc/cron.d/messenger-cron \
+    && crontab /etc/cron.d/messenger-cron \
+    && touch /var/log/cron.log \
+    && chmod 664 /var/log/cron.log \
+    && chown www-data:www-data /var/log/cron.log
 
 # Exposer le port 8080 pour Render
 EXPOSE 8080

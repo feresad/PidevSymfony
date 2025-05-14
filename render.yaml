@@ -15,19 +15,3 @@ services:
     numInstances: 1
     healthCheckPath: /health
     autoDeploy: true
-
-  - type: worker
-    name: messenger-worker
-    env: docker
-    dockerfilePath: ./Dockerfile
-    dockerCommand: php bin/console messenger:consume async -vv --time-limit=3600 --memory-limit=128M
-    envVars:
-      - key: APP_ENV
-        value: prod
-      - key: MESSENGER_TRANSPORT_DSN
-        value: doctrine://default
-      - key: DATABASE_URL
-        sync: false # Remplacer par la valeur réelle dans l'interface Render
-    plan: starter
-    numInstances: 1
-    autoDeploy: true

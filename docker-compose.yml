@@ -13,18 +13,3 @@ services:
     volumes:
       - .:/var/www/html
     restart: always
-
-  messenger-worker:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: php bin/console messenger:consume async -vv --time-limit=3600 --memory-limit=128M
-    environment:
-      - APP_ENV=prod
-      - MESSENGER_TRANSPORT_DSN=${MESSENGER_TRANSPORT_DSN}
-      - DATABASE_URL=${DATABASE_URL}
-    volumes:
-      - .:/var/www/html
-    restart: always
-    depends_on:
-      - web
