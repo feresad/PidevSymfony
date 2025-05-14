@@ -1,18 +1,30 @@
 version: '3.8'
 services:
-  app:
+  web:
     build:
       context: .
       dockerfile: Dockerfile
+    environment:
+      - APP_ENV=prod
+      - MESSENGER_TRANSPORT_DSN=${MESSENGER_TRANSPORT_DSN}
+      - DATABASE_URL=${DATABASE_URL}
     ports:
-      - "8000:80"
+      - "8080:8080"
     volumes:
       - .:/var/www/html
-    environment:
-      - DATABASE_URL=mysql://root:@host.docker.internal:3306/symfony_app?serverVersion=8.0.31&charset=utf8mb4
-    networks:
-      - symfony-network
+    restart: always
 
-networks:
-  symfony-network:
-    driver: bridge
+  messenger-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: php bin/console messenger:consume async -vv --time-limit=3600 --memory-limit=128M
+    environment:
+      - APP_ENV=prod
+      - MESSENGER_TRANSPORT_DSN=${MESSENGER_TRANSPORT_DSN}
+      - DATABASE_URL=${DATABASE_URL}
+    volumes:
+      - .:/var/www/html
+    restart: always
+    depends_on:
+      - web
