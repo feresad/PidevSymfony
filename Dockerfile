@@ -9,7 +9,8 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     nginx \
     && docker-php-ext-install pdo pdo_mysql intl zip \
-    && pecl install apcu && docker-php-ext-enable apcu
+    && pecl install apcu && docker-php-ext-enable apcu \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Installer Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -19,10 +20,10 @@ WORKDIR /var/www/html
 
 # Copier le code de l'application
 COPY . .
-RUN rm -r /var/www/html/vendor  
-# Installer les dépendances Composer
-RUN composer install --optimize-autoloader --no-dev \
-    && test -f /var/www/html/vendor/autoload_runtime.php || echo "Warning: autoload_runtime.php not found"
+
+# Installer les dépendances Composer en mode production, sans scripts
+ENV APP_ENV=prod
+RUN composer install --optimize-autoloader --no-dev --no-scripts
 
 # Donner les permissions appropriées
 RUN chown -R www-data:www-data /var/www/html \
@@ -31,12 +32,12 @@ RUN chown -R www-data:www-data /var/www/html \
 # Copier la configuration Nginx
 COPY ./nginx/nginx.conf /etc/nginx/nginx.conf
 
-# Script de démarrage pour lancer PHP-FPM et Nginx
+# Script de démarrage pour lancer PHP-FPM, Nginx, et vider le cache
 COPY ./start.sh /start.sh
 RUN chmod +x /start.sh
 
-# Exposer le port 80 pour Nginx
-EXPOSE 80
+# Exposer le port 8080 pour Render
+EXPOSE 8080
 
 # Commande de démarrage
 CMD ["/start.sh"]
