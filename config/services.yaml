@@ -44,7 +44,7 @@ services:
     
     App\Controller\StockController:
         arguments:
-            $dossierUpload: '%dossierupload%'  # Injection du paramètre
+            $dossierUpload: '%dossier_upload%'  # Injection du paramètre
     App\Service\GeminiService:
         arguments:
             $apiKey: '%env(GEMINI_API_KEY)%'
