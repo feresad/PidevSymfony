@@ -63,41 +63,43 @@ final class EvnementController extends AbstractController
             'selected_category' => $categoryId,
         ]);
     }
-    #[Route('/add', name: 'evenement_ajouter')]
-    public function ajouter(Request $request, EntityManagerInterface $entityManager): Response
-    {
-        $evenement = new Evenement();
-        $form = $this->createForm(EvenementType::class, $evenement);
-        $form->handleRequest($request);
-    
-        if ($form->isSubmitted() && $form->isValid()) {
-            /** @var UploadedFile $photoFile */
-            $photoFile = $form->get('photoFile')->getData();
-    
-            if ($photoFile) {
-                $newFilename = uniqid().'.'.$photoFile->guessExtension();
-    
-                try {
-                    $photoFile->move('C:/xampp/htdocs/img', $newFilename);
-                    $evenement->setPhotoEvent($newFilename);
-                } catch (FileException $e) {
-                    $this->addFlash('error', 'Erreur lors de l\'upload du fichier.');
-                    return $this->redirectToRoute('evenement_ajouter');
-                }
+   #[Route('/add', name: 'evenement_ajouter')]
+public function ajouter(Request $request, EntityManagerInterface $entityManager): Response
+{
+    $evenement = new Evenement();
+    $form = $this->createForm(EvenementType::class, $evenement);
+    $form->handleRequest($request);
+
+    if ($form->isSubmitted() && $form->isValid()) {
+        /** @var UploadedFile $photoFile */
+        $photoFile = $form->get('photoFile')->getData();
+
+        if ($photoFile) {
+            $newFilename = uniqid() . '.' . $photoFile->guessExtension();
+
+            try {
+                // Use the dossier_upload parameter instead of hardcoded path
+                $uploadDir = $this->getParameter('dossier_upload');
+                $photoFile->move($uploadDir, $newFilename);
+                $evenement->setPhotoEvent($newFilename);
+            } catch (FileException $e) {
+                $this->addFlash('error', 'Erreur lors de l\'upload du fichier : ' . $e->getMessage());
+                return $this->redirectToRoute('evenement_ajouter');
             }
-    
-            $entityManager->persist($evenement);
-            $entityManager->flush();
-    
-            $this->addFlash('success', 'Événement ajouté avec succès !');
-            return $this->redirectToRoute('evenement_list_admin');
         }
-    
-        return $this->render('evenement/AjouterEvenement.html.twig', [
-            'form' => $form->createView(),
-            'image_base_url' => $this->getParameter('image_base_url'),
-        ]);
+
+        $entityManager->persist($evenement);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Événement ajouté avec succès !');
+        return $this->redirectToRoute('evenement_list_admin');
     }
+
+    return $this->render('evenement/AjouterEvenement.html.twig', [
+        'form' => $form->createView(),
+        'image_base_url' => $this->getParameter('image_base_url'),
+    ]);
+}
     #[Route('/delete/{id}', name: 'evenement_supprimer')]
     public function supprimer(int $id, EvenementRepository $repo, ClientEvenementRepository $clientEvenementRepo, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
     {
