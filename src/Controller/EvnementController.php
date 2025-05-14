@@ -93,7 +93,7 @@ final class EvnementController extends AbstractController
             return $this->redirectToRoute('evenement_list_admin');
         }
     
-        return $this->render('evenement/ajouterEvenement.html.twig', [
+        return $this->render('evenement/AjouterEvenement.html.twig', [
             'form' => $form->createView(),
             'image_base_url' => $this->getParameter('image_base_url'),
         ]);
@@ -300,7 +300,7 @@ final class EvnementController extends AbstractController
         $totalEvenements = $repo->countBySearch($search);
         $maxPages = ceil($totalEvenements / $limit);
 
-        return $this->render('evenement/ListeEvenementadmin.html.twig', [
+        return $this->render('evenement/listeEvenementadmin.html.twig', [
             'evenements' => $evenements,
             'image_base_url' => $this->getParameter('image_base_url'),
             'current_page' => $page,

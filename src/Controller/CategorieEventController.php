@@ -131,6 +131,7 @@ final class CategorieEventController extends AbstractController
 
         return $this->render('categorie_event/voirCategorieEventadmin.html.twig', [
             'categorie' => $categorie,
+            'image_base_url' => $this->getParameter('image_base_url'),
         ]);
     }
 }

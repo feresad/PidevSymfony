@@ -33,6 +33,7 @@ class RegisterController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             // Store user data in session
             $session->set('registration_data', [
+                'id' => null,
                 'email' => $form->get('email')->getData(),
                 'nom' => $form->get('nom')->getData(),
                 'prenom' => $form->get('prenom')->getData(),

@@ -1,5 +1,7 @@
 twig:
     file_name_pattern: '*.twig'
+    globals:
+        image_base_url: '%image_base_url%'
 
 when@test:
     twig:
