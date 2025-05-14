@@ -16,46 +16,45 @@ class StockRepository extends ServiceEntityRepository
     /**
      * @return array Returns an array of products with their images and prices with pagination
      */
-    public function findAllProductsWithDetailsPaginated(int $page = 1, int $limit = 4, string $search = '', string $sort = 'nom_asc'): array
-    {
-        $firstResult = ($page - 1) * $limit;
+   public function findAllProductsWithDetailsPaginated(int $page = 1, int $limit = 4, string $search = '', string $sort = 'nom_asc'): array
+{
+    $firstResult = ($page - 1) * $limit;
 
-        $qb = $this->createQueryBuilder('s')
-            ->select('s.id as stock_id, s.image, s.prix_produit, s.quantity, p.nom_produit, p.id as produit_id, p.description')
-            ->join('s.produit', 'p')
-            ->groupBy('p.id');
-        
-        if (!empty($search)) {
-            $qb->andWhere('p.nom_produit LIKE :search OR p.description LIKE :search')
-               ->setParameter('search', '%' . $search . '%');
-        }
-        
-        switch ($sort) {
-            case 'nom_desc':
-                $qb->orderBy('p.nom_produit', 'DESC');
-                break;
-            case 'prix_asc':
-                $qb->orderBy('s.prix_produit', 'ASC');
-                break;
-            case 'prix_desc':
-                $qb->orderBy('s.prix_produit', 'DESC');
-                break;
-            case 'default':
-                $qb->orderBy('p.score', 'DESC');
-                break;
-            case 'nom_asc':
-                $qb->orderBy('p.nom_produit', 'ASC');
-                break;
-            default:
-                $qb->orderBy('p.score', 'DESC');
-                break;
-        }
-        
-        return $qb->setFirstResult($firstResult)
-                 ->setMaxResults($limit)
-                 ->getQuery()
-                 ->getResult();
+    $qb = $this->createQueryBuilder('s')
+        ->select('s.id as stock_id, s.image, s.prix_produit, s.quantity, p.nom_produit, p.id as produit_id, p.description')
+        ->join('s.produit', 'p');
+
+    if (!empty($search)) {
+        $qb->andWhere('p.nom_produit LIKE :search OR p.description LIKE :search')
+           ->setParameter('search', '%' . $search . '%');
     }
+
+    switch ($sort) {
+        case 'nom_desc':
+            $qb->orderBy('p.nom_produit', 'DESC');
+            break;
+        case 'prix_asc':
+            $qb->orderBy('s.prix_produit', 'ASC');
+            break;
+        case 'prix_desc':
+            $qb->orderBy('s.prix_produit', 'DESC');
+            break;
+        case 'default':
+            $qb->orderBy('p.score', 'DESC');
+            break;
+        case 'nom_asc':
+            $qb->orderBy('p.nom_produit', 'ASC');
+            break;
+        default:
+            $qb->orderBy('p.score', 'DESC');
+            break;
+    }
+
+    return $qb->setFirstResult($firstResult)
+              ->setMaxResults($limit)
+              ->getQuery()
+              ->getResult();
+}
 
     /**
      * @return int Returns the total number of products matching search criteria
