@@ -49,7 +49,7 @@ final class EvnementController extends AbstractController
             $reservationCounts[$evenement->getId()] = $repo->getReservationCountForEvent($evenement->getId());
         }
     
-        return $this->render('evenement/ListeEvenement.html.twig', [
+        return $this->render('evenement/listeEvenement.html.twig', [
             'evenements' => $evenements,
             'image_base_url' => $this->getParameter('image_base_url'),
             'current_page' => $page,
