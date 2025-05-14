@@ -6,10 +6,10 @@
     {{ parent() }}
     <style>
         .register-container {
-            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('{{ image_base_url ~ "dariusGG.jpg"}}');
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("{{ asset('uploads/dariusGG.jpg') }}");
         }
     </style>
-    <link rel="preload" href="{{ image_base_url ~ "dariusGG.jpg"}}" as="image">
+    <link rel="preload" href="{{ asset('uploads/dariusGG.jpg') }}" as="image">
     <link rel="stylesheet" href="{{ asset('css/register.css') }}">
 {% endblock %}
 
