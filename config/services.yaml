@@ -1,9 +1,7 @@
-# config/services.yaml
 parameters:
-    #uploads_directory: 'C:\xampp\htdocs\uploads'
-    parameters:
+    dossier_upload_ctr: '%kernel.project_dir%/public/uploads'
     dossier_upload: '%kernel.project_dir%/public/uploads'
-    image_base_url: '%kernel.project_dir%/public/uploads' 
+    image_base_url: '/uploads'  # Relative URL for static files on Render
     uploads_directory: '%kernel.project_dir%/public/uploads'
     uploads_directory2: '%kernel.project_dir%/public/uploads'
     git_url: 'https://feresad.github.io/event-qr-code/'
@@ -15,7 +13,7 @@ parameters:
     stripe.public_key: '%env(STRIPE_PUBLIC_KEY)%'
     imgbb_api_key: '%env(IMGBB_API_KEY)%'
     cv_directory: '%kernel.project_dir%/public/uploads'
-    
+
 services:
     App\Service\TopicRecommendationService:
     App\Service\TopicSubscriptionService:
@@ -54,7 +52,6 @@ services:
             $httpClient: '@Symfony\Contracts\HttpClient\HttpClientInterface'
             $sightengineApiUser: '%env(SIGHTENGINE_API_USER)%'
             $sightengineApiSecret: '%env(SIGHTENGINE_API_SECRET)%'
-     # Activer l'injection de paramètres si nécessaire
     Symfony\Component\HttpKernel\KernelInterface: '@kernel'
 
     App\Service\HardwareSpecsService:
