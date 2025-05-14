@@ -18,9 +18,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Attribute\Route;
-
 #[Route("/evenement")]
-final class EvenementController extends AbstractController
+final class EvnementController extends AbstractController
 {
     #[Route('/all', name: 'evenement_list')]
     public function gettAll(EvenementRepository $repo, Request $request, 
@@ -32,6 +31,7 @@ final class EvenementController extends AbstractController
         $page = $request->query->getInt('page', 1);
         $limit = 6;
     
+        // Pas besoin de $sort, le tri est géré dans le repository
         $evenements = $repo->findBySearchAndSort($search, 'custom', $page, $limit, $categoryId ?: null);
         $totalEvenements = $repo->countBySearch($search);
         $maxPages = ceil($totalEvenements / $limit);
@@ -55,7 +55,7 @@ final class EvenementController extends AbstractController
             'current_page' => $page,
             'max_pages' => $maxPages,
             'search' => $search,
-            'sort' => 'custom',
+            'sort' => 'custom', // Valeur indicative
             'userReservations' => $userReservations,
             'now' => new \DateTime(),
             'reservationCounts' => $reservationCounts,
@@ -63,8 +63,7 @@ final class EvenementController extends AbstractController
             'selected_category' => $categoryId,
         ]);
     }
-
-    #[Route('/add', name: 'evenement_ajouter')]
+       #[Route('/add', name: 'evenement_ajouter')]
     public function ajouter(Request $request, EntityManagerInterface $entityManager): Response
     {
         $evenement = new Evenement();
@@ -131,6 +130,7 @@ final class EvenementController extends AbstractController
                             'reservation' => $reservation,
                         ]));
 
+                
                     $logoPath = $this->getParameter('kernel.project_dir') . '/assets/images/level.png';
                     if (file_exists($logoPath)) {
                         $email->embedFromPath($logoPath, 'logo');
@@ -145,14 +145,14 @@ final class EvenementController extends AbstractController
             }
         }
 
+        // Supprimer l'événement et toutes ses réservations associées
         $entityManager->remove($evenement);
         $entityManager->flush();
 
         $this->addFlash('success', 'Événement supprimé avec succès !');
         return $this->redirectToRoute('evenement_list_admin');
     }
-
-    #[Route('/edit/{id}', name: 'evenement_modifier')]
+#[Route('/edit/{id}', name: 'evenement_modifier')]
     public function modifier(int $id, Request $request, EvenementRepository $repo, EntityManagerInterface $entityManager): Response
     {
         $evenement = $repo->find($id);
@@ -203,7 +203,6 @@ final class EvenementController extends AbstractController
             'image_base_url' => $this->getParameter('image_base_url'),
         ]);
     }
-
     #[Route('/show/{id}', name: 'evenement_detailles')]
     public function Detaills(int $id, EvenementRepository $repo, ClientEvenementRepository $clientEvenementRepo): Response
     {
@@ -234,7 +233,6 @@ final class EvenementController extends AbstractController
             'reservationCount' => $reservationCount
         ]);
     }
-
     #[Route('/qrcode/{id}', name: 'evenement_qrcode')]
     public function generateQrCode(int $id, EvenementRepository $repo): Response
     {
@@ -247,21 +245,22 @@ final class EvenementController extends AbstractController
         $baseUrl = $this->getParameter('git_url');
         $imageUrl = '';
 
+        // Si une image existe, la téléverser sur ImgBB
         if ($evenement->getPhotoEvent()) {
-            $imagePath = $this->getParameter('dossier_upload') . '/' . $evenement->getPhotoEvent();
+            $imagePath = 'C:/xampp/htdocs/img/' . $evenement->getPhotoEvent();
             if (file_exists($imagePath)) {
                 try {
                     $client = HttpClient::create();
                     $response = $client->request('POST', 'https://api.imgbb.com/1/upload', [
                         'body' => [
-                            'key' => $this->getParameter('imgbb_api_key'),
-                            'image' => base64_encode(file_get_contents($imagePath)),
+                            'key' => $this->getParameter('imgbb_api_key'), // Utiliser la clé API depuis les paramètres
+                            'image' => base64_encode(file_get_contents($imagePath)), // Encoder l'image en base64
                         ],
                     ]);
 
                     $data = $response->toArray();
                     if (isset($data['data']['url'])) {
-                        $imageUrl = $data['data']['url'];
+                        $imageUrl = $data['data']['url']; // URL de l'image hébergée
                     } else {
                         $this->addFlash('warning', 'Erreur lors du téléversement de l\'image sur ImgBB.');
                     }
@@ -271,6 +270,7 @@ final class EvenementController extends AbstractController
             }
         }
 
+        // Construire l'URL pour le QR code
         $url = $baseUrl . '?' . http_build_query([
             'id' => $evenement->getId(),
             'nom' => $evenement->getNomEvent(),
@@ -289,7 +289,6 @@ final class EvenementController extends AbstractController
             ['Content-Type' => 'image/png']
         );
     }
-
     #[Route('/admin/all',name: 'evenement_list_admin')]
     public function getAll(EvenementRepository $repo, Request $request):Response{
         $search = $request->query->get('search', '');
@@ -298,6 +297,7 @@ final class EvenementController extends AbstractController
         $page = $request->query->getInt('page', 1);
         $limit = 5;
 
+       
         $evenements = $repo->findBySearchAndSort($search, $sort, $page, $limit,$categoryId ?: null);
         $totalEvenements = $repo->countBySearch($search);
         $maxPages = ceil($totalEvenements / $limit);
@@ -311,7 +311,6 @@ final class EvenementController extends AbstractController
             'sort' => $sort,
         ]);
     }
-
     #[Route('/admin/show/{id}', name: 'evenement_detailles_admin')]
     public function DetaillsAdmib(int $id, EvenementRepository $repo): Response
     {
@@ -327,48 +326,49 @@ final class EvenementController extends AbstractController
             'image_base_url' => $this->getParameter('image_base_url'),
         ]);
     }
-
     #[Route('/calendar', name: 'evenement_calendar')]
-    public function calendar(): Response
-    {
-        return $this->render('evenement/calendar.html.twig');
-    }
-
-    #[Route('/load-events', name: 'evenement_load_events')]
-    public function loadEvents(Request $request, EvenementRepository $repo, ClientEvenementRepository $clientEvenementRepo): Response
-    {
-        $start = new \DateTime($request->query->get('start'));
-        $end = new \DateTime($request->query->get('end'));
-
-        $evenements = $repo->findByDateRange($start, $end);
-        $events = [];
-
-        $user = $this->getUser();
-        $userReservations = [];
-        if ($user) {
-            $reservations = $clientEvenementRepo->findBy(['client' => $user]);
-            foreach ($reservations as $reservation) {
-                $userReservations[$reservation->getEvenement()->getId()] = true;
-            }
-        }
-
-        foreach ($evenements as $evenement) {
-            $dateDebut = $evenement->getDateEvent();
-            $dateFin = clone $dateDebut;
-            $dateFin->modify('+2 hours');
-
-            $isReserved = $user && isset($userReservations[$evenement->getId()]);
-            $events[] = [
-                'title' => $evenement->getNomEvent(),
-                'start' => $dateDebut->format('c'),
-                'end' => $dateFin->format('c'),
-                'url' => $this->generateUrl('evenement_detailles', ['id' => $evenement->getId()]),
-                'backgroundColor' => $isReserved ? '#5cb85c' : '#3788d8',
-                'borderColor' => $isReserved ? '#5cb85c' : '#3788d8',
-                'textColor' => '#ffffff',
-            ];
-        }
-
-        return new Response(json_encode($events), 200, ['Content-Type' => 'application/json']);
-    }
+public function calendar(): Response
+{
+    return $this->render('evenement/calendar.html.twig');
 }
+#[Route('/load-events', name: 'evenement_load_events')]
+public function loadEvents(Request $request, EvenementRepository $repo, ClientEvenementRepository $clientEvenementRepo): Response
+{
+    $start = new \DateTime($request->query->get('start'));
+    $end = new \DateTime($request->query->get('end'));
+
+    $evenements = $repo->findByDateRange($start, $end);
+    $events = [];
+
+    // Récupérer l'utilisateur connecté
+    $user = $this->getUser();
+    $userReservations = [];
+    if ($user) {
+        $reservations = $clientEvenementRepo->findBy(['client' => $user]);
+        foreach ($reservations as $reservation) {
+            $userReservations[$reservation->getEvenement()->getId()] = true;
+        }
+    }
+
+    foreach ($evenements as $evenement) {
+        $dateDebut = $evenement->getDateEvent();
+        // Calculer la date de fin : date de début + 2 heures
+        $dateFin = clone $dateDebut;
+        $dateFin->modify('+2 hours');
+
+        $isReserved = $user && isset($userReservations[$evenement->getId()]);
+        $events[] = [
+           'title' => $evenement->getNomEvent(),
+            'start' => $dateDebut->format('c'),
+            'end' => $dateFin->format('c'),
+            'url' => $this->generateUrl('evenement_detailles', ['id' => $evenement->getId()]),
+            'backgroundColor' => $isReserved ? ' #5cb85c' : ' #3788d8',
+            'borderColor' => $isReserved ? ' #5cb85c' : ' #3788d8',
+            'textColor' => '#ffffff',
+        ];
+    }
+
+    return new Response(json_encode($events), 200, ['Content-Type' => 'application/json']);
+}
+}
+
