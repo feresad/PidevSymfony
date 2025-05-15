@@ -1,10 +1,10 @@
 parameters:
     dossier_upload_ctr: '%kernel.project_dir%/public/uploads'
     dossier_upload: '%kernel.project_dir%/public/uploads'
-    image_base_url: '/uploads'  # Relative URL for static files on Render
-    image_base_url2: '/uploads'
-    uploads_directory: '%kernel.project_dir%/public/uploads'
-    uploads_directory2: '%kernel.project_dir%/public/uploads'
+    image_base_url: '/uploads/'  # Relative URL for static files on Render
+    image_base_url2: '/uploads/'
+    uploads_directory: '%kernel.project_dir%/public/uploads/'
+    uploads_directory2: '%kernel.project_dir%/public/uploads/'
     git_url: 'https://feresad.github.io/event-qr-code/'
     sightengine_api_user: '%env(SIGHTENGINE_API_USER)%'
     sightengine_api_secret: '%env(SIGHTENGINE_API_SECRET)%'
