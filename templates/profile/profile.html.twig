@@ -448,15 +448,14 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            profileImage.src = '/img/' + data.photo;
+                            profileImage.src = data.image_url; // Utiliser image_url de la réponse JSON
                             cropperModal.hide();
                             // Show success message
                             const successAlert = document.createElement('div');
                             successAlert.className = 'alert alert-success';
                             successAlert.textContent = 'Image mise à jour avec succès!';
                             document.querySelector('.profile-box').insertBefore(successAlert, document.querySelector('.profile-content'));
-                            // Reload after 1 second to show the new image
-                            setTimeout(() => location.reload(), 1000);
+                            // Supprimer le rechargement de la page
                         } else {
                             console.error('Upload error:', data.message);
                             const errorAlert = document.createElement('div');
@@ -476,4 +475,4 @@
             });
         });
     </script>
-{% endblock %} 
+{% endblock %}

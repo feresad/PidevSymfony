@@ -101,7 +101,9 @@ class ProfileController extends AbstractController
             $user->setNumero($data['numero']);
         }
         if (isset($data['mot_passe'])) {
-            $user->setMotPasse($data['mot_passe']);
+            $user->setMotPasse(
+                $this->passwordHasher->hashPassword($user, $data['mot_passe'])
+            );
         }
 
         $this->entityManager->flush();
@@ -125,8 +127,8 @@ class ProfileController extends AbstractController
                 return $this->json(['success' => false, 'message' => 'No image data provided']);
             }
 
-            // Set the upload directory
-            $uploadDir = 'C:/xampp/htdocs/img/';
+            // Utiliser le paramètre défini dans services.yaml
+            $uploadDir = $this->getParameter('uploads_directory');
             if (!file_exists($uploadDir)) {
                 if (!mkdir($uploadDir, 0777, true)) {
                     return $this->json(['success' => false, 'message' => 'Failed to create upload directory']);
@@ -135,7 +137,7 @@ class ProfileController extends AbstractController
 
             // Generate unique filename
             $filename = time() . uniqid() . '.png';
-            $filepath = $uploadDir . $filename;
+            $filepath = $uploadDir . DIRECTORY_SEPARATOR . $filename;
 
             // Remove data URL prefix and decode base64
             $imageData = preg_replace('#^data:image/\w+;base64,#i', '', $imageData);
@@ -146,7 +148,7 @@ class ProfileController extends AbstractController
                 // Delete old photo if exists
                 $oldPhoto = $user->getPhoto();
                 if ($oldPhoto && $oldPhoto !== 'default-avatar.jpg') {
-                    $oldPhotoPath = $uploadDir . $oldPhoto;
+                    $oldPhotoPath = $uploadDir . DIRECTORY_SEPARATOR . $oldPhoto;
                     if (file_exists($oldPhotoPath)) {
                         unlink($oldPhotoPath);
                     }
@@ -160,6 +162,7 @@ class ProfileController extends AbstractController
                 return $this->json([
                     'success' => true,
                     'photo' => $filename,
+                    'image_url' => $this->getParameter('image_base_url') . $filename,
                     'message' => 'Image uploaded successfully'
                 ]);
             }
@@ -173,4 +176,4 @@ class ProfileController extends AbstractController
             ]);
         }
     }
-} 
+}
