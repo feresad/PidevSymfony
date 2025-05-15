@@ -1,6 +1,6 @@
 parameters:
-    dossier_upload_ctr: '%kernel.project_dir%/public/uploads'
-    dossier_upload: '%kernel.project_dir%/public/uploads'
+    dossier_upload_ctr: '%kernel.project_dir%/public/uploads/'
+    dossier_upload: '%kernel.project_dir%/public/uploads/'
     image_base_url: '/uploads/'  # Relative URL for static files on Render
     image_base_url2: '/uploads/'
     uploads_directory: '%kernel.project_dir%/public/uploads/'
@@ -13,7 +13,7 @@ parameters:
     stripe_public_key: '%env(STRIPE_PUBLIC_KEY)%'
     stripe.public_key: '%env(STRIPE_PUBLIC_KEY)%'
     imgbb_api_key: '%env(IMGBB_API_KEY)%'
-    cv_directory: '%kernel.project_dir%/public/uploads'
+    cv_directory: '%kernel.project_dir%/public/uploads/'
 
 services:
     App\Service\TopicRecommendationService:
