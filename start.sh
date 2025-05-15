@@ -19,7 +19,13 @@ touch /var/www/html/var/log/messenger.log
 chown www-data:www-data /var/www/html/var/log/messenger.log
 chmod 664 /var/www/html/var/log/messenger.log
 
-# Démarrer cron
+# Configurer et démarrer cron
+cp /var/www/html/messenger-cron /etc/cron.d/messenger-cron
+chmod 0644 /etc/cron.d/messenger-cron
+crontab /etc/cron.d/messenger-cron
+touch /var/log/cron.log
+chmod 664 /var/log/cron.log
+chown www-data:www-data /var/log/cron.log
 cron
 
 # Démarrer PHP-FPM en arrière-plan
