@@ -124,7 +124,7 @@ class StockRepository extends ServiceEntityRepository
    public function findFeaturedProductsByPrice(int $limit = 6): array
 {
     return $this->createQueryBuilder('s')
-        ->select('s.id as stock_id, s.image, s.prix_produit, s.quantity, p.nom_produit, p.id сервис_id, p.description')
+        ->select('s.id as stock_id, s.image, s.prix_produit, s.quantity, p.nom_produit, p.id as produit_id, p.description')
         ->join('s.produit', 'p')
         ->where('s.quantity > 0')
         ->orderBy('s.prix_produit', 'DESC')
