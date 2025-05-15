@@ -9,7 +9,12 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     nginx \
     cron \
-    && docker-php-ext-install pdo pdo_mysql intl zip \
+    # Dépendances pour GD
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo pdo_mysql intl zip gd \
     && pecl install apcu && docker-php-ext-enable apcu \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
