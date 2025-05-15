@@ -1,0 +1,386 @@
+/* Ensure the forum container matches the GoodGames theme */
+.nk-forum-container {
+    background-color: #171e22;
+    padding-top: 20px; /* Adjusted to accommodate search bar */
+}
+
+/* Forum Container Styling */
+.container .nk-forum {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+/* Forum Item Styling */
+.nk-forum-item {
+    display: flex;
+    align-items: flex-start;
+    background-color: #232930;
+    border: 1px solid #293139;
+    border-radius: 20px;
+    margin-bottom: 10px;
+    padding: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.nk-forum-item:hover {
+    background-color: #293139;
+}
+
+.nk-forum-item.nk-forum-locked > * {
+    opacity: 0.4;
+}
+
+/* Vote Section */
+.nk-forum-vote-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 40px;
+    padding: 5px;
+    min-height: 60px; /* Ensure the section has enough height */
+}
+
+.nk-forum-vote-section .vote-btn {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background: none;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    line-height: 1;
+    min-width: 30px;
+    min-height: 30px;
+}
+
+.nk-forum-vote-section .vote-icon {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+}
+
+.nk-forum-vote-section .upvote-btn,
+.nk-forum-vote-section .upvote {
+    /* No color needed since we're using an image */
+}
+
+.nk-forum-vote-section .downvote-btn,
+.nk-forum-vote-section .downvote {
+    /* No color needed since we're using an image */
+}
+
+.nk-forum-vote-section .vote-btn:hover,
+.nk-forum-vote-section .upvote:hover,
+.nk-forum-vote-section .downvote:hover {
+    transform: scale(1.2);
+}
+
+.nk-forum-vote-section .vote-btn.voted {
+    animation: glow 1s infinite alternate;
+}
+
+.nk-forum-vote-section .vote-count {
+    font-size: 0.9rem;
+    color: #d1d5db;
+    margin: 5px 0;
+    min-width: 20px;
+    text-align: center;
+}
+
+/* Actions Section */
+.nk-forum-actions {
+    display: flex;
+    align-items: center; /* Vertically center the buttons and icon */
+    gap: 10px; /* Space between buttons */
+}
+
+/* Update Button Styling */
+.nk-btn.nk-btn-rounded.nk-btn-color-main-1 {
+    background-color: #0585e6; /* Blue from your theme */
+    color: #fff;
+    border: 1px solid #0585e6;
+    text-transform: uppercase;
+}
+
+.nk-btn.nk-btn-rounded.nk-btn-color-main-1:hover {
+    background-color: #046bbf; /* Darker blue for hover */
+    border-color: #046bbf;
+}
+
+/* Delete Button Styling (Topic Card) */
+.nk-btn.nk-btn-rounded.nk-btn-color-danger {
+    background-color: #fe0369; /* Red from your theme */
+    color: #fff;
+    border: 1px solid #fe0369;
+    text-transform: uppercase;
+}
+
+.nk-btn.nk-btn-rounded.nk-btn-color-danger:hover {
+    background-color: #b40148; /* Darker red for hover */
+    border-color: #b40148;
+}
+
+/* Share Button (Icon) */
+.nk-forum-actions .share-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: none; /* Remove background */
+    border: none; /* Remove border */
+    padding: 0; /* Remove padding */
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.nk-forum-actions .share-btn:hover {
+    transform: scale(1.1); /* Slight scale effect on hover for feedback */
+}
+
+.nk-forum-actions .share-icon {
+    width: 30px; /* Match the height of the buttons */
+    height: 30px; /* Match the height of the buttons */
+}
+
+/* Share Modal */
+.share-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.share-link {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-radius: 5px;
+    text-decoration: none;
+    color: #fff;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.share-link i {
+    margin-right: 10px;
+}
+
+.share-link.facebook-share {
+    background-color: #3b5998;
+}
+
+.share-link.facebook-share:hover {
+    background-color: #2d4373;
+}
+
+.share-link.reddit-share {
+    background-color: #ff4500;
+}
+
+.share-link.reddit-share:hover {
+    background-color: #e03d00;
+}
+
+.share-link.twitter-share {
+    background-color: #1da1f2;
+}
+
+.share-link.twitter-share:hover {
+    background-color: #1a91da;
+}
+
+/* New Topic Button Styling */
+.nk-btn.nk-btn-rounded.nk-btn-color-white {
+    background-color: #232930;
+    color: #fff;
+    border: 1px solid #293139;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    padding: 8px 20px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.nk-btn.nk-btn-rounded.nk-btn-color-white:hover {
+    background-color: #0585e6;
+    border-color: #0585e6;
+}
+
+/* Search Bar Styling */
+.nk-forum-search {
+    position: relative;
+    margin-bottom: 20px;
+    border: 1px solid #0585e6; /* Vibrant blue border */
+
+}
+
+.nk-forum-search .form-control {
+    background-color: #232930;
+    border: 1px solid #293139;
+    color: #d1d5db;
+    padding: 10px 15px;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.nk-forum-search .form-control:focus {
+    border-color: #0585e6;
+    box-shadow: 0 0 10px rgba(5, 133, 230, 0.5);
+    outline: none;
+}
+
+.nk-forum-search .form-control::placeholder {
+    color: #6b7280;
+    font-style: italic;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 991px) {
+    .nk-forum-item {
+        flex-direction: column;
+    }
+
+    .nk-forum-vote-section {
+        flex-direction: row;
+        width: auto;
+        margin-bottom: 10px;
+    }
+
+    .nk-forum-vote-section .vote-count {
+        margin: 0 10px;
+    }
+
+    .nk-forum-actions {
+        flex-wrap: wrap;
+    }
+}
+
+/* Summernote Toolbar Styling */
+.summernote-container .note-toolbar {
+    display: block !important;
+    visibility: visible !important;
+    background-color: #1a1a1a !important;
+    border-bottom: 1px solid #444 !important;
+}
+
+/* Reply and Update Form Container Styling */
+.reply-form-container, .update-form-container {
+    margin-left: 100px;
+    padding: 10px;
+    background-color: #232930;
+    border: 1px solid #293139;
+    border-radius: 5px;
+}
+
+.reply-form-container .nk-btn, .update-form-container .nk-btn {
+    margin-right: 10px;
+}
+
+/* Modal Delete Button Styling */
+.modal-footer .btn-danger {
+    background-color: #fe0369; /* Match the topic card delete button */
+    border-color: #fe0369;
+}
+
+.modal-footer .btn-danger:hover {
+    background-color: #b40148; /* Darker red for hover */
+    border-color: #b40148;
+}
+
+/* Glow Animation for Voted Buttons */
+@keyframes glow {
+    from {
+        filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+    }
+    to {
+        filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
+    }
+}
+
+/* Trending Posts Section - Gaming Oriented Styling */
+.nk-forum-trending {
+    background: linear-gradient(135deg, #1a1a1a 0%, #232930 100%); /* Gradient for depth */
+    border: 2px solid #0585e6; /* Vibrant blue border */
+    border-radius: 8px; /* Slightly larger radius for a modern look */
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 0 15px rgba(5, 133, 230, 0.3); /* Subtle blue glow */
+    position: relative;
+    overflow: hidden;
+}
+
+.nk-forum-trending::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(5, 133, 230, 0.1) 0%, transparent 70%);
+    opacity: 0.5;
+    pointer-events: none; /* Prevents interaction */
+    animation: pulse 10s infinite ease-in-out; /* Subtle pulsing effect */
+}
+
+.nk-forum-trending-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    color: #fff; /* White for high contrast */
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px; /* Techy spacing */
+    text-shadow: 0 0 5px rgba(5, 133, 230, 0.7); /* Glowing text effect */
+}
+
+.nk-forum-trending-icon {
+    width: 24px; /* Slightly larger for emphasis */
+    height: 24px;
+    margin-right: 10px;
+    filter: drop-shadow(0 0 3px rgba(255, 69, 0, 0.5)); /* Reddit orange glow */
+}
+
+.nk-forum-trending-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nk-forum-trending-list li {
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    background-color: rgba(41, 49, 57, 0.8); /* Semi-transparent dark overlay */
+    border-radius: 4px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.nk-forum-trending-list li:hover {
+    background-color: rgba(5, 133, 230, 0.2); /* Blue tint on hover */
+    transform: translateX(5px); /* Slight shift for interactivity */
+}
+
+.nk-forum-trending-link {
+    color: #d1d5db; 
+    text-decoration: none; 
+    font-size: 0.95rem;
+    font-family: 'Courier New', Courier, monospace; 
+    transition: color 0.3s ease;
+}
+
+.nk-forum-trending-link:hover {
+    color: #ff4500; 
+    text-decoration: none; 
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
