@@ -1,0 +1,251 @@
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background: url('../images/teemo.jpeg') no-repeat center center fixed;
+    background-size: cover;
+    font-family: 'Arial', sans-serif;
+    color: white;
+}
+
+.login-page {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.left-section {
+    flex: 1;
+    padding: 2rem;
+    min-width: 300px;
+}
+
+.right-section {
+    width: 100%;
+    max-width: 450px;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.welcome-text {
+    font-size: 3rem;
+    font-weight: bold;
+    margin-top: 5rem;
+    margin-left: 2rem;
+}
+
+.connexion-title {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: white;
+}
+
+.subtitle {
+    color: #888;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: white;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.form-control::placeholder {
+    color: #888;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    color: #888;
+    font-size: 0.9rem;
+}
+
+.remember-me input[type="checkbox"] {
+    margin-right: 0.5rem;
+}
+
+.btn-connect, .btn-google, .btn-create {
+    width: 100%;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 0.75rem;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    box-sizing: border-box;
+}
+
+.btn-connect {
+    background: #007bff;
+    color: white;
+}
+
+.btn-connect:hover {
+    background: rgb(74, 103, 209);
+}
+
+.btn-google {
+    background: white;
+    color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-google:hover {
+    background: #f5f5f5;
+}
+
+.btn-create {
+    background: #007bff;
+    color: white;
+}
+
+.btn-create:hover {
+    background: rgb(74, 103, 209);
+}
+
+.forgot-password {
+    text-align: center;
+    margin-top: 1.5rem;
+}
+
+.forgot-password a {
+    color: #888;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.forgot-password a:hover {
+    color: white;
+}
+
+.google-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-right: 0.5rem;
+}
+
+.error-message {
+    color: #ff7675;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.alert-ban {
+    background-color: rgba(255, 0, 0, 0.1);
+    border: 1px solid #ff4444;
+    border-radius: 4px;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    color: #ff4444;
+}
+
+.ban-title {
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+}
+
+.ban-message {
+    font-size: 0.9rem;
+}
+
+.disabled-form {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* Media Queries for Responsiveness */
+@media (max-width: 768px) {
+    .login-page {
+        flex-direction: column;
+    }
+
+    .left-section {
+        flex: none;
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .right-section {
+        max-width: 100%;
+        padding: 1.5rem;
+    }
+
+    .welcome-text {
+        font-size: 2rem;
+        margin-top: 2rem;
+        margin-left: 0;
+    }
+
+    .connexion-title {
+        font-size: 1.5rem;
+    }
+
+    .subtitle {
+        font-size: 0.9rem;
+    }
+
+    .form-control {
+        padding: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .btn-connect, .btn-google, .btn-create {
+        padding: 0.5rem;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .welcome-text {
+        font-size: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    .connexion-title {
+        font-size: 1.25rem;
+    }
+
+    .right-section {
+        padding: 1rem;
+    }
+
+    .form-control {
+        font-size: 0.85rem;
+    }
+
+    .btn-connect, .btn-google, .btn-create {
+        font-size: 0.85rem;
+    }
+
+    .google-icon {
+        width: 1rem;
+        height: 1rem;
+    }
+}

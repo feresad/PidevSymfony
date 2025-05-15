@@ -131,7 +131,10 @@ class SessionController extends AbstractController
                 $newFilename = uniqid().'.'.$photoFile->guessExtension();
 
                 try {
-                    $photoFile->move('C:/xampp/htdocs/img', $newFilename);
+                    $photoFile->move(
+                        $this->getParameter('uploads_directory'),
+                        $newFilename
+                    );
                     $session->setImageName($newFilename);
                 } catch (FileException $e) {
                     $this->addFlash('error', 'Erreur lors de l\'upload du fichier.');
@@ -148,6 +151,7 @@ class SessionController extends AbstractController
 
         return $this->render('session/add.html.twig', [
             'form' => $form->createView(),
+            'image_base_url' => $this->getParameter('image_base_url'),
         ]);
     }
 
@@ -183,7 +187,20 @@ class SessionController extends AbstractController
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
 
                 try {
-                    $imageFile->move('C:/xampp/htdocs/img', $newFilename);
+                    $imageFile->move(
+                        $this->getParameter('uploads_directory'),
+                        $newFilename
+                    );
+                    
+                    // Supprimer l'ancienne image si elle existe
+                    $oldImage = $session->getImageName();
+                    if ($oldImage) {
+                        $oldImagePath = $this->getParameter('uploads_directory') . '/' . $oldImage;
+                        if (file_exists($oldImagePath)) {
+                            unlink($oldImagePath);
+                        }
+                    }
+                    
                     $session->setImageName($newFilename);
                 } catch (FileException $e) {
                     $this->addFlash('error', 'Erreur lors de l\'upload du fichier.');

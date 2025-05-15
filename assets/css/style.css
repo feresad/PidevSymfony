@@ -736,3 +736,339 @@ body {
         gap: 8px;
     }
 }
+
+/* Responsive Design Rules */
+@media (max-width: 1200px) {
+    .container {
+        max-width: 1140px;
+        padding: 0 15px;
+    }
+    
+    .row {
+        margin: 0 -10px;
+    }
+    
+    .col-md-6 {
+        padding: 0 10px;
+    }
+}
+
+@media (max-width: 992px) {
+    .container {
+        max-width: 960px;
+    }
+    
+    .navbar-nav {
+        flex-direction: column;
+    }
+    
+    .nav-item {
+        margin: 5px 0;
+    }
+    
+    .dropdown-menu {
+        position: static;
+        float: none;
+        width: auto;
+        margin-top: 0;
+        background-color: transparent;
+        border: 0;
+        box-shadow: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        max-width: 720px;
+    }
+    
+    .navbar-brand {
+        font-size: 1.2rem;
+    }
+    
+    .navbar-toggler {
+        display: block;
+    }
+    
+    .navbar-collapse {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 80%;
+        height: 100vh;
+        background: #fff;
+        padding: 20px;
+        transition: 0.3s;
+        z-index: 1000;
+    }
+    
+    .navbar-collapse.show {
+        left: 0;
+    }
+    
+    .nav-link {
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .card {
+        margin-bottom: 20px;
+    }
+    
+    .btn {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}
+
+@media (max-width: 576px) {
+    .container {
+        max-width: 540px;
+        padding: 0 10px;
+    }
+    
+    h1 {
+        font-size: 1.8rem;
+    }
+    
+    h2 {
+        font-size: 1.5rem;
+    }
+    
+    h3 {
+        font-size: 1.3rem;
+    }
+    
+    .btn {
+        padding: 8px 15px;
+        font-size: 0.9rem;
+    }
+    
+    .form-control {
+        font-size: 0.9rem;
+    }
+}
+
+/* Optimisations pour les grands écrans */
+@media (min-width: 1400px) {
+    .container {
+        max-width: 1320px;
+    }
+}
+
+/* Améliorations pour l'accessibilité tactile */
+@media (hover: none) {
+    .btn:hover {
+        transform: none;
+    }
+    
+    .nav-link:hover {
+        background: none;
+    }
+}
+
+/* Optimisation pour les écrans en mode paysage sur mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+    .navbar-collapse {
+        padding: 10px;
+    }
+    
+    .nav-link {
+        padding: 5px 0;
+    }
+}
+
+/* Support des appareils avec notch */
+@supports (padding: max(0px)) {
+    .navbar {
+        padding-top: max(10px, env(safe-area-inset-top));
+        padding-bottom: max(10px, env(safe-area-inset-bottom));
+    }
+}
+
+/* Optimisation des images */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    img {
+        image-rendering: -webkit-optimize-contrast;
+    }
+}
+
+/* Amélioration de la lisibilité sur mobile */
+@media (max-width: 768px) {
+    body {
+        font-size: 14px;
+        line-height: 1.5;
+    }
+    
+    p {
+        margin-bottom: 15px;
+    }
+    
+    .lead {
+        font-size: 1.1rem;
+    }
+}
+
+/* Optimisation des formulaires pour mobile */
+@media (max-width: 576px) {
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .form-control {
+        height: 40px;
+    }
+    
+    .input-group {
+        flex-direction: column;
+    }
+    
+    .input-group > * {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}
+
+/* Amélioration de la navigation sur mobile */
+@media (max-width: 768px) {
+    .navbar-toggler {
+        padding: 8px;
+        font-size: 1.2rem;
+    }
+    
+    .navbar-collapse {
+        padding-top: 60px;
+    }
+    
+    .dropdown-menu {
+        padding: 10px 0;
+    }
+    
+    .dropdown-item {
+        padding: 8px 15px;
+    }
+}
+
+/* Optimisation des tableaux pour mobile */
+@media (max-width: 768px) {
+    .table-responsive {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .table {
+        font-size: 0.9rem;
+    }
+    
+    .table td, .table th {
+        padding: 8px;
+    }
+}
+
+/* Amélioration des modales sur mobile */
+@media (max-width: 576px) {
+    .modal-dialog {
+        margin: 10px;
+    }
+    
+    .modal-content {
+        padding: 15px;
+    }
+    
+    .modal-header {
+        padding: 10px 15px;
+    }
+    
+    .modal-body {
+        padding: 15px;
+    }
+    
+    .modal-footer {
+        padding: 10px 15px;
+    }
+}
+
+/* Optimisation des alertes pour mobile */
+@media (max-width: 576px) {
+    .alert {
+        padding: 10px 15px;
+        margin-bottom: 15px;
+    }
+    
+    .alert-dismissible {
+        padding-right: 35px;
+    }
+    
+    .close {
+        font-size: 1.2rem;
+        padding: 5px;
+    }
+}
+
+/* Amélioration des badges et étiquettes sur mobile */
+@media (max-width: 576px) {
+    .badge {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+    }
+    
+    .label {
+        font-size: 0.75rem;
+        padding: 2px 6px;
+    }
+}
+
+/* Optimisation des listes sur mobile */
+@media (max-width: 576px) {
+    .list-group-item {
+        padding: 10px 15px;
+    }
+    
+    .list-group-item-action {
+        padding: 12px 15px;
+    }
+}
+
+/* Amélioration des cartes sur mobile */
+@media (max-width: 576px) {
+    .card {
+        margin-bottom: 15px;
+    }
+    
+    .card-body {
+        padding: 15px;
+    }
+    
+    .card-title {
+        font-size: 1.1rem;
+    }
+    
+    .card-text {
+        font-size: 0.9rem;
+    }
+}
+
+/* Optimisation des boutons sur mobile */
+@media (max-width: 576px) {
+    .btn-group {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .btn-group > .btn {
+        border-radius: 4px !important;
+        margin-bottom: 5px;
+    }
+    
+    .btn-group > .btn:first-child {
+        border-top-right-radius: 4px !important;
+        border-bottom-right-radius: 4px !important;
+    }
+    
+    .btn-group > .btn:last-child {
+        border-top-left-radius: 4px !important;
+        border-bottom-left-radius: 4px !important;
+    }
+}

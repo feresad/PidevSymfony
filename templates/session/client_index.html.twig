@@ -235,7 +235,7 @@ body {
 .fixed-navigation-bar {
     position: fixed;
     bottom: 20px;
-    right: 20px;
+    right: 100px;
     z-index: 1000;
     display: flex;
     gap: 10px;
@@ -315,6 +315,290 @@ body {
 .pagination .page-link svg, .pagination a svg {
     margin: 0 2px;
     font-size: 1.2em;
+}
+
+/* Responsive Design Rules */
+@media (max-width: 1200px) {
+    .container {
+        padding: 0 20px;
+    }
+    
+    .session-card {
+        width: 250px;
+    }
+}
+
+@media (max-width: 992px) {
+    .nk-title {
+        font-size: 2.5em;
+    }
+    
+    .nk-sub-title {
+        font-size: 1.1em;
+    }
+    
+    .session-card {
+        width: 220px;
+    }
+    
+    .session-title {
+        font-size: 1.2em;
+    }
+    
+    .session-price {
+        font-size: 1.1em;
+    }
+}
+
+@media (max-width: 768px) {
+    .nk-title {
+        font-size: 2em;
+    }
+    
+    .nk-sub-title {
+        font-size: 1em;
+    }
+    
+    .session-card {
+        width: 200px;
+    }
+    
+    .session-info {
+        padding: 15px;
+    }
+    
+    .session-title {
+        font-size: 1.1em;
+    }
+    
+    .session-price {
+        font-size: 1em;
+    }
+    
+    .session-meta {
+        font-size: 0.8em;
+    }
+    
+    .fixed-navigation-bar {
+        bottom: 80px;
+        right: 20px;
+        flex-direction: column;
+        padding: 8px 12px;
+    }
+    
+    .fixed-navigation-bar .nk-btn {
+        padding: 8px 12px;
+        font-size: 0.9em;
+    }
+    
+    .carousel-arrow {
+        padding: 8px 12px;
+        font-size: 1.2em;
+    }
+    
+    .sort-container {
+        margin: 15px 0;
+    }
+    
+    .sort-container select {
+        padding: 6px 10px;
+        font-size: 0.9em;
+    }
+}
+
+@media (max-width: 576px) {
+    .nk-title {
+        font-size: 1.8em;
+    }
+    
+    .nk-sub-title {
+        font-size: 0.9em;
+    }
+    
+    .session-card {
+        width: 180px;
+    }
+    
+    .session-info {
+        padding: 12px;
+    }
+    
+    .session-title {
+        font-size: 1em;
+    }
+    
+    .session-price {
+        font-size: 0.9em;
+    }
+    
+    .session-meta {
+        font-size: 0.75em;
+    }
+    
+    .fixed-navigation-bar {
+        bottom: 70px;
+        right: 15px;
+        padding: 6px 10px;
+    }
+    
+    .fixed-navigation-bar .nk-btn {
+        padding: 6px 10px;
+        font-size: 0.8em;
+    }
+    
+    .carousel-arrow {
+        padding: 6px 10px;
+        font-size: 1em;
+    }
+    
+    .sort-container select {
+        padding: 5px 8px;
+        font-size: 0.8em;
+    }
+    
+    .pagination .page-link, .pagination a, .pagination span {
+        min-width: 32px;
+        min-height: 32px;
+        padding: 0 10px;
+        font-size: 0.9em;
+    }
+}
+
+/* Amélioration de la navigation sur mobile */
+@media (max-width: 768px) {
+    .session-carousel {
+        padding-bottom: 20px;
+    }
+    
+    .carousel-wrapper {
+        margin: 0 -10px;
+        padding: 0 10px;
+    }
+    
+    .carousel-arrow {
+        opacity: 0.8;
+    }
+    
+    .carousel-arrow:hover {
+        opacity: 1;
+    }
+}
+
+/* Optimisation des formulaires pour mobile */
+@media (max-width: 576px) {
+    .nk-form .form-control {
+        font-size: 0.9em;
+        padding: 8px 12px;
+    }
+    
+    .nk-btn {
+        padding: 8px 15px;
+        font-size: 0.9em;
+    }
+    
+    .input-group {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .input-group .nk-btn {
+        width: 100%;
+    }
+}
+
+/* Ajustements pour les grands écrans */
+@media (min-width: 1400px) {
+    .container {
+        max-width: 1320px;
+    }
+    
+    .session-card {
+        width: 300px;
+    }
+    
+    .session-title {
+        font-size: 1.5em;
+    }
+    
+    .session-price {
+        font-size: 1.3em;
+    }
+    
+    .session-meta {
+        font-size: 1em;
+    }
+}
+
+/* Optimisation de la pagination pour mobile */
+@media (max-width: 576px) {
+    .pagination {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 5px;
+    }
+    
+    .pagination .page-item {
+        margin: 2px;
+    }
+    
+    .pagination .page-link, .pagination a, .pagination span {
+        min-width: 28px;
+        min-height: 28px;
+        padding: 0 8px;
+        font-size: 0.8em;
+    }
+}
+
+/* Amélioration de l'accessibilité tactile */
+@media (hover: none) {
+    .session-card:hover {
+        transform: none;
+    }
+    
+    .fixed-navigation-bar:hover {
+        transform: none;
+    }
+    
+    .nk-btn:hover {
+        background: #dd163b;
+    }
+    
+    .carousel-arrow {
+        padding: 12px;
+    }
+}
+
+/* Optimisation pour les écrans à haute densité */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .session-card img {
+        image-rendering: -webkit-optimize-contrast;
+    }
+}
+
+/* Ajustements pour les écrans en mode paysage sur mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+    .fixed-navigation-bar {
+        bottom: 20px;
+        right: 20px;
+        flex-direction: row;
+    }
+    
+    .nk-title {
+        font-size: 1.5em;
+        margin-bottom: 0.1em;
+    }
+    
+    .nk-sub-title {
+        font-size: 0.9em;
+        margin-bottom: 1em;
+    }
+}
+
+/* Optimisation pour les appareils avec notch */
+@supports (padding: max(0px)) {
+    .fixed-navigation-bar {
+        padding-bottom: max(10px, env(safe-area-inset-bottom));
+    }
 }
 </style>
 
