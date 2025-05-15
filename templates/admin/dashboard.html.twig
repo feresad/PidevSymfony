@@ -362,12 +362,13 @@
                 </div>
             </div>
             <div class="user-actions">
-                <button class="report-btn" 
-                        title="Voir les rapports" 
-                        aria-label="Voir les rapports pour {{ (user.prenom ~ ' ' ~ user.nom)|e('html_attr') }}" 
-                        data-user-id="{{ user.id }}" 
+                <button class="report-btn"
+                        title="Voir les rapports"
+                        aria-label="Voir les rapports pour {{ (user.prenom ~ ' ' ~ user.nom)|e('html_attr') }}"
+                        data-user-id="{{ user.id }}"
                         data-user-name="{{ (user.prenom ~ ' ' ~ user.nom)|e('js') }}"
-                        data-csrf-token="{{ csrf_token('report_' ~ user.id) }}">
+                        data-csrf-token="{{ csrf_token('report_' ~ user.id) }}"
+                        data-reports-url="{{ path('admin_user_reports', {'id': user.id}) }}">
                     <ion-icon name="warning-outline"></ion-icon>
                     Rapports ({{ user.reportCount|default(0) }})
                 </button>
@@ -468,12 +469,13 @@
                     const userId = this.dataset.userId;
                     const userName = this.dataset.userName;
                     const csrfToken = this.dataset.csrfToken;
+                    const reportsUrl = this.dataset.reportsUrl;
 
                     userNameSpan.textContent = userName;
                     reportsModal.style.display = 'block';
                     reportsModal.focus();
 
-                    fetch(`{{ path('admin_user_reports') }}/${userId}`, {
+                    fetch(reportsUrl, {
                         headers: {
                             'X-CSRF-Token': csrfToken
                         }
