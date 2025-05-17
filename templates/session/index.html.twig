@@ -375,13 +375,13 @@ function showDeleteModal(sessionId) {
     confirmBtn.onclick = function() {
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = `/session/${sessionId}/delete`; // URL corrigée
+        form.action = `/session/${sessionId}/delete`;
         
         // Ajout du token CSRF
         const tokenInput = document.createElement('input');
         tokenInput.type = 'hidden';
         tokenInput.name = '_token';
-        tokenInput.value = "{{ csrf_token('delete' ~ session.id) }}";
+        tokenInput.value = "{{ csrf_token('delete') }}";
         
         form.appendChild(tokenInput);
         document.body.appendChild(form);

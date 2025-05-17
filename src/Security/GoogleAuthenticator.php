@@ -38,50 +38,61 @@ class GoogleAuthenticator extends OAuth2Authenticator
 
     public function authenticate(Request $request): Passport
     {
-        $client = $this->clientRegistry->getClient('google');
-        $accessToken = $this->fetchAccessToken($client);
+        try {
+            $client = $this->clientRegistry->getClient('google');
+            $accessToken = $this->fetchAccessToken($client);
 
-        return new SelfValidatingPassport(
-            new UserBadge($accessToken->getToken(), function() use ($accessToken, $client) {
-                /** @var GoogleUser $googleUser */
-                $googleUser = $client->fetchUserFromToken($accessToken);
+            return new SelfValidatingPassport(
+                new UserBadge($accessToken->getToken(), function() use ($accessToken, $client) {
+                    /** @var GoogleUser $googleUser */
+                    $googleUser = $client->fetchUserFromToken($accessToken);
 
-                $email = $googleUser->getEmail();
+                    $email = $googleUser->getEmail();
 
-                // 1) have they logged in with Google before? Easy!
-                $existingUser = $this->entityManager->getRepository(Utilisateur::class)->findOneBy(['email' => $email]);
+                    // 1) have they logged in with Google before? Easy!
+                    $existingUser = $this->entityManager->getRepository(Utilisateur::class)->findOneBy(['email' => $email]);
 
-                if ($existingUser) {
-                    return $existingUser;
-                }
+                    if ($existingUser) {
+                        return $existingUser;
+                    }
 
-                // 2) do we have a matching user by email?
-                $user = $this->entityManager->getRepository(Utilisateur::class)->findOneBy(['email' => $email]);
+                    // 2) do we have a matching user by email?
+                    $user = $this->entityManager->getRepository(Utilisateur::class)->findOneBy(['email' => $email]);
 
-                if (!$user) {
-                    $user = new Utilisateur();
-                    $user->setEmail($email);
-                    $names = explode(' ', $googleUser->getName());
-                    $user->setNom($names[0] ?? '');
-                    $user->setPrenom($names[1] ?? '');
-                    $user->setNickname($names[0] ?? '');
-                    $user->setNumero(0);
-                    $user->setMotPasse(bin2hex(random_bytes(16)));
-                    $user->setRole(Role::CLIENT);
-                    $user->setGoogleId($googleUser->getId());
-                    $this->entityManager->persist($user);
-                }
+                    if (!$user) {
+                        $user = new Utilisateur();
+                        $user->setEmail($email);
+                        $names = explode(' ', $googleUser->getName());
+                        $user->setNom($names[0] ?? '');
+                        $user->setPrenom($names[1] ?? '');
+                        $user->setNickname($names[0] ?? '');
+                        $user->setNumero(0);
+                        $user->setMotPasse(bin2hex(random_bytes(16)));
+                        $user->setRole(Role::CLIENT);
+                        $user->setGoogleId($googleUser->getId());
+                        $this->entityManager->persist($user);
+                    }
 
-                $this->entityManager->flush();
+                    $this->entityManager->flush();
 
-                return $user;
-            })
-        );
+                    return $user;
+                })
+            );
+        } catch (\Exception $e) {
+            throw new AuthenticationException('Google authentication failed: ' . $e->getMessage());
+        }
     }
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
-        // change "app_homepage" to any route you want
+        // Get the stored redirect URL from session
+        $redirectUrl = $request->getSession()->get('google_redirect_url');
+        if ($redirectUrl) {
+            $request->getSession()->remove('google_redirect_url');
+            return new RedirectResponse($redirectUrl);
+        }
+
+        // Fallback to home page
         return new RedirectResponse(
             $this->router->generate('app_home')
         );
