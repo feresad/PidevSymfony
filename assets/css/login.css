@@ -156,28 +156,195 @@ body {
     margin-top: 0.25rem;
 }
 
+.global-error-message {
+    display: none;
+    background-color: rgba(255, 59, 48, 0.1);
+    border: none;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    color: white;
+    font-size: 0.95rem;
+    text-align: center;
+    animation: slideIn 0.3s ease-out;
+    box-shadow: 0 4px 12px rgba(255, 59, 48, 0.1);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    position: relative;
+    overflow: hidden;
+}
+
+.global-error-message::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 4px;
+    background-color: #ff3b30;
+    border-radius: 4px 0 0 4px;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.form-control.error {
+    border-color: #ff3b30;
+    background-color: rgba(255, 59, 48, 0.05);
+    box-shadow: 0 0 0 2px rgba(255, 59, 48, 0.1);
+    transition: all 0.3s ease;
+}
+
+.form-control.error:focus {
+    box-shadow: 0 0 0 3px rgba(255, 59, 48, 0.15);
+    border-color: #ff3b30;
+}
+
 .alert-ban {
-    background-color: rgba(255, 0, 0, 0.1);
-    border: 1px solid #ff4444;
-    border-radius: 4px;
-    padding: 0.75rem;
-    margin-bottom: 1rem;
-    color: #ff4444;
+    background-color: rgba(255, 59, 48, 0.1);
+    border: none;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    animation: slideIn 0.3s ease-out;
+    box-shadow: 0 4px 12px rgba(255, 59, 48, 0.1);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    position: relative;
+    overflow: hidden;
+}
+
+.alert-ban::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 4px;
+    background-color: #ff3b30;
+    border-radius: 4px 0 0 4px;
 }
 
 .ban-title {
-    font-weight: bold;
+    color: white;
+    font-weight: 600;
     font-size: 1.1rem;
-    margin-bottom: 0.25rem;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ban-title::before {
+    content: '⚠️';
+    font-size: 1.2rem;
 }
 
 .ban-message {
-    font-size: 0.9rem;
+    color: white;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    opacity: 0.9;
 }
 
-.disabled-form {
-    opacity: 0.5;
-    pointer-events: none;
+/* Ajout d'un style pour le focus sur les champs de formulaire */
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
+    transition: all 0.3s ease;
+}
+
+/* Amélioration du style du bouton de connexion */
+.btn-connect {
+    background: linear-gradient(45deg, #007bff, #0056b3);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+}
+
+.btn-connect:hover {
+    background: linear-gradient(45deg, #0056b3, #004494);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(0, 123, 255, 0.3);
+}
+
+.btn-connect:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+}
+
+/* Amélioration du style des champs de formulaire */
+.form-control {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: white;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.form-control:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* Amélioration du style de la case à cocher "Se souvenir de moi" */
+.remember-me {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 16px 0;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.remember-me input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.remember-me input[type="checkbox"]:checked {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.remember-me input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    color: white;
+    font-size: 12px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.remember-me input[type="checkbox"]:hover {
+    border-color: #007bff;
 }
 
 /* Media Queries for Responsiveness */

@@ -2384,42 +2384,42 @@ header h2 {
 }
 
 /* Category Carousel */
+/* Carousel horizontal pour les catégories */
 .category-carousel {
-    display: flex;
-    overflow-x: auto;
-    gap: 10px;
-    padding: 10px 0;
-    margin-bottom: 20px;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+  /* display: flex; */
+  overflow-x: auto;
+  gap: unset;
+  padding: 10px 0;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
 }
 
 .category-carousel::-webkit-scrollbar {
-    display: none;
+  display: none; /* Chrome/Safari */
 }
 
 .category-item {
-    flex: 0 0 auto;
-    padding: 8px 16px;
-    background: rgba(35, 41, 48, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    color: #fff;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    white-space: nowrap;
+  flex: 0 0 auto;
+  padding: 8px 16px;
+  background: rgba(35, 41, 48, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
 }
 
 .category-item:hover {
-    background: rgba(35, 41, 48, 0.8);
-    transform: translateY(-2px);
+  background: rgba(35, 41, 48, 0.8);
+  transform: translateY(-2px);
 }
 
 .category-item.active {
-    background: var(--primary-color);
-    border-color: var(--primary-color);
-    box-shadow: 0 0 15px var(--primary-glow);
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 15px var(--primary-glow);
 }
 
 /* Event Cards */
@@ -2745,5 +2745,119 @@ header h2 {
     .search-btn {
         height: 40px;
         padding: 0 15px;
+    }
+}
+
+.category-carousel-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 0 30px; /* espace pour les flèches */
+}
+
+.category-carousel {
+    width: 100%;
+    min-width: 0;
+}
+
+.carousel-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+    opacity: 0.92;
+    z-index: 10;
+    outline: none;
+    border: 2px solid #fff2;
+}
+
+.carousel-arrow:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+.carousel-arrow:hover {
+    background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+    box-shadow: 0 6px 20px var(--primary-glow);
+    opacity: 1;
+}
+
+.carousel-arrow-left {
+    left: 0;
+}
+
+.carousel-arrow-right {
+    right: 0;
+}
+
+.category-item {
+    flex: 0 0 auto;
+    padding: 10px 22px;
+    margin: 0 6px;
+    background: rgba(35, 41, 48, 0.7);
+    border: 2px solid transparent;
+    border-radius: 22px;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 1.05rem;
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    position: relative;
+}
+
+.category-item:hover, .category-item.active {
+    background: linear-gradient(90deg, var(--primary-color) 60%, var(--secondary-color) 100%);
+    color: #fff;
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 16px var(--primary-glow);
+    z-index: 2;
+}
+
+@media (max-width: 767px) {
+    .category-carousel-wrapper {
+        padding: 0 10px;
+    }
+    .carousel-arrow {
+        width: 32px;
+        height: 32px;
+        font-size: 1.1rem;
+    }
+    .category-item {
+        padding: 8px 12px;
+        font-size: 0.95rem;
+        margin: 0 3px;
+    }
+}
+
+@media (max-width: 991px) {
+    .mobile-menu-toggle {
+        display: block;
+    }
+
+    .nk-nav,
+    .nk-nav-right,
+    .nk-nav.d-none.d-lg-table-cell {
+        display: none !important;
+    }
+
+    .nk-nav-table,
+    .nk-navbar-table {
+        justify-content: space-between;
     }
 }

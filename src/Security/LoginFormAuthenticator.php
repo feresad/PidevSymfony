@@ -13,6 +13,7 @@ use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
 use Symfony\Component\Security\Http\Authenticator\AbstractLoginFormAuthenticator;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\CsrfTokenBadge;
+use Symfony\Component\Security\Http\Authenticator\Passport\Badge\RememberMeBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\PasswordCredentials;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
@@ -38,21 +39,36 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
         $email = $request->request->get('email');
         $password = $request->request->get('password');
         $csrfToken = $request->request->get('_csrf_token');
+        $rememberMe = $request->request->get('_remember_me') === 'on';
+
+        if (!$email || !$password) {
+            throw new CustomUserMessageAuthenticationException('Veuillez remplir tous les champs');
+        }
 
         $user = $this->entityManager->getRepository(Utilisateur::class)->findOneBy(['email' => $email]);
 
-        if ($user && $user->isBanned()) {
+        if (!$user) {
+            throw new CustomUserMessageAuthenticationException('Email ou mot de passe incorrect');
+        }
+
+        if ($user->isBanned()) {
             throw new CustomUserMessageAuthenticationException(
-                'Account is banned',
+                'Compte banni',
                 ['banMessage' => $user->getBanMessage()]
             );
         }
 
-        return new Passport(
+        $passport = new Passport(
             new UserBadge($email),
             new PasswordCredentials($password),
             [new CsrfTokenBadge('authenticate', $csrfToken)]
         );
+
+        if ($rememberMe) {
+            $passport->addBadge(new RememberMeBadge());
+        }
+
+        return $passport;
     }
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
@@ -63,9 +79,9 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
             
             if ($user->isBanned()) {
                 return new JsonResponse([
-                    'banned' => true,
+                    'error' => 'Compte banni',
                     'banMessage' => $user->getBanMessage()
-                ]);
+                ], Response::HTTP_FORBIDDEN);
             }
 
             return new JsonResponse([
@@ -86,9 +102,13 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
                 'banned' => false
             ];
 
-            if ($exception instanceof CustomUserMessageAuthenticationException && $exception->getMessageKey() === 'Account is banned') {
-                $data['banned'] = true;
-                $data['banMessage'] = $exception->getMessageData()['banMessage'];
+            if ($exception instanceof CustomUserMessageAuthenticationException) {
+                if ($exception->getMessageKey() === 'Compte banni') {
+                    $data['banned'] = true;
+                    $data['banMessage'] = $exception->getMessageData()['banMessage'];
+                } else {
+                    $data['error'] = $exception->getMessageKey();
+                }
             }
 
             return new JsonResponse($data, Response::HTTP_UNAUTHORIZED);

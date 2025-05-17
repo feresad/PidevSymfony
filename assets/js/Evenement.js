@@ -42,6 +42,7 @@ $(document).ready(function() {
                     button.find('span').text('Evenement');
                     isShowingEvents = false;
                     updateSearchForm(false);
+                    afterAjaxUpdate();
                 },
                 error: function(xhr, status, error) {
                     console.error('Erreur AJAX (Catégories):', status, error, xhr.responseText);
@@ -62,8 +63,7 @@ $(document).ready(function() {
                     button.find('span').text('Categorie');
                     isShowingEvents = true;
                     updateSearchForm(true);
-                    // Reinitialize slick carousel
-                    $('.category-carousel').slick('refresh');
+                    afterAjaxUpdate();
                 },
                 error: function(xhr, status, error) {
                     console.error('Erreur AJAX (Événements):', status, error, xhr.responseText);
@@ -89,8 +89,7 @@ $(document).ready(function() {
                     ? $data.find('#dynamic-content').html() 
                     : $data.html();
                 $('#dynamic-content').html(content);
-                // Reinitialize slick carousel
-                $('.category-carousel').slick('refresh');
+                afterAjaxUpdate();
             },
             error: function(xhr, status, error) {
                 console.error('Erreur AJAX (Recherche):', status, error, xhr.responseText);
@@ -118,8 +117,7 @@ $(document).ready(function() {
                         ? $data.find('#dynamic-content').html() 
                         : $data.html();
                     $('#dynamic-content').html(content);
-                    // Reinitialize slick carousel
-                    $('.category-carousel').slick('refresh');
+                    afterAjaxUpdate();
                 },
                 error: function(xhr, status, error) {
                     console.error('Erreur AJAX (Pagination):', status, error, xhr.responseText);
@@ -129,18 +127,20 @@ $(document).ready(function() {
         }
     });
 });
-$(document).ready(function() {
-    // Compter le nombre de catégories
-    var categoryCount = $('.category-item').length; // +1 pour "Toutes les catégories"
 
-    // Configuration du carrousel Slick
-    $('.category-carousel').slick({
+function initCategoryCarousel() {
+    var $carousel = $('.category-carousel');
+    if ($carousel.hasClass('slick-initialized')) {
+        $carousel.slick('unslick');
+    }
+    var categoryCount = $carousel.find('.category-item').length;
+    $carousel.slick({
         slidesToShow: 5,
         slidesToScroll: 1,
-        arrows: categoryCount > 4, // Affiche les flèches si plus de 4 catégories
+        arrows: categoryCount > 4,
         dots: false,
-        prevArrow: '<button type="button" class="slick-prev"><i class="fas fa-chevron-left"></i></button>',
-        nextArrow: '<button type="button" class="slick-next"><i class="fas fa-chevron-right"></i></button>',
+        prevArrow: $('.carousel-arrow-left'),
+        nextArrow: $('.carousel-arrow-right'),
         responsive: [
             {
                 breakpoint: 992,
@@ -165,16 +165,23 @@ $(document).ready(function() {
             }
         ]
     });
+}
 
-    // Handle category click
-    $('.category-item').on('click', function() {
+// Initialisation au chargement
+$(document).ready(function() {
+    initCategoryCarousel();
+
+    // Clic sur catégorie
+    $(document).on('click', '.category-item', function() {
         $('.category-item').removeClass('active');
         $(this).addClass('active');
-        
         var categoryId = $(this).data('category-id');
         $('#category-input').val(categoryId);
-        
-        // Trigger form submission
         $('#eventFilterForm').submit();
     });
 });
+
+// Après chaque chargement AJAX, réinitialise le carousel
+function afterAjaxUpdate() {
+    initCategoryCarousel();
+}

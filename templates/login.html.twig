@@ -17,22 +17,7 @@
 			<h1 class="connexion-title">CONNEXION</h1>
 			<p class="subtitle">Commencez maintenant !</p>
 
-			{% if error %}
-				<div class="error-message">
-					{% if error.messageKey == 'Account is banned' %}
-						<div class="alert-ban">
-							<div class="ban-title">Compte Banni</div>
-							<div class="ban-message">{{ error.messageData.banMessage }}</div>
-						</div>
-					{% else %}
-						{{ error.messageKey|trans(error.messageData, 'security') }}
-					{% endif %}
-				</div>
-			{% endif %}
-
-			{% if userId %}
-				<p style="color: green;">[DEBUG] User ID: {{ userId }}</p>
-			{% endif %}
+			<div id="global-error-message" class="global-error-message"></div>
 
 			{% if app.user and app.user.isBanned() %}
 				<div class="alert-ban">
@@ -40,34 +25,21 @@
 					<div class="ban-message">{{ app.user.getBanMessage() }}</div>
 				</div>
 				<script>
-					// Clear local storage and redirect to logout
 					localStorage.clear();
 					setTimeout(() => {
 						window.location.href = "{{ path('app_logout') }}";
-					}, 5000); // Redirect after 5 seconds
+					}, 5000);
 				</script>
 			{% else %}
-				{% if error %}
-					<div class="alert alert-danger">
-						{% if error.messageKey == 'Account is banned' %}
-							<div class="ban-title">Compte Banni</div>
-							<div class="ban-message">{{ error.messageData.banMessage }}</div>
-						{% else %}
-							{{ error.messageKey|trans(error.messageData, 'security') }}
-						{% endif %}
-					</div>
-				{% endif %}
-
 				{{ form_start(form, {'attr': {'id': 'loginForm', 'onsubmit': 'return validateForm(event)'}}) }}
 					<div class="form-group">
 						{{ form_widget(form.email, {
 							'attr': {
 								'class': 'form-control',
-								'placeholder': 'Nom d\'utilisateur',
+								'placeholder': 'Email',
 								'value': last_username
 							}
 						}) }}
-						<div class="error-message" id="email-error"></div>
 					</div>
 
 					<div class="form-group">
@@ -77,7 +49,6 @@
 								'placeholder': 'Mot de passe'
 							}
 						}) }}
-						<div class="error-message" id="password-error"></div>
 					</div>
 
 					<div class="remember-me">
@@ -110,60 +81,13 @@
 	<script src="{{ asset('js/userUtils.js') }}"></script>
 	<script src="https://accounts.google.com/gsi/client" async defer></script>
 	<script>
-		function handleGoogleSignIn() {
-			const client = google.accounts.oauth2.initTokenClient({
-				client_id: '{{ app.request.server.get("OAUTH_GOOGLE_CLIENT_ID") }}',
-				scope: 'email profile',
-				callback: async (response) => {
-					if (response.access_token) {
-						try {
-							const userInfo = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-								headers: {
-									'Authorization': `Bearer ${response.access_token}`
-								}
-							}).then(res => res.json());
-
-							// Send the user info to your backend
-							const loginResponse = await fetch('{{ path("app_google_login") }}', {
-								method: 'POST',
-								headers: {
-									'Content-Type': 'application/json',
-									'X-Requested-With': 'XMLHttpRequest'
-								},
-								body: JSON.stringify({
-									email: userInfo.email,
-									name: userInfo.name,
-									picture: userInfo.picture,
-									googleId: userInfo.sub
-								})
-							});
-
-							if (loginResponse.ok) {
-								const data = await loginResponse.json();
-								localStorage.setItem('userId', data.id);
-								localStorage.setItem('userEmail', data.email);
-								localStorage.setItem('userRole', data.role);
-								window.location.href = '{{ path("app_home") }}';
-							} else {
-								throw new Error('Google login failed');
-							}
-						} catch (error) {
-							console.error('Error:', error);
-							const errorDiv = document.createElement('div');
-							errorDiv.className = 'alert alert-danger';
-							errorDiv.textContent = 'Une erreur est survenue lors de la connexion avec Google';
-							
-							const existingError = document.querySelector('.alert-danger');
-							if (existingError) {
-								existingError.replaceWith(errorDiv);
-							} else {
-								document.querySelector('.login-container').insertBefore(errorDiv, document.querySelector('form'));
-							}
-						}
-					}
-				}
-			});
-			client.requestAccessToken();
+		function showError(message) {
+			const errorDiv = document.getElementById('global-error-message');
+			errorDiv.textContent = message;
+			errorDiv.style.display = 'block';
+			setTimeout(() => {
+				errorDiv.style.display = 'none';
+			}, 5000);
 		}
 
 		async function validateForm(event) {
@@ -174,38 +98,27 @@
 			let isValid = true;
 
 			// Clear previous errors
-			document.getElementById('email-error').textContent = '';
-			document.getElementById('password-error').textContent = '';
+			document.getElementById('global-error-message').textContent = '';
 
 			// Validate email
 			if (!email) {
-				document.getElementById('email-error').textContent = 'Veuillez entrer votre email';
+				showError('Veuillez entrer votre email');
 				isValid = false;
 			} else if (!isValidEmail(email)) {
-				document.getElementById('email-error').textContent = 'Veuillez entrer une adresse email valide';
+				showError('Veuillez entrer une adresse email valide');
 				isValid = false;
 			}
 
 			// Validate password
 			if (!password) {
-				document.getElementById('password-error').textContent = 'Veuillez entrer votre mot de passe';
-				isValid = false;
-			} else if (password.length < 6) {
-				document.getElementById('password-error').textContent = 'Le mot de passe doit contenir au moins 6 caractères';
+				showError('Veuillez entrer votre mot de passe');
 				isValid = false;
 			}
 
 			if (!isValid) {
-				// Focus on the first error field
-				if (!email) {
-					form.email.focus();
-				} else if (!password) {
-					form.password.focus();
-				}
 				return false;
 			}
 
-			// Submit form if validation passes
 			try {
 				const response = await fetch('{{ path("app_login") }}', {
 					method: 'POST',
@@ -218,25 +131,17 @@
 				const data = await response.json();
 
 				if (!response.ok) {
-					if (data.error === 'Account is banned') {
-						const errorDiv = document.createElement('div');
-						errorDiv.className = 'alert-ban';
-						errorDiv.innerHTML = `
-							<div class="ban-title">Compte Banni</div>
-							<div class="ban-message">${data.banMessage}</div>
-						`;
-						
-						const existingError = document.querySelector('.error-message');
-						if (existingError) {
-							existingError.replaceWith(errorDiv);
-						} else {
-							document.querySelector('.right-section').insertBefore(errorDiv, document.querySelector('form'));
-						}
-
-						// Disable the form
+					if (data.error === 'Compte banni') {
+						showError('Votre compte a été banni : ' + data.banMessage);
 						form.classList.add('disabled-form');
+					} else if (data.error === 'Invalid credentials' || data.error === 'Email ou mot de passe incorrect') {
+						showError('Email ou mot de passe incorrect');
+					} else if (data.error === 'Invalid CSRF token') {
+						showError('Session expirée, veuillez rafraîchir la page');
+					} else if (data.error === 'Veuillez remplir tous les champs') {
+						showError('Veuillez remplir tous les champs');
 					} else {
-						throw data;
+						showError('Email ou mot de passe incorrect');
 					}
 					return false;
 				}
@@ -246,28 +151,14 @@
 				localStorage.setItem('userRole', data.role);
 				window.location.href = '{{ path("app_home") }}';
 			} catch (error) {
-				const errorDiv = document.createElement('div');
-				errorDiv.className = 'error-message';
-				errorDiv.textContent = error.error || 'Une erreur est survenue lors de la connexion';
-				
-				const existingError = document.querySelector('.error-message');
-				if (existingError) {
-					existingError.replaceWith(errorDiv);
-				} else {
-					document.querySelector('.right-section').insertBefore(errorDiv, document.querySelector('form'));
-				}
+				showError('Email ou mot de passe incorrect');
+				return false;
 			}
-
-			return false;
 		}
 
 		function isValidEmail(email) {
 			const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 			return re.test(email);
 		}
-	</script>
-	<script>
-	const userId = {{ userId|json_encode|raw }};
-	console.log("User ID from Twig:", userId);
 	</script>
 {% endblock %}

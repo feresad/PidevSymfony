@@ -36,6 +36,7 @@
         <!-- GoodGames CSS -->
         <link rel="stylesheet" href="{{ asset('css/goodgames.css') }}">
         <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/mobile-sidebar.css') }}">
 
         <!-- Forum CSS -->
         <link rel="stylesheet" href="{{ asset('css/forum.css') }}">
@@ -247,6 +248,39 @@
     {% endblock %}
 </head>
 <body>
+    <!-- Mobile Menu Toggle Button -->
+    <button class="mobile-menu-toggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Mobile Sidebar -->
+    <div class="mobile-sidebar">
+        <div class="mobile-sidebar-header">
+            <img src="{{ asset('images/level.png') }}" alt="Level OP Logo" style="max-width: 150px;">
+            <span class="mobile-sidebar-close">
+                <i class="fas fa-times"></i>
+            </span>
+        </div>
+        <div class="mobile-sidebar-menu">
+            <ul>
+                <li><a href="{{ path('app_home') }}"><i class="fas fa-home"></i> Accueil</a></li>
+                <li><a href="{{ path('forum_topics') }}"><i class="fas fa-comments"></i> Forum</a></li>
+                <li><a href="{{ path('evenement_list') }}"><i class="fas fa-calendar"></i> Événements</a></li>
+                <li><a href="{{ path('app_store') }}"><i class="fas fa-shopping-cart"></i> Boutique</a></li>
+                <li><a href="{{ path('session_client_list') }}"><i class="fa fa-chalkboard-teacher"></i> Coach</a></li>
+                {% if app.user %}
+                    <li><a href="{{ path('app_profile') }}"><i class="fas fa-user"></i> Profil</a></li>
+                    <li><a href="{{ path('app_logout') }}"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
+                {% else %}
+                    <li><a href="{{ path('app_login') }}"><i class="fas fa-sign-in-alt"></i> Connexion</a></li>
+                    <li><a href="{{ path('app_register') }}"><i class="fas fa-user-plus"></i> Inscription</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div class="mobile-sidebar-overlay"></div>
 
     {% block header %}
     <header class="nk-header nk-header-opaque">
@@ -371,6 +405,7 @@
     </div>
 
     <!-- Chatbot Toggler -->
+    {% if app.user %}
     <button class="chatbot-toggler">
         <span class="fas fa-comment"></span>
         <span class="fas fa-times"></span>
@@ -392,6 +427,7 @@
             <span id="send-btn" class="fas fa-paper-plane"></span>
         </div>
     </div>
+    {% endif %}
 </footer>
 {% endblock %}
     
@@ -647,6 +683,46 @@
                 }
             });
         });
+        </script>
+
+        <!-- Mobile Sidebar JavaScript -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+                const mobileSidebar = document.querySelector('.mobile-sidebar');
+                const mobileSidebarClose = document.querySelector('.mobile-sidebar-close');
+                const mobileSidebarOverlay = document.querySelector('.mobile-sidebar-overlay');
+                const body = document.body;
+
+                function openSidebar() {
+                    mobileSidebar.classList.add('active');
+                    mobileSidebarOverlay.classList.add('active');
+                    body.classList.add('sidebar-open');
+                }
+
+                function closeSidebar() {
+                    mobileSidebar.classList.remove('active');
+                    mobileSidebarOverlay.classList.remove('active');
+                    body.classList.remove('sidebar-open');
+                }
+
+                mobileMenuToggle.addEventListener('click', openSidebar);
+                mobileSidebarClose.addEventListener('click', closeSidebar);
+                mobileSidebarOverlay.addEventListener('click', closeSidebar);
+
+                // Close sidebar when clicking on a menu item
+                const menuItems = mobileSidebar.querySelectorAll('a');
+                menuItems.forEach(item => {
+                    item.addEventListener('click', closeSidebar);
+                });
+
+                // Close sidebar on window resize if open
+                window.addEventListener('resize', function() {
+                    if (window.innerWidth > 991 && mobileSidebar.classList.contains('active')) {
+                        closeSidebar();
+                    }
+                });
+            });
         </script>
     {% endblock %}
 </body>

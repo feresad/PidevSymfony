@@ -71,6 +71,10 @@ class GoogleAuthenticator extends OAuth2Authenticator
                         $user->setRole(Role::CLIENT);
                         $user->setGoogleId($googleUser->getId());
                         $this->entityManager->persist($user);
+                        $connection = $this->entityManager->getConnection();
+                        $sql = 'INSERT INTO client (id) VALUES (:id)';
+                        $stmt = $connection->prepare($sql);
+                        $stmt->executeStatement(['id' => $user->getId()]);
                     }
 
                     $this->entityManager->flush();
