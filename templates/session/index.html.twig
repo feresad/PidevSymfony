@@ -366,15 +366,6 @@ body {
 <img class="nk-page-background-bottom" src="{{ asset('images/bg-bottom.png') }}" alt="">
 
 <script>
-function scrollCarousel(direction) {
-    const carousel = document.getElementById('sessionCarousel');
-    const scrollAmount = 300;
-    carousel.scrollBy({
-        left: direction * scrollAmount,
-        behavior: 'smooth'
-    });
-}
-
 function showDeleteModal(sessionId) {
     const modal = document.getElementById('deleteModal');
     const confirmBtn = document.getElementById('confirmDeleteBtn');
@@ -384,12 +375,13 @@ function showDeleteModal(sessionId) {
     confirmBtn.onclick = function() {
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = `/session/${sessionId}/delete`;
+        form.action = `/session/${sessionId}/delete`; // URL corrigée
         
+        // Ajout du token CSRF
         const tokenInput = document.createElement('input');
         tokenInput.type = 'hidden';
         tokenInput.name = '_token';
-        tokenInput.value = "{{ csrf_token('delete') }}";
+        tokenInput.value = "{{ csrf_token('delete' ~ session.id) }}";
         
         form.appendChild(tokenInput);
         document.body.appendChild(form);
@@ -413,19 +405,18 @@ function showDeleteNotification() {
     }, 2000);
 }
 
-// Add hover effect to session cards
+// Gestion des messages flash
 document.addEventListener('DOMContentLoaded', function() {
-    const sessionCards = document.querySelectorAll('.session-card');
-    
-    sessionCards.forEach(card => {
-        card.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-5px)';
-        });
-        
-        card.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0)';
-        });
-    });
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            const notification = document.getElementById('deleteNotification');
+            notification.innerHTML = `<i class="fas fa-{% if label == 'success' %}check-circle{% else %}exclamation-circle{% endif %}"></i><span>${message}</span>`;
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        {% endfor %}
+    {% endfor %}
 });
 </script>
 {% endblock %}

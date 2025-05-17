@@ -152,6 +152,10 @@ class RegisterController extends AbstractController
         try {
             $entityManager->persist($user);
             $entityManager->flush();
+            $connection = $entityManager->getConnection();
+            $sql = 'INSERT INTO client (id) VALUES (:id)';
+            $stmt = $connection->prepare($sql);
+            $stmt->executeStatement(['id' => $user->getId()]);
 
             // Clear session data
             $session->remove('registration_data');

@@ -221,20 +221,39 @@ class SessionController extends AbstractController
     }
 
     #[Route('/session/{id}/delete', name: 'session_delete', methods: ['POST'])]
-    public function delete(Request $request, Session_game $session, EntityManagerInterface $entityManager): Response
-    {
-        $user = $this->getUser();
-        /* if (!$user || !in_array('ROLE_COACH', $user->getRoles()) || $session->getCoach() !== $user) {
-            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à supprimer cette session.');
-        } */
+public function delete(Request $request, Session_game $session, EntityManagerInterface $entityManager): Response
+{
+    // Vérifier que l'utilisateur est connecté et a le rôle de coach
+    $user = $this->getUser();
+    if (!$user || !in_array('ROLE_COACH', $user->getRoles()) || $session->getCoach() !== $user) {
+        throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à supprimer cette session.');
+    }
 
-        if ($this->isCsrfTokenValid('delete' . $session->getId(), $request->request->get('_token'))) {
-            $entityManager->remove($session);
-            $entityManager->flush();
-
-            $this->addFlash('success', 'Session supprimée avec succès.');
-        }
-
+    // Vérifier la validité du token CSRF
+    if (!$this->isCsrfTokenValid('delete' . $session->getId(), $request->request->get('_token'))) {
+        $this->addFlash('error', 'Token CSRF invalide. La session n\'a pas été supprimée.');
         return $this->redirectToRoute('session_list');
     }
+
+    try {
+        // Supprimer l'image associée si elle existe
+        $imageName = $session->getImageName();
+        if ($imageName) {
+            $imagePath = $this->getParameter('uploads_directory') . '/' . $imageName;
+            if (file_exists($imagePath)) {
+                unlink($imagePath);
+            }
+        }
+
+        // Supprimer la session de la base de données
+        $entityManager->remove($session);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Session supprimée avec succès.');
+    } catch (\Exception $e) {
+        $this->addFlash('error', 'Une erreur est survenue lors de la suppression de la session : ' . $e->getMessage());
+    }
+
+    return $this->redirectToRoute('session_list');
+}
 }
