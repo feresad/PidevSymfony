@@ -10,7 +10,9 @@ services:
       - key: MESSENGER_TRANSPORT_DSN
         value: doctrine://default
       - key: DATABASE_URL
-        sync: false # Remplacer par la valeur réelle dans l'interface Render
+        sync: false # Configurez via l'interface Render
+      - key: MAILER_DSN
+        sync: false # Configurez via l'interface Render
     plan: starter
     numInstances: 1
     healthCheckPath: /health

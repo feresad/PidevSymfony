@@ -384,7 +384,7 @@ function showDeleteModal(sessionId) {
     confirmBtn.onclick = function() {
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = `/session/delete/${sessionId}`;
+        form.action = `/session/${sessionId}/delete`;
         
         const tokenInput = document.createElement('input');
         tokenInput.type = 'hidden';
