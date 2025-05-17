@@ -814,38 +814,11 @@
 
 {% block javascripts %}
     {{ parent() }}
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Summernote CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Summernote JS -->
-    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
-    <!-- PhotoSwipe -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.3/photoswipe.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.3/photoswipe-ui-default.min.js"></script>
-
     {% set contenu_field = form_widget(comment_form.contenu, {'attr': {'class': 'nk-summernote form-control'}}) %}
     {% set form_rest = form_rest(comment_form) %}
 
     <script>
         $(document).ready(function() {
-            // Initialize Summernote on all textareas with class nk-summernote
-            $('.nk-summernote').summernote({
-                height: 200,
-                toolbar: [
-                    ['style', ['bold', 'italic', 'underline', 'clear']],
-                    ['font', ['fontsize']],
-                    ['para', ['ul', 'ol', 'paragraph']],
-                    ['misc', ['codeview']]
-                ],
-                fontSizes: ['8', '9', '10', '11', '12', '14', '16', '18', '20', '22', '24', '28', '30', '36', '48', '64'],
-                placeholder: '{{ 'forum.reply_placeholder'|trans }}'
-            });
-
             let sentimentMap = {
                 positive: [],
                 negative: [],
@@ -1241,7 +1214,7 @@
                     <div class="nk-gap-1"></div>
                     <form action="{{ path('comment_create', {'id': question.id}) }}" method="POST" class="profanity-check-form">
                         <div class="mb-3">
-                            <textarea class="nk-summernote form-control" name="contenu"></textarea>
+                            {{ contenu_field|raw }}
                             {{ form_rest|raw }}
                         </div>
                         <input type="hidden" name="type" value="${type}">
@@ -1252,8 +1225,6 @@
                 `;
 
                 $replyContainer.html(replyFormHtml).show();
-                
-                // Initialize Summernote on the new textarea
                 $replyContainer.find('.nk-summernote').summernote({
                     height: 200,
                     toolbar: [
@@ -1267,11 +1238,122 @@
                 });
             });
 
+            $(document).on('click', '.cancel-reply', function() {
+                $(this).closest('.reply-form-container').hide();
+            });
+
+            $(document).on('click', '.update-btn', function(e) {
+                e.preventDefault();
+                const $btn = $(this);
+                const commentId = $btn.data('id');
+                const $card = $btn.closest('li');
+                const $updateContainer = $card.find('.update-form-container').first();
+                
+                let currentContent = $card.find('.nk-forum-topic-content p').clone();
+                currentContent.find('.mention').remove();
+                currentContent = currentContent.text().trim();
+
+                $('.reply-form-container').hide();
+                $('.update-form-container').hide();
+
+                if ($updateContainer.is(':visible')) {
+                    $updateContainer.hide();
+                    return;
+                }
+
+                let updateFormHtml = `
+                    <div class="nk-gap-1"></div>
+                    <form action="{{ path('comment_update', {'id': 'COMMENT_ID'}) }}" method="POST" class="profanity-check-form">
+                        <div class="mb-3">
+                            {{ contenu_field|raw }}
+                            {{ form_rest|raw }}
+                        </div>
+                        <button type="submit" class="nk-btn nk-btn-rounded nk-btn-color-white">{{ 'forum.edit'|trans }}</button>
+                        <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-dark cancel-update">{{ 'cancel'|trans }}</button>
+                    </form>
+                `;
+
+                const finalFormHtml = updateFormHtml.replace('COMMENT_ID', commentId);
+                $updateContainer.html(finalFormHtml).show();
+
+                const $summernote = $updateContainer.find('.nk-summernote');
+                $summernote.summernote({
+                    height: 200,
+                    toolbar: [
+                        ['style', ['bold', 'italic', 'underline', 'clear']],
+                        ['font', ['fontsize']],
+                        ['para', ['ul', 'ol', 'paragraph']],
+                        ['misc', ['codeview']]
+                    ],
+                    fontSizes: ['8', '9', '10', '11', '12', '14', '16', '18', '20', '22', '24', '28', '30', '36', '48', '64'],
+                    placeholder: '{{ 'forum.edit_placeholder'|trans }}'
+                });
+
+                $summernote.summernote('code', currentContent);
+            });
+
+            $(document).on('click', '.cancel-update', function() {
+                $(this).closest('.update-form-container').hide();
+            });
+
+            $(document).on('click', '.vote-btn', function(e) {
+                e.preventDefault();
+                const $btn = $(this);
+                const id = $btn.data('id');
+                const type = $btn.data('type');
+                const voteType = $btn.data('vote-type');
+                const $voteSection = $btn.closest('.nk-forum-vote-section');
+                const $voteCount = $voteSection.find('.vote-count');
+                const $otherBtn = $voteSection.find(`.vote-btn[data-vote-type="${voteType === 'UP' ? 'DOWN' : 'UP'}"]`);
+
+                const voteUrl = type === 'question' ? '{{ path('ajax_vote_action') }}' : '{{ path('ajax_vote_comment_action') }}';
+
+                $.ajax({
+                    url: voteUrl,
+                    method: 'POST',
+                    data: { id: id, type: type, vote_type: voteType },
+                    success: function(response) {
+                        if (response.success) {
+                            $voteCount.text(response.votes);
+
+                            if (response.hasUpvoted) {
+                                $voteSection.find('.upvote-btn').addClass('voted');
+                                $voteSection.find('.downvote-btn').removeClass('voted');
+                            } else if (response.hasDownvoted) {
+                                $voteSection.find('.downvote-btn').addClass('voted');
+                                $voteSection.find('.upvote-btn').removeClass('voted');
+                            } else {
+                                $voteSection.find('.upvote-btn').removeClass('voted');
+                                $voteSection.find('.downvote-btn').removeClass('voted');
+                            }
+                        } else {
+                            Swal.fire({
+                                title: '{{ 'forum.alert.voting_error'|trans }}',
+                                text: response.message,
+                                icon: 'error',
+                                background: '#1c2526',
+                                color: '#d1d5db',
+                                confirmButtonColor: '#fe0369'
+                            });
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({
+                            title: '{{ 'forum.alert.voting_error'|trans }}',
+                            text: '{{ 'forum.alert.vote_error'|trans }}',
+                            icon: 'error',
+                            background: '#1c2526',
+                            color: '#d1d5db',
+                            confirmButtonColor: '#fe0369'
+                        });
+                    }
+                });
+            });
+
             $(document).on('submit', '.profanity-check-form', function(e) {
                 e.preventDefault();
                 const $form = $(this);
-                const $textarea = $form.find('.nk-summernote');
-                const content = $textarea.summernote('code');
+                const content = $form.find('.nk-summernote').summernote('code');
                 const $submitButton = $form.find('button[type="submit"]');
                 $submitButton.prop('disabled', true);
 
@@ -1293,8 +1375,6 @@
                                 $submitButton.prop('disabled', false);
                             });
                         } else {
-                            // Add the content to a hidden input before submitting
-                            $form.append(`<input type="hidden" name="contenu" value="${content}">`);
                             $form.off('submit');
                             $form[0].submit();
                         }
@@ -1302,7 +1382,7 @@
                     error: function() {
                         Swal.fire({
                             title: '{{ 'forum.alert.error'|trans }}',
-                            text: '{{ 'forum.alert.profanity_check_error'|trans }}',
+                            text: '{{ 'forum.alert.profanity_error'|trans }}',
                             icon: 'error',
                             background: '#1c2526',
                             color: '#d1d5db',
@@ -1486,6 +1566,5 @@
                 fetchUserVotes();
                 fetchUserCommentVotes();
             });
-        });
-    </script>
-{% endblock %}
+        </script>
+    {% endblock %}

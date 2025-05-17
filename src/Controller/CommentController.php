@@ -105,8 +105,6 @@ class CommentController extends AbstractController
                 }
 
                 try {
-                    $entityManager->beginTransaction();
-                    
                     $comment->setVotes(0);
                     $comment->setCreationAt(new \DateTime());
                     $entityManager->persist($comment);
@@ -129,10 +127,8 @@ class CommentController extends AbstractController
                     // Notify subscribers of the new comment
                     $subscriptionService->notifySubscribers($question, $comment, $utilisateur);
 
-                    $entityManager->commit();
                     $this->addFlash('success', 'Commentaire ajouté avec succès !');
                 } catch (\Exception $e) {
-                    $entityManager->rollback();
                     $this->logger->error('Error adding comment or notification', [
                         'error' => $e->getMessage(),
                         'trace' => $e->getTraceAsString()
@@ -208,49 +204,38 @@ class CommentController extends AbstractController
         return $this->redirectToRoute('forum_single_topic', ['id' => $questionId]);
     }
 
-    #[Route('/api/check-profanity', name: 'api_check_profanity', methods: ['POST'])]
-    public function checkProfanity(Request $request): JsonResponse
-    {
-        $content = $request->request->get('content');
-        if (!$content) {
-            return new JsonResponse(['success' => false, 'message' => 'Content is required'], 400);
-        }
-
-        try {
-            $response = $this->httpClient->request('GET', 'https://api.sightengine.com/1.0/text/check.json', [
-                'query' => [
-                    'text' => $content,
-                    'lang' => 'en',
-                    'mode' => 'standard',
-                    'api_user' => $this->sightengineApiUser,
-                    'api_secret' => $this->sightengineApiSecret,
-                ],
-            ]);
-
-            $data = $response->toArray();
-            
-            // Only consider it profane if there are multiple matches or if the confidence is high
-            $isProfane = false;
-            $matches = $data['profanity']['matches'] ?? [];
-            
-            if (!empty($matches)) {
-                $highConfidenceMatches = array_filter($matches, function($match) {
-                    return ($match['confidence'] ?? 0) > 0.8;
-                });
-                
-                $isProfane = count($highConfidenceMatches) > 0;
-            }
-
-            return new JsonResponse([
-                'success' => true,
-                'isProfane' => $isProfane,
-                'details' => $isProfane ? $matches : null,
-            ]);
-        } catch (\Exception $e) {
-            $this->logger->error('Sightengine API error', ['error' => $e->getMessage()]);
-            return new JsonResponse(['success' => false, 'message' => 'Error checking profanity'], 500);
-        }
+   #[Route('/api/check-profanity', name: 'api_check_profanity', methods: ['POST'])]
+public function checkProfanity(Request $request): JsonResponse
+{
+    $content = $request->request->get('content');
+    if (!$content) {
+        return new JsonResponse(['success' => false, 'message' => 'Content is required'], 400);
     }
+
+    try {
+        $response = $this->httpClient->request('GET', 'https://api.sightengine.com/1.0/text/check.json', [
+            'query' => [
+                'text' => $content,
+                'lang' => 'en',
+                'mode' => 'standard',
+                'api_user' => $this->sightengineApiUser,
+                'api_secret' => $this->sightengineApiSecret,
+            ],
+        ]);
+
+        $data = $response->toArray();
+        $isProfane = !empty($data['profanity']['matches']);
+
+        return new JsonResponse([
+            'success' => true,
+            'isProfane' => $isProfane,
+            'details' => $isProfane ? $data['profanity']['matches'] : null,
+        ]);
+    } catch (\Exception $e) {
+        $this->logger->error('Sightengine API error', ['error' => $e->getMessage()]);
+        return new JsonResponse(['success' => false, 'message' => 'Error checking profanity'], 500);
+    }
+}
 
     #[Route('/forum/comment/{id}/delete', name: 'comment_delete', methods: ['POST'])]
     public function delete(
@@ -501,9 +486,9 @@ class CommentController extends AbstractController
             return new JsonResponse(['success' => false, 'message' => 'No comment IDs provided.'], 400);
         }
     
-        $qb = $entityManager->createQueryBuilder()
+        $voteRepository = $entityManager->getRepository(CommentaireVotes::class);
+        $qb = $voteRepository->createQueryBuilder('v')
             ->select('v')
-            ->from(CommentaireVotes::class, 'v')
             ->where('v.user_id = :user')
             ->andWhere('v.commentaire_id IN (:commentIds)')
             ->setParameter('user', $utilisateur)
