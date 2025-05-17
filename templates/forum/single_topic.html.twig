@@ -1238,118 +1238,6 @@
                 });
             });
 
-            $(document).on('click', '.cancel-reply', function() {
-                $(this).closest('.reply-form-container').hide();
-            });
-
-            $(document).on('click', '.update-btn', function(e) {
-                e.preventDefault();
-                const $btn = $(this);
-                const commentId = $btn.data('id');
-                const $card = $btn.closest('li');
-                const $updateContainer = $card.find('.update-form-container').first();
-                
-                let currentContent = $card.find('.nk-forum-topic-content p').clone();
-                currentContent.find('.mention').remove();
-                currentContent = currentContent.text().trim();
-
-                $('.reply-form-container').hide();
-                $('.update-form-container').hide();
-
-                if ($updateContainer.is(':visible')) {
-                    $updateContainer.hide();
-                    return;
-                }
-
-                let updateFormHtml = `
-                    <div class="nk-gap-1"></div>
-                    <form action="{{ path('comment_update', {'id': 'COMMENT_ID'}) }}" method="POST" class="profanity-check-form">
-                        <div class="mb-3">
-                            {{ contenu_field|raw }}
-                            {{ form_rest|raw }}
-                        </div>
-                        <button type="submit" class="nk-btn nk-btn-rounded nk-btn-color-white">{{ 'forum.edit'|trans }}</button>
-                        <button type="button" class="nk-btn nk-btn-rounded nk-btn-color-dark cancel-update">{{ 'cancel'|trans }}</button>
-                    </form>
-                `;
-
-                const finalFormHtml = updateFormHtml.replace('COMMENT_ID', commentId);
-                $updateContainer.html(finalFormHtml).show();
-
-                const $summernote = $updateContainer.find('.nk-summernote');
-                $summernote.summernote({
-                    height: 200,
-                    toolbar: [
-                        ['style', ['bold', 'italic', 'underline', 'clear']],
-                        ['font', ['fontsize']],
-                        ['para', ['ul', 'ol', 'paragraph']],
-                        ['misc', ['codeview']]
-                    ],
-                    fontSizes: ['8', '9', '10', '11', '12', '14', '16', '18', '20', '22', '24', '28', '30', '36', '48', '64'],
-                    placeholder: '{{ 'forum.edit_placeholder'|trans }}'
-                });
-
-                $summernote.summernote('code', currentContent);
-            });
-
-            $(document).on('click', '.cancel-update', function() {
-                $(this).closest('.update-form-container').hide();
-            });
-
-            $(document).on('click', '.vote-btn', function(e) {
-                e.preventDefault();
-                const $btn = $(this);
-                const id = $btn.data('id');
-                const type = $btn.data('type');
-                const voteType = $btn.data('vote-type');
-                const $voteSection = $btn.closest('.nk-forum-vote-section');
-                const $voteCount = $voteSection.find('.vote-count');
-                const $otherBtn = $voteSection.find(`.vote-btn[data-vote-type="${voteType === 'UP' ? 'DOWN' : 'UP'}"]`);
-
-                const voteUrl = type === 'question' ? '{{ path('ajax_vote_action') }}' : '{{ path('ajax_vote_comment_action') }}';
-
-                $.ajax({
-                    url: voteUrl,
-                    method: 'POST',
-                    data: { id: id, type: type, vote_type: voteType },
-                    success: function(response) {
-                        if (response.success) {
-                            $voteCount.text(response.votes);
-
-                            if (response.hasUpvoted) {
-                                $voteSection.find('.upvote-btn').addClass('voted');
-                                $voteSection.find('.downvote-btn').removeClass('voted');
-                            } else if (response.hasDownvoted) {
-                                $voteSection.find('.downvote-btn').addClass('voted');
-                                $voteSection.find('.upvote-btn').removeClass('voted');
-                            } else {
-                                $voteSection.find('.upvote-btn').removeClass('voted');
-                                $voteSection.find('.downvote-btn').removeClass('voted');
-                            }
-                        } else {
-                            Swal.fire({
-                                title: '{{ 'forum.alert.voting_error'|trans }}',
-                                text: response.message,
-                                icon: 'error',
-                                background: '#1c2526',
-                                color: '#d1d5db',
-                                confirmButtonColor: '#fe0369'
-                            });
-                        }
-                    },
-                    error: function() {
-                        Swal.fire({
-                            title: '{{ 'forum.alert.voting_error'|trans }}',
-                            text: '{{ 'forum.alert.vote_error'|trans }}',
-                            icon: 'error',
-                            background: '#1c2526',
-                            color: '#d1d5db',
-                            confirmButtonColor: '#fe0369'
-                        });
-                    }
-                });
-            });
-
             $(document).on('submit', '.profanity-check-form', function(e) {
                 e.preventDefault();
                 const $form = $(this);
@@ -1382,7 +1270,7 @@
                     error: function() {
                         Swal.fire({
                             title: '{{ 'forum.alert.error'|trans }}',
-                            text: '{{ 'forum.alert.profanity_error'|trans }}',
+                            text: '{{ 'forum.alert.profanity_check_error'|trans }}',
                             icon: 'error',
                             background: '#1c2526',
                             color: '#d1d5db',

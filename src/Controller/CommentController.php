@@ -105,6 +105,8 @@ class CommentController extends AbstractController
                 }
 
                 try {
+                    $entityManager->beginTransaction();
+                    
                     $comment->setVotes(0);
                     $comment->setCreationAt(new \DateTime());
                     $entityManager->persist($comment);
@@ -127,8 +129,10 @@ class CommentController extends AbstractController
                     // Notify subscribers of the new comment
                     $subscriptionService->notifySubscribers($question, $comment, $utilisateur);
 
+                    $entityManager->commit();
                     $this->addFlash('success', 'Commentaire ajouté avec succès !');
                 } catch (\Exception $e) {
+                    $entityManager->rollback();
                     $this->logger->error('Error adding comment or notification', [
                         'error' => $e->getMessage(),
                         'trace' => $e->getTraceAsString()
@@ -224,12 +228,23 @@ class CommentController extends AbstractController
             ]);
 
             $data = $response->toArray();
-            $isProfane = !empty($data['profanity']['matches']);
+            
+            // Only consider it profane if there are multiple matches or if the confidence is high
+            $isProfane = false;
+            $matches = $data['profanity']['matches'] ?? [];
+            
+            if (!empty($matches)) {
+                $highConfidenceMatches = array_filter($matches, function($match) {
+                    return ($match['confidence'] ?? 0) > 0.8;
+                });
+                
+                $isProfane = count($highConfidenceMatches) > 0;
+            }
 
             return new JsonResponse([
                 'success' => true,
                 'isProfane' => $isProfane,
-                'details' => $isProfane ? $data['profanity']['matches'] : null,
+                'details' => $isProfane ? $matches : null,
             ]);
         } catch (\Exception $e) {
             $this->logger->error('Sightengine API error', ['error' => $e->getMessage()]);
