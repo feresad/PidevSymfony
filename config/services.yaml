@@ -14,22 +14,11 @@ parameters:
     stripe.public_key: '%env(STRIPE_PUBLIC_KEY)%'
     imgbb_api_key: '%env(IMGBB_API_KEY)%'
     cv_directory: '%kernel.project_dir%/public/uploads/'
+    reddit_client_id: '%env(REDDIT_CLIENT_ID)%'
+    reddit_client_secret: '%env(REDDIT_CLIENT_SECRET)%'
+    reddit_user_agent: 'GoodGames-App/1.0 (by /u/YourRedditUsername)'
 
 services:
-    App\Service\TopicRecommendationService:
-    App\Service\TopicSubscriptionService:
-    App\Controller\ForumController:
-    App\Service\RedditService:
-        arguments:
-            $session: '@session'
-            $params: '%kernel.parameters%'
-            $logger: '@monolog.logger'
-            $entityManager: '@doctrine.orm.entity_manager'
-            $router: '@router'
-            $questionsRepository: '@App\Repository\QuestionsRepository'
-            $commentaireRepository: '@App\Repository\CommentaireRepository'
-            $request: '@request_stack'
-    
     _defaults:
         autowire: true
         autoconfigure: true
@@ -40,10 +29,32 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
-    
+
+    App\Repository\:
+        resource: '../src/Repository/'
+        public: true
+
     App\Controller\StockController:
         arguments:
-            $dossierUpload: '%dossier_upload%'  # Injection du paramètre
+            $dossierUpload: '%dossier_upload%'
+        public: true
+
+    App\Service\TopicRecommendationService:
+    App\Service\TopicSubscriptionService:
+    App\Controller\ForumController:
+        arguments:
+            $logger: '@monolog.logger'
+            $subscriptionService: '@App\Service\TopicSubscriptionService'
+            $translator: '@translator'
+        public: true
+    App\Service\RedditService:
+        arguments:
+            $httpClient: '@Symfony\Contracts\HttpClient\HttpClientInterface'
+            $logger: '@monolog.logger'
+            $clientId: '%env(REDDIT_CLIENT_ID)%'
+            $clientSecret: '%env(REDDIT_CLIENT_SECRET)%'
+            $userAgent: '%reddit_user_agent%'
+        public: true
     App\Service\GeminiService:
         arguments:
             $apiKey: '%env(GEMINI_API_KEY)%'

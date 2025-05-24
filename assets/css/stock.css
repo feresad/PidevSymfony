@@ -2,38 +2,288 @@
 @import 'produit.css';
 
 /* Stock-specific styles */
+.stock-container {
+    position: relative;
+    width: 100%;
+    padding: 20px;
+    background: var(--white);
+}
+
+.stock-card {
+    position: relative;
+    background: var(--white);
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 7px 25px rgba(0, 0, 0, 0.08);
+}
+
+.stock-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--gray);
+}
+
+.stock-header h2 {
+    font-weight: 600;
+    color: var(--blue);
+    font-size: 1.8rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.stock-header h2 i {
+    color: var(--blue);
+    font-size: 1.5rem;
+}
+
 .stock-image {
     max-width: 80px;
-    border: 1px solid #0236a5;
-    border-radius: 4px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+.stock-image:hover {
+    transform: scale(1.1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
 .stock-image-large {
     max-width: 300px;
-    border: 2px solid #0236a5;
-    border-radius: 6px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* Additional stock-specific customizations */
 .stock-details {
-    background-color: #091221;
-    border-color: #0236a5;
-    padding: 1rem;
-    margin-bottom: 1rem;
+    background: var(--white);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 7px 25px rgba(0, 0, 0, 0.08);
+    margin-bottom: 20px;
 }
 
 .stock-quantity {
-    font-weight: bold;
-    color: #0585c6;
+    font-weight: 600;
+    color: var(--blue);
+    padding: 8px 16px;
+    background: rgba(42, 33, 133, 0.1);
+    border-radius: 20px;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.stock-quantity:hover {
+    background: rgba(42, 33, 133, 0.2);
+    transform: translateY(-2px);
 }
 
 .stock-price {
-    font-weight: bold;
-    color: #fc0369;
+    font-weight: 600;
+    color: var(--white);
+    padding: 8px 16px;
+    background: linear-gradient(45deg, var(--blue), #4e73df);
+    border-radius: 20px;
+    display: inline-block;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 10px rgba(42, 33, 133, 0.2);
 }
 
-/* Keep consistent hover effects */
-.table tbody tr:hover .stock-image {
-    transform: scale(1.05);
-    transition: transform 0.2s ease;
+.stock-price:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(42, 33, 133, 0.3);
 }
+
+.stock-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 20px;
+    background: var(--white);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.stock-table thead {
+    background: linear-gradient(45deg, var(--blue), #4e73df);
+}
+
+.stock-table thead th {
+    font-weight: 600;
+    color: var(--white);
+    padding: 15px;
+    text-align: center;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    border: none;
+}
+
+.stock-table tbody tr {
+    transition: all 0.3s ease;
+    border-bottom: 1px solid var(--gray);
+}
+
+.stock-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.stock-table tbody tr:hover {
+    background: rgba(42, 33, 133, 0.05);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.stock-table td {
+    padding: 15px;
+    text-align: center;
+    color: var(--black1);
+    vertical-align: middle;
+}
+
+.stock-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.stock-btn {
+    padding: 8px 15px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-width: 40px;
+    height: 40px;
+}
+
+.stock-btn i {
+    font-size: 1rem;
+}
+
+.stock-btn-edit {
+    background: linear-gradient(45deg, var(--blue), #4e73df);
+    color: var(--white);
+    box-shadow: 0 3px 10px rgba(42, 33, 133, 0.2);
+}
+
+.stock-btn-delete {
+    background: linear-gradient(45deg, #dc3545, #ff4757);
+    color: var(--white);
+    box-shadow: 0 3px 10px rgba(220, 53, 69, 0.2);
+}
+
+.stock-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.stock-btn-edit:hover {
+    background: linear-gradient(45deg, #4e73df, var(--blue));
+}
+
+.stock-btn-delete:hover {
+    background: linear-gradient(45deg, #ff4757, #dc3545);
+}
+
+/* Badge styles */
+.badge {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 500;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+}
+
+.badge-info {
+    background: rgba(42, 33, 133, 0.1);
+    color: var(--blue);
+}
+
+.badge-info:hover {
+    background: rgba(42, 33, 133, 0.2);
+    transform: translateY(-2px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .stock-container {
+        padding: 10px;
+    }
+    
+    .stock-card {
+        padding: 15px;
+    }
+    
+    .stock-header {
+        flex-direction: column;
+        gap: 15px;
+        padding-bottom: 15px;
+    }
+    
+    .stock-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .stock-table {
+        font-size: 14px;
+    }
+    
+    .stock-table thead th {
+        padding: 12px 8px;
+        font-size: 0.8rem;
+    }
+    
+    .stock-table td {
+        padding: 12px 8px;
+    }
+    
+    .stock-actions {
+        flex-direction: row;
+        gap: 5px;
+    }
+    
+    .stock-btn {
+        padding: 6px 12px;
+        min-width: 35px;
+        height: 35px;
+    }
+    
+    .stock-quantity,
+    .stock-price,
+    .badge {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+}
+
+/* Animation for table rows */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.stock-table tbody tr {
+    animation: fadeIn 0.3s ease forwards;
+}
+
+.stock-table tbody tr:nth-child(1) { animation-delay: 0.1s; }
+.stock-table tbody tr:nth-child(2) { animation-delay: 0.2s; }
+.stock-table tbody tr:nth-child(3) { animation-delay: 0.3s; }
+.stock-table tbody tr:nth-child(4) { animation-delay: 0.4s; }
+.stock-table tbody tr:nth-child(5) { animation-delay: 0.5s; }

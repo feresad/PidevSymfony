@@ -61,7 +61,7 @@
                                 <td class="align-middle">{{ commande.createdAt|date('d/m/Y H:i') }}</td>
                                 <td class="align-middle">
                                     {% if commande.produit.stocks|length > 0 %}
-                                        {{ commande.produit.stocks[0].prixProduit|number_format(2, '.', ',') }} TND
+                                        {{ commande.produit.stocks[0].prixProduit|number_format(2, '.', ',') }} DT
                                     {% else %}
                                         N/A
                                     {% endif %}

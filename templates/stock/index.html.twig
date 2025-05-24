@@ -1,67 +1,176 @@
-{% extends 'base.html.twig' %}
+{% extends 'baseadmin.html.twig' %}
 
 {% block title %}Liste des Stocks{% endblock %}
 
-{% block stylesheets %}
-    {{ parent() }}
-    <link rel="stylesheet" href="{{ asset('assets/css/produit.css') }}">
-{% endblock %}
-
 {% block body %}
-<div class="container mt-5" style="background-color: #091221; color: white;">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card" style="background-color: #091221; border-color: #0236a5;">
-                <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #0236a5; color: white;">
-                    <h2 class="mb-0">Liste des Stocks</h2>
-                    <a href="{{ path('app_stock_new') }}" class="btn" style="background-color: #fc0369; border-color: #fc0369; color: white;">Ajouter un Stock</a>
-                </div>
-                <div class="card-body p-4">
-                    <div class="table-responsive">
-                        <table class="table" style="color: white;">
-                            <thead style="background-color: #0585c6;">
-                                <tr>
-                                    <th class="text-center">Produit</th>
-                                    <th class="text-center">Jeu</th>
-                                    <th class="text-center">Quantité</th>
-                                    <th class="text-center">Prix</th>
-                                    <th class="text-center">Image</th>
-                                    <th class="text-center">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            {% for stock in stocks %}
-                                <tr>
-                                    <td class="text-center align-middle">{{ stock.produit.nomProduit }}</td>
-                                    <td class="text-center align-middle">{{ stock.games ? stock.games.gameName : '-' }}</td>
-                                    <td class="text-center align-middle">{{ stock.quantity }}</td>
-                                    <td class="text-center align-middle">{{ stock.prixProduit }} €</td>
-                                    <td class="text-center align-middle">
-                                        {% if stock.image %}
-                                            <img src="{{ image_base_url ~ stock.image }}" alt="Image" style="max-width: 50px;">
-                                        {% endif %}
-                                    </td>
-                                    <td class="text-center align-middle">
-                                        <div class="d-flex justify-content-center gap-2">
-                                            <a href="{{ path('app_stock_edit', {'id': stock.id}) }}" class="btn btn-sm" style="background-color: #fc0369; color: white;">Modifier</a>
-                                            <form method="post" action="{{ path('app_stock_delete', {'id': stock.id}) }}" style="display: inline-block" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce stock?');">
-                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ stock.id) }}">
-                                                <button class="btn btn-sm" style="background-color: #0236a5; color: white;">Supprimer</button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                            {% else %}
-                                <tr>
-                                    <td colspan="6" class="text-center">Aucun stock trouvé</td>
-                                </tr>
-                            {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+    <div class="container-main mt-4 liste">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Liste des Stocks</h1>
+            <a href="{{ path('app_stock_new') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Ajouter un Stock
+            </a>
+        </div>
+
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">
+                {{ message }}
+            </div>
+        {% endfor %}
+        
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        <div class="card-main">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped w-100" id="stocks-table">
+                        <thead class="table-primary">
+                            <tr>
+                                <th>Produit</th>
+                                <th>Jeu</th>
+                                <th>Quantité</th>
+                                <th>Prix</th>
+                                <th>Image</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for stock in stocks %}
+                            <tr>
+                                <td class="align-middle">{{ stock.produit.nomProduit }}</td>
+                                <td class="align-middle">{{ stock.games ? stock.games.gameName : '-' }}</td>
+                                <td class="align-middle">
+                                    <span class="badge {% if stock.quantity > 10 %}bg-success{% elseif stock.quantity > 0 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                                        {{ stock.quantity }}
+                                    </span>
+                                </td>
+                                <td class="align-middle">{{ stock.prixProduit }} DT</td>
+                                <td class="align-middle">
+                                    {% if stock.image %}
+                                        <img src="{{ image_base_url ~ stock.image }}" alt="Image de {{ stock.produit.nomProduit }}" style="max-width: 50px; max-height: 50px;">
+                                    {% else %}
+                                        <span class="text-muted">Pas d'image</span>
+                                    {% endif %}
+                                </td>
+                                <td class="align-middle">
+                                    <div class="btn-group">
+                                        <a href="{{ path('app_catalog_edit_stock', {'id': stock.id}) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form method="post" action="{{ path('app_stock_delete', {'id': stock.id}) }}" style="display: inline-block" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce stock?');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ stock.id) }}">
+                                            <button class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center">Aucun stock trouvé</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
-</div>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        #stocks-table {
+            color: #000 !important;
+            background-color: #fff;
+            width: 100%;
+            table-layout: fixed;
+        }
+        
+        #stocks-table th,
+        #stocks-table td {
+            color: #000 !important;
+            border-color: #dee2e6;
+            padding: 12px 15px;
+        }
+        
+        #stocks-table thead {
+            background-color: #0d6efd;
+            color: white !important;
+        }
+        
+        #stocks-table thead th {
+            color: white !important;
+            font-weight: bold;
+        }
+        
+        #stocks-table tbody tr:hover {
+            background-color: rgba(13, 110, 253, 0.1);
+        }
+        
+        .card-main {
+            background-color: #fff;
+            border-radius: 0.5rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            overflow: hidden;
+            width: 100%;
+        }
+        
+        .badge {
+            font-size: 0.85rem;
+            padding: 0.35em 0.65em;
+        }
+        
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+        
+        /* Column widths */
+        #stocks-table th:nth-child(1), 
+        #stocks-table td:nth-child(1) {
+            width: 25%;
+        }
+        
+        #stocks-table th:nth-child(2), 
+        #stocks-table td:nth-child(2) {
+            width: 15%;
+        }
+        
+        #stocks-table th:nth-child(3), 
+        #stocks-table td:nth-child(3) {
+            width: 10%;
+        }
+        
+        #stocks-table th:nth-child(4), 
+        #stocks-table td:nth-child(4) {
+            width: 15%;
+        }
+        
+        #stocks-table th:nth-child(5), 
+        #stocks-table td:nth-child(5) {
+            width: 15%;
+        }
+        
+        #stocks-table th:nth-child(6), 
+        #stocks-table td:nth-child(6) {
+            width: 20%;
+        }
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Force text color
+            $('#stocks-table tbody td').css('color', '#000');
+        });
+    </script>
 {% endblock %}

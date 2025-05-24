@@ -32,7 +32,7 @@ final class EvnementController extends AbstractController
         $limit = 6;
     
         // Pas besoin de $sort, le tri est géré dans le repository
-        $evenements = $repo->findBySearchAndSort($search, 'custom', $page, $limit, $categoryId ?: null);
+        $evenements = $repo->findBySearchAndSort($search, 'custom', $categoryId ?: null, $page, $limit);
         $totalEvenements = $repo->countBySearch($search);
         $maxPages = ceil($totalEvenements / $limit);
         $categories = $categoryRepo->findAll();
@@ -298,7 +298,7 @@ final class EvnementController extends AbstractController
         $limit = 5;
 
        
-        $evenements = $repo->findBySearchAndSort($search, $sort, $page, $limit,$categoryId ?: null);
+        $evenements = $repo->findBySearchAndSort($search, $sort, $categoryId ?: null, $page, $limit);
         $totalEvenements = $repo->countBySearch($search);
         $maxPages = ceil($totalEvenements / $limit);
 

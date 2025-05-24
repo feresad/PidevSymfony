@@ -211,7 +211,7 @@
             
             <div class="product-details">
                 <div class="product-name">{{ commande.produit.nomProduit }}</div>
-                <div class="product-price">{{ stock ? stock.prixProduit : 'N/A' }} TND</div>
+                <div class="product-price">{{ stock ? stock.prixProduit : 'N/A' }} DT</div>
                 <div>
                     <span class="status-badge {{ commande.status == 'terminé' ? '' : 
                         (commande.status == 'pending_payment' ? 'pending' : 

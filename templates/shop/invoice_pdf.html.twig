@@ -166,9 +166,9 @@
                     <strong>{{ commande.produit.nomProduit }}</strong><br>
                     {{ commande.produit.description|length > 100 ? commande.produit.description|slice(0, 100) ~ '...' : commande.produit.description }}
                 </td>
-                <td>{{ stock ? stock.prixProduit : 'N/A' }} TND</td>
+                <td>{{ stock ? stock.prix_produit : 'N/A' }} DT</td>
                 <td>1</td>
-                <td>{{ stock ? stock.prixProduit : 'N/A' }} TND</td>
+                <td>{{ stock ? stock.prix_produit : 'N/A' }} DT</td>
             </tr>
         </tbody>
     </table>
@@ -177,7 +177,7 @@
         <table>
             <tr>
                 <td><strong>Total:</strong></td>
-                <td class="text-right"><strong>{{ stock ? stock.prixProduit : 'N/A' }} TND</strong></td>
+                <td class="text-right"><strong>{{ stock ? stock.prixProduit : 'N/A' }} DT</strong></td>
             </tr>
         </table>
     </div>

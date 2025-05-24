@@ -17,6 +17,26 @@
             {{ form_errors(stock_form) }}
 
             <div class="mb-3">
+                {{ form_label(stock_form.produit, 'Produit', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(stock_form.produit, {'attr': {
+                    'class': 'form-control'
+                }}) }}
+                <div class="invalid-feedback">
+                    {{ form_errors(stock_form.produit) }}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                {{ form_label(stock_form.games, 'Jeu', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(stock_form.games, {'attr': {
+                    'class': 'form-control'
+                }}) }}
+                <div class="invalid-feedback">
+                    {{ form_errors(stock_form.games) }}
+                </div>
+            </div>
+
+            <div class="mb-3">
                 {{ form_label(stock_form.quantity, 'Quantité', {'label_attr': {'class': 'form-label'}}) }}
                 {{ form_widget(stock_form.quantity, {'attr': {
                     'class': 'form-control',

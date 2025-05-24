@@ -8,47 +8,63 @@
         <div class="col-md-12">
             <div class="card" style="background-color: #091221; border-color: #0236a5;">
                 <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #0236a5; color: white;">
-                    <h2 class="mb-0">Modifier un Stock</h2>
+                    <h2>Modifier un Stock</h2>
+                    <div>
+                        <a href="{{ path('app_stock_index') }}" class="btn btn-secondary" style="background-color: #0585c6; border-color: #0585c6;">Retour à la liste</a>
+                    </div>
                 </div>
-                <div class="card-body p-4">
+                <div class="card-body">
                     {{ form_start(form) }}
-                        <div class="form-group mb-4">
-                            {{ form_label(form.produit, null, {'label_attr': {'style': 'color: white; font-weight: 600;'}}) }}
+                        <div class="form-group mb-3">
+                            {{ form_label(form.produit, null, {'label_attr': {'style': 'color: white;'}}) }}
                             {{ form_widget(form.produit, {'attr': {'class': 'form-control', 'style': 'background-color: #091221; color: white; border-color: #0236a5;'}}) }}
+                            <div class="text-danger">
+                                {{ form_errors(form.produit) }}
+                            </div>
                         </div>
 
-                        <div class="form-group mb-4">
-                            {{ form_label(form.games, 'Jeu', {'label_attr': {'style': 'color: white; font-weight: 600;'}}) }}
+                        <div class="form-group mb-3">
+                            {{ form_label(form.games, null, {'label_attr': {'style': 'color: white;'}}) }}
                             {{ form_widget(form.games, {'attr': {'class': 'form-control', 'style': 'background-color: #091221; color: white; border-color: #0236a5;'}}) }}
+                            <div class="text-danger">
+                                {{ form_errors(form.games) }}
+                            </div>
                         </div>
 
-                        <div class="form-group mb-4">
-                            {{ form_label(form.quantity, null, {'label_attr': {'style': 'color: white; font-weight: 600;'}}) }}
+                        <div class="form-group mb-3">
+                            {{ form_label(form.quantity, null, {'label_attr': {'style': 'color: white;'}}) }}
                             {{ form_widget(form.quantity, {'attr': {'class': 'form-control', 'style': 'background-color: #091221; color: white; border-color: #0236a5;'}}) }}
+                            <div class="text-danger">
+                                {{ form_errors(form.quantity) }}
+                            </div>
                         </div>
 
-                        <div class="form-group mb-4">
-                            {{ form_label(form.prixProduit, null, {'label_attr': {'style': 'color: white; font-weight: 600;'}}) }}
-                            {{ form_widget(form.prixProduit, {'attr': {'class': 'form-control', 'style': 'background-color: #091221; color: white; border-color: #0236a5;'}}) }}
+                        <div class="form-group mb-3">
+                            {{ form_label(form.prix_produit, null, {'label_attr': {'style': 'color: white;'}}) }}
+                            {{ form_widget(form.prix_produit, {'attr': {'class': 'form-control', 'style': 'background-color: #091221; color: white; border-color: #0236a5;'}}) }}
+                            <div class="text-danger">
+                                {{ form_errors(form.prix_produit) }}
+                            </div>
                         </div>
 
                         {% if form.fichierImage is defined %}
-                        <div class="form-group mb-4">
-                            {{ form_label(form.fichierImage, 'Image', {'label_attr': {'style': 'color: white; font-weight: 600;'}}) }}
+                        <div class="form-group mb-3">
+                            {{ form_label(form.fichierImage, null, {'label_attr': {'style': 'color: white;'}}) }}
                             {{ form_widget(form.fichierImage, {'attr': {'class': 'form-control', 'style': 'background-color: #091221; color: white; border-color: #0236a5;'}}) }}
+                            <div class="text-danger">
+                                {{ form_errors(form.fichierImage) }}
+                            </div>
                         </div>
                         {% endif %}
 
                         {% if stock.image %}
-                            <div class="mb-4">
+                            <div class="mb-3">
                                 <p style="color: white;">Image actuelle :</p>
                                 <img src="{{ image_base_url ~ stock.image }}" alt="Current image" style="max-width: 200px; border: 2px solid #0236a5;">
                             </div>
                         {% endif %}
 
-                        <div class="d-flex justify-content-end">
-                            <button type="submit" class="btn" style="background-color: #fc0369; color: white;">Enregistrer</button>
-                        </div>
+                        <button class="btn btn-primary" style="background-color: #fc0369; border-color: #fc0369;">{{ button_label|default('Enregistrer') }}</button>
                     {{ form_end(form) }}
                 </div>
             </div>

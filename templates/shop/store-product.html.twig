@@ -684,7 +684,7 @@
                                 {{ product.description }}
                             </div>
                             <div class="price-container">
-                                <div class="price">{{ stock.prixProduit|number_format(0) }} TND</div>
+                                <div class="price">{{ stock.prixProduit|number_format(0) }} DT</div>
                                 {% if stock.quantity > 0 %}
                                     <div class="stock-status">En Stock</div>
                                     <a href="{{ path('app_payment_page', {'id': product.id}) }}" class="order-button">PASSER EN COMMANDE</a>

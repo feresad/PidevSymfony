@@ -13,8 +13,7 @@ class EvenementRepository extends ServiceEntityRepository
         parent::__construct($registry, Evenement::class);
     }
 
-    public function findBySearchAndSort(?string $search, string $sort, int $page = 1, int $limit = 9,?int $categoryId): array
-{
+    public function findBySearchAndSort(?string $search, string $sort, ?int $categoryId, int $page = 1, int $limit = 9): array{
     $queryBuilder = $this->createQueryBuilder('e')
         ->leftJoin('App\Entity\ClientEvenement', 'ce', 'WITH', 'ce.evenement = e.id')
         ->groupBy('e.id');
